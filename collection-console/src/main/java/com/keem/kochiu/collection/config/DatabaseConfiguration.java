@@ -1,0 +1,66 @@
+package com.keem.kochiu.collection.config;
+
+import liquibase.Liquibase;
+import liquibase.database.Database;
+import liquibase.database.DatabaseConnection;
+import liquibase.database.DatabaseFactory;
+import liquibase.database.jvm.JdbcConnection;
+import liquibase.exception.DatabaseException;
+import liquibase.resource.ClassLoaderResourceAccessor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import javax.sql.DataSource;
+
+/**
+ *
+ * @author KoChiu
+ */
+@Slf4j
+@Configuration(proxyBeanMethods = false)
+public class DatabaseConfiguration {
+
+    protected static final String LIQUIBASE_CHANGELOG_PREFIX = "KC_DB_";
+
+    @Bean
+    @Qualifier("KoChiuCollection")
+    public Liquibase producerLiquibase(DataSource dataSource) throws DatabaseException {
+        log.info("Configuring Liquibase");
+
+        Liquibase liquibase = null;
+        DatabaseConnection connection = null;
+        try {
+            connection = new JdbcConnection(dataSource.getConnection());
+            Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(connection);
+            database.setDatabaseChangeLogTableName(LIQUIBASE_CHANGELOG_PREFIX + database.getDatabaseChangeLogTableName());
+            database.setDatabaseChangeLogLockTableName(LIQUIBASE_CHANGELOG_PREFIX + database.getDatabaseChangeLogLockTableName());
+
+            liquibase = new Liquibase("META-INF/liquibase/collection-db-changelog.xml", new ClassLoaderResourceAccessor(), database);
+            liquibase.update("kochiu-collection-producer");
+
+            return liquibase;
+        } catch (Exception e) {
+            throw new DatabaseException("Error creating liquibase database", e);
+        } finally {
+            closeDatabase(liquibase);
+            if(connection != null && !connection.isClosed()){
+                connection.close();
+            }
+        }
+    }
+
+    private void closeDatabase(Liquibase liquibase) {
+        if (liquibase != null) {
+            Database database = liquibase.getDatabase();
+            if (database != null) {
+                try {
+                    database.close();
+                } catch (DatabaseException e) {
+                    log.warn("Error closing database", e);
+                }
+            }
+        }
+    }
+}

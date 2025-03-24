@@ -1,0 +1,24 @@
+server:
+  port: 9000
+  servlet:
+    context-path: /collection
+spring:
+  profiles:
+    active: dev
+  datasource:
+    driver-class-name: org.sqlite.JDBC
+    url: jdbc:sqlite:${user.dir}/db/collection.db
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.xml
+    database-change-log-lock-table: KC_CO_DATABASECHANGELOGLOCK
+    database-change-log-table: KC_CO_DATABASECHANGELOG
+
+#指定mybatis-config.xml的位置
+mybatis-plus:
+  config-location: classpath:mybatis/mybatis-config.xml
+  mapper-locations: classpath*:/mapper/*.xml
+  global-config:
+    db-config:
+      id-type: auto
+
+

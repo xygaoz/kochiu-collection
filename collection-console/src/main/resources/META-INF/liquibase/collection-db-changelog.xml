@@ -1,0 +1,154 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.19.xsd">
+
+    <changeSet author="kochiu" id="kcdb_1" runOnChange="true" dbms="sqlite">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="sys_role"/>
+            </not>
+        </preConditions>
+        <createTable remarks="系统角色表" tableName="sys_role">
+            <column name="ROLE_ID" remarks="主键" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ROLE_NAME" remarks="角色名称" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATE_TIME" remarks="创建时间" type="date"/>
+            <column name="CREATE_USER" remarks="创建人" type="VARCHAR(20)"/>
+            <column name="UPDATE_TIME" remarks="更新时间" type="date"/>
+            <column name="UPDATE_USER" remarks="更新人" type="VARCHAR(20)"/>
+            <column name="DB_VERSION" remarks="数据版本" type="NUMBER">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <!-- 添加主键自增元数据 -->
+        <addAutoIncrement
+                tableName="sys_role"
+                columnName="ROLE_ID"
+                columnDataType="INTEGER"
+        />
+    </changeSet>
+
+    <changeSet id="kcdb_2" author="kochiu" runOnChange="true">
+        <preConditions>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM sys_role
+                WHERE role_id = 1
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="sys_role">
+            <column name="ROLE_ID" value="1"/>
+            <column name="ROLE_NAME" value="超级管理员"/>
+            <column name="CREATE_TIME" valueComputed="datetime('now')"/>
+            <column name="CREATE_USER" value="sys"/>
+            <column name="DB_VERSION" value="1"/>
+        </insert>
+    </changeSet>
+
+    <changeSet author="kochiu" id="kcdb_3" runOnChange="true" dbms="sqlite">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="sys_user"/>
+            </not>
+        </preConditions>
+        <createTable remarks="系统用户表" tableName="sys_user">
+            <column name="USER_ID" remarks="主键" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="USER_CODE" remarks="用户编码" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PASSWORD" remarks="密码" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="USER_NAME" remarks="用户名称" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="TOKEN" remarks="token" type="VARCHAR(200)"/>
+            <column name="CREATE_TIME" remarks="创建时间" type="date"/>
+            <column name="CREATE_USER" remarks="创建人" type="VARCHAR(20)"/>
+            <column name="UPDATE_TIME" remarks="更新时间" type="date"/>
+            <column name="UPDATE_USER" remarks="更新人" type="VARCHAR(20)"/>
+            <column name="DB_VERSION" remarks="数据版本" type="NUMBER">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- 添加主键自增元数据 -->
+        <addAutoIncrement
+                tableName="sys_user"
+                columnName="USER_ID"
+                columnDataType="INTEGER"
+        />
+    </changeSet>
+
+    <changeSet id="kcdb_4" author="kochiu" runOnChange="true">
+        <preConditions>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM sys_user
+                WHERE user_id = 1
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="sys_user">
+            <column name="USER_ID" value="1"/>
+            <column name="USER_CODE" value="admin"/>
+            <column name="USER_NAME" value="超级管理员"/>
+            <column name="PASSWORD" value="71FE74BB29C467E54CB689C3C1F16BB5B70FDA632599514A7A4AC4FBED9A5B0FA0143B1702C50100C80A1767ED2B791A004BEE667367ABA35636AFAD9BAF1AD7A9D5E6DCEE40DEC78420AF64A0FECB86BF0F3B09A01A15534DEB4F6216207F1D93EAC82CDDEA23631A26EBF1E3AC6521AD3427C11AF20023803DFA65816AC9953BBE2A87BDD1DED444982C92FCF7416D3477C19C2CB3B610EA26D0D2B6B32284F04CB83D51A070D41F36C256E648BD83DE6192C7E093716BE682036E141F0409D8D4C3593EA6100436140A8E54838E2C62E0D0847A3A9F130BA4081BB0084F8658ED0B296336DEC130FFD680E5A685AFD09601F76C165A8CBA6F27C096A55E3B"/>
+            <column name="CREATE_TIME" valueComputed="datetime('now')"/>
+            <column name="CREATE_USER" value="sys"/>
+            <column name="DB_VERSION" value="1"/>
+        </insert>
+    </changeSet>
+
+    <changeSet author="kochiu" id="kcdb_5" runOnChange="true" dbms="sqlite">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="sys_security"/>
+            </not>
+        </preConditions>
+        <createTable remarks="系统密钥表" tableName="sys_security">
+            <column name="ID" remarks="主键" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PUBLIC_KEY" remarks="公钥" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PRIVATE_KEY" remarks="私钥" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATE_TIME" remarks="创建时间" type="date"/>
+            <column name="CREATE_USER" remarks="创建人" type="VARCHAR(20)"/>
+            <column name="UPDATE_TIME" remarks="更新时间" type="date"/>
+            <column name="UPDATE_USER" remarks="更新人" type="VARCHAR(20)"/>
+            <column name="DB_VERSION" remarks="数据版本" type="NUMBER">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- 添加主键自增元数据 -->
+        <addAutoIncrement
+                tableName="sys_security"
+                columnName="ID"
+                columnDataType="INTEGER"
+        />
+    </changeSet>
+
+    <changeSet id="kcdb_6" author="kochiu" runOnChange="true">
+        <preConditions>
+            <rowCount expectedRows="0" tableName="sys_security"/>
+        </preConditions>
+        <insert tableName="sys_security">
+            <column name="PUBLIC_KEY" value="D774DFF9784C760411FC6957E233A65F87184F47377948C6E8214444494F0376883D3133F4D96A270831F7DB131005744E532C9C8C16A77E0B3F3859BA9D14C56CB94189C9147A554B5BB2A9189F6C190A8BA951565E902760E068616A579D24F9BAA36D51F552281CEB4811F968ABD0F407B33A7763FE1793BB968943B88B464FC2F0F3B621251A3DC1E0FF54CFF82B13EFED21B825BAE9D7B695E787F9ACA7F7EADE8F4529697674214DBC21F1BEFDECC9ED81708B1B7B6FF8E3D7FA310FFF9308DA3B50B73678A3A334FF12378903AE9EFE66888EA2D6E2E28DA32DDCDB08CD25D622050E3900E812D75D5B801936CBBE5580497249A46965B5A16DD78695"/>
+            <column name="PRIVATE_KEY" value="308204BD020100300D06092A864886F70D0101010500048204A7308204A30201000282010100D774DFF9784C760411FC6957E233A65F87184F47377948C6E8214444494F0376883D3133F4D96A270831F7DB131005744E532C9C8C16A77E0B3F3859BA9D14C56CB94189C9147A554B5BB2A9189F6C190A8BA951565E902760E068616A579D24F9BAA36D51F552281CEB4811F968ABD0F407B33A7763FE1793BB968943B88B464FC2F0F3B621251A3DC1E0FF54CFF82B13EFED21B825BAE9D7B695E787F9ACA7F7EADE8F4529697674214DBC21F1BEFDECC9ED81708B1B7B6FF8E3D7FA310FFF9308DA3B50B73678A3A334FF12378903AE9EFE66888EA2D6E2E28DA32DDCDB08CD25D622050E3900E812D75D5B801936CBBE5580497249A46965B5A16DD7869502030100010282010012187494370492F7E20BD54C2689287CC6F3A57AE97F93FB72B5128EFAAA3A73FADACAD65E86E119C0A033BD30536CE5D90B36C8BA224FF46FDCE22E75142AD1AF013B2E279782F3C575C0E25F594A62AB065254ECC059F298BA184230448603FC3E6EE9E85386902C679D60B71611B225C0BCCE9906EAA90FC5164E5683FA1C68DCA975F3C092402D1724F9E479E96961C1BEF57FC98F93BB0A92A922EBE72E16174E48BB7A87AADBB7ACDEBB5299F79278D9CACDE7C70B4A56BAC54F1D15FF374B8CD89DF1589D110C7AACF7A3CF190E60BECC4C8A23BDC467F31235EF2531CA83DD63F542D5CA1637938D891E4F4337CA21F38358D91C2B21C1439113B71102818100DB29F7FF7E9F0B05574B08BB3879013AF3BBED3E7F3E59C2651E7BCA053876D719A1B0DF8ECD12C11B5BEAC9C3F794DE814F6718D35A672C9633FC4E9B5E0C4E2EF7050E1CE14C3200C2D30803C7FFF3BE2C9957417605D81DF93CAC9B0A717845BA0B49BA9EFEA1E9CD531A741684991C245BBBA433AEF11D2BDE9B7AF7E61102818100FBAB63097042A6B1103701E3EE65BC91077D2F125C1ED0436DE1F02769D8D80D9ED127A36BEEEB1435514E6AC86C0794D306255BFD378B27D2AFE9740D19AE34BE52143C56EAC89E64638A6B50C4C6BA809CC1BA52F28247A190D24388EF0871ABFB5F231821E75201526C0F3F46AE40C7DFF022474D41BD10AC8F7CFF4A44450281803DB142AE18E68C23A4BEEA66492F46B96182B4F5B2BBCA687E2E668A278E0D65DF413498B989E08D9B35F49177286A2F7816F1DE7B20278AD57D2CB8B3E375734CA51C372CC9FEB8D49E02E96EA70DD57EE2EF0730D6182F0DC0EAE36B81350FB610F8BC785BE9318AAED185D0C7C5EB939068821966B3080C3E1D1B8731E1010281806E3AFE30E723BA613989EE61084D354F8CA92F11EA99707CE8471AEA18796B00643C961105386B6CB981B8481B2AFE13186ECBB443EFAD1AAF346F9B6E157E71099F67CF99FE520AD64BA71824135C3BDA134EE32E6B9BD68614A993FD093D78946C909A0D7AE417CE0E6CD82CCDE78AE640D6AC1CF0E0C74FE35521D9AB8CC502818100D5A91A840DFE2738BB7A9F276D9ACE6C5047960142D48F5CA8D9CE6EB8D7066B2B75BAC59F75686374F7AC63C0EB2661E00D80FA47ACAA036A3AF74A9D45DAFED19F89C48779042DA41DCF34CA04055E88E6BF1EE5270399EC14B0EF2CC33BAC392B315E7CC0F38F71C0CBDEA4BB8A3CB9ACAC330A167308E9D2AD694918F184"/>
+            <column name="CREATE_TIME" valueComputed="datetime('now')"/>
+            <column name="CREATE_USER" value="sys"/>
+            <column name="DB_VERSION" value="1"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>
