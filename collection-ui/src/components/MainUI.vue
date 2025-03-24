@@ -5,8 +5,8 @@
                 <el-menu
                     class="el-menu-vertical-demo"
                     background-color="#fff"
-                    text-color="#202020"
-                    active-text-color="#000"
+                    text-color="#525252"
+                    active-text-color="rgb(215, 24, 24)"
                     style="height: 100%"
                     :default-openeds="defaultOpeneds"
                 >
@@ -175,6 +175,7 @@ export default defineComponent({
     width: 250px;
     min-height: 400px;
     border-right: 0;
+    font-weight: bold;
 }
 
 .el-menu-box {
