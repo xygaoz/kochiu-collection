@@ -1,0 +1,31 @@
+<template>
+  <Main/>
+</template>
+
+<script lang="ts">
+import { Options, Vue } from 'vue-class-component';
+import Main from './components/MainUI.vue';
+
+@Options({
+  components: {
+    Main,
+  },
+})
+export default class App extends Vue {}
+</script>
+
+<style>
+#app {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #2c3e50;
+}
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+</style>
