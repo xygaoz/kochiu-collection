@@ -9,5 +9,5 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "collection")
 public class CollectionProperties {
 
-    private String uploadPath;
+    private String uploadPath = "/";
 }

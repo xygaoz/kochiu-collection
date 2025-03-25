@@ -49,4 +49,22 @@ public class SecurityRepository extends ServiceImpl<SecurityMapper, SysSecurity>
             throw new CollectionException("获取私钥失败");
         }
     }
+
+    /**
+     * 获取公用加密key
+     * @return
+     * @throws CollectionException
+     */
+    public String getCommonKey() throws CollectionException {
+        try {
+            SysSecurity sysSecurity = getOne(null);
+            if(sysSecurity == null){
+                throw new CollectionException("获取公用加密key失败");
+            }
+            return sysSecurity.getCommonKey();
+        }
+        catch (Exception e){
+            throw new CollectionException("获取公用加密key失败");
+        }
+    }
 }

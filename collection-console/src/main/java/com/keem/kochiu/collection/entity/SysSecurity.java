@@ -14,4 +14,5 @@ public class SysSecurity extends BaseEntity {
     private Integer id;
     private String publicKey;
     private String privateKey;
+    private String commonKey;
 }

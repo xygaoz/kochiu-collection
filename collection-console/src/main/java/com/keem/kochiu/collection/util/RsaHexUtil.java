@@ -98,8 +98,7 @@ public class RsaHexUtil {
 		Cipher cipher = Cipher.getInstance("RSA", bouncyCastleProvider);
 		cipher.init(Cipher.DECRYPT_MODE, privateKey);
 		printLnAlgorithm(cipher);
-		String outStr = new String(cipher.doFinal(inputByte));
-		return outStr;
+        return new String(cipher.doFinal(inputByte));
 
 	}
 

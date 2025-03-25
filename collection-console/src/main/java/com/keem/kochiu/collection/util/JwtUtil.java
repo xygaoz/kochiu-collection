@@ -10,6 +10,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.keem.kochiu.collection.Constant.TOKEN_PARAMS_FLAG;
+
 /**
  * Jwt工具类
  * @author KoChiu
@@ -32,7 +34,7 @@ public class JwtUtil {
 
         //创建payload的私有声明（根据特定的业务需要添加，如果要拿这个做验证，一般是需要和jwt的接收方提前沟通好验证方式的）
         Map<String, Object> claims = new HashMap<String, Object>();
-        claims.put("params", params);
+        claims.put(TOKEN_PARAMS_FLAG, params);
 
         //下面就是在为payload添加各种标准声明和私有声明了
         //这里其实就是new一个JwtBuilder，设置jwt的body
@@ -64,12 +66,11 @@ public class JwtUtil {
      */
     public static Claims parseJWT(String token, String key) {
         //得到DefaultJwtParser
-        Claims claims = Jwts.parser()
+        return Jwts.parser()
                 //设置签名的秘钥
                 .setSigningKey(key)
                 //设置需要解析的jwt
                 .parseClaimsJws(token).getBody();
-        return claims;
     }
 
     /**
@@ -88,7 +89,7 @@ public class JwtUtil {
                 //设置需要解析的jwt
                 .parseClaimsJws(token).getBody();
 
-        if (claims.get("params").equals(params)) {
+        if (claims.get(TOKEN_PARAMS_FLAG).equals(params)) {
             return true;
         }
         return false;
