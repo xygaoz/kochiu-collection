@@ -4,22 +4,25 @@ import cn.hutool.core.img.ImgUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.unit.DataSizeUtil;
 import cn.hutool.crypto.digest.DigestUtil;
-import cn.hutool.core.convert.Convert;
 import com.keem.kochiu.collection.data.bo.UploadBo;
 import com.keem.kochiu.collection.data.vo.FileVo;
+import com.keem.kochiu.collection.entity.SysUser;
+import com.keem.kochiu.collection.entity.UserResource;
 import com.keem.kochiu.collection.enums.FileTypeEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.properties.CollectionProperties;
 import com.keem.kochiu.collection.repository.ResourceRepository;
+import com.keem.kochiu.collection.repository.UserRepository;
 import com.keem.kochiu.collection.util.ImageUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -31,11 +34,13 @@ public class FileService {
 
     private final CollectionProperties pluServiceProperties;
     private final ResourceRepository resourceRepository;
+    private final UserRepository userRepository;
     private final static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
 
-    public FileService(CollectionProperties pluServiceProperties, ResourceRepository resourceRepository) {
+    public FileService(CollectionProperties pluServiceProperties, ResourceRepository resourceRepository, UserRepository userRepository) {
         this.pluServiceProperties = pluServiceProperties;
         this.resourceRepository = resourceRepository;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -114,5 +119,59 @@ public class FileService {
                 .size(DataSizeUtil.format(uploadBo.getFile().getSize()))
                 .mimeType(fileType.getMimeType())
                 .build();
+    }
+
+    /**
+     * 下载文件
+     * @param request
+     * @param resourceId
+     */
+    public void download(HttpServletRequest request, HttpServletResponse response, int resourceId) {
+        //请求路径
+        String url = request.getRequestURI();
+        url = url.substring(request.getContextPath().length());
+
+        //查找资源
+        UserResource resource = resourceRepository.getById(resourceId);
+        if(resource == null){
+            response.setStatus(404);
+            return;
+        }
+        if(resource.getDeleted() == 1){
+            response.setStatus(404);
+            return;
+        }
+
+        String str = "/" + resourceId + "/";
+        url = url.substring(url.indexOf(str) + str.length() - 1);
+        SysUser user = userRepository.getById(resource.getUserId());
+        if(user == null){
+            response.setStatus(404);
+            return;
+        }
+        url = "/" + user.getUserCode() + url;
+        if(!url.equals(resource.getResourceUrl())){
+            response.setStatus(404);
+            return;
+        }
+
+        //读取文件下载
+        String filePath = pluServiceProperties.getUploadPath() + resource.getResourceUrl();
+        File file = new File(filePath);
+        if(!file.exists()){
+            response.setStatus(404);
+            return;
+        }
+
+        response.setHeader("Content-Disposition", "attachment;filename=" + resource.getSourceFileName());
+        response.setHeader("Content-Length", String.valueOf(file.length()));
+        response.setContentType(FileTypeEnum.getByValue(resource.getResourceType()).getMimeType());
+        try {
+            FileUtil.writeToStream(file, response.getOutputStream());
+        }
+        catch (IOException e) {
+            log.error("文件下载失败", e);
+            response.setStatus(500);
+        }
     }
 }
