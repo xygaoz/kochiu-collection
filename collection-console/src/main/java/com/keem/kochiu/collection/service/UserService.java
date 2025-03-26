@@ -57,6 +57,7 @@ public class UserService {
                         throw new CollectionException("生成token失败");
                     }
                     user.setToken(token);
+                    user.setUpdateBy(loginBo.getUsername());
                     userRepository.updateById(user);
                     return token;
                 }

@@ -1,6 +1,7 @@
 package com.keem.kochiu.collection.service;
 
 import com.keem.kochiu.collection.annotation.CheckPermit;
+import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.repository.SecurityRepository;
@@ -26,6 +27,7 @@ import java.util.Map;
 
 import static com.keem.kochiu.collection.Constant.*;
 import static com.keem.kochiu.collection.enums.PermitEnum.ALL;
+import static com.keem.kochiu.collection.enums.PermitEnum.API;
 
 
 /**
@@ -37,6 +39,7 @@ import static com.keem.kochiu.collection.enums.PermitEnum.ALL;
 @Component //注入依赖
 public class CheckPermitAspect {
 
+    public static ThreadLocal<UserDto> USER_INFO = new ThreadLocal<>();
     private final SecurityRepository securityRepository;
     private final UserRepository userRepository;
 
@@ -120,7 +123,7 @@ public class CheckPermitAspect {
             throw new CollectionException("非法请求。");
         }
 
-        if(data == null){
+        if(data == null || !data.containsKey(TOKEN_API_FLAG)){
             throw new CollectionException("非法请求。");
         }
 
@@ -129,6 +132,17 @@ public class CheckPermitAspect {
                 throw new CollectionException("非法请求。");
             }
         }
+
+        if(data.get(TOKEN_API_FLAG).equals(API.name())){
+            if(!user.getToken().equals(authorization)){
+                throw new CollectionException("非法请求。");
+            }
+        }
+
+        USER_INFO.set(UserDto.builder()
+                        .userCode(user.getUserCode())
+                        .userId(user.getUserId())
+                .build());
         return true;
     }
 }
