@@ -4,8 +4,8 @@ import com.keem.kochiu.collection.annotation.CheckPermit;
 import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.exception.CollectionException;
-import com.keem.kochiu.collection.repository.SecurityRepository;
-import com.keem.kochiu.collection.repository.UserRepository;
+import com.keem.kochiu.collection.repository.SysSecurityRepository;
+import com.keem.kochiu.collection.repository.SysUserRepository;
 import com.keem.kochiu.collection.util.AesUtil;
 import com.keem.kochiu.collection.util.JwtUtil;
 import io.jsonwebtoken.Claims;
@@ -40,10 +40,10 @@ import static com.keem.kochiu.collection.enums.PermitEnum.API;
 public class CheckPermitAspect {
 
     public static ThreadLocal<UserDto> USER_INFO = new ThreadLocal<>();
-    private final SecurityRepository securityRepository;
-    private final UserRepository userRepository;
+    private final SysSecurityRepository securityRepository;
+    private final SysUserRepository userRepository;
 
-    public CheckPermitAspect(SecurityRepository securityRepository, UserRepository userRepository) {
+    public CheckPermitAspect(SysSecurityRepository securityRepository, SysUserRepository userRepository) {
         this.securityRepository = securityRepository;
         this.userRepository = userRepository;
     }

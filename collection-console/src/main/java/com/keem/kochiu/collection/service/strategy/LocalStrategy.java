@@ -1,4 +1,4 @@
-package com.keem.kochiu.collection.service;
+package com.keem.kochiu.collection.service.strategy;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.unit.DataSizeUtil;
@@ -11,8 +11,9 @@ import com.keem.kochiu.collection.entity.UserResource;
 import com.keem.kochiu.collection.enums.FileTypeEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.properties.CollectionProperties;
-import com.keem.kochiu.collection.repository.ResourceRepository;
-import com.keem.kochiu.collection.repository.UserRepository;
+import com.keem.kochiu.collection.repository.UserResourceRepository;
+import com.keem.kochiu.collection.repository.SysUserRepository;
+import com.keem.kochiu.collection.service.CheckPermitAspect;
 import com.keem.kochiu.collection.util.DocumentToImageConverter;
 import com.keem.kochiu.collection.util.ImageUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -26,20 +27,21 @@ import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 
 @Slf4j
-@Service
-public class FileService {
+@Service("local")
+public class LocalStrategy implements ResourceStrategy {
 
     private final CollectionProperties pluServiceProperties;
-    private final ResourceRepository resourceRepository;
-    private final UserRepository userRepository;
+    private final UserResourceRepository resourceRepository;
+    private final SysUserRepository userRepository;
     private final static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
 
-    public FileService(CollectionProperties pluServiceProperties, ResourceRepository resourceRepository, UserRepository userRepository) {
+    public LocalStrategy(CollectionProperties pluServiceProperties,
+                         UserResourceRepository resourceRepository,
+                         SysUserRepository userRepository) {
         this.pluServiceProperties = pluServiceProperties;
         this.resourceRepository = resourceRepository;
         this.userRepository = userRepository;
@@ -273,5 +275,10 @@ public class FileService {
             log.error("文件下载失败", e);
             response.setStatus(500);
         }
+    }
+
+    @Override
+    public void deleteFile(int resourceId) {
+
     }
 }

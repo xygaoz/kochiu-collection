@@ -2,19 +2,17 @@ package com.keem.kochiu.collection.repository;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.keem.kochiu.collection.data.dto.ResourceDto;
-import com.keem.kochiu.collection.entity.UserCategory;
 import com.keem.kochiu.collection.entity.UserResource;
 import com.keem.kochiu.collection.exception.CollectionException;
-import com.keem.kochiu.collection.mapper.CategoryMapper;
-import com.keem.kochiu.collection.mapper.ResourceMapper;
+import com.keem.kochiu.collection.mapper.UserResourceMapper;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ResourceRepository extends ServiceImpl<ResourceMapper, UserResource>{
+public class UserResourceRepository extends ServiceImpl<UserResourceMapper, UserResource>{
 
-    private final CategoryRepository categoryRepository;
+    private final UserCategoryRepository categoryRepository;
 
-    public ResourceRepository(CategoryRepository categoryRepository) {
+    public UserResourceRepository(UserCategoryRepository categoryRepository) {
         this.categoryRepository = categoryRepository;
     }
 

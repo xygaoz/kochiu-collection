@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.keem.kochiu.collection.mapper.ResourceMapper">
+<mapper namespace="com.keem.kochiu.collection.mapper.UserResourceMapper">
 
     <select id="selectLastInsertId" resultType="java.lang.Long">
         SELECT last_insert_rowid() FROM user_resource WHERE rowid = (SELECT last_insert_rowid())

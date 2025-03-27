@@ -2,19 +2,13 @@ package com.keem.kochiu.collection.repository;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.keem.kochiu.collection.entity.SysSecurity;
 import com.keem.kochiu.collection.entity.UserCategory;
 import com.keem.kochiu.collection.exception.CollectionException;
-import com.keem.kochiu.collection.mapper.CategoryMapper;
-import com.keem.kochiu.collection.mapper.SecurityMapper;
-import com.keem.kochiu.collection.util.RsaHexUtil;
+import com.keem.kochiu.collection.mapper.UserCategoryMapper;
 import org.springframework.stereotype.Service;
 
-import java.security.PrivateKey;
-import java.security.PublicKey;
-
 @Service
-public class CategoryRepository extends ServiceImpl<CategoryMapper, UserCategory>{
+public class UserCategoryRepository extends ServiceImpl<UserCategoryMapper, UserCategory>{
 
     /**
      * 获取分类id

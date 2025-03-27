@@ -6,8 +6,8 @@ import com.keem.kochiu.collection.data.bo.LoginBo;
 import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.enums.PermitEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
-import com.keem.kochiu.collection.repository.SecurityRepository;
-import com.keem.kochiu.collection.repository.UserRepository;
+import com.keem.kochiu.collection.repository.SysSecurityRepository;
+import com.keem.kochiu.collection.repository.SysUserRepository;
 import com.keem.kochiu.collection.util.AesUtil;
 import com.keem.kochiu.collection.util.JwtUtil;
 import com.keem.kochiu.collection.util.RsaHexUtil;
@@ -20,12 +20,12 @@ import static com.keem.kochiu.collection.Constant.TOKEN_API_FLAG;
 
 @Slf4j
 @Service
-public class UserService {
+public class SysUserService {
 
-    private final UserRepository userRepository;
-    private final SecurityRepository securityRepository;
+    private final SysUserRepository userRepository;
+    private final SysSecurityRepository securityRepository;
 
-    public UserService(UserRepository userRepository, SecurityRepository securityRepository) {
+    public SysUserService(SysUserRepository userRepository, SysSecurityRepository securityRepository) {
         this.userRepository = userRepository;
         this.securityRepository = securityRepository;
     }

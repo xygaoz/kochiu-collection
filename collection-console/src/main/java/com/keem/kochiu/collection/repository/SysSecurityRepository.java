@@ -2,10 +2,8 @@ package com.keem.kochiu.collection.repository;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.keem.kochiu.collection.entity.SysSecurity;
-import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.exception.CollectionException;
-import com.keem.kochiu.collection.mapper.SecurityMapper;
-import com.keem.kochiu.collection.mapper.UserMapper;
+import com.keem.kochiu.collection.mapper.SysSecurityMapper;
 import com.keem.kochiu.collection.util.RsaHexUtil;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +11,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 
 @Service
-public class SecurityRepository extends ServiceImpl<SecurityMapper, SysSecurity>{
+public class SysSecurityRepository extends ServiceImpl<SysSecurityMapper, SysSecurity>{
 
     /**
      * 获取系统公钥

@@ -3,7 +3,7 @@ package com.keem.kochiu.collection.controller;
 import com.keem.kochiu.collection.data.DefaultResult;
 import com.keem.kochiu.collection.data.bo.LoginBo;
 import com.keem.kochiu.collection.exception.CollectionException;
-import com.keem.kochiu.collection.service.UserService;
+import com.keem.kochiu.collection.service.SysUserService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,11 +12,11 @@ import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1")
-public class SecurityController {
+public class SysSecurityController {
 
-    private final UserService userService;
+    private final SysUserService userService;
 
-    public SecurityController(UserService userService) {
+    public SysSecurityController(SysUserService userService) {
         this.userService = userService;
     }
 
