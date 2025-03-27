@@ -17,6 +17,8 @@ import com.keem.kochiu.collection.util.DocumentToImageConverter;
 import com.keem.kochiu.collection.util.ImageUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -24,6 +26,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 
 @Slf4j
@@ -123,6 +127,7 @@ public class FileService {
                     case gif:
                     case bmp:
                     case png:
+                    case webp:
                         String resolutionRation = createImageThumbnail(filePath, thumbFilePath, fileType);
                         resourceDto.setResolutionRatio(resolutionRation);
                         resourceDto.setThumbUrl(thumbUrl);
@@ -136,15 +141,49 @@ public class FileService {
                         DocumentToImageConverter.convertWordToImage(filePath, thumbFilePath);
                         resourceDto.setThumbUrl(thumbUrl);
                         break;
-//                case "xls":
-//                case "xlsx":
-//                    DocumentToImageConverter.convertExcelFirstPage(filePath, thumbFilePath);
-//                    break;
+                    case xls:
+                    case xlsx:
+                        DocumentToImageConverter.convertExcelToImage(filePath, thumbFilePath);
+                        resourceDto.setThumbUrl(thumbUrl);
+                        break;
                     case ppt:
                     case pptx:
                         DocumentToImageConverter.convertPptFirstPage(filePath, thumbFilePath);
                         resourceDto.setThumbUrl(thumbUrl);
                         break;
+                    case txt:
+                        DocumentToImageConverter.convertTxtToImage(filePath, thumbFilePath);
+                        resourceDto.setThumbUrl(thumbUrl);
+                        break;
+                    case mp4:
+                    case mov:
+                    case avi:
+                    case wav:
+                    case mp3:
+                    case flac: {
+                        Resource resource = new ClassPathResource("/images/" + fileType.name() + ".png");
+                        if (resource.exists()) {
+                            try {
+                                FileUtil.copyFile(resource.getInputStream(), new File(thumbFilePath), StandardCopyOption.REPLACE_EXISTING);
+                                resourceDto.setThumbUrl(thumbUrl);
+                            } catch (IOException e) {
+                                log.error("缩略图生成失败", e);
+                            }
+                        }
+                        break;
+                    }
+                    default:
+                        Resource resource = new ClassPathResource("/images/unknown.png");
+                        if(resource.exists()){
+                            try {
+                                FileUtil.copyFile(resource.getInputStream(), new File(thumbFilePath), StandardCopyOption.REPLACE_EXISTING);
+                                resourceDto.setThumbUrl(thumbUrl);
+                            }
+                            catch (IOException e) {
+                                log.error("缩略图生成失败", e);
+                            }
+                        }
+
                 }
             }
             catch (Exception e) {

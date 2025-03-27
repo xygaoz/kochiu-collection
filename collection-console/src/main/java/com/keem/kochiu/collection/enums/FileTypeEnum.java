@@ -5,14 +5,14 @@ import lombok.Getter;
 @Getter
 public enum FileTypeEnum {
 
-    jpg(true, true, "image/jpeg"),
-    jpeg(true, true, "image/jpeg"),
-    gif(true, true, "image/gif"),
-    bmp(true, true, "image/bmp"),
-    png(true, true, "image/png"),
-    webp(true, true, "image/webp"),
+    jpg(true, true, "images/jpeg"),
+    jpeg(true, true, "images/jpeg"),
+    gif(true, true, "images/gif"),
+    bmp(true, true, "images/bmp"),
+    png(true, true, "images/png"),
+    webp(true, true, "images/webp"),
     pdf(true, false, "application/pdf"),
-    txt(false, false, "text/plain"),
+    txt(true, false, "text/plain"),
     doc(true, false, "application/msword"),
     docx(true, false, "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
     xls(true, false, "application/vnd.ms-excel"),
