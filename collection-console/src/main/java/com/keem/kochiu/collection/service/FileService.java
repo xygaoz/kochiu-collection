@@ -99,8 +99,15 @@ public class FileService {
 
         Long resId = resourceRepository.saveResource(resourceDto);
 
+        String thumbUrl = resourceDto.getThumbUrl();
+        if(thumbUrl != null){
+            thumbUrl = thumbUrl.replace("/" + userCode + "/", "");
+            thumbUrl = "/" + resId + "/" + thumbUrl;
+        }
+
         return FileVo.builder()
                 .url("/" + resId + returnUrl)
+                .thumbnailUrl(thumbUrl)
                 .size(DataSizeUtil.format(uploadBo.getFile().getSize()))
                 .mimeType(fileType.getMimeType())
                 .build();

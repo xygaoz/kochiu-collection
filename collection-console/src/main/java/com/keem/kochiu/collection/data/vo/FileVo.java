@@ -8,6 +8,7 @@ import lombok.Data;
 public class FileVo {
 
     public String url;
+    public String thumbnailUrl;
     //kb
     public String size;
     public String mimeType;
