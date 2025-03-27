@@ -1,0 +1,8 @@
+<fop-configurations>
+    <fonts>
+        <!-- 自动扫描项目中的字体目录 -->
+        <directory recursive="true">./fonts</directory>
+        <!-- 或指定绝对路径 -->
+        <directory>/fonts</directory>
+    </fonts>
+</fop-configurations>

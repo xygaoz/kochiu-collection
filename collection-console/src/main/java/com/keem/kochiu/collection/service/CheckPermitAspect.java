@@ -102,6 +102,9 @@ public class CheckPermitAspect {
             log.error("用户不存在");
             throw new CollectionException("非法请求。");
         }
+        if(user.getToken() == null){
+            throw new CollectionException("Token未生成。");
+        }
 
         //解密token
         Map<String, Object> data;

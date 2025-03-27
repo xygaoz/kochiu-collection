@@ -1,6 +1,7 @@
 package com.keem.kochiu.collection.repository;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.keem.kochiu.collection.data.dto.ResourceDto;
 import com.keem.kochiu.collection.entity.UserCategory;
 import com.keem.kochiu.collection.entity.UserResource;
 import com.keem.kochiu.collection.exception.CollectionException;
@@ -19,31 +20,21 @@ public class ResourceRepository extends ServiceImpl<ResourceMapper, UserResource
 
     /**
      * 保存资源，返回资源id
-     * @param userId
-     * @param cateId
-     * @param sourceFileName
-     * @param resourceUrl
-     * @param fileExt
-     * @param resolutionRatio
-     * @param size
-     * @param thumbUrl
+     * @param resourceDto
      * @return
      * @throws CollectionException
      */
-    public Long saveResource(int userId, int cateId,
-                             String sourceFileName, String resourceUrl,
-                             String fileExt, String resolutionRatio,
-                             Long size, String thumbUrl) throws CollectionException {
+    public Long saveResource(ResourceDto resourceDto) throws CollectionException {
 
         UserResource userResource = new UserResource();
-        userResource.setUserId(userId);
-        userResource.setCateId(categoryRepository.getCateId(userId, cateId));
-        userResource.setSourceFileName(sourceFileName);
-        userResource.setResourceUrl(resourceUrl);
-        userResource.setFileExt(fileExt);
-        userResource.setResolutionRatio(resolutionRatio);
-        userResource.setSize(size);
-        userResource.setThumbUrl(thumbUrl);
+        userResource.setUserId(resourceDto.getUserId());
+        userResource.setCateId(categoryRepository.getCateId(resourceDto.getUserId(), resourceDto.getCateId()));
+        userResource.setSourceFileName(resourceDto.getSourceFileName());
+        userResource.setResourceUrl(resourceDto.getResourceUrl());
+        userResource.setFileExt(resourceDto.getFileExt());
+        userResource.setResolutionRatio(resourceDto.getResolutionRatio());
+        userResource.setSize(resourceDto.getSize());
+        userResource.setThumbUrl(resourceDto.getThumbUrl());
         if (this.save(userResource)) {
             // 获取最后插入的行ID
             Long resourceId = baseMapper.selectLastInsertId();

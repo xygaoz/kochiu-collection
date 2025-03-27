@@ -63,4 +63,20 @@
         <appender-ref ref="STDOUT" />
         <appender-ref ref="Async-Appender" />
     </logger>
+    <logger name="org.apache.fop" level="error">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="Async-Appender" />
+    </logger>
+    <logger name="org.apache.fontbox" level="error">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="Async-Appender" />
+    </logger>
+    <logger name="org.docx4j" level="error">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="Async-Appender" />
+    </logger>
+    <logger name="org.docx4j.fonts.fop.util" level="warn">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="Async-Appender" />
+    </logger>
 </configuration>
