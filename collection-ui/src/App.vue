@@ -1,17 +1,31 @@
 <template>
-  <Main/>
+  <div id="app">
+    <LoginUI v-if="!isLoggedIn" />
+    <MainUI v-else />
+  </div>
 </template>
 
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
-import Main from './components/MainUI.vue';
+import LoginUI from './components/LoginUI.vue';
+import MainUI from './components/MainUI.vue';
+import { ref } from 'vue';
 
 @Options({
   components: {
-    Main,
+      LoginUI,
+      MainUI,
   },
 })
-export default class App extends Vue {}
+export default class App extends Vue {
+  isLoggedIn = ref(false);
+
+  mounted() {
+    // 检查是否已经登录，这里可以添加检查逻辑
+    // 假设未登录
+    this.isLoggedIn.value = false;
+  }
+}
 </script>
 
 <style>
