@@ -10,6 +10,7 @@ import { Options, Vue } from 'vue-class-component';
 import LoginUI from './components/LoginUI.vue';
 import MainUI from './components/MainUI.vue';
 import { ref } from 'vue';
+import router from "@/apis/base-routes";
 
 @Options({
   components: {
@@ -24,6 +25,13 @@ export default class App extends Vue {
     // 检查是否已经登录，这里可以添加检查逻辑
     // 假设未登录
     this.isLoggedIn.value = false;
+
+    // 监听路由变化，如果进入MainUI则认为已经登录
+    router.afterEach((to) => {
+      if (to.name === "MainUI") {
+        this.isLoggedIn.value = true;
+      }
+    });
   }
 }
 </script>

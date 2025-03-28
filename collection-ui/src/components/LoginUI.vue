@@ -19,52 +19,46 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref } from "vue";
-import { ElMessage } from "element-plus";
-import router from "@/apis/base-routes";
+import { defineComponent, reactive, ref, nextTick } from "vue"
+import { ElMessage, ElForm } from "element-plus" // 添加 ElForm 类型导入
+import router from "@/apis/base-routes"
 
 export default defineComponent({
     setup() {
+        // 表单数据
         const loginForm = reactive({
             username: "",
             password: ""
-        });
+        })
 
+        // 明确声明表单 Ref 类型
+        const loginFormRef = ref<InstanceType<typeof ElForm>>()
+
+        // 验证规则
         const rules = reactive({
-            username: [
-                { required: true, message: "请输入用户名", trigger: "blur" }
-            ],
-            password: [
-                { required: true, message: "请输入密码", trigger: "blur" }
-            ]
-        });
+            username: [{ required: true, message: "请输入用户名", trigger: "blur" }],
+            password: [{ required: true, message: "请输入密码", trigger: "blur" }]
+        })
 
-        // 添加对 el-form 的引用
-        const loginFormRef = ref();
+        // 提交逻辑
+        const submitForm = async () => {
+            await nextTick() // 确保 DOM 更新完成
+            if (!loginFormRef.value) return
 
-        const submitForm = () => {
-            // 使用 el-form 的引用调用 validate 方法
             loginFormRef.value.validate((valid: boolean) => {
+                alert(valid)
                 if (valid) {
-                    // 这里可以添加登录逻辑，例如调用API验证用户名和密码
-                    // 假设登录成功
-                    ElMessage.success("登录成功");
-                    router.push({ name: "MainUI" });
+                    ElMessage.success("登录成功")
+                    router.push({ name: "MainUI" })
                 } else {
-                    ElMessage.error("请输入正确的用户名和密码");
-                    return false;
+                    ElMessage.error("请输入正确的用户名和密码")
                 }
-            });
-        };
+            })
+        }
 
-        return {
-            loginForm,
-            rules,
-            submitForm,
-            loginFormRef // 返回 el-form 的引用
-        };
+        return { loginForm, rules, submitForm, loginFormRef }
     }
-});
+})
 </script>
 
 <style scoped>
