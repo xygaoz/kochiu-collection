@@ -1,7 +1,7 @@
 <template>
     <div class="login">
         <div class="loginPart">
-            <h2>用户登录</h2>
+            <h2>KoChiu Collection</h2>
             <el-form
                 :model="loginForm"
                 ref="loginFormRef"
@@ -53,9 +53,10 @@
 </template>
 
 <script setup>
-import { ref, defineEmits } from "vue";
+import { ref, defineEmits, onMounted } from "vue"; // 添加onMounted
 import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router"; // 导入useRouter
+import httpInstance from "@/apis/utils"; // 导入queryPublicKey方法
 
 const loginForm = ref({
     email: "",
@@ -64,8 +65,7 @@ const loginForm = ref({
 
 const rules = {
     email: [
-        { required: true, message: "请输入邮箱", trigger: "blur" },
-        { type: "email", message: "邮箱格式不正确", trigger: ["blur", "change"] },
+        { required: true, message: "请输入用户名", trigger: "blur" },
     ],
     password: [
         {
@@ -78,23 +78,43 @@ const rules = {
 
 const emit = defineEmits(['login-success']);
 const router = useRouter(); // 使用useRouter
+const loginFormRef = ref(null); // 添加表单引用
 
 const login = async () => {
-    console.log("发送请求");
-    // const res = await loginService(loginForm.value);
-    // if (res) {
-    //     userStore.setInfo(res.data);
-    //     tokenStore.setToken(res.data.token);
-    // }
+    // 添加表单验证逻辑
+    loginFormRef.value.validate(async (valid) => {
+        if (valid) {
+            console.log("发送请求");
+            // const res = await loginService(loginForm.value);
+            // if (res) {
+            //     userStore.setInfo(res.data);
+            //     tokenStore.setToken(res.data.token);
+            // }
 
-    ElMessage.success("登录成功!");
-    emit('login-success');
+            ElMessage.success("登录成功!");
+            emit('login-success');
+        } else {
+                ElMessage.error("请输入用户名或密码");
+        }
+    });
 };
 
 const changeUrl = (url) => {
     router.replace(url);
 };
 
+// 组件挂载时调用queryPublicKey方法
+onMounted(() => {
+    httpInstance.get("/publicKey").then((model) => {
+        if(model) {
+            const publicKeyModel = model; // 将model放到一个变量里，后续使用
+            console.log("获取公钥成功:", publicKeyModel)
+        }
+    }).catch((error) => {
+        console.error("获取公钥失败:", error);
+        ElMessage.error("获取公钥失败，请重试");
+    });
+});
 </script>
 
 <style lang="scss" scoped>
@@ -119,7 +139,7 @@ const changeUrl = (url) => {
     /*实现块元素百分比下居中*/
     width: 450px;
     padding: 50px;
-    background: rgba(255, 204, 255, 0.3);
+    background: rgba(255, 204, 255, 0.5);
     /*背景颜色为黑色，透明度为0.8*/
     box-sizing: border-box;
     /*box-sizing设置盒子模型的解析模式为怪异盒模型，

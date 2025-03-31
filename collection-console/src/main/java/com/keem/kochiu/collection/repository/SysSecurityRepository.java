@@ -30,6 +30,25 @@ public class SysSecurityRepository extends ServiceImpl<SysSecurityMapper, SysSec
             throw new CollectionException("获取公钥失败");
         }
     }
+
+    /**
+     * 获取系统公钥
+     * @return
+     * @throws CollectionException
+     */
+    public String getPublicKeyStr() throws CollectionException {
+        try {
+            SysSecurity sysSecurity = getOne(null);
+            if(sysSecurity == null){
+                throw new CollectionException("获取公钥失败");
+            }
+            return sysSecurity.getPublicKey();
+        }
+        catch (Exception e){
+            throw new CollectionException("获取公钥失败");
+        }
+    }
+
     /**
      * 获取系统私钥
      * @return
