@@ -1,87 +1,147 @@
 <template>
-    <div class="login-container">
-        <h2>KoChiu Collection</h2>
-        <el-form :model="loginForm" :rules="rules" ref="loginFormRef"
-                 label-width="100px" class="login-form" label-position="top"
-                style="width: 400px" size="large"
-        >
-            <el-form-item label="用户名" prop="username">
-                <el-input v-model="loginForm.username"></el-input>
-            </el-form-item>
-            <el-form-item label="密码" prop="password">
-                <el-input type="password" v-model="loginForm.password"></el-input>
-            </el-form-item>
-            <el-form-item>
-                <el-button type="primary" @click="submitForm">登录</el-button>
-            </el-form-item>
-        </el-form>
+    <div class="login">
+        <div class="loginPart">
+            <h2>用户登录</h2>
+            <el-form
+                :model="loginForm"
+                ref="loginFormRef"
+                :rules="rules"
+                label-width="100px"
+                style="transform: translate(-30px)"
+            >
+                <el-form-item label="邮箱" prop="email">
+                    <el-input
+                        v-model="loginForm.email"
+                        placeholder="请输入邮箱"
+                        clearable
+                    ></el-input>
+                </el-form-item>
+                <el-form-item label="密码" prop="password">
+                    <el-input
+                        type="password"
+                        v-model="loginForm.password"
+                        placeholder="请输入密码"
+                        show-password
+                        clearable
+                    ></el-input>
+                </el-form-item>
+
+                <el-button
+                    class="btn"
+                    type="primary"
+                    @click="login"
+                    auto-insert-space
+                    @keyup.enter="login"
+                >登录</el-button
+                >
+                <div style="text-align: right; transform: translate(0, 30px)">
+                    <el-link
+                        type="danger"
+                        @click="changeUrl('/forget')"
+                        style="margin-right: 140px"
+                    >
+                        忘记密码？
+                    </el-link>
+
+                    <el-link type="warning" @click="changeUrl('/register')"
+                    >没有账号？去注册</el-link
+                    >
+                </div>
+            </el-form>
+        </div>
     </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, reactive, ref, nextTick } from "vue"
-import { ElMessage, ElForm } from "element-plus" // 添加 ElForm 类型导入
-import router from "@/apis/base-routes"
+<script setup>
+import { ref, defineEmits } from "vue";
+import { ElMessage } from "element-plus";
+import { useRouter } from "vue-router"; // 导入useRouter
 
-export default defineComponent({
-    setup() {
-        // 表单数据
-        const loginForm = reactive({
-            username: "",
-            password: ""
-        })
+const loginForm = ref({
+    email: "",
+    password: "",
+});
 
-        // 明确声明表单 Ref 类型
-        const loginFormRef = ref<InstanceType<typeof ElForm>>()
+const rules = {
+    email: [
+        { required: true, message: "请输入邮箱", trigger: "blur" },
+        { type: "email", message: "邮箱格式不正确", trigger: ["blur", "change"] },
+    ],
+    password: [
+        {
+            required: true,
+            message: "请输入密码",
+            trigger: "blur",
+        },
+    ],
+};
 
-        // 验证规则
-        const rules = reactive({
-            username: [{ required: true, message: "请输入用户名", trigger: "blur" }],
-            password: [{ required: true, message: "请输入密码", trigger: "blur" }]
-        })
+const emit = defineEmits(['login-success']);
+const router = useRouter(); // 使用useRouter
 
-        // 提交逻辑
-        const submitForm = async () => {
-            await nextTick() // 确保 DOM 更新完成
-            if (!loginFormRef.value) return
+const login = async () => {
+    console.log("发送请求");
+    // const res = await loginService(loginForm.value);
+    // if (res) {
+    //     userStore.setInfo(res.data);
+    //     tokenStore.setToken(res.data.token);
+    // }
 
-            loginFormRef.value.validate((valid: boolean) => {
-                alert(valid)
-                if (valid) {
-                    ElMessage.success("登录成功")
-                    router.push({ name: "MainUI" })
-                } else {
-                    ElMessage.error("请输入正确的用户名和密码")
-                }
-            })
-        }
+    ElMessage.success("登录成功!");
+    emit('login-success');
+};
 
-        return { loginForm, rules, submitForm, loginFormRef }
-    }
-})
+const changeUrl = (url) => {
+    router.replace(url);
+};
+
 </script>
 
-<style scoped>
-.login-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: #f0f2f5;
+<style lang="scss" scoped>
+.login {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-image: url("../assets/imgs/loginbg.png");
+    opacity: 0.9;
+    position: fixed;
 }
 
-.login-container h2 {
-    margin-bottom: 20px;
+.loginPart {
+    position: absolute;
+    /*定位方式绝对定位absolute*/
+    top: 50%;
+    left: 80%;
+    /*顶和高同时设置50%实现的是同时水平垂直居中效果*/
+    transform: translate(-50%, -50%);
+    /*实现块元素百分比下居中*/
+    width: 450px;
+    padding: 50px;
+    background: rgba(255, 204, 255, 0.3);
+    /*背景颜色为黑色，透明度为0.8*/
+    box-sizing: border-box;
+    /*box-sizing设置盒子模型的解析模式为怪异盒模型，
+      将border和padding划归到width范围内*/
+    box-shadow: 0px 15px 25px rgba(0, 0, 0, 0.5);
+    /*边框阴影  水平阴影0 垂直阴影15px 模糊25px 颜色黑色透明度0.5*/
+    border-radius: 15px;
+    /*边框圆角，四个角均为15px*/
+}
+
+h2 {
+    margin: 0 0 30px;
+    padding: 0;
+    color: #fff;
     text-align: center;
+    /*文字居中*/
 }
 
-.login-form {
-    width: 300px;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px; /* 添加底部间距 */
+.btn {
+    transform: translate(170px);
+    width: 80px;
+    height: 40px;
+    font-size: 15px;
 }
 </style>

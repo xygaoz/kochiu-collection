@@ -1,16 +1,16 @@
 <template>
   <div id="app">
-    <LoginUI v-if="!isLoggedIn" />
+    <LoginUI v-if="!state.isLoggedIn" @login-success="handleLoginSuccess" />
     <MainUI v-else />
   </div>
 </template>
 
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
-import LoginUI from './components/LoginUI.vue';
 import MainUI from './components/MainUI.vue';
-import { ref } from 'vue';
+import { reactive } from 'vue';
 import router from "@/apis/base-routes";
+import LoginUI from "@/components/LoginUI.vue";
 
 @Options({
   components: {
@@ -19,35 +19,30 @@ import router from "@/apis/base-routes";
   },
 })
 export default class App extends Vue {
-  isLoggedIn = ref(false);
-
-  mounted() {
-    // 检查是否已经登录，这里可以添加检查逻辑
-    // 假设未登录
-    this.isLoggedIn.value = false;
-
-    // 监听路由变化，如果进入MainUI则认为已经登录
-    router.afterEach((to) => {
-      if (to.name === "MainUI") {
-        this.isLoggedIn.value = true;
-      }
+    state = reactive({
+        isLoggedIn: false
     });
-  }
+
+    mounted() {
+        // 初始状态
+        this.state.isLoggedIn = false;
+
+        // 监听路由变化
+        router.afterEach((to) => {
+            if (to.name === "MainUI") {
+                this.state.isLoggedIn = true;
+            }
+        });
+    }
+
+    handleLoginSuccess() {
+        this.state.isLoggedIn = true;
+    }
 }
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
-}
-html,
-body,
-#app {
-  height: 100%;
-  margin: 0;
-  padding: 0;
+body{
+    margin: 0;
 }
 </style>
