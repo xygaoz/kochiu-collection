@@ -47,11 +47,11 @@ public class SysUserService {
     public LoginDto login(LoginBo loginBo) throws CollectionException {
         //前端rsa加密是base64加密，所以解密时需要base64解密
         loginBo.setPassword(HexUtils.base64ToHex(loginBo.getPassword()));
-        String token = genToken(loginBo, PermitEnum.UI, 30 * 1000);
+        String token = genToken(loginBo, PermitEnum.UI, 30 * 60 * 1000);
         return LoginDto.builder()
                 .username(loginBo.getUsername())
                 .token(token)
-                .expirySeconds(30)
+                .expirySeconds(30 * 60)
                 .build();
     }
 

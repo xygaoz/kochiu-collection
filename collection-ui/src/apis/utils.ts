@@ -1,7 +1,9 @@
 import axios from "axios";
 import { h, render } from 'vue'
 import {ElMessage, ElLoading} from "element-plus";
-import qs from 'qs'; // 引入qs库来处理form-data
+import qs from 'qs';
+import router from "@/apis/base-routes"; // 引入qs库来处理form-data
+import { tokenStore } from "@/apis/services"; // 引入tokenStore
 
 const httpInstance = axios.create({
     baseURL: process.env.VUE_APP_BASE_API,
@@ -24,6 +26,11 @@ const httpInstance = axios.create({
 
 // 配置axios的请求拦截器，将application/json改为form-data
 httpInstance.interceptors.request.use(config => {
+    // 获取token并设置到Authorization header中
+    const token = tokenStore.getToken();
+    if (token) {
+        config.headers['Authorization'] = token;
+    }
     if (config.data && config.headers['Content-Type'] === 'application/x-www-form-urlencoded') {
         config.data = qs.stringify(config.data);
     }
@@ -43,7 +50,8 @@ httpInstance.interceptors.response.use(res=>{
     if(e.response) {
         if (e.response.status == 401) {
             ElMessage.error("请先登录")
-            //跳转登陆页面
+            // 跳转到登录页面
+            router.push({ name: 'LoginUI' });
         } else {
             ElMessage({type: 'error', message: '系统错误' + e})
         }

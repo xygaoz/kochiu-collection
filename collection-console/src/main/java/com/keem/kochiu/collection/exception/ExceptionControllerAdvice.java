@@ -17,12 +17,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static com.keem.kochiu.collection.enums.ErrorCodeEnum.ERROR_PARAM;
-import static com.keem.kochiu.collection.enums.ErrorCodeEnum.SYS_ERROR;
+import static com.keem.kochiu.collection.enums.ErrorCodeEnum.*;
 
 /**
  * 统一异常处理类，用于处理校验异常、Feign异常和其他异常，同时提供统一的错误信息提取和返回。
@@ -68,9 +68,13 @@ public class ExceptionControllerAdvice {
      */
     @ExceptionHandler(value = CollectionException.class)
     @ResponseBody
-    public DefaultResult<String> erpExceptionHandler(CollectionException e) {
+    public DefaultResult<String> erpExceptionHandler(HttpServletResponse response, CollectionException e) {
 
         try {
+            if(ERROR_TOKEN_EXPIRE == e.getErrorCode() || ERROR_TOKEN_INVALID == e.getErrorCode()
+                || ERROR_TOKEN_NOT_EXIST == e.getErrorCode()){
+                response.setStatus(401);
+            }
             //如果异常中有新异常信息则取新的，否则取错误码里的
             return DefaultResult.buildError(e.getErrorCode());
         } catch (Exception ex) {
@@ -87,10 +91,10 @@ public class ExceptionControllerAdvice {
      */
     @ExceptionHandler(value = Exception.class)
     @ResponseBody
-    public DefaultResult<String> exceptionHandler(Exception e) {
+    public DefaultResult<String> exceptionHandler(HttpServletResponse response, Exception e) {
 
         if (e.getCause() instanceof CollectionException) {
-            return erpExceptionHandler((CollectionException) e.getCause());
+            return erpExceptionHandler(response, (CollectionException) e.getCause());
         }
 
         log.error("系统异常", e);

@@ -88,15 +88,15 @@ const login = async () => {
         if (valid) {
 
             const encryptedPassword = encryptPassword(loginForm.value.password); // 加密密码
-            debugger
             console.log("加密后的密码：", encryptedPassword)
             if (!encryptedPassword) {
                 ElMessage.error('加密失败');
                 return
             }
             const res = await loginService({ ...loginForm.value, password: encryptedPassword });
+            debugger
             if (res && res.token) {
-                tokenStore.setToken(res.token); // 保存token
+                tokenStore.setToken(res.token, res.expirySeconds); // 保存token
 
                 ElMessage.success("登录成功!");
                 emit('login-success');

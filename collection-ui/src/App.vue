@@ -9,8 +9,8 @@
 import { Options, Vue } from 'vue-class-component';
 import MainUI from './components/MainUI.vue';
 import { reactive } from 'vue';
-import router from "@/apis/base-routes";
 import LoginUI from "@/components/LoginUI.vue";
+import { tokenStore } from "@/apis/services"; // 引入tokenStore
 
 @Options({
   components: {
@@ -27,12 +27,12 @@ export default class App extends Vue {
         // 初始状态
         this.state.isLoggedIn = false;
 
-        // 监听路由变化
-        router.afterEach((to) => {
-            if (to.name === "MainUI") {
-                this.state.isLoggedIn = true;
-            }
-        });
+        debugger
+        // 获取token并设置isLoggedIn状态
+        const token = tokenStore.getToken();
+        if (token) {
+            this.state.isLoggedIn = true;
+        }
     }
 
     handleLoginSuccess() {
