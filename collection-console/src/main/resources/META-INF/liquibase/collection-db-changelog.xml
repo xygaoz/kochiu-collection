@@ -85,6 +85,7 @@
             <column name="Strategy" remarks="存储策略" type="VARCHAR(10)" defaultValue="local">
                 <constraints nullable="false"/>
             </column>
+            <column name="last_token_time" remarks="最后刷新token时间" type="datetime"/>
             <column name="CREATE_TIME" remarks="创建时间" type="date"/>
             <column name="CREATE_BY" remarks="创建人" type="VARCHAR(20)"/>
             <column name="UPDATE_TIME" remarks="更新时间" type="date"/>

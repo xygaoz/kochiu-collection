@@ -1,15 +1,9 @@
 package com.keem.kochiu.collection.service;
 
 import com.keem.kochiu.collection.annotation.CheckPermit;
+import com.keem.kochiu.collection.data.dto.TokenDto;
 import com.keem.kochiu.collection.data.dto.UserDto;
-import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.exception.CollectionException;
-import com.keem.kochiu.collection.repository.SysSecurityRepository;
-import com.keem.kochiu.collection.repository.SysUserRepository;
-import com.keem.kochiu.collection.util.AesUtil;
-import com.keem.kochiu.collection.util.JwtUtil;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
@@ -23,11 +17,11 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
-import java.util.Map;
 
 import static com.keem.kochiu.collection.Constant.*;
-import static com.keem.kochiu.collection.enums.ErrorCodeEnum.*;
-import static com.keem.kochiu.collection.enums.PermitEnum.*;
+import static com.keem.kochiu.collection.enums.ErrorCodeEnum.ERROR_TOKEN_INVALID;
+import static com.keem.kochiu.collection.enums.PermitEnum.ALL;
+import static com.keem.kochiu.collection.enums.PermitEnum.API;
 
 
 /**
@@ -40,12 +34,10 @@ import static com.keem.kochiu.collection.enums.PermitEnum.*;
 public class CheckPermitAspect {
 
     public static ThreadLocal<UserDto> USER_INFO = new ThreadLocal<>();
-    private final SysSecurityRepository securityRepository;
-    private final SysUserRepository userRepository;
+    private final TokenService tokenService;
 
-    public CheckPermitAspect(SysSecurityRepository securityRepository, SysUserRepository userRepository) {
-        this.securityRepository = securityRepository;
-        this.userRepository = userRepository;
+    public CheckPermitAspect(TokenService tokenService) {
+        this.tokenService = tokenService;
     }
 
     /**
@@ -77,74 +69,27 @@ public class CheckPermitAspect {
     }
 
     private boolean checkPermit(String authorization, CheckPermit checkPermit) throws CollectionException {
-        if(authorization == null){
-            throw new CollectionException(ERROR_TOKEN_INVALID);
-        }
-        if(!authorization.contains(".")){
-            throw new CollectionException(ERROR_TOKEN_INVALID);
-        }
 
-        //检验token
-        String userId = authorization.substring(0, authorization.indexOf("."));
-        String token = authorization.substring(authorization.indexOf(".") + 1);
-
-        //解密userId
-        try {
-            userId = AesUtil.aesDecrypt(userId, securityRepository.getCommonKey());
-        }
-        catch (Exception e){
-            log.error("解密userId失败", e);
-            throw new CollectionException(ERROR_TOKEN_INVALID);
-        }
-        //获取用户
-        SysUser user = userRepository.getById(userId);
-        if (user == null) {
-            log.error("用户不存在");
-            throw new CollectionException(ERROR_TOKEN_INVALID);
-        }
-        if(user.getToken() == null){
-            throw new CollectionException(ERROR_TOKEN_NOT_EXIST);
-        }
-
-        //解密token
-        Map<String, Object> data;
-        try {
-            Claims claims = JwtUtil.parseJWT(token, user.getKey());
-            data = (Map<String, Object>) claims.get(TOKEN_PARAMS_FLAG);
-            if(!claims.getSubject().equals(userId)){
-                throw new CollectionException(ERROR_TOKEN_INVALID);
-            }
-        }
-        catch (ExpiredJwtException e) {
-            throw new CollectionException(ERROR_TOKEN_EXPIRE);
-        }
-        catch (CollectionException e) {
-            throw e;
-        }
-        catch (Exception e) {
-            log.error("解密token失败", e);
-            throw new CollectionException(ERROR_TOKEN_INVALID);
-        }
-
-        if(data == null || !data.containsKey(TOKEN_API_FLAG)){
+        TokenDto tokenDto = tokenService.validateToken(authorization);
+        if(!TOKEN_TYPE_ACCESS.equals(tokenDto.getClaims().get(TOKEN_TYPE_FLAG))){
             throw new CollectionException(ERROR_TOKEN_INVALID);
         }
 
         if (checkPermit.on() != ALL) {
-            if (!checkPermit.on().name().equals(data.get(TOKEN_API_FLAG))){
+            if (!checkPermit.on().name().equals(tokenDto.getClaims().get(TOKEN_API_FLAG))){
                 throw new CollectionException(ERROR_TOKEN_INVALID);
             }
         }
 
-        if(data.get(TOKEN_API_FLAG).equals(API.name())){
-            if(!user.getToken().equals(authorization)){
+        if(tokenDto.getClaims().get(TOKEN_API_FLAG).equals(API.name())){
+            if(!tokenDto.getUser().getToken().equals(authorization)){
                 throw new CollectionException(ERROR_TOKEN_INVALID);
             }
         }
 
         USER_INFO.set(UserDto.builder()
-                        .userCode(user.getUserCode())
-                        .userId(user.getUserId())
+                        .userCode(tokenDto.getUser().getUserCode())
+                        .userId(tokenDto.getUser().getUserId())
                 .build());
         return true;
     }

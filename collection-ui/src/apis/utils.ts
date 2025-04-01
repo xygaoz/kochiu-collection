@@ -39,27 +39,130 @@ httpInstance.interceptors.request.use(config => {
     return Promise.reject(error);
 });
 
-// 配置axios的响应拦截器
-httpInstance.interceptors.response.use(res=>{
-    if(res.data && !res.data.success){
-        ElMessage({type:'error',message:!res.data.message?'系统错误':res.data.message})
-    }
-    return res.data && res.data.model ? res.data.model : null
-},e=>{
-    if(e.response) {
-        if (e.response.status == 401) {
-            ElMessage.error("请先登录")
-            // 跳转到登录页面
-            router.push({ name: 'LoginUI' });
+let isRefreshing: boolean = false; // 是否正在刷新Token
+let failedQueue: any[] = []; // 存储刷新Token期间的失败请求
+
+// 处理队列中的失败请求
+const processQueue = (error: any, token = null) => {
+    failedQueue.forEach(prom => {
+        if (error) {
+            prom.reject(error);
         } else {
-            ElMessage({type: 'error', message: '系统错误' + e})
+            prom.resolve(token);
         }
+    });
+    failedQueue = [];
+};
+
+// 配置axios的响应拦截器
+httpInstance.interceptors.response.use(
+    res => {
+        if (res.data && !res.data.success) {
+            ElMessage({
+                type: 'error',
+                message: !res.data.message ? '系统错误' : res.data.message
+            });
+        }
+        return res.data?.model ?? null;
+    },
+    async error => {
+        if (!error.response) {
+            ElMessage({ type: 'error', message: error.message });
+            return Promise.reject(error);
+        }
+
+        const originalRequest = error.config;
+        const status = error.response.status;
+
+        // 401处理逻辑（Token过期）
+        if (status === 401) {
+            if (originalRequest.url.includes('/api/v1/refresh')) {
+                // 刷新Token接口也返回401，说明refreshToken过期
+                ElMessage.error('登录已过期，请重新登录');
+                clearAuthData();
+                router.push({ name: 'LoginUI' });
+                return Promise.reject(error);
+            }
+
+            // 非刷新请求的401处理
+            if (!isRefreshing) {
+                isRefreshing = true;
+
+                try {
+                    // 尝试用refreshToken获取新accessToken
+                    const newToken = await refreshAccessToken();
+                    // 重试所有积压的请求
+                    processQueue(null, newToken);
+
+                    // 重试当前失败请求
+                    originalRequest.headers.Authorization = newToken;
+                    return httpInstance(originalRequest);
+                } catch (refreshError) {
+                    // 刷新失败，清空认证数据并跳转登录
+                    processQueue(refreshError);
+                    clearAuthData();
+                    router.push({ name: 'LoginUI' });
+                    return Promise.reject(refreshError);
+                } finally {
+                    isRefreshing = false;
+                }
+            } else {
+                // 正在刷新Token，将请求加入队列
+                return new Promise((resolve, reject) => {
+                    failedQueue.push({ resolve, reject });
+                }).then(token => {
+                    originalRequest.headers.Authorization = `Bearer ${token}`;
+                    return httpInstance(originalRequest);
+                }).catch(err => {
+                    return Promise.reject(err);
+                });
+            }
+        }
+
+        // 其他错误处理
+        ElMessage({
+            type: 'error',
+            message: `系统错误 ${error.response?.data?.message || ''}`
+        });
+        return Promise.reject(error);
     }
-    else{
-        ElMessage({type: 'error', message: e.message})
+);
+
+// 刷新Token的函数
+const refreshAccessToken = async () => {
+    try {
+        const refreshToken = getRefreshToken(); // 从HttpOnly Cookie获取
+        const response = await axios.post('/api/v1/refresh', {}, {
+            headers: {
+                'Authorization': refreshToken
+            }
+        });
+
+        // 更新存储的accessToken
+        setAccessToken(response.data.token, response.data.expirySeconds);
+
+        return response.data.token; // 假设返回 { token: 'xxx', expiresIn: 1800 }
+    } catch (err) {
+        throw new Error('刷新Token失败');
     }
-    return Promise.reject(e)
-})
+};
+
+// 工具函数
+const setAccessToken = (token: string, expirySeconds: number) => {
+    // 存到内存或短期存储（避免XSS）
+    tokenStore.setToken(token, expirySeconds)
+};
+
+const getRefreshToken = () => {
+    // 从Cookie解析refreshToken（需配合后端设置HttpOnly）
+    const match = document.cookie.match(/refresh_token=([^;]+)/);
+    return match ? match[1] : null;
+};
+
+const clearAuthData = () => {
+    delete axios.defaults.headers.common['Authorization'];
+    document.cookie = 'refresh_token=; max-age=0; path=/';
+};
 
 export default httpInstance
 

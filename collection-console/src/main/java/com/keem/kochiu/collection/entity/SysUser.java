@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.time.LocalDateTime;
+
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("sys_user")
@@ -18,4 +20,5 @@ public class SysUser extends BaseEntity {
     private String token;
     private String key;
     private String strategy;
+    private LocalDateTime lastTokenTime;
 }

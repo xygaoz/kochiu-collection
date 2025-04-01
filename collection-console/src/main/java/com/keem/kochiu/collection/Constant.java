@@ -12,6 +12,9 @@ public final class Constant {
 
     public static final String TOKEN_PARAMS_FLAG = "params";
     public static final String TOKEN_API_FLAG = "api";
+    public static final String TOKEN_TYPE_FLAG = "type";
+    public static final String TOKEN_TYPE_ACCESS = "access";
+    public static final String TOKEN_TYPE_REFRESH = "refresh";
 
     private Constant(){
 

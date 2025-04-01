@@ -1,5 +1,6 @@
 package com.keem.kochiu.collection.service;
 
+import cn.hutool.core.lang.Pair;
 import cn.hutool.core.map.MapUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.keem.kochiu.collection.data.bo.LoginBo;
@@ -14,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 
-import static com.keem.kochiu.collection.Constant.TOKEN_API_FLAG;
+import static com.keem.kochiu.collection.Constant.*;
 
 @Slf4j
 @Service
@@ -22,10 +23,14 @@ public class SysUserService {
 
     private final SysUserRepository userRepository;
     private final SysSecurityRepository securityRepository;
+    private final TokenService tokenService;
 
-    public SysUserService(SysUserRepository userRepository, SysSecurityRepository securityRepository) {
+    public SysUserService(SysUserRepository userRepository,
+                          SysSecurityRepository securityRepository,
+                          TokenService tokenService) {
         this.userRepository = userRepository;
         this.securityRepository = securityRepository;
+        this.tokenService = tokenService;
     }
 
     /**
@@ -70,17 +75,12 @@ public class SysUserService {
                 String loginPwd = RsaHexUtil.decrypt(loginBo.getPassword(), securityRepository.getPrivateKey());
                 loginPwd = SHA256Util.encryptBySHA256(loginPwd);
                 if(loginPwd.equals(user.getPassword())){
-                    String token;
-                    try {
-                        token = JwtUtil.createJWT(MapUtil.builder(TOKEN_API_FLAG, permitEnum.name()).map(), user.getKey(),
-                                RandomStringUtils.randomNumeric(8), String.valueOf(user.getUserId()), ttlMillis);
-                        //拼接加密的userid 和 token
-                        token = AesUtil.aesEncrypt(String.valueOf(user.getUserId()), securityRepository.getCommonKey()) + "." + token;
-                    }
-                    catch (Exception e) {
-                        log.error("生成token失败", e);
-                        throw new CollectionException("生成token失败");
-                    }
+                    String token = tokenService.createToken(user,
+                            MapUtil.of(
+                                    Pair.of(TOKEN_API_FLAG, permitEnum.name()),
+                                    Pair.of(TOKEN_TYPE_FLAG, TOKEN_TYPE_ACCESS)
+                            ),
+                            ttlMillis);
 
                     if(ttlMillis == -1) {
                         //api访问时，token保存到数据库
