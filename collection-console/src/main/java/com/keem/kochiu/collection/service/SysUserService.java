@@ -15,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 import static com.keem.kochiu.collection.Constant.*;
 
 @Slf4j
@@ -105,5 +107,10 @@ public class SysUserService {
             log.error("系统错误", e);
             throw new CollectionException("系统错误");
         }
+    }
+
+    public void updateLastRefreshTime(SysUser user) {
+        user.setLastTokenTime(LocalDateTime.now());
+        userRepository.updateById(user);
     }
 }

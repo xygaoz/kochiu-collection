@@ -1,6 +1,5 @@
 package com.keem.kochiu.collection.controller;
 
-import cn.hutool.core.map.MapUtil;
 import com.keem.kochiu.collection.data.DefaultResult;
 import com.keem.kochiu.collection.data.bo.LoginBo;
 import com.keem.kochiu.collection.data.dto.LoginDto;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.Map;
 
 import static com.keem.kochiu.collection.Constant.*;
@@ -101,6 +99,7 @@ public class SysSecurityController {
             // 4. 生成新refreshToken（轮转机制）
             tokenDto.getClaims().put(TOKEN_TYPE_FLAG, TOKEN_TYPE_REFRESH);
             String newRefreshToken = tokenService.createToken(tokenDto.getUser(), tokenDto.getClaims(), 7 * 24 * 3600 * 1000);
+            userService.updateLastRefreshTime(tokenDto.getUser());
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE,
