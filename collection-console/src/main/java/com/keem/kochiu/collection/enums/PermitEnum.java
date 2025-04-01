@@ -4,7 +4,7 @@ public enum PermitEnum {
 
     API(1),
     UI(2),
-    ALL(3);
+    ;
 
     final int i;
 

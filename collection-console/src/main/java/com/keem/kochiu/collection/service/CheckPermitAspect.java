@@ -3,8 +3,10 @@ package com.keem.kochiu.collection.service;
 import com.keem.kochiu.collection.annotation.CheckPermit;
 import com.keem.kochiu.collection.data.dto.TokenDto;
 import com.keem.kochiu.collection.data.dto.UserDto;
+import com.keem.kochiu.collection.enums.PermitEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Aspect;
@@ -20,7 +22,6 @@ import java.lang.reflect.Method;
 
 import static com.keem.kochiu.collection.Constant.*;
 import static com.keem.kochiu.collection.enums.ErrorCodeEnum.ERROR_TOKEN_INVALID;
-import static com.keem.kochiu.collection.enums.PermitEnum.ALL;
 import static com.keem.kochiu.collection.enums.PermitEnum.API;
 
 
@@ -70,15 +71,19 @@ public class CheckPermitAspect {
 
     private boolean checkPermit(String authorization, CheckPermit checkPermit) throws CollectionException {
 
-        TokenDto tokenDto = tokenService.validateToken(authorization);
+        TokenDto tokenDto = tokenService.validateToken(authorization, ArrayUtils.contains(checkPermit.on(), API));
         if(!TOKEN_TYPE_ACCESS.equals(tokenDto.getClaims().get(TOKEN_TYPE_FLAG))){
             throw new CollectionException(ERROR_TOKEN_INVALID);
         }
 
-        if (checkPermit.on() != ALL) {
-            if (!checkPermit.on().name().equals(tokenDto.getClaims().get(TOKEN_API_FLAG))){
-                throw new CollectionException(ERROR_TOKEN_INVALID);
+        boolean found = false;
+        for(PermitEnum permit : checkPermit.on()){
+            if (permit.name().equals(tokenDto.getClaims().get(TOKEN_API_FLAG))){
+                found =  true;
             }
+        }
+        if(!found){
+            throw new CollectionException(ERROR_TOKEN_INVALID);
         }
 
         if(tokenDto.getClaims().get(TOKEN_API_FLAG).equals(API.name())){

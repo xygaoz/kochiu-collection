@@ -62,7 +62,7 @@ public class TokenService {
      * @return
      * @throws CollectionException
      */
-    public TokenDto validateToken(String authorization) throws CollectionException {
+    public TokenDto validateToken(String authorization, boolean isApi) throws CollectionException {
 
         if(authorization == null){
             throw new CollectionException(ERROR_TOKEN_INVALID);
@@ -89,7 +89,7 @@ public class TokenService {
             log.error("用户不存在");
             throw new CollectionException(ERROR_TOKEN_INVALID);
         }
-        if(user.getToken() == null){
+        if(isApi && user.getToken() == null){
             throw new CollectionException(ERROR_TOKEN_NOT_EXIST);
         }
 

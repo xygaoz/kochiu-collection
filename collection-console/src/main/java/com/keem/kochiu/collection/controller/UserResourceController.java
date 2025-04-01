@@ -4,6 +4,7 @@ import com.keem.kochiu.collection.annotation.CheckPermit;
 import com.keem.kochiu.collection.data.DefaultResult;
 import com.keem.kochiu.collection.data.bo.UploadBo;
 import com.keem.kochiu.collection.data.vo.FileVo;
+import com.keem.kochiu.collection.enums.PermitEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.service.UserResourceService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +25,7 @@ public class UserResourceController {
         this.resourceService = resourceService;
     }
 
-    @CheckPermit
+    @CheckPermit(on = {PermitEnum.UI, PermitEnum.API})
     @PostMapping("/api/v1/upload")
     public DefaultResult<FileVo> upload(@Valid UploadBo uploadBo) throws CollectionException {
 

@@ -45,7 +45,7 @@ public class SysSecurityController {
     @PostMapping("/tokens")
     public DefaultResult<String> tokens(@Valid LoginBo loginBo) throws CollectionException {
 
-        return DefaultResult.ok(userService.genToken(loginBo));
+        return DefaultResult.ok(userService.genToken(loginBo).getToken());
     }
 
     /**
@@ -81,15 +81,17 @@ public class SysSecurityController {
 
         try{
             // 1. 验证refreshToken有效性
-            TokenDto tokenDto = tokenService.validateToken(refreshToken);
+            TokenDto tokenDto = tokenService.validateToken(refreshToken, false);
 
             // 2. 判断一小时内是否已经刷新过，如果已经刷新过，则返回401
-            long timestampMillis = tokenDto.getUser().getLastTokenTime().atZone(ZoneId.of("Asia/Shanghai"))
-                    .toInstant()
-                    .toEpochMilli();
-            if (tokenDto.getUser().getLastTokenTime() != null
-                    && timestampMillis + 3600 * 1000 > System.currentTimeMillis()) {
-                return ResponseEntity.status(401).build();
+            if(tokenDto.getUser().getLastTokenTime() != null) {
+                long timestampMillis = tokenDto.getUser().getLastTokenTime().atZone(ZoneId.of("Asia/Shanghai"))
+                        .toInstant()
+                        .toEpochMilli();
+                if (tokenDto.getUser().getLastTokenTime() != null
+                        && timestampMillis + 3600 * 1000 > System.currentTimeMillis()) {
+                    return ResponseEntity.status(401).build();
+                }
             }
 
             // 3. 生成新accessToken, 有效期30分钟

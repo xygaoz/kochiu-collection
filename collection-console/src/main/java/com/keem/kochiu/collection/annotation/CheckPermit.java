@@ -12,5 +12,5 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CheckPermit {
 
-    PermitEnum on() default PermitEnum.ALL;
+    PermitEnum[] on() default PermitEnum.UI;
 }

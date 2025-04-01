@@ -8,5 +8,6 @@ import lombok.Data;
 public class LoginDto {
     private String username;
     private String token;
+    private String refreshToken;
     private int expirySeconds;
 }

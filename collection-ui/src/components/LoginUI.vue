@@ -58,6 +58,7 @@ import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router"; // 导入useRouter
 import { getPublicKey, loginService, tokenStore } from "@/apis/services"; // 导入getPublicKey方法
 import { JSEncrypt } from 'jsencrypt';
+import Cookies from 'js-cookie';
 
 const loginForm = ref({
     username: "",
@@ -95,8 +96,13 @@ const login = async () => {
             }
             const res = await loginService({ ...loginForm.value, password: encryptedPassword });
             debugger
-            if (res && res.token) {
-                tokenStore.setToken(res.token, res.expirySeconds); // 保存token
+            if (res) {
+                if(res.token) {
+                    tokenStore.setToken(res.token, res.expirySeconds); // 保存token
+                }
+                if(res.refreshToken){
+                    Cookies.set('refresh_token', res.refreshToken, { expires: 7, path: '/' });
+                }
 
                 ElMessage.success("登录成功!");
                 emit('login-success');

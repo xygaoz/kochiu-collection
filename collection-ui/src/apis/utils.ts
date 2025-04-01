@@ -1,9 +1,10 @@
 import axios from "axios";
-import { h, render } from 'vue'
-import {ElMessage, ElLoading} from "element-plus";
-import qs from 'qs';
+import { h, ref, render } from "vue";
+import { ElLoading, ElMessage } from "element-plus";
+import qs from "qs";
 import router from "@/apis/base-routes"; // 引入qs库来处理form-data
-import { tokenStore } from "@/apis/services"; // 引入tokenStore
+import { tokenStore } from "@/apis/services";
+import Cookies from "js-cookie"; // 引入tokenStore
 
 const httpInstance = axios.create({
     baseURL: process.env.VUE_APP_BASE_API,
@@ -111,7 +112,7 @@ httpInstance.interceptors.response.use(
                 return new Promise((resolve, reject) => {
                     failedQueue.push({ resolve, reject });
                 }).then(token => {
-                    originalRequest.headers.Authorization = `Bearer ${token}`;
+                    originalRequest.headers.Authorization = token;
                     return httpInstance(originalRequest);
                 }).catch(err => {
                     return Promise.reject(err);
@@ -129,12 +130,16 @@ httpInstance.interceptors.response.use(
 );
 
 // 刷新Token的函数
-const refreshAccessToken = async () => {
+export const refreshAccessToken = async () => {
     try {
+        debugger
         const refreshToken = getRefreshToken(); // 从HttpOnly Cookie获取
+        if (refreshToken.value === '') {
+            return null;
+        }
         const response = await axios.post('/api/v1/refresh', {}, {
             headers: {
-                'Authorization': refreshToken
+                'Authorization': refreshToken.value // 提取ref的值
             }
         });
 
@@ -155,13 +160,12 @@ const setAccessToken = (token: string, expirySeconds: number) => {
 
 const getRefreshToken = () => {
     // 从Cookie解析refreshToken（需配合后端设置HttpOnly）
-    const match = document.cookie.match(/refresh_token=([^;]+)/);
-    return match ? match[1] : null;
+    return ref(Cookies.get('refresh_token') || '');
 };
 
 const clearAuthData = () => {
     delete axios.defaults.headers.common['Authorization'];
-    document.cookie = 'refresh_token=; max-age=0; path=/';
+    Cookies.remove('Cookies.remove(\'user_token\');');
 };
 
 export default httpInstance

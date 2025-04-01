@@ -10,7 +10,8 @@ import { Options, Vue } from 'vue-class-component';
 import MainUI from './components/MainUI.vue';
 import { reactive } from 'vue';
 import LoginUI from "@/components/LoginUI.vue";
-import { tokenStore } from "@/apis/services"; // 引入tokenStore
+import { tokenStore } from "@/apis/services";
+import { refreshAccessToken } from "@/apis/utils"; // 引入tokenStore
 
 @Options({
   components: {
@@ -32,6 +33,15 @@ export default class App extends Vue {
         const token = tokenStore.getToken();
         if (token) {
             this.state.isLoggedIn = true;
+        } else {
+            // 尝试用refreshToken获取新accessToken
+            refreshAccessToken().then(newToken => {
+                if (newToken) {
+                    this.state.isLoggedIn = true;
+                }
+            }).catch(error => {
+                console.error('Failed to refresh access token:', error);
+            });
         }
     }
 

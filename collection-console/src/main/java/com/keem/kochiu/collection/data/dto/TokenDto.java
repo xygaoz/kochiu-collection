@@ -11,5 +11,6 @@ import java.util.Map;
 public class TokenDto {
 
     private SysUser user;
+    private String token;
     private Map<String, Object> claims;
 }

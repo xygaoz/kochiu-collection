@@ -5,17 +5,20 @@ import cn.hutool.core.map.MapUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.keem.kochiu.collection.data.bo.LoginBo;
 import com.keem.kochiu.collection.data.dto.LoginDto;
+import com.keem.kochiu.collection.data.dto.TokenDto;
 import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.enums.PermitEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.repository.SysSecurityRepository;
 import com.keem.kochiu.collection.repository.SysUserRepository;
-import com.keem.kochiu.collection.util.*;
+import com.keem.kochiu.collection.util.HexUtils;
+import com.keem.kochiu.collection.util.RsaHexUtil;
+import com.keem.kochiu.collection.util.SHA256Util;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 import static com.keem.kochiu.collection.Constant.*;
 
@@ -41,7 +44,7 @@ public class SysUserService {
      * @return
      * @throws CollectionException
      */
-    public String genToken(LoginBo loginBo) throws CollectionException {
+    public TokenDto genToken(LoginBo loginBo) throws CollectionException {
         return genToken(loginBo, PermitEnum.API, -1);
     }
 
@@ -54,10 +57,12 @@ public class SysUserService {
     public LoginDto login(LoginBo loginBo) throws CollectionException {
         //前端rsa加密是base64加密，所以解密时需要base64解密
         loginBo.setPassword(HexUtils.base64ToHex(loginBo.getPassword()));
-        String token = genToken(loginBo, PermitEnum.UI, 30 * 60 * 1000);
+        TokenDto tokenDto = genToken(loginBo, PermitEnum.UI, 30 * 60 * 1000);
+        String refreshToken = tokenService.createToken(tokenDto.getUser(), tokenDto.getClaims(), 7 * 24 * 3600 * 1000);
         return LoginDto.builder()
                 .username(loginBo.getUsername())
-                .token(token)
+                .token(tokenDto.getToken())
+                .refreshToken(refreshToken)
                 .expirySeconds(30 * 60)
                 .build();
     }
@@ -67,7 +72,7 @@ public class SysUserService {
      * @param loginBo
      * @return
      */
-    private String genToken(LoginBo loginBo, PermitEnum permitEnum, long ttlMillis) throws CollectionException {
+    private TokenDto genToken(LoginBo loginBo, PermitEnum permitEnum, long ttlMillis) throws CollectionException {
 
         LambdaQueryWrapper<SysUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(SysUser::getUserCode, loginBo.getUsername());
@@ -77,11 +82,12 @@ public class SysUserService {
                 String loginPwd = RsaHexUtil.decrypt(loginBo.getPassword(), securityRepository.getPrivateKey());
                 loginPwd = SHA256Util.encryptBySHA256(loginPwd);
                 if(loginPwd.equals(user.getPassword())){
+                    Map<String, Object> claims = Map.of(
+                            TOKEN_API_FLAG, permitEnum.name(),
+                            TOKEN_TYPE_FLAG, TOKEN_TYPE_ACCESS
+                    );
                     String token = tokenService.createToken(user,
-                            MapUtil.of(
-                                    Pair.of(TOKEN_API_FLAG, permitEnum.name()),
-                                    Pair.of(TOKEN_TYPE_FLAG, TOKEN_TYPE_ACCESS)
-                            ),
+                            claims,
                             ttlMillis);
 
                     if(ttlMillis == -1) {
@@ -90,7 +96,11 @@ public class SysUserService {
                     }
                     user.setUpdateBy(loginBo.getUsername());
                     userRepository.updateById(user);
-                    return token;
+                    return TokenDto.builder()
+                            .user(user)
+                            .token(token)
+                            .claims(claims)
+                            .build();
                 }
                 else{
                     throw new CollectionException("无效的用户名或密码");
