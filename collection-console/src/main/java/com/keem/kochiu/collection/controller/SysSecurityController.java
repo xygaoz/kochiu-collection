@@ -2,6 +2,7 @@ package com.keem.kochiu.collection.controller;
 
 import com.keem.kochiu.collection.data.DefaultResult;
 import com.keem.kochiu.collection.data.bo.LoginBo;
+import com.keem.kochiu.collection.data.dto.LoginDto;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.service.SysSecurityService;
 import com.keem.kochiu.collection.service.SysUserService;
@@ -44,5 +45,16 @@ public class SysSecurityController {
     @GetMapping("/publicKey")
     public DefaultResult<String> getPublicKey() throws CollectionException {
         return DefaultResult.ok(securityService.getPublicKey());
+    }
+
+    /**
+     * 登录
+     * @param loginBo
+     * @return
+     * @throws CollectionException
+     */
+    @PostMapping("/login")
+    public DefaultResult<LoginDto> login(@Valid LoginBo loginBo) throws CollectionException {
+        return DefaultResult.ok(userService.login(loginBo));
     }
 }

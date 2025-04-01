@@ -1,6 +1,7 @@
 package com.keem.kochiu.collection.data;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.keem.kochiu.collection.enums.ErrorCodeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -122,6 +123,15 @@ public class DefaultResult<T> implements Serializable {
      */
     public static DefaultResult<String> buildError(String code, String defaultMessage){
         DefaultResult<String> result = new DefaultResult<>(code , null, defaultMessage);
+        result.setSuccess(false);
+        return result;
+    }
+
+    /**
+     * 创建带自定义消息的系统错误返回结果
+     */
+    public static DefaultResult<String> buildError(ErrorCodeEnum codeEnum){
+        DefaultResult<String> result = new DefaultResult<>(codeEnum.getCode() , null, codeEnum.getMessage());
         result.setSuccess(false);
         return result;
     }

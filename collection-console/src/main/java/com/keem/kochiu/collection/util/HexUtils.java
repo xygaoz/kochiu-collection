@@ -1,5 +1,7 @@
 package com.keem.kochiu.collection.util;
 
+import java.util.Base64;
+
 /**
  * @author gz
  */
@@ -46,5 +48,20 @@ public class HexUtils {
             b[j] = new Integer(byteint).byteValue();
         }
         return b;
+    }
+
+    /**
+     * 将Base64编码的RSA加密结果转换为16进制字符串
+     * @param base64Str Base64编码的加密字符串
+     * @return 16进制字符串（小写，无分隔符）
+     * @throws IllegalArgumentException 输入非合法Base64时抛出异常
+     */
+    public static String base64ToHex(String base64Str) {
+        if (base64Str == null || base64Str.isEmpty()) {
+            throw new IllegalArgumentException("输入字符串不能为空");
+        }
+        // 1. Base64解码
+        byte[] encryptedBytes = Base64.getDecoder().decode(base64Str);
+        return byte2hex(encryptedBytes);
     }
 }

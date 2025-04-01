@@ -51,6 +51,6 @@ public class SHA256Util {
     }
 
     public static void main(String[] args) {
-        System.out.println(SHA256Util.encryptBySHA256("HS0CvDz7oJn6"));
+        System.out.println(SHA256Util.encryptBySHA256("admin"));
     }
 }

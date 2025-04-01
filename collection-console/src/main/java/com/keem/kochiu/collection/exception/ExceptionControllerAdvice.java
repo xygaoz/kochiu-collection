@@ -1,6 +1,7 @@
 package com.keem.kochiu.collection.exception;
 
 import com.keem.kochiu.collection.data.DefaultResult;
+import com.keem.kochiu.collection.enums.ErrorCodeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Primary;
@@ -19,6 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static com.keem.kochiu.collection.enums.ErrorCodeEnum.ERROR_PARAM;
+import static com.keem.kochiu.collection.enums.ErrorCodeEnum.SYS_ERROR;
 
 /**
  * 统一异常处理类，用于处理校验异常、Feign异常和其他异常，同时提供统一的错误信息提取和返回。
@@ -51,9 +55,9 @@ public class ExceptionControllerAdvice {
                 msg.add(error.getDefaultMessage());
             }
         } else {
-            msg = Collections.singletonList("请求参数有误！");
+            msg = Collections.singletonList(ERROR_PARAM.getMessage());
         }
-        return DefaultResult.buildError("99002", StringUtils.join(msg, ";"));
+        return DefaultResult.buildError(ERROR_PARAM.getCode(), StringUtils.join(msg, ";"));
     }
 
     /**
@@ -68,10 +72,10 @@ public class ExceptionControllerAdvice {
 
         try {
             //如果异常中有新异常信息则取新的，否则取错误码里的
-            return DefaultResult.buildError("99003", e.getMessage());
+            return DefaultResult.buildError(e.getErrorCode());
         } catch (Exception ex) {
             log.error("系统异常", e);
-            return DefaultResult.buildError("99001", "系统异常");
+            return DefaultResult.buildError(SYS_ERROR);
         }
     }
 
@@ -90,6 +94,6 @@ public class ExceptionControllerAdvice {
         }
 
         log.error("系统异常", e);
-        return DefaultResult.buildError("99001", "系统异常");
+        return DefaultResult.buildError(SYS_ERROR);
     }
 }

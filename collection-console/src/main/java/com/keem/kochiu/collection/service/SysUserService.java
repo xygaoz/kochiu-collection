@@ -3,15 +3,13 @@ package com.keem.kochiu.collection.service;
 import cn.hutool.core.map.MapUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.keem.kochiu.collection.data.bo.LoginBo;
+import com.keem.kochiu.collection.data.dto.LoginDto;
 import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.enums.PermitEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.repository.SysSecurityRepository;
 import com.keem.kochiu.collection.repository.SysUserRepository;
-import com.keem.kochiu.collection.util.AesUtil;
-import com.keem.kochiu.collection.util.JwtUtil;
-import com.keem.kochiu.collection.util.RsaHexUtil;
-import com.keem.kochiu.collection.util.SHA256Util;
+import com.keem.kochiu.collection.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
@@ -31,11 +29,38 @@ public class SysUserService {
     }
 
     /**
+     * 根据登录用户信息生成token，用户api操作
+     * @param loginBo
+     * @return
+     * @throws CollectionException
+     */
+    public String genToken(LoginBo loginBo) throws CollectionException {
+        return genToken(loginBo, PermitEnum.API, -1);
+    }
+
+    /**
+     * 根据登录用户信息生成token，用户ui操作, 默认30分钟超时
+     * @param loginBo
+     * @return
+     * @throws CollectionException
+     */
+    public LoginDto login(LoginBo loginBo) throws CollectionException {
+        //前端rsa加密是base64加密，所以解密时需要base64解密
+        loginBo.setPassword(HexUtils.base64ToHex(loginBo.getPassword()));
+        String token = genToken(loginBo, PermitEnum.UI, 30 * 1000);
+        return LoginDto.builder()
+                .username(loginBo.getUsername())
+                .token(token)
+                .expirySeconds(30)
+                .build();
+    }
+
+    /**
      * 根据登录用户信息生成token
      * @param loginBo
      * @return
      */
-    public String genToken(LoginBo loginBo) throws CollectionException {
+    private String genToken(LoginBo loginBo, PermitEnum permitEnum, long ttlMillis) throws CollectionException {
 
         LambdaQueryWrapper<SysUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(SysUser::getUserCode, loginBo.getUsername());
@@ -47,8 +72,8 @@ public class SysUserService {
                 if(loginPwd.equals(user.getPassword())){
                     String token;
                     try {
-                        token = JwtUtil.createJWT(MapUtil.builder(TOKEN_API_FLAG, PermitEnum.API.name()).map(), user.getKey(),
-                                RandomStringUtils.randomNumeric(8), String.valueOf(user.getUserId()), -1);
+                        token = JwtUtil.createJWT(MapUtil.builder(TOKEN_API_FLAG, permitEnum.name()).map(), user.getKey(),
+                                RandomStringUtils.randomNumeric(8), String.valueOf(user.getUserId()), ttlMillis);
                         //拼接加密的userid 和 token
                         token = AesUtil.aesEncrypt(String.valueOf(user.getUserId()), securityRepository.getCommonKey()) + "." + token;
                     }

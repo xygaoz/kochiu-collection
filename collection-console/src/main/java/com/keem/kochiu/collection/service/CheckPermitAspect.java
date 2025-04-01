@@ -26,8 +26,8 @@ import java.lang.reflect.Method;
 import java.util.Map;
 
 import static com.keem.kochiu.collection.Constant.*;
-import static com.keem.kochiu.collection.enums.PermitEnum.ALL;
-import static com.keem.kochiu.collection.enums.PermitEnum.API;
+import static com.keem.kochiu.collection.enums.ErrorCodeEnum.*;
+import static com.keem.kochiu.collection.enums.PermitEnum.*;
 
 
 /**
@@ -71,17 +71,17 @@ public class CheckPermitAspect {
             HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
             String authorization = request.getHeader(HEADER_AUTHORIZATION);
             if(!checkPermit(authorization, checkPermit)){
-                throw new CollectionException("非法请求。");
+                throw new CollectionException(ERROR_TOKEN_INVALID);
             }
         }
     }
 
     private boolean checkPermit(String authorization, CheckPermit checkPermit) throws CollectionException {
         if(authorization == null){
-            throw new CollectionException("非法请求。");
+            throw new CollectionException(ERROR_TOKEN_INVALID);
         }
         if(!authorization.contains(".")){
-            throw new CollectionException("非法请求。");
+            throw new CollectionException(ERROR_TOKEN_INVALID);
         }
 
         //检验token
@@ -94,16 +94,16 @@ public class CheckPermitAspect {
         }
         catch (Exception e){
             log.error("解密userId失败", e);
-            throw new CollectionException("非法请求。");
+            throw new CollectionException(ERROR_TOKEN_INVALID);
         }
         //获取用户
         SysUser user = userRepository.getById(userId);
         if (user == null) {
             log.error("用户不存在");
-            throw new CollectionException("非法请求。");
+            throw new CollectionException(ERROR_TOKEN_INVALID);
         }
         if(user.getToken() == null){
-            throw new CollectionException("Token未生成。");
+            throw new CollectionException(ERROR_TOKEN_NOT_EXIST);
         }
 
         //解密token
@@ -112,33 +112,33 @@ public class CheckPermitAspect {
             Claims claims = JwtUtil.parseJWT(token, user.getKey());
             data = (Map<String, Object>) claims.get(TOKEN_PARAMS_FLAG);
             if(!claims.getSubject().equals(userId)){
-                throw new CollectionException("非法请求。");
+                throw new CollectionException(ERROR_TOKEN_INVALID);
             }
         }
         catch (ExpiredJwtException e) {
-            throw new CollectionException("token已过期");
+            throw new CollectionException(ERROR_TOKEN_EXPIRE);
         }
         catch (CollectionException e) {
             throw e;
         }
         catch (Exception e) {
             log.error("解密token失败", e);
-            throw new CollectionException("非法请求。");
+            throw new CollectionException(ERROR_TOKEN_INVALID);
         }
 
         if(data == null || !data.containsKey(TOKEN_API_FLAG)){
-            throw new CollectionException("非法请求。");
+            throw new CollectionException(ERROR_TOKEN_INVALID);
         }
 
         if (checkPermit.on() != ALL) {
             if (!checkPermit.on().name().equals(data.get(TOKEN_API_FLAG))){
-                throw new CollectionException("非法请求。");
+                throw new CollectionException(ERROR_TOKEN_INVALID);
             }
         }
 
         if(data.get(TOKEN_API_FLAG).equals(API.name())){
             if(!user.getToken().equals(authorization)){
-                throw new CollectionException("非法请求。");
+                throw new CollectionException(ERROR_TOKEN_INVALID);
             }
         }
 

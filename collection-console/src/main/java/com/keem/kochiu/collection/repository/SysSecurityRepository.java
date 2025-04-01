@@ -7,8 +7,10 @@ import com.keem.kochiu.collection.mapper.SysSecurityMapper;
 import com.keem.kochiu.collection.util.RsaHexUtil;
 import org.springframework.stereotype.Service;
 
+import java.math.BigInteger;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
 
 @Service
 public class SysSecurityRepository extends ServiceImpl<SysSecurityMapper, SysSecurity>{
@@ -42,7 +44,8 @@ public class SysSecurityRepository extends ServiceImpl<SysSecurityMapper, SysSec
             if(sysSecurity == null){
                 throw new CollectionException("获取公钥失败");
             }
-            return sysSecurity.getPublicKey();
+            PublicKey pub = RsaHexUtil.getPublicKey(sysSecurity.getPublicKey(), "10001");
+            return RsaHexUtil.publicKeyToPem(pub);
         }
         catch (Exception e){
             throw new CollectionException("获取公钥失败");

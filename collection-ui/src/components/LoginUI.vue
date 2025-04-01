@@ -9,10 +9,10 @@
                 label-width="100px"
                 style="transform: translate(-30px)"
             >
-                <el-form-item label="邮箱" prop="email">
+                <el-form-item label="用户名" prop="username">
                     <el-input
-                        v-model="loginForm.email"
-                        placeholder="请输入邮箱"
+                        v-model="loginForm.username"
+                        placeholder="请输入用户名"
                         clearable
                     ></el-input>
                 </el-form-item>
@@ -56,15 +56,16 @@
 import { ref, defineEmits, onMounted } from "vue"; // 添加onMounted
 import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router"; // 导入useRouter
-import httpInstance from "@/apis/utils"; // 导入queryPublicKey方法
+import { getPublicKey, loginService, tokenStore } from "@/apis/services"; // 导入getPublicKey方法
+import { JSEncrypt } from 'jsencrypt';
 
 const loginForm = ref({
-    email: "",
+    username: "",
     password: "",
 });
 
 const rules = {
-    email: [
+    username: [
         { required: true, message: "请输入用户名", trigger: "blur" },
     ],
     password: [
@@ -79,20 +80,27 @@ const rules = {
 const emit = defineEmits(['login-success']);
 const router = useRouter(); // 使用useRouter
 const loginFormRef = ref(null); // 添加表单引用
+let publicKey = ""; // 用于存储公钥
 
 const login = async () => {
     // 添加表单验证逻辑
     loginFormRef.value.validate(async (valid) => {
         if (valid) {
-            console.log("发送请求");
-            // const res = await loginService(loginForm.value);
-            // if (res) {
-            //     userStore.setInfo(res.data);
-            //     tokenStore.setToken(res.data.token);
-            // }
 
-            ElMessage.success("登录成功!");
-            emit('login-success');
+            const encryptedPassword = encryptPassword(loginForm.value.password); // 加密密码
+            debugger
+            console.log("加密后的密码：", encryptedPassword)
+            if (!encryptedPassword) {
+                ElMessage.error('加密失败');
+                return
+            }
+            const res = await loginService({ ...loginForm.value, password: encryptedPassword });
+            if (res && res.token) {
+                tokenStore.setToken(res.token); // 保存token
+
+                ElMessage.success("登录成功!");
+                emit('login-success');
+            }
         } else {
                 ElMessage.error("请输入用户名或密码");
         }
@@ -103,18 +111,34 @@ const changeUrl = (url) => {
     router.replace(url);
 };
 
-// 组件挂载时调用queryPublicKey方法
-onMounted(() => {
-    httpInstance.get("/publicKey").then((model) => {
-        if(model) {
-            const publicKeyModel = model; // 将model放到一个变量里，后续使用
-            console.log("获取公钥成功:", publicKeyModel)
-        }
-    }).catch((error) => {
-        console.error("获取公钥失败:", error);
+// 组件挂载时调用getPublicKey方法
+onMounted(async () => {
+    try {
+        publicKey = await getPublicKey(); // 调用getPublicKey方法
+    } catch (error) {
         ElMessage.error("获取公钥失败，请重试");
-    });
+    }
 });
+
+// 加密密码的方法
+const encryptPassword = (password) => {
+
+    debugger
+    // 创建JSEncrypt实例
+    const encryptor = new JSEncrypt();
+    encryptor.setPublicKey(publicKey);
+    // 验证公钥是否设置成功
+    if (!encryptor.getPublicKey()) {
+        ElMessage.error('公钥设置失败');
+        return
+    }
+    // 同步加密（JSEncrypt默认是同步操作）
+    const encrypted = encryptor.encrypt(password);
+    if (!encrypted) throw new Error('加密失败');
+
+    // 执行加密
+    return encrypted;
+};
 </script>
 
 <style lang="scss" scoped>

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { h, render } from 'vue'
 import {ElMessage, ElLoading} from "element-plus";
+import qs from 'qs'; // 引入qs库来处理form-data
 
 const httpInstance = axios.create({
     baseURL: process.env.VUE_APP_BASE_API,
@@ -20,7 +21,18 @@ const httpInstance = axios.create({
         }
     })
 });
-//配置axios的响应拦截器
+
+// 配置axios的请求拦截器，将application/json改为form-data
+httpInstance.interceptors.request.use(config => {
+    if (config.data && config.headers['Content-Type'] === 'application/x-www-form-urlencoded') {
+        config.data = qs.stringify(config.data);
+    }
+    return config;
+}, error => {
+    return Promise.reject(error);
+});
+
+// 配置axios的响应拦截器
 httpInstance.interceptors.response.use(res=>{
     if(res.data && !res.data.success){
         ElMessage({type:'error',message:!res.data.message?'系统错误':res.data.message})
@@ -83,18 +95,12 @@ export const downloadFile = (url: string, data: any) => {
             }
             if (res && res.status === 200 && res.data) {
                 const { data, headers } = res
-                // // 切割出文件名
-                // const fileNameEncode = res.headers['content-disposition'].split('filename=')[1]
-                // // 解码
-                // const fileName = decodeURIComponent(fileNameEncode)
-                // console.log('fileName', fileName)
                 let fileName
                 if (headers['content-disposition']) {
                     fileName = headers['content-disposition'].replace(/\w+;filename=(.*)/, '$1')
                 } else {
                     fileName = data.fileName
                 }
-                // 此处当返回json文件时需要先对data进行JSON.stringify处理，其他类型文件不用做处理
                 const blob = new Blob([data], { type: headers['content-type'] })
                 const dom = document.createElement('a')
                 const downUrl = window.URL.createObjectURL(blob)
