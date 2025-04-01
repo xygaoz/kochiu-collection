@@ -81,7 +81,11 @@ public class SysUserService {
                         log.error("生成token失败", e);
                         throw new CollectionException("生成token失败");
                     }
-                    user.setToken(token);
+
+                    if(ttlMillis == -1) {
+                        //api访问时，token保存到数据库
+                        user.setToken(token);
+                    }
                     user.setUpdateBy(loginBo.getUsername());
                     userRepository.updateById(user);
                     return token;

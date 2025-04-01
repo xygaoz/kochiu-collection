@@ -46,7 +46,6 @@ httpInstance.interceptors.response.use(res=>{
     }
     return res.data && res.data.model ? res.data.model : null
 },e=>{
-    debugger
     if(e.response) {
         if (e.response.status == 401) {
             ElMessage.error("请先登录")
