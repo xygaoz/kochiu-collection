@@ -33,7 +33,7 @@
                                        :style="String(menuItem.meta?.style)"></i>
                                 </div>
                                 <div class="menu-label">
-                                    {{ menuItem.name }}
+                                    {{ menuItem.meta?.title || menuItem.name }}
                                 </div>
                                 <!-- 添加按钮 -->
                                 <el-icon v-if="menuItem.path === '/category'" @click="addCategory" class="add_category" title="新分类">
@@ -58,7 +58,7 @@
                                            :style="String(subMenuItem.meta?.style)"></i>
                                     </div>
                                     <div class="menu-label">
-                                        {{ subMenuItem.name }}
+                                        {{ subMenuItem.meta?.title || subMenuItem.name }}
                                     </div>
                                 </template>
                             </el-menu-item>
@@ -82,7 +82,7 @@
                                        :style="String(menuItem.meta?.style)"></i>
                                 </div>
                                 <div class="menu-label">
-                                    {{ menuItem.name }}
+                                    {{ menuItem.meta?.title || menuItem.name }}
                                 </div>
                             </template>
                         </el-menu-item>
@@ -139,9 +139,8 @@ import { listCategory } from "@/apis/services";
 import { Plus } from "@element-plus/icons-vue"; // 导入listCategory方法
 import { Category } from "@/apis/interface"; // 导入Category接口
 
-const defaultActive = ref("/help");
 const menu = ref(routes); // 使用ref包裹routes，使其响应式
-const defaultOpeneds = ref(['/my', '/category']); // 添加默认展开的子菜单路径
+const defaultOpeneds = ref(['/My', '/Category']); // 添加默认展开的子菜单路径
 
 // 初始加载dom
 onMounted(() => {
@@ -155,12 +154,15 @@ const loadCategories = async () => {
         const categories: Category[] = await listCategory();
         if (categories && categories.length > 0) {
             // 找到/category路由并添加子菜单
-            const categoryRoute = menu.value.find(route => route.path === '/category');
+            const categoryRoute = menu.value.find(route => route.path === '/Category');
             if (categoryRoute && categoryRoute.children) {
                 categoryRoute.children = categories.map(category => ({
-                    path: `category/${category.sno}`,
-                    name: category.cateName,
-                    component: () => import('@/components/category/CategoryFile.vue'), // 假设有一个CategoryDetail.vue组件
+                    path: `/Category/${category.sno}`,
+                    name: `category${category.sno}`,
+                    meta: {
+                        title: category.cateName          // 显示用名称存到meta
+                    },
+                    component: () => import('@/components/category/CategoryFile.vue')
                 }));
             }
         }
@@ -172,12 +174,20 @@ const loadCategories = async () => {
 // 菜单项点击事件
 function menuItemClick(subMenuItem: RouteRecordRaw) {
     console.log('Clicked menu item:', subMenuItem);
-    defaultActive.value = subMenuItem.path;
-    router.push({ name: subMenuItem.name }).then(() => {
-        console.log('Navigated to:', router.currentRoute.value);
-    }).catch(err => {
-        console.error('Navigation failed:', err);
-    });
+    if (subMenuItem.path.includes('/Category/')) {
+        const cateId = subMenuItem.path.split('/')[2];
+        router.push({ name: `category${cateId}`, params: { cateId } }).then(() => {
+            console.log('Navigated to:', router.currentRoute.value);
+        }).catch(err => {
+            console.error('Navigation failed:', err);
+        });
+    } else {
+        router.push({ name: subMenuItem.name }).then(() => {
+            console.log('Navigated to:', router.currentRoute.value);
+        }).catch(err => {
+            console.error('Navigation failed:', err);
+        });
+    }
 }
 
 // 添加分类的点击事件

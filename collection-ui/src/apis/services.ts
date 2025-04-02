@@ -1,5 +1,5 @@
 import httpInstance from "@/apis/utils"; // 导入httpInstance
-import { Category } from "@/apis/interface"; // 导入Category接口
+import { Category, Resource } from "@/apis/interface"; // 导入Category接口
 import { loading } from "@/apis/utils";
 
 export const tokenStore = {
@@ -83,5 +83,18 @@ export const uploadFile = (file: File, categorySno: string): Promise<any> => {
     }).catch((error) => {
         console.error("文件上传失败:", error);
         throw error; // 抛出错误以便调用者处理
+    });
+}
+
+export const listCategoryFiles = (cateId: string): Promise<Resource[]> => {
+    return httpInstance.get("/resource/" + cateId).then((model: any) => {
+        if (model) {
+            console.log("获取文件列表成功:", model);
+            return model as Resource[];
+        }
+        return [];
+    }).catch((error) => {
+        console.error("获取文件列表失败:", error);
+        return [];
     });
 }

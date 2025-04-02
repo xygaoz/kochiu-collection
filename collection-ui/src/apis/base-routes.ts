@@ -6,36 +6,36 @@ export const routes: RouteRecordRaw[] = reactive([]);
 
 routes.push(
     {
-        path: '/category',
-        name: "分类",
-        meta: { icon: 'icon-col-fenlei', iconType: 'iconfont', style: 'font-size: 21px; color: rgb(59,130,246' },
+        path: '/Category',
+        name: 'category',
+        meta: { title: '分类', icon: 'icon-col-fenlei', iconType: 'iconfont', style: 'font-size: 21px; color: rgb(59,130,246' },
         children: [
         ]
     },
     {
-        path: '/my',
-        name: "我的",
-        meta: { icon: 'Avatar', iconType: 'icons-vue', style: 'color: rgb(59,130,246)' },
+        path: '/My',
+        name: "my",
+        meta: { title: '我的', icon: 'Avatar', iconType: 'icons-vue', style: 'color: rgb(59,130,246)' },
         children: [
             {
-                path: 'Upload',
-                name: '上传文件',
+                path: '/Upload',
+                name: 'upload',
                 component: () => import('@/components/my/FileUploader.vue'),
-                meta: { icon: 'UploadFilled', iconType: 'icons-vue', style: 'color: rgb(59,130,246)' },
+                meta: { title: '上传文件', icon: 'UploadFilled', iconType: 'icons-vue', style: 'color: rgb(59,130,246)' },
             },
             {
-                path: 'Batch',
-                name: '批量导入',
+                path: '/BatchImport',
+                name: 'batch-import',
                 component: () => import('@/components/my/FileUploader.vue'),
-                meta: { icon: 'icon-col-piliangdaoru1', iconType: 'iconfont', style: 'font-size: 18px; color: rgb(59,130,246); margin: 0 3px 0 0' },
+                meta: { title: '批量导入', icon: 'icon-col-piliangdaoru1', iconType: 'iconfont', style: 'font-size: 18px; color: rgb(59,130,246); margin: 0 3px 0 0' },
             },
             ]
     },
     {
-        path: '/help',
+        path: '/Help',
         component: Help,
-        name: "帮助",
-        meta: { icon: 'Help', iconType: 'icons-vue', style: 'color: rgb(59,130,246)' },
+        name: "help",
+        meta: { title: '帮助', icon: 'Help', iconType: 'icons-vue', style: 'color: rgb(59,130,246)' },
     },
 )
 
