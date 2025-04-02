@@ -35,6 +35,10 @@
                                 <div class="menu-label">
                                     {{ menuItem.name }}
                                 </div>
+                                <!-- 添加按钮 -->
+                                <el-icon v-if="menuItem.path === '/category'" @click="addCategory" class="add_category" title="新分类">
+                                    <Plus />
+                                </el-icon>
                             </template>
                             <el-menu-item
                                 v-for="subMenuItem in menuItem.children"
@@ -128,10 +132,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, defineExpose } from "vue";
+import { ref, onMounted } from "vue";
 import router, { routes } from "@/apis/base-routes";
 import { RouteRecordRaw } from "vue-router";
-import { listCategory } from "@/apis/services"; // 导入listCategory方法
+import { listCategory } from "@/apis/services";
+import { Plus } from "@element-plus/icons-vue"; // 导入listCategory方法
+import { Category } from "@/apis/interface"; // 导入Category接口
 
 const defaultActive = ref("/help");
 const menu = ref(routes); // 使用ref包裹routes，使其响应式
@@ -146,7 +152,7 @@ onMounted(() => {
 // 加载分类的方法
 const loadCategories = async () => {
     try {
-        const categories: any[] = await listCategory();
+        const categories: Category[] = await listCategory();
         if (categories && categories.length > 0) {
             // 找到/category路由并添加子菜单
             const categoryRoute = menu.value.find(route => route.path === '/category');
@@ -174,9 +180,11 @@ function menuItemClick(subMenuItem: RouteRecordRaw) {
     });
 }
 
-defineExpose({
-    menuItemClick
-})
+// 添加分类的点击事件
+function addCategory() {
+    console.log('添加分类按钮被点击');
+    // 在这里添加添加分类的逻辑
+}
 
 </script>
 
@@ -256,5 +264,14 @@ defineExpose({
 
 .menu-label{
     float: left;
+}
+
+.add_category{
+    cursor: pointer;
+    margin-left: auto;
+}
+
+.add_category:hover{
+    color: #409EFF;
 }
 </style>

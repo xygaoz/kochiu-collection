@@ -1,4 +1,6 @@
-import httpInstance, { loading } from "@/apis/utils"; // 导入httpInstance
+import httpInstance from "@/apis/utils"; // 导入httpInstance
+import { Category } from "@/apis/interface"; // 导入Category接口
+import { loading } from "@/apis/utils";
 
 export const tokenStore = {
     setToken(token: string, expirySeconds: number) {
@@ -58,12 +60,14 @@ export const loginService = (loginForm: any) => {
     });
 };
 
-export const listCategory = () => {
-    return httpInstance.get("/category/list").then((model) => {
+export const listCategory = (): Promise<Category[]> => {
+    return httpInstance.get("/category/list").then((model: any) => {
         if (model) {
-            return model;
+            return model as Category[];
         }
+        return [];
     }).catch((error) => {
         console.error("获取分类失败:", error);
-    })
+        return [];
+    });
 }

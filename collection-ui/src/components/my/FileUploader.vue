@@ -1,6 +1,20 @@
 <template>
     <div class="upload-dragger">
         <div class="title">文件上传</div>
+        <!-- 添加分类选择下拉框 -->
+        <div class="category">
+            <div class="select-label">选择分类</div>
+            <div class="select-container"><el-select v-model="selectedCategory" placeholder="请选择分类">
+                <el-option
+                    v-for="category in categories"
+                    :key="category.sno"
+                    :label="category.cateName"
+                    :value="category.sno"
+                />
+            </el-select>
+            </div>
+        </div>
+
         <el-upload
             class="upload-area"
             drag
@@ -25,6 +39,9 @@
 <script setup lang="ts">
 import { UploadFilled } from '@element-plus/icons-vue'
 import { ElMessage } from "element-plus";
+import { ref, onMounted, reactive } from "vue";
+import { listCategory } from "@/apis/services";
+import { Category } from "@/apis/interface"; // 导入Category接口
 
 // 定义允许的文件类型和最大文件大小（2MB）
 const allowedTypes = [
@@ -53,6 +70,28 @@ const beforeUpload = (file: File) => {
 
     return true;
 }
+
+// 分类相关
+const categories = reactive<Category[]>([])
+const selectedCategory = ref<string | null>(null);
+
+// 获取分类信息
+onMounted(() => {
+    listCategory().then((response: Category[]) => {
+        categories.length = 0
+        response.forEach((item: Category) => {
+            categories.push({
+                sno: item.sno,
+                cateName: item.cateName,
+            })
+        })
+        if (response.length > 0) {
+            selectedCategory.value = response[0].sno; // 默认选择第一个分类
+        }
+    }).catch((error) => {
+        console.error("获取分类失败:", error);
+    });
+});
 </script>
 
 <style scoped>
@@ -71,5 +110,23 @@ const beforeUpload = (file: File) => {
 
 .upload-area{
     border-radius: 5px;
+}
+
+.category{
+    width: 100%;
+    float: left;
+    display: flex;
+    margin: 10px 0 10px 0;
+}
+
+.select-label{
+    float: left;
+    width: 80px;
+    margin: 5px 0 0 0;
+}
+
+.select-container{
+    float: right;
+    width: 100%;
 }
 </style>
