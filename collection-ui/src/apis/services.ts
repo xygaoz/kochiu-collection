@@ -57,3 +57,13 @@ export const loginService = (loginForm: any) => {
         ld.close();
     });
 };
+
+export const listCategory = () => {
+    return httpInstance.get("/category/list").then((model) => {
+        if (model) {
+            return model;
+        }
+    }).catch((error) => {
+        console.error("获取分类失败:", error);
+    })
+}
