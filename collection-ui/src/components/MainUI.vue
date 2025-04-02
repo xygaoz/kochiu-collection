@@ -26,7 +26,7 @@
                         >
                             <template #title>
                                 <div class="menu-icon">
-                                    <el-icon v-if="menuItem.meta?.iconType === 'icons-vue' ">
+                                    <el-icon v-if="menuItem.meta?.iconType === 'icons-vue' " :style="String(menuItem.meta?.style)">
                                         <component :is="menuItem.meta.icon" />
                                     </el-icon>
                                     <i v-else class="iconfont" :class="menuItem.meta?.icon"
@@ -47,7 +47,7 @@
                             >
                                 <template #title>
                                     <div class="menu-icon">
-                                        <el-icon v-if="subMenuItem.meta?.iconType === 'icons-vue' ">
+                                        <el-icon v-if="subMenuItem.meta?.iconType === 'icons-vue' " :style="String(subMenuItem.meta?.style)">
                                             <component :is="subMenuItem.meta.icon" />
                                         </el-icon>
                                         <i v-else class="iconfont" :class="subMenuItem.meta?.icon"
@@ -71,7 +71,7 @@
                         >
                             <template #title>
                                 <div class="menu-icon">
-                                    <el-icon v-if="menuItem.meta?.iconType === 'icons-vue' ">
+                                    <el-icon v-if="menuItem.meta?.iconType === 'icons-vue' " :style="String(menuItem.meta?.style)">
                                         <component :is="menuItem.meta.icon" />
                                     </el-icon>
                                     <i v-else class="iconfont" :class="menuItem.meta?.icon"
@@ -127,47 +127,57 @@
     </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, onMounted, ref, defineExpose } from "vue";
+<script setup lang="ts">
+import { ref, onMounted, defineExpose } from "vue";
 import router, { routes } from "@/apis/base-routes";
 import { RouteRecordRaw } from "vue-router";
-import { Collection } from "@element-plus/icons-vue";
+import { listCategory } from "@/apis/services"; // 导入listCategory方法
 
-export default defineComponent({
-    setup() {
-        const defaultActive = ref("/help");
-        const menu = routes;
-        const defaultOpeneds = ref(['/my']); // 添加默认展开的子菜单路径
+const defaultActive = ref("/help");
+const menu = ref(routes); // 使用ref包裹routes，使其响应式
+const defaultOpeneds = ref(['/my', '/category']); // 添加默认展开的子菜单路径
 
-        //初始加载dom
-        onMounted(() => {
-            router.push(routes[0]);
-        });
-
-        // 菜单项点击事件
-        function menuItemClick(subMenuItem: RouteRecordRaw) {
-            console.log('Clicked menu item:', subMenuItem);
-            defaultActive.value = subMenuItem.path;
-            router.push({ name: subMenuItem.name }).then(() => {
-                console.log('Navigated to:', router.currentRoute.value);
-            }).catch(err => {
-                console.error('Navigation failed:', err);
-            });
-        }
-
-        defineExpose({
-            menuItemClick
-        })
-
-        return {
-            menu,
-            defaultActive,
-            menuItemClick,
-            defaultOpeneds
-        };
-    },
-    components: { Collection }
+// 初始加载dom
+onMounted(() => {
+    router.push(routes[0]);
+    loadCategories(); // 调用加载分类的方法
 });
+
+// 加载分类的方法
+const loadCategories = async () => {
+    try {
+        const categories: any[] = await listCategory();
+        if (categories && categories.length > 0) {
+            // 找到/category路由并添加子菜单
+            const categoryRoute = menu.value.find(route => route.path === '/category');
+            if (categoryRoute && categoryRoute.children) {
+                categoryRoute.children = categories.map(category => ({
+                    path: `category/${category.sno}`,
+                    name: category.cateName,
+                    component: () => import('@/components/category/CategoryFile.vue'), // 假设有一个CategoryDetail.vue组件
+                }));
+            }
+        }
+    } catch (error) {
+        console.error('加载分类失败:', error);
+    }
+};
+
+// 菜单项点击事件
+function menuItemClick(subMenuItem: RouteRecordRaw) {
+    console.log('Clicked menu item:', subMenuItem);
+    defaultActive.value = subMenuItem.path;
+    router.push({ name: subMenuItem.name }).then(() => {
+        console.log('Navigated to:', router.currentRoute.value);
+    }).catch(err => {
+        console.error('Navigation failed:', err);
+    });
+}
+
+defineExpose({
+    menuItemClick
+})
+
 </script>
 
 <style scoped>

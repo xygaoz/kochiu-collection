@@ -8,26 +8,26 @@ routes.push(
     {
         path: '/category',
         name: "分类",
-        meta: { icon: 'icon-col-fenlei', iconType: 'iconfont', style: 'font-size: 21px' },
+        meta: { icon: 'icon-col-fenlei', iconType: 'iconfont', style: 'font-size: 21px; color: rgb(59,130,246' },
         children: [
         ]
     },
     {
         path: '/my',
         name: "我的",
-        meta: { icon: 'Avatar', iconType: 'icons-vue' },
+        meta: { icon: 'Avatar', iconType: 'icons-vue', style: 'color: rgb(59,130,246)' },
         children: [
             {
                 path: 'Upload',
                 name: '上传文件',
                 component: () => import('@/components/my/FileUploader.vue'),
-                meta: { icon: 'UploadFilled', iconType: 'icons-vue' },
+                meta: { icon: 'UploadFilled', iconType: 'icons-vue', style: 'color: rgb(59,130,246)' },
             },
             {
                 path: 'Batch',
                 name: '批量导入',
                 component: () => import('@/components/my/FileUploader.vue'),
-                meta: { icon: 'UploadFilled', iconType: 'icons-vue' },
+                meta: { icon: 'icon-col-piliangdaoru1', iconType: 'iconfont', style: 'font-size: 18px; color: rgb(59,130,246); margin: 0 3px 0 0' },
             },
             ]
     },
@@ -35,7 +35,7 @@ routes.push(
         path: '/help',
         component: Help,
         name: "帮助",
-        meta: { icon: 'Help', iconType: 'icons-vue' },
+        meta: { icon: 'Help', iconType: 'icons-vue', style: 'color: rgb(59,130,246)' },
     },
 )
 
