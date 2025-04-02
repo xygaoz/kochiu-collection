@@ -71,7 +71,8 @@ public class CheckPermitAspect {
 
     private boolean checkPermit(String authorization, CheckPermit checkPermit) throws CollectionException {
 
-        TokenDto tokenDto = tokenService.validateToken(authorization, ArrayUtils.contains(checkPermit.on(), API));
+        TokenDto tokenDto = tokenService.validateToken(authorization,
+                ArrayUtils.contains(checkPermit.on(), API) && checkPermit.on().length == 1);
         if(!TOKEN_TYPE_ACCESS.equals(tokenDto.getClaims().get(TOKEN_TYPE_FLAG))){
             throw new CollectionException(ERROR_TOKEN_INVALID);
         }
