@@ -88,7 +88,7 @@ public class SysSecurityController {
                         .toInstant()
                         .toEpochMilli();
                 if (tokenDto.getUser().getLastTokenTime() != null
-                        && timestampMillis + 3600 * 1000 > System.currentTimeMillis()) {
+                        && timestampMillis + 1200 * 1000 > System.currentTimeMillis()) {
                     return ResponseEntity.status(401).build();
                 }
             }
