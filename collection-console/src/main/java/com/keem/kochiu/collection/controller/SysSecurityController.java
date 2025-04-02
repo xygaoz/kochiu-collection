@@ -104,9 +104,7 @@ public class SysSecurityController {
             userService.updateLastRefreshTime(tokenDto.getUser());
 
             return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE,
-                            "refresh_token=" + newRefreshToken + "; Path=/; HttpOnly; Max-Age=604800; SameSite=Strict")
-                    .body(Map.of("token", newAccessToken, "expirySeconds", 30 * 60));
+                    .body(Map.of("token", newAccessToken, "refreshToken", newRefreshToken, "expirySeconds", 30 * 60));
         }
         catch (CollectionException e){
             return ResponseEntity.status(401).build();

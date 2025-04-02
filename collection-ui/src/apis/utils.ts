@@ -145,6 +145,8 @@ export const refreshAccessToken = async () => {
 
         // 更新存储的accessToken
         setAccessToken(response.data.token, response.data.expirySeconds);
+        //设置Cookie
+        Cookies.set('refresh_token', response.data.refreshToken, { expires: 7, path: '/' });
 
         return response.data.token; // 假设返回 { token: 'xxx', expiresIn: 1800 }
     } catch (err) {

@@ -1,8 +1,8 @@
 @font-face {
-  font-family: "iconfont"; /* Project id 4743179 */
-  src: url('iconfont.woff2?t=1734058275598') format('woff2'),
-       url('iconfont.woff?t=1734058275598') format('woff'),
-       url('iconfont.ttf?t=1734058275598') format('truetype');
+  font-family: "iconfont"; /* Project id 4879248 */
+  src: url('iconfont.woff2?t=1743559764715') format('woff2'),
+       url('iconfont.woff?t=1743559764715') format('woff'),
+       url('iconfont.ttf?t=1743559764715') format('truetype');
 }
 
 .iconfont {
@@ -13,87 +13,59 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.icon-rizhi:before {
-  content: "\e6d2";
+.icon-col-jiaoseguanli:before {
+  content: "\e60f";
 }
 
-.icon-shujuyuan:before {
-  content: "\e857";
+.icon-col-yibiaopan:before {
+  content: "\e669";
 }
 
-.icon-shujuyuan1:before {
-  content: "\e608";
+.icon-col-biaoqian_o:before {
+  content: "\eb47";
 }
 
-.icon-jiankong:before {
-  content: "\e693";
+.icon-col-yonghu:before {
+  content: "\e60c";
 }
 
-.icon-code:before {
-  content: "\e615";
+.icon-col-jiaoseguanli1:before {
+  content: "\e618";
 }
 
-.icon-dashboard:before {
-  content: "\e885";
+.icon-col-fenlei:before {
+  content: "\e7a4";
 }
 
-.icon-dashboard1:before {
-  content: "\e78b";
+.icon-col-kongzhitai:before {
+  content: "\e74d";
 }
 
-.icon-jiankong1:before {
-  content: "\eb37";
+.icon-col-piliangdaoru:before {
+  content: "\e617";
 }
 
-.icon-jiankong2:before {
-  content: "\e61d";
+.icon-col-jiekouzhushou:before {
+  content: "\e6ae";
 }
 
-.icon-xianchengchi:before {
+.icon-col-xitongshezhi:before {
+  content: "\e664";
+}
+
+.icon-col-hualang:before {
+  content: "\e607";
+}
+
+.icon-col-shezhi:before {
+  content: "\e656";
+}
+
+.icon-col-piliangtupian:before {
   content: "\e733";
 }
 
-.icon-fuwuqi:before {
-  content: "\e630";
-}
-
-.icon-xianchengchi1:before {
-  content: "\e650";
-}
-
-.icon-xiancheng:before {
-  content: "\e694";
-}
-
-.icon-xianchengchi2:before {
-  content: "\e695";
-}
-
-.icon-gongzuotai:before {
-  content: "\e606";
-}
-
-.icon-tiaoyong:before {
-  content: "\e61e";
-}
-
-.icon-fangfa:before {
-  content: "\e748";
-}
-
-.icon-lianlu:before {
-  content: "\e67a";
-}
-
-.icon-tiaoyongliang:before {
-  content: "\e6ea";
-}
-
-.icon-suidao-xian:before {
-  content: "\e631";
-}
-
-.icon-jiekoutiaoyongjilu:before {
-  content: "\e60e";
+.icon-col-cunchucelve:before {
+  content: "\e71f";
 }
 

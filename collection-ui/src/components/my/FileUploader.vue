@@ -4,8 +4,9 @@
         <el-upload
             class="upload-area"
             drag
-            action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+            action="/upload"
             multiple
+            :before-upload="beforeUpload"
         >
             <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
             <div class="el-upload__text">
@@ -23,6 +24,35 @@
 
 <script setup lang="ts">
 import { UploadFilled } from '@element-plus/icons-vue'
+import { ElMessage } from "element-plus";
+
+// 定义允许的文件类型和最大文件大小（2MB）
+const allowedTypes = [
+    'image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp', 'image/vnd.adobe.photoshop',
+    'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/pdf', 'text/plain', 'video/mp4', 'video/avi', 'video/wmv', 'video/quicktime',
+    'video/x-matroska', 'audio/mpeg', 'audio/wav', 'audio/flac'
+];
+const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+
+// 上传前的文件检查
+const beforeUpload = (file: File) => {
+    const isAllowedType = allowedTypes.includes(file.type);
+    if (!isAllowedType) {
+        ElMessage.error(`文件类型 ${file.type} 不支持`);
+        return false;
+    }
+
+    const isLtMaxSize = file.size <= maxSize;
+    if (!isLtMaxSize) {
+        ElMessage.error(`文件大小不能超过 2MB`);
+        return false;
+    }
+
+    return true;
+}
 </script>
 
 <style scoped>

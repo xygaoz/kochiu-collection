@@ -6,10 +6,11 @@ export const routes: RouteRecordRaw[] = reactive([]);
 
 routes.push(
     {
-        path: '/help',
-        component: Help,
-        name: "帮助",
-        meta: { icon: 'Help', iconType: 'icons-vue' },
+        path: '/category',
+        name: "分类",
+        meta: { icon: 'icon-col-fenlei', iconType: 'iconfont', style: 'font-size: 21px' },
+        children: [
+        ]
     },
     {
         path: '/my',
@@ -21,9 +22,21 @@ routes.push(
                 name: '上传文件',
                 component: () => import('@/components/my/FileUploader.vue'),
                 meta: { icon: 'UploadFilled', iconType: 'icons-vue' },
-            }]
+            },
+            {
+                path: 'Batch',
+                name: '批量导入',
+                component: () => import('@/components/my/FileUploader.vue'),
+                meta: { icon: 'UploadFilled', iconType: 'icons-vue' },
+            },
+            ]
     },
-
+    {
+        path: '/help',
+        component: Help,
+        name: "帮助",
+        meta: { icon: 'Help', iconType: 'icons-vue' },
+    },
 )
 
 //创建路由，并且暴露出去
