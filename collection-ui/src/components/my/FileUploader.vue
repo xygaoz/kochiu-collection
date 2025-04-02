@@ -40,7 +40,7 @@
 import { UploadFilled } from '@element-plus/icons-vue'
 import { ElMessage } from "element-plus";
 import { ref, onMounted, reactive } from "vue";
-import { listCategory } from "@/apis/services";
+import { listCategory, uploadFile } from "@/apis/services"; // 导入uploadFile方法
 import { Category } from "@/apis/interface"; // 导入Category接口
 
 // 定义允许的文件类型和最大文件大小（2MB）
@@ -68,7 +68,17 @@ const beforeUpload = (file: File) => {
         return false;
     }
 
-    return true;
+    // 调用上传文件的方法
+    uploadFile(file, selectedCategory.value!).then((response) => {
+        if (response) {
+            ElMessage.success("文件上传成功");
+        }
+    }).catch((error) => {
+        ElMessage.error("文件上传失败");
+        console.error("文件上传失败:", error);
+    });
+
+    return false; // 阻止默认上传行为
 }
 
 // 分类相关
@@ -95,7 +105,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-
 .upload-dragger {
     margin: 30px;
     padding: 30px;

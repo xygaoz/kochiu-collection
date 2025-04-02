@@ -9,7 +9,7 @@ import Cookies from "js-cookie"; // 引入tokenStore
 const httpInstance = axios.create({
     baseURL: process.env.VUE_APP_BASE_API,
     headers: {
-        'Content-Type': 'application/json;charset=UTF-8'
+        'Content-Type': 'multipart/form-data'
     },
     // 根据不同的模式设置不同的配置
     ...(process.env.NODE_ENV === 'development' ? {

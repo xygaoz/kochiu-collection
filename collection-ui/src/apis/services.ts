@@ -7,7 +7,7 @@ export const tokenStore = {
         const item = {
             value: token,
             expiry: Date.now() + expirySeconds * 1000
-        };``
+        };
         localStorage.setItem('token', JSON.stringify(item));
     },
     getToken(): string | null {
@@ -43,11 +43,7 @@ export const getPublicKey = () => {
 // 登录
 export const loginService = (loginForm: any) => {
     const ld = loading("登录中");
-    return httpInstance.post("/login", loginForm, {
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded' // 设置请求头为form-data
-        }
-    }).then((model) => {
+    return httpInstance.post("/login", loginForm).then((model) => {
         if (model) {
             console.log("登录成功，获取token:", model);
             return model;
@@ -69,5 +65,23 @@ export const listCategory = (): Promise<Category[]> => {
     }).catch((error) => {
         console.error("获取分类失败:", error);
         return [];
+    });
+}
+
+// 新增上传文件的方法
+export const uploadFile = (file: File, categorySno: string): Promise<any> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('categoryId', categorySno);
+
+    return httpInstance.post("/upload", formData).then((model: any) => {
+        if (model) {
+            console.log("文件上传成功:", model);
+            return model;
+        }
+        return null;
+    }).catch((error) => {
+        console.error("文件上传失败:", error);
+        throw error; // 抛出错误以便调用者处理
     });
 }
