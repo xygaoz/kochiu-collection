@@ -18,6 +18,8 @@ public class UserResource extends BaseEntity{
     private String sourceFileName;
     private String title;
     private String description;
+    private String filePath;
+    private Integer saveType;
     private String resourceUrl;
     private String resourceType;
     private String thumbUrl;

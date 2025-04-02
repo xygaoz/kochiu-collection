@@ -246,7 +246,13 @@
             <column name="SOURCE_FILE_NAME" remarks="原文件名" type="VARCHAR(100)">
                 <constraints nullable="false"/>
             </column>
-            <column name="RESOURCE_URL" remarks="存储路径" type="VARCHAR(200)">
+            <column name="FILE_PATH" remarks="存储路径" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="SAVE_TYPE" remarks="存储类型" type="integer" defaultValue="1">
+                <constraints nullable="false"/>
+            </column>
+            <column name="RESOURCE_URL" remarks="资源url" type="VARCHAR(200)">
                 <constraints nullable="false"/>
             </column>
             <column name="thumb_url" remarks="缩略图路径" type="VARCHAR(200)"/>

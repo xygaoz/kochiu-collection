@@ -3,6 +3,7 @@ package com.keem.kochiu.collection.repository;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.keem.kochiu.collection.data.dto.ResourceDto;
 import com.keem.kochiu.collection.entity.UserResource;
+import com.keem.kochiu.collection.enums.SaveTypeEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.mapper.UserResourceMapper;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,8 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
         userResource.setUserId(resourceDto.getUserId());
         userResource.setCateId(categoryRepository.getCateId(resourceDto.getUserId(), resourceDto.getCateId()));
         userResource.setSourceFileName(resourceDto.getSourceFileName());
+        userResource.setFilePath(resourceDto.getResourceUrl());
+        userResource.setSaveType(SaveTypeEnum.LOCAL.getCode());
         userResource.setResourceUrl(resourceDto.getResourceUrl());
         userResource.setFileExt(resourceDto.getFileExt());
         userResource.setResolutionRatio(resourceDto.getResolutionRatio());
