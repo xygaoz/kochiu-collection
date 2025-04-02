@@ -1,6 +1,7 @@
 package com.keem.kochiu.collection.service;
 
 import com.keem.kochiu.collection.data.bo.UploadBo;
+import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.data.vo.FileVo;
 import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.entity.UserResource;
@@ -34,9 +35,9 @@ public class UserResourceService {
      * @return
      * @throws CollectionException
      */
-    public FileVo saveFile(UploadBo uploadBo) throws CollectionException {
+    public FileVo saveFile(UploadBo uploadBo, UserDto userDto) throws CollectionException {
 
-        Integer userId = CheckPermitAspect.USER_INFO.get() != null ? CheckPermitAspect.USER_INFO.get().getUserId() : null;
+        Integer userId = userDto != null ? userDto.getUserId() : null;
         if(userId == null){
             throw new CollectionException("非法请求。");
         }
@@ -45,7 +46,8 @@ public class UserResourceService {
         if (user == null) {
             throw new CollectionException("非法请求。");
         }
-        return resourceStrategyFactory.getStrategy(user.getStrategy()).saveFile(uploadBo);
+        return resourceStrategyFactory.getStrategy(user.getStrategy())
+                .saveFile(uploadBo, userDto);
     }
 
     /**

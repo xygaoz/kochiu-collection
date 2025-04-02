@@ -5,15 +5,15 @@ import cn.hutool.core.io.unit.DataSizeUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.keem.kochiu.collection.data.bo.UploadBo;
 import com.keem.kochiu.collection.data.dto.ResourceDto;
+import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.data.vo.FileVo;
 import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.entity.UserResource;
 import com.keem.kochiu.collection.enums.FileTypeEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.properties.CollectionProperties;
-import com.keem.kochiu.collection.repository.UserResourceRepository;
 import com.keem.kochiu.collection.repository.SysUserRepository;
-import com.keem.kochiu.collection.service.CheckPermitAspect;
+import com.keem.kochiu.collection.repository.UserResourceRepository;
 import com.keem.kochiu.collection.util.DocumentToImageConverter;
 import com.keem.kochiu.collection.util.ImageUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -51,7 +51,7 @@ public class LocalStrategy implements ResourceStrategy {
      * 保存文件
      * @param uploadBo
      */
-    public FileVo saveFile(UploadBo uploadBo) throws CollectionException {
+    public FileVo saveFile(UploadBo uploadBo, UserDto userDto) throws CollectionException {
 
         //判断文件类型
         String extension = FilenameUtils.getExtension(uploadBo.getFile().getOriginalFilename());
@@ -59,7 +59,7 @@ public class LocalStrategy implements ResourceStrategy {
             throw new CollectionException("不支持的文件类型");
         }
 
-        String userCode = CheckPermitAspect.USER_INFO.get() != null ? CheckPermitAspect.USER_INFO.get().getUserCode() : null;
+        String userCode = userDto != null ? userDto.getUserCode() : null;
         if(userCode == null){
             throw new CollectionException("非法请求。");
         }
@@ -89,7 +89,7 @@ public class LocalStrategy implements ResourceStrategy {
 
         FileTypeEnum fileType = FileTypeEnum.getByValue(extension);
         ResourceDto resourceDto = ResourceDto.builder()
-                .userId(CheckPermitAspect.USER_INFO.get().getUserId())
+                .userId(userDto.getUserId())
                 .cateId(uploadBo.getCategoryId())
                 .sourceFileName(uploadBo.getFile().getOriginalFilename())
                 .resourceUrl(url)

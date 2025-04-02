@@ -1,6 +1,7 @@
 package com.keem.kochiu.collection.service.strategy;
 
 import com.keem.kochiu.collection.data.bo.UploadBo;
+import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.data.vo.FileVo;
 import com.keem.kochiu.collection.exception.CollectionException;
 
@@ -15,7 +16,7 @@ public interface ResourceStrategy {
      * @return
      * @throws CollectionException
      */
-    FileVo saveFile(UploadBo uploadBo) throws CollectionException;
+    FileVo saveFile(UploadBo uploadBo, UserDto user) throws CollectionException;
 
     /**
      * 下载文件

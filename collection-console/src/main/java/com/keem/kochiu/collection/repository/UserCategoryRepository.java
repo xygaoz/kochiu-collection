@@ -7,6 +7,8 @@ import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.mapper.UserCategoryMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserCategoryRepository extends ServiceImpl<UserCategoryMapper, UserCategory>{
 
@@ -44,5 +46,18 @@ public class UserCategoryRepository extends ServiceImpl<UserCategoryMapper, User
             throw new CollectionException("获取默认分类失败");
         }
         return userCategory.getCateId();
+    }
+
+    /**
+     * 获取用户定义的分类列表
+     * @param userId
+     * @return
+     */
+    public List<UserCategory> getCategoryList(int userId) {
+        LambdaQueryWrapper<UserCategory> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UserCategory::getUserId, userId);
+        lambdaQueryWrapper.orderByAsc(UserCategory::getSno);
+
+        return this.list(lambdaQueryWrapper);
     }
 }
