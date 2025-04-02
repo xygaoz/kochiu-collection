@@ -3,16 +3,18 @@ package com.keem.kochiu.collection.service;
 import com.keem.kochiu.collection.data.bo.UploadBo;
 import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.data.vo.FileVo;
+import com.keem.kochiu.collection.data.vo.ResourceVo;
 import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.entity.UserResource;
 import com.keem.kochiu.collection.exception.CollectionException;
-import com.keem.kochiu.collection.repository.UserResourceRepository;
 import com.keem.kochiu.collection.repository.SysUserRepository;
+import com.keem.kochiu.collection.repository.UserResourceRepository;
 import com.keem.kochiu.collection.service.strategy.ResourceStrategyFactory;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 @Service
 public class UserResourceService {
@@ -73,5 +75,31 @@ public class UserResourceService {
         }
 
         resourceStrategyFactory.getStrategy(user.getStrategy()).download(request, response, resourceId);
+    }
+
+    /**
+     * 获取用户分类资源列表
+     * @param userDto
+     * @param cateSno
+     * @return
+     * @throws CollectionException
+     */
+    public List<ResourceVo> getResourceList(UserDto userDto, int cateSno) throws CollectionException {
+
+        Integer userId = userDto != null ? userDto.getUserId() : null;
+        if(userId == null){
+            throw new CollectionException("非法请求。");
+        }
+
+        SysUser user = userRepository.getById(userId);
+        if (user == null) {
+            throw new CollectionException("非法请求。");
+        }
+
+        List<UserResource> resourceList = resourceRepository.getResourceList(userId, cateSno);
+        return resourceList.stream().map(resource -> ResourceVo.builder()
+                .resourceId(resource.getResourceId())
+                .thumbnailUrl("/" + resource.getResourceId() + "/" + resource.getThumbUrl().replace("/" + user.getUserCode() + "/", ""))
+                .build()).toList();
     }
 }

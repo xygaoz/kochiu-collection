@@ -1,5 +1,6 @@
 package com.keem.kochiu.collection.repository;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.keem.kochiu.collection.data.dto.ResourceDto;
 import com.keem.kochiu.collection.entity.UserResource;
@@ -7,6 +8,8 @@ import com.keem.kochiu.collection.enums.SaveTypeEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.mapper.UserResourceMapper;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class UserResourceRepository extends ServiceImpl<UserResourceMapper, UserResource>{
@@ -44,5 +47,20 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
         }
 
         return 0L;
+    }
+
+    /**
+     * 获取分类下资源列表
+     * @param userId
+     * @param cateSno
+     * @return
+     * @throws CollectionException
+     */
+    public List<UserResource> getResourceList(int userId, int cateSno) throws CollectionException {
+
+        LambdaQueryWrapper<UserResource> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UserResource::getUserId, userId);
+        lambdaQueryWrapper.eq(UserResource::getCateId, categoryRepository.getCateId(userId, cateSno));
+        return baseMapper.selectList(lambdaQueryWrapper);
     }
 }

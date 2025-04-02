@@ -4,6 +4,7 @@ import com.keem.kochiu.collection.annotation.CheckPermit;
 import com.keem.kochiu.collection.data.DefaultResult;
 import com.keem.kochiu.collection.data.bo.UploadBo;
 import com.keem.kochiu.collection.data.vo.FileVo;
+import com.keem.kochiu.collection.data.vo.ResourceVo;
 import com.keem.kochiu.collection.enums.PermitEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.service.CheckPermitAspect;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 public class UserResourceController {
@@ -37,5 +39,12 @@ public class UserResourceController {
     public void download(HttpServletRequest request, HttpServletResponse response, @PathVariable int resourceId){
 
         resourceService.download(request, response, resourceId);
+    }
+
+    @CheckPermit
+    @GetMapping("/resource/{cateId}")
+    public DefaultResult<List<ResourceVo>> getResourceList(@PathVariable int cateId) throws CollectionException {
+
+        return DefaultResult.ok(resourceService.getResourceList(CheckPermitAspect.USER_INFO.get(), cateId));
     }
 }
