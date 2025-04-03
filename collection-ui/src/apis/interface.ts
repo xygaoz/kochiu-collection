@@ -13,6 +13,7 @@ export interface PageInfo<T> {
 
 export interface Resource {
     resourceId: number;
+    resourceUrl: string;
     thumbnailUrl: string;
     sourceFileName: string;
     title: string;
@@ -27,4 +28,5 @@ export interface Resource {
     width: number;
     height: number;
     fileType: string;
+    typeName: string;
 }

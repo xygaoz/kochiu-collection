@@ -12,9 +12,11 @@ import com.keem.kochiu.collection.entity.UserResource;
 import com.keem.kochiu.collection.enums.FileTypeEnum;
 import com.keem.kochiu.collection.enums.SaveTypeEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
+import com.keem.kochiu.collection.properties.CollectionProperties;
 import com.keem.kochiu.collection.repository.SysUserRepository;
 import com.keem.kochiu.collection.repository.UserResourceRepository;
 import com.keem.kochiu.collection.service.strategy.ResourceStrategyFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,13 +29,15 @@ public class UserResourceService {
     private final ResourceStrategyFactory resourceStrategyFactory;
     private final SysUserRepository userRepository;
     private final UserResourceRepository resourceRepository;
+    private final CollectionProperties properties;
 
     public UserResourceService(ResourceStrategyFactory resourceStrategyFactory,
-                           SysUserRepository userRepository,
-                           UserResourceRepository resourceRepository) {
+                               SysUserRepository userRepository,
+                               UserResourceRepository resourceRepository, CollectionProperties properties) {
         this.resourceStrategyFactory = resourceStrategyFactory;
         this.userRepository = userRepository;
         this.resourceRepository = resourceRepository;
+        this.properties = properties;
     }
 
     /**
@@ -121,13 +125,14 @@ public class UserResourceService {
                         return ResourceVo.builder()
                                 .resourceId(resource.getResourceId())
                                 .resourceUrl(buildResourceUrl(user, resource, contextPath))
-                                .thumbnailUrl(contextPath + "/" + resource.getResourceId() + "/" + resource.getThumbUrl().replace("/" + user.getUserCode() + "/", ""))
+                                .thumbnailUrl(StringUtils.isNotBlank(resource.getThumbUrl()) ? contextPath + "/" + resource.getResourceId() + "/" + resource.getThumbUrl().replace("/" + user.getUserCode() + "/", "") : null)
                                 .title(resource.getTitle())
                                 .description(resource.getDescription())
                                 .sourceFileName(resource.getSourceFileName())
                                 .width(width)
                                 .height(height)
                                 .fileType(FileTypeEnum.getByValue(resource.getFileExt()).getDesc())
+                                .typeName(properties.getResourceType(resource.getFileExt()).name().toLowerCase())
                                 .size(resource.getSize())
                                 .resolutionRatio(resource.getResolutionRatio())
                                 .createTime(resource.getCreateTime())

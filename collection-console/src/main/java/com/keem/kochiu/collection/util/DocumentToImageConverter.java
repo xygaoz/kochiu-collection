@@ -1,10 +1,15 @@
 package com.keem.kochiu.collection.util;
 
 import cn.hutool.core.io.FileUtil;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hwpf.HWPFDocument;
+import org.apache.poi.hwpf.extractor.WordExtractor;
 import org.apache.poi.sl.usermodel.SlideShow;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xslf.usermodel.XMLSlideShow;
@@ -86,7 +91,12 @@ public class DocumentToImageConverter {
         pdfPath = pdfPath.replace(".doc", ".pdf");
 
         // Step 1: Convert Word to HTML
-        convertWordToPdf(wordPath, pdfPath);
+        if(wordPath.endsWith(".docx")) {
+            convertDocxToPdf(wordPath, pdfPath);
+        }
+        else if(wordPath.endsWith(".doc")) {
+            convertDocToPdf(wordPath, pdfPath);
+        }
 
         // Step 3: Convert PDF first page to image
         String thumbRatio = convertPdfFirstPage(pdfPath, outputPath);
@@ -96,7 +106,7 @@ public class DocumentToImageConverter {
         return thumbRatio;
     }
 
-    private static void convertWordToPdf(String wordPath, String outputPath) throws Exception {
+    private static void convertDocxToPdf(String wordPath, String outputPath) throws Exception {
         // 1. 加载 Word 文档
         WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new File(wordPath));
 
@@ -109,6 +119,26 @@ public class DocumentToImageConverter {
         // 4. 关闭资源
         outputStream.close();
         System.out.println("转换成功！");
+    }
+
+    private static void convertDocToPdf(String wordPath, String outputPath) throws Exception{
+        try (FileInputStream fis = new FileInputStream(wordPath);
+             HWPFDocument doc = new HWPFDocument(fis)) {
+
+            WordExtractor extractor = new WordExtractor(doc);
+            String text = extractor.getText();
+
+            // 创建 PDF
+            Document pdfDoc = new Document();
+            PdfWriter.getInstance(pdfDoc, new FileOutputStream(outputPath));
+            pdfDoc.open();
+            pdfDoc.add(new Paragraph(text));  // 仅提取文本，不保留格式
+            pdfDoc.close();
+
+            System.out.println("PDF 生成成功！");
+        } catch (Exception e) {
+            System.err.println("转换失败：" + e.getMessage());
+        }
     }
 
     /**

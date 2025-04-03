@@ -28,6 +28,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 
@@ -265,16 +267,24 @@ public class LocalStrategy implements ResourceStrategy {
         }
 
         //读取文件下载
-        String filePath = pluServiceProperties.getUploadPath() + resource.getResourceUrl();
+        String filePath = pluServiceProperties.getUploadPath() + url;
         File file = new File(filePath);
         if(!file.exists()){
             response.setStatus(404);
             return;
         }
 
-        response.setHeader("Content-Disposition", "attachment;filename=" + resource.getSourceFileName());
         response.setHeader("Content-Length", String.valueOf(file.length()));
         response.setContentType(FileTypeEnum.getByValue(resource.getResourceType()).getMimeType());
+        String ext = FilenameUtils.getExtension(file.getName());
+        if(!FileTypeEnum.getByValue(ext).getMimeType().startsWith("images/")){
+            response.setHeader("Content-Disposition", "attachment;filename=" +
+                URLEncoder.encode(resource.getSourceFileName(), StandardCharsets.UTF_8));
+        }
+        else{
+            response.setHeader("Content-Disposition", "inline;filename=" +
+                URLEncoder.encode(file.getName(), StandardCharsets.UTF_8));
+        }
         try {
             FileUtil.writeToStream(file, response.getOutputStream());
         }

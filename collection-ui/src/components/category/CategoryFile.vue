@@ -41,6 +41,76 @@
                     </el-main>
                     <el-aside width="280px" class="detail-aside">
                         <div class="image-details" v-if="selectedImage">
+                            <div class="image-preview">
+                                <!-- 图片预览 -->
+                                <el-image
+                                    v-if="isImage(selectedImage)"
+                                    :src="selectedImage.resourceUrl"
+                                    :preview-src-list="[selectedImage.resourceUrl]"
+                                    fit="contain"
+                                    class="preview-content"
+                                    hide-on-click-modal
+                                >
+                                    <template #error>
+                                        <div class="preview-error">
+                                            <el-icon><Picture /></el-icon>
+                                            <span>图片加载失败</span>
+                                        </div>
+                                    </template>
+                                </el-image>
+
+                                <!-- 视频预览 -->
+                                <video
+                                    v-else-if="isVideo(selectedImage)"
+                                    controls
+                                    class="preview-content"
+                                    :poster="selectedImage.thumbnailUrl"
+                                    @click.stop="playVideo(selectedImage)"
+                                >
+                                    <source :src="selectedImage.resourceUrl" :type="selectedImage.fileType">
+                                    您的浏览器不支持视频播放
+                                </video>
+
+                                <!-- 音频预览 -->
+                                <audio
+                                    v-else-if="isAudio(selectedImage)"
+                                    controls
+                                    class="preview-content audio-preview"
+                                >
+                                    <source :src="selectedImage.resourceUrl" :type="selectedImage.fileType">
+                                    您的浏览器不支持音频播放
+                                </audio>
+
+                                <!-- 其他文件 -->
+                                <div v-else class="unsupported-file">
+                                    <el-image
+                                        :src="selectedImage.thumbnailUrl"
+                                        fit="contain"
+                                        class="preview-content"
+                                    >
+                                        <template #error>
+                                            <el-icon><Document /></el-icon>
+                                            <span>不支持预览此文件类型</span>
+                                        </template>
+                                    </el-image>
+                                </div>
+                            </div>
+
+                            <!-- 视频弹窗 -->
+                            <el-dialog
+                                v-model="videoDialogVisible"
+                                title="视频播放"
+                                width="70%"
+                                top="5vh"
+                                destroy-on-close
+                            >
+                                <video
+                                    controls
+                                    autoplay
+                                    style="width: 100%"
+                                    :src="currentVideoUrl"
+                                ></video>
+                            </el-dialog>
                             <div class="detail-header">
                                 <div>文件详情</div>
                                 <el-button
@@ -147,6 +217,8 @@ const columnWidth = ref(180)
 const currentPage = ref(1)
 const pageSize = ref(500)
 const total = ref(0)
+const videoDialogVisible = ref(false)
+const currentVideoUrl = ref('')
 
 // 加载数据
 onMounted(async () => {
@@ -195,6 +267,25 @@ const handleDownload = (image: Resource) => {
     // 实现下载逻辑
     console.log('下载文件:', image.sourceFileName);
 };
+
+// 文件类型判断方法
+const isImage = (file: Resource) => {
+    return file.typeName == 'image'
+}
+
+const isVideo = (file: Resource) => {
+    return file.typeName == 'video'
+}
+
+const isAudio = (file: Resource) => {
+    return file.typeName == 'audio'
+}
+
+// 播放视频方法
+const playVideo = (file: Resource) => {
+    currentVideoUrl.value = file.resourceUrl;
+    videoDialogVisible.value = true
+}
 </script>
 
 <style scoped>
@@ -429,4 +520,63 @@ const handleDownload = (image: Resource) => {
 .el-rate{
     height: 18px!important;
 }
+
+.image-preview {
+    padding: 10px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #eee;
+    overflow: hidden;
+}
+
+/* 图片/视频预览内容 */
+.preview-content {
+    max-width: 100%;      /* 宽度不超过容器 */
+    max-height: 100%;     /* 高度不超过容器 */
+    object-fit: contain;  /* 保持比例，完整显示 */
+    display: block;       /* 避免图片底部间隙 */
+    margin: 0 auto;       /* 水平居中 */
+}
+
+.audio-preview {
+    width: 100%;
+    padding: 0 20px;
+}
+
+.preview-error,
+.unsupported-file {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    font-size: 14px;
+    width: 100%;
+    height: 100%;
+}
+
+.preview-error .el-icon,
+.unsupported-file .el-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.unsupported-file .el-image {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 未支持文件的图片 */
+.unsupported-file .el-image__inner {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
 </style>

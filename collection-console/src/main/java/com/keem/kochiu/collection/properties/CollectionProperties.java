@@ -1,5 +1,6 @@
 package com.keem.kochiu.collection.properties;
 
+import com.keem.kochiu.collection.enums.ResourceTypeEnum;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -20,5 +21,14 @@ public class CollectionProperties {
             values.addAll(v);
         });
         return values;
+    }
+
+    public ResourceTypeEnum getResourceType(String fileExt) {
+        for (Map.Entry<String, List<String>> entry : uploadType.entrySet()) {
+            if (entry.getValue().contains(fileExt)) {
+                return ResourceTypeEnum.getByValue(entry.getKey());
+            }
+        }
+        return ResourceTypeEnum.OTHER;
     }
 }
