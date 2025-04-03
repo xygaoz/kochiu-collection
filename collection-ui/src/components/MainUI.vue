@@ -257,6 +257,11 @@ function addCategory() {
     --el-header-height: 45px
 }
 
+.el-main{
+    margin: 0;
+    padding: 0;
+}
+
 .menu-icon{
     width: 32px;
     float: left;

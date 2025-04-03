@@ -55,7 +55,8 @@ public class UserResourceController {
         int serverPort = request.getServerPort();
 
         // 拼接成字符串
-        String baseUrl = scheme + "://" + serverName + (serverPort == 80 || serverPort == 443 ? "" : ":" + serverPort);
+        String baseUrl = scheme + "://" + serverName + (serverPort == 80 || serverPort == 443 ? "" : ":" + serverPort)
+                + request.getContextPath();
 
         return DefaultResult.ok(resourceService.getResourceList(CheckPermitAspect.USER_INFO.get(), baseUrl, cateId, pageBo));
     }

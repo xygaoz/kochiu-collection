@@ -12,7 +12,9 @@
                             class="waterfall-item"
                             :style="{ width: `${columnWidth}px` }"
                         >
-                            <el-card shadow="hover" :body-style="{ padding: '0px' }">
+                            <el-card shadow="hover" :body-style="{ padding: '0px' }"
+                                     :class="{ 'selected-card': selectedImage?.resourceId === image.resourceId }"
+                            >
                                 <div class="image-wrapper" @click="handlePreview(image)">
                                     <el-image
                                         :src="image.thumbnailUrl"
@@ -20,8 +22,16 @@
                                         loading="lazy"
                                         class="waterfall-image"
                                         :style="{ height: `${image.height * (columnWidth / image.width)}px` }"
-                                        @error="handleImageError"
-                                    />
+                                    >
+                                        <template #error>
+                                            <div class="image-error">
+                                                <img
+                                                    src="/images/default-thumbnail.jpg"
+                                                    style="height:100%;object-fit: contain;background-color: #f5f5f5;"
+                                                 alt="">
+                                            </div>
+                                        </template>
+                                    </el-image>
                                 </div>
                                 <div class="image-info">
                                     <div class="image-title">{{ image.title || image.sourceFileName }}</div>
@@ -31,11 +41,27 @@
                     </el-main>
                     <el-aside width="200px">
                         <div class="image-details" v-if="selectedImage">
-                            <p><strong>名称:</strong> {{ selectedImage.sourceFileName }}</p>
-                            <p><strong>评分:</strong> {{ selectedImage.star || "无" }}</p>
-                            <p><strong>大小:</strong> {{ formatSize(selectedImage.size) }}</p>
-                            <p><strong>创建时间:</strong> {{ formatTime(selectedImage.createdTime) }}</p>
-                            <p><strong>修改时间:</strong> {{ formatTime(selectedImage.updateTime) }}</p>
+                            <div>基本信息</div>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>原文件名</td>
+                                        <td>{{ selectedImage.sourceFileName }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>大小</td>
+                                        <td>{{ formatSize(selectedImage.size) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>创建时间</td>
+                                        <td>{{ formatTime(selectedImage.createdTime) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>修改时间</td>
+                                        <td>{{ formatTime(selectedImage.updateTime) }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                             <div class="tags" v-if="selectedImage.tags?.length">
                                 <span v-for="tag in selectedImage.tags" :key="tag">{{ tag }}</span>
                             </div>
@@ -64,7 +90,6 @@ import { onMounted, ref } from "vue";
 import { listCategoryFiles } from "@/apis/services";
 import { useRoute } from "vue-router";
 import { Resource } from "@/apis/interface";
-import defaultThumbnail from "@/assets/imgs/default-thumbnail.jpg";
 
 const route = useRoute();
 const cateId = route.params.cateId as string;
@@ -91,11 +116,6 @@ onMounted(async () => {
     }
 });
 
-// 图片加载失败处理
-const handleImageError = (e: Event) => {
-    const img = e.target as HTMLImageElement;
-    img.src = defaultThumbnail;
-};
 
 // 辅助方法：格式化文件大小
 const formatSize = (bytes?: number) => {
@@ -180,7 +200,7 @@ const handlePageChange = (page: number) => {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    background: white;
+    background-color: #fafafa;
 }
 
 /* 响应式调整 */
@@ -195,7 +215,8 @@ const handlePageChange = (page: number) => {
 }
 
 .image-details {
-    width: 30%;
+    width: 100%;
+    height: 100%;
     padding: 24px;
     background-color: #f9f9f9;
     border-left: 1px solid #ddd;
@@ -210,16 +231,59 @@ const handlePageChange = (page: number) => {
     font-size: 12px;
 }
 
-.el-main{
-    margin: 0;
-}
-
 .el-footer{
     height: 36px;
     background: white;
 }
 
+.el-card {
+    transition: all 0.3s ease;
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid #ebeef5; /* 默认边框 */
+}
+
+/* 普通卡片悬停效果 */
+.el-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* 选中卡片样式 */
+.selected-card {
+    border: 1px solid #409EFF !important;
+}
+
+/* 选中卡片悬停效果 */
+.selected-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3) !important;
+    border-color: #409EFF !important;
+}
+
+@keyframes card-selected {
+    from { border-width: 0; opacity: 0; }
+    to { border-width: 2px; opacity: 1; }
+}
+
 .image-container{
     margin: 10px;
+}
+
+.image-error {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center; /* 水平居中 */
+    align-items: center;     /* 垂直居中（可选） */
+    overflow: hidden;        /* 防止图片溢出 */
+}
+
+.image-error img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;     /* 保持比例完整显示 */
+    display: block;          /* 消除图片底部间隙 */
+    margin: 0 auto;          /* 水平居中备用方案 */
 }
 </style>

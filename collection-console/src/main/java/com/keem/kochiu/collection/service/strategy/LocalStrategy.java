@@ -259,7 +259,7 @@ public class LocalStrategy implements ResourceStrategy {
             return;
         }
         url = "/" + user.getUserCode() + url;
-        if(!url.equals(resource.getResourceUrl())){
+        if(!url.equals(resource.getResourceUrl()) && !url.equals(resource.getThumbUrl())){
             response.setStatus(404);
             return;
         }
