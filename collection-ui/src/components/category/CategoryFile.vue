@@ -4,7 +4,7 @@
         <div v-else-if="files.length === 0" class="empty">暂无文件</div>
         <template v-else>
             <el-container>
-                <el-container>
+                <el-container style="margin: 0">
                     <el-main class="image-container">
                         <div
                             v-for="(image, index) in files"
@@ -39,32 +39,70 @@
                             </el-card>
                         </div>
                     </el-main>
-                    <el-aside width="200px">
+                    <el-aside width="280px" class="detail-aside">
                         <div class="image-details" v-if="selectedImage">
-                            <div>基本信息</div>
-                            <table>
-                                <tbody>
-                                    <tr>
-                                        <td>原文件名</td>
-                                        <td>{{ selectedImage.sourceFileName }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>大小</td>
-                                        <td>{{ formatSize(selectedImage.size) }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>创建时间</td>
-                                        <td>{{ formatTime(selectedImage.createdTime) }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>修改时间</td>
-                                        <td>{{ formatTime(selectedImage.updateTime) }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <div class="tags" v-if="selectedImage.tags?.length">
-                                <span v-for="tag in selectedImage.tags" :key="tag">{{ tag }}</span>
+                            <div class="detail-header">
+                                <h3>文件详情</h3>
+                                <el-button
+                                    type="primary"
+                                    size="small"
+                                    @click="handleDownload(selectedImage)"
+                                    :icon="Download"
+                                >
+                                    下载
+                                </el-button>
                             </div>
+
+                            <el-divider />
+
+                            <div class="detail-content">
+                                <div class="detail-row">
+                                    <div class="detail-label">文件名</div>
+                                    <div class="detail-value">{{ selectedImage.sourceFileName }}</div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="detail-label">文件大小</div>
+                                    <div class="detail-value">{{ formatSize(selectedImage.size) }}</div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="detail-label">创建时间</div>
+                                    <div class="detail-value">{{ formatTime(selectedImage.createdTime) }}</div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="detail-label">修改时间</div>
+                                    <div class="detail-value">{{ formatTime(selectedImage.updateTime) }}</div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="detail-label">评分</div>
+                                    <div class="detail-value">
+                                        <el-rate
+                                            v-model="selectedImage.star"
+                                            disabled
+                                            show-score
+                                            text-color="#ff9900"
+                                            score-template="{value} 分"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div class="tag-section" v-if="selectedImage.tags?.length">
+                                    <el-divider>标签</el-divider>
+                                    <div class="tags">
+                                        <el-tag
+                                            v-for="tag in selectedImage.tags"
+                                            :key="tag"
+                                            size="small"
+                                            type="info"
+                                            class="tag-item"
+                                        >
+                                            {{ tag }}
+                                        </el-tag>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else class="empty-aside">
+                            <el-empty description="请选择图片查看详情" :image-size="100" />
                         </div>
                     </el-aside>
                 </el-container>
@@ -90,6 +128,7 @@ import { onMounted, ref } from "vue";
 import { listCategoryFiles } from "@/apis/services";
 import { useRoute } from "vue-router";
 import { Resource } from "@/apis/interface";
+import { Download } from "@element-plus/icons-vue";
 
 const route = useRoute();
 const cateId = route.params.cateId as string;
@@ -144,10 +183,13 @@ const handlePageChange = (page: number) => {
     // 实际项目中这里应该调用API获取对应页面的数据
 }
 
+const handleDownload = (image: Resource) => {
+    // 实现下载逻辑
+    console.log('下载文件:', image.sourceFileName);
+};
 </script>
 
 <style scoped>
-/* 原有样式基础上补充 */
 .loading{
     padding: 20px;
     text-align: center;
@@ -194,13 +236,16 @@ const handlePageChange = (page: number) => {
 }
 
 .image-info {
-    padding: 12px;
     text-align: center;
     font-size: 14px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    background-color: #fafafa;
+    background-color: #f1f1f1;
+}
+
+.image-title{
+    padding: 12px;
 }
 
 /* 响应式调整 */
@@ -211,13 +256,13 @@ const handlePageChange = (page: number) => {
 
     .image-container {
         height: 150px; /* 移动端减小高度 */
+        margin: 0!important;
     }
 }
 
 .image-details {
     width: 100%;
     height: 100%;
-    padding: 24px;
     background-color: #f9f9f9;
     border-left: 1px solid #ddd;
 }
@@ -267,7 +312,7 @@ const handlePageChange = (page: number) => {
 }
 
 .image-container{
-    margin: 10px;
+    margin: 0;
 }
 
 .image-error {
@@ -285,5 +330,83 @@ const handlePageChange = (page: number) => {
     object-fit: contain;     /* 保持比例完整显示 */
     display: block;          /* 消除图片底部间隙 */
     margin: 0 auto;          /* 水平居中备用方案 */
+}
+
+/* 详情侧边栏样式 */
+.detail-aside {
+    background-color: #fff;
+    border-left: 1px solid #e6e6e6;
+    height: calc(100vh - 60px); /* 减去footer高度 */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* 禁止滚动条 */
+}
+
+.detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 16px 0;
+    flex-shrink: 0; /* 防止压缩 */
+}
+
+.detail-content {
+    padding: 0 16px;
+    flex-grow: 1;
+    overflow-y: auto; /* 内容区域可滚动 */
+    margin-bottom: 16px;
+    background: #fafafa;
+}
+
+.detail-table {
+    margin-bottom: 16px;
+}
+
+:deep(.detail-table .el-descriptions__label) {
+    width: 80px;
+    color: #666;
+}
+
+.tag-section {
+    margin-top: 8px;
+}
+
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.empty-aside {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+    padding: 20px;
+}
+
+/* 响应式调整 */
+@media (max-width: 992px) {
+    .detail-aside {
+        width: 240px !important;
+    }
+}
+
+.detail-row {
+    display: flex;
+    margin-bottom: 12px;
+    font-size: 12px;
+}
+.detail-label {
+    width: 80px;
+    color: #666;
+    padding-right: 12px;
+}
+.detail-value {
+    flex: 1;
+}
+
+.el-rate{
+    height: 18px!important;
 }
 </style>
