@@ -266,7 +266,8 @@
             <column name="file_ext" remarks="文件扩展名" type="INTEGER" defaultValue="0">
                 <constraints nullable="false"/>
             </column>
-            <column name="resolution_ratio" remarks="分辨率" type="VARCHAR(200)"/>
+            <column name="resolution_ratio" remarks="原图分辨率" type="VARCHAR(100)"/>
+            <column name="thumb_ratio" remarks="缩略图分辨率" type="VARCHAR(100)"/>
             <column name="size" remarks="文件大小" type="INTEGER" defaultValue="0">
                 <constraints nullable="false"/>
             </column>

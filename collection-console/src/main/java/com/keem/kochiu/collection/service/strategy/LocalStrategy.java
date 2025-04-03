@@ -22,6 +22,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
@@ -137,31 +138,31 @@ public class LocalStrategy implements ResourceStrategy {
                     case bmp:
                     case png:
                     case webp:
-                        String resolutionRation = createImageThumbnail(filePath, thumbFilePath, fileType);
+                        String resolutionRation = createImageThumbnail(filePath, thumbFilePath, fileType, resourceDto);
                         resourceDto.setResolutionRatio(resolutionRation);
                         resourceDto.setThumbUrl(thumbUrl);
                         break;
                     case pdf:
-                        DocumentToImageConverter.convertPdfFirstPage(filePath, thumbFilePath);
+                        resourceDto.setThumbRatio(DocumentToImageConverter.convertPdfFirstPage(filePath, thumbFilePath));
                         resourceDto.setThumbUrl(thumbUrl);
                         break;
                     case doc:
                     case docx:
-                        DocumentToImageConverter.convertWordToImage(filePath, thumbFilePath);
+                        resourceDto.setThumbRatio(DocumentToImageConverter.convertWordToImage(filePath, thumbFilePath));
                         resourceDto.setThumbUrl(thumbUrl);
                         break;
                     case xls:
                     case xlsx:
-                        DocumentToImageConverter.convertExcelToImage(filePath, thumbFilePath);
+                        resourceDto.setThumbRatio(DocumentToImageConverter.convertExcelToImage(filePath, thumbFilePath));
                         resourceDto.setThumbUrl(thumbUrl);
                         break;
                     case ppt:
                     case pptx:
-                        DocumentToImageConverter.convertPptFirstPage(filePath, thumbFilePath);
+                        resourceDto.setThumbRatio(DocumentToImageConverter.convertPptFirstPage(filePath, thumbFilePath));
                         resourceDto.setThumbUrl(thumbUrl);
                         break;
                     case txt:
-                        DocumentToImageConverter.convertTxtToImage(filePath, thumbFilePath);
+                        resourceDto.setThumbRatio(DocumentToImageConverter.convertTxtToImage(filePath, thumbFilePath));
                         resourceDto.setThumbUrl(thumbUrl);
                         break;
                     case mp4:
@@ -175,6 +176,8 @@ public class LocalStrategy implements ResourceStrategy {
                             try {
                                 FileUtil.copyFile(resource.getInputStream(), new File(thumbFilePath), StandardCopyOption.REPLACE_EXISTING);
                                 resourceDto.setThumbUrl(thumbUrl);
+                                BufferedImage image = ImageIO.read(resource.getInputStream());
+                                resourceDto.setThumbRatio(image.getWidth() + "x" + image.getHeight());
                             } catch (IOException e) {
                                 log.error("缩略图生成失败", e);
                             }
@@ -187,6 +190,8 @@ public class LocalStrategy implements ResourceStrategy {
                             try {
                                 FileUtil.copyFile(resource.getInputStream(), new File(thumbFilePath), StandardCopyOption.REPLACE_EXISTING);
                                 resourceDto.setThumbUrl(thumbUrl);
+                                BufferedImage image = ImageIO.read(resource.getInputStream());
+                                resourceDto.setThumbRatio(image.getWidth() + "x" + image.getHeight());
                             }
                             catch (IOException e) {
                                 log.error("缩略图生成失败", e);
@@ -209,7 +214,9 @@ public class LocalStrategy implements ResourceStrategy {
      * @return
      * @throws IOException
      */
-    private String createImageThumbnail(String filePath, String thumbFilePath, FileTypeEnum fileType) throws IOException {
+    private String createImageThumbnail(String filePath, String thumbFilePath,
+                                        FileTypeEnum fileType,
+                                        ResourceDto resourceDto) throws IOException {
 
         String resolutionRation = null;
         //生成缩略图
@@ -218,7 +225,7 @@ public class LocalStrategy implements ResourceStrategy {
         if(fileType.isResolutionRatio()){
             resolutionRation = srcImg.getWidth() + "x" + srcImg.getHeight();
         }
-        ImageUtil.writeThumbnail(srcImg, thumbFilePath);
+        resourceDto.setThumbRatio(ImageUtil.writeThumbnail(srcImg, thumbFilePath));
 
         return resolutionRation;
     }

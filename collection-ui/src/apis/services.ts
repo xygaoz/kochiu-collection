@@ -1,5 +1,5 @@
 import httpInstance from "@/apis/utils"; // 导入httpInstance
-import { Category, Resource } from "@/apis/interface"; // 导入Category接口
+import { Category, PageInfo, Resource } from "@/apis/interface"; // 导入Category接口
 import { loading } from "@/apis/utils";
 
 export const tokenStore = {
@@ -86,15 +86,23 @@ export const uploadFile = (file: File, categorySno: string): Promise<any> => {
     });
 }
 
-export const listCategoryFiles = (cateId: string): Promise<Resource[]> => {
-    return httpInstance.get("/resource/" + cateId).then((model: any) => {
+export const listCategoryFiles = (cateId: string, page: number, size: number): Promise<PageInfo<Resource>> => {
+    const ld = loading("加载中")
+    return httpInstance.post("/resource/" + cateId, {
+        params: {
+            pageNum: page,
+            pageSize: size
+        }
+    }).then((model: any) => {
         if (model) {
             console.log("获取文件列表成功:", model);
-            return model as Resource[];
+            return model as PageInfo<Resource>;
         }
-        return [];
+        return { pageNum: 0, pageSize: 0, total: 0, pages: 0, list: [] };
     }).catch((error) => {
         console.error("获取文件列表失败:", error);
-        return [];
+        return { pageNum: 0, pageSize: 0, total: 0, pages: 0, list: [] };
+    }).finally(() => {
+        ld.close();
     });
 }

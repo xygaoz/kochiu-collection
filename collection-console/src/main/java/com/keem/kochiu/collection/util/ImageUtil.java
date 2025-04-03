@@ -53,7 +53,7 @@ public class ImageUtil {
      * @param outputPath
      * @throws IOException
      */
-    public static void writeThumbnail(BufferedImage image, String outputPath) throws IOException {
+    public static String writeThumbnail(BufferedImage image, String outputPath) throws IOException {
         // 生成缩略图，参数依次为：原始图片，缩略图宽度，缩略图高度，是否等比缩放
         BufferedImage thumbnail = Thumbnails.of(image)
                 .size(500, 500) // 设置缩略图的尺寸
@@ -65,5 +65,7 @@ public class ImageUtil {
 
         // 保存缩略图
         ImageIO.write(thumbnail, "png", new File(outputPath));
+
+        return thumbnail.getWidth() + "x" + thumbnail.getHeight();
     }
 }

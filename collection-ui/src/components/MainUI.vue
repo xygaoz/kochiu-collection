@@ -18,7 +18,7 @@
                             KoChiu Collection
                         </div>
                     </div>
-                    <div v-for="menuItem in menu" :key="menuItem.path">
+                    <div v-for="menuItem in menu" :key="menuItem.name">
                         <el-sub-menu
                             v-if="menuItem.children && menuItem.children.length"
                             :index="menuItem.path"
@@ -121,9 +121,7 @@
 
                 <el-main class="el-main">
                     <RouterView v-slot="{ Component }" :menuItemClick="menuItemClick">
-                        <KeepAlive :max="10">
-                            <component :is="Component"></component>
-                        </KeepAlive>
+                        <component :is="Component"></component>
                     </RouterView>
                 </el-main>
             </el-container>
@@ -139,7 +137,7 @@ import { listCategory } from "@/apis/services";
 import { Plus } from "@element-plus/icons-vue"; // 导入listCategory方法
 import { Category } from "@/apis/interface"; // 导入Category接口
 
-const menu = ref(routes); // 使用ref包裹routes，使其响应式
+const menu = ref(routes.filter(route => route.meta?.showInMenu !== false));
 const defaultOpeneds = ref(['/My', '/Category']); // 添加默认展开的子菜单路径
 
 // 初始加载dom
@@ -157,13 +155,13 @@ const loadCategories = async () => {
             const categoryRoute = menu.value.find(route => route.path === '/Category');
             if (categoryRoute && categoryRoute.children) {
                 categoryRoute.children = categories.map(category => ({
-                    path: `/Category/${category.sno}`,
-                    name: `category${category.sno}`,
+                    path: `/Category/${category.sno}`,  // 完整路径（大小写一致）
+                    // 不再需要name字段，因为使用path导航
                     meta: {
-                        title: category.cateName          // 显示用名称存到meta
-                    },
-                    component: () => import('@/components/category/CategoryFile.vue')
-                }));
+                        title: category.cateName,
+                        cateId: category.sno  // 存储分类ID备用
+                    }
+                }))
             }
         }
     } catch (error) {
@@ -172,22 +170,15 @@ const loadCategories = async () => {
 };
 
 // 菜单项点击事件
-function menuItemClick(subMenuItem: RouteRecordRaw) {
-    console.log('Clicked menu item:', subMenuItem);
-    if (subMenuItem.path.includes('/Category/')) {
-        const cateId = subMenuItem.path.split('/')[2];
-        router.push({ name: `category${cateId}`, params: { cateId } }).then(() => {
-            console.log('Navigated to:', router.currentRoute.value);
-        }).catch(err => {
-            console.error('Navigation failed:', err);
-        });
-    } else {
-        router.push({ name: subMenuItem.name }).then(() => {
-            console.log('Navigated to:', router.currentRoute.value);
-        }).catch(err => {
-            console.error('Navigation failed:', err);
-        });
-    }
+const menuItemClick = (item: RouteRecordRaw) => {
+    // 统一使用path跳转
+    router.push(item.path).catch(err => {
+        console.error('路由跳转失败:', err)
+        // 失败时降级处理
+        if (item.path.includes('/Category/')) {
+            router.push('/Category')
+        }
+    })
 }
 
 // 添加分类的点击事件

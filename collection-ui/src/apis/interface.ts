@@ -3,6 +3,14 @@ export interface Category {
     cateName: string;
 }
 
+export interface PageInfo<T> {
+    pageNum: number;
+    pageSize: number;
+    total: number;
+    pages: number;
+    list: T[];
+}
+
 export interface Resource {
     resourceId: number;
     thumbnailUrl: string;
@@ -10,10 +18,12 @@ export interface Resource {
     title: string;
     description: string;
     resolutionRatio: string;
-    size: string;
+    size: number;
     isPublic: number;
     star: number;
     tags: string[];
     createdTime: string;
     updateTime: string;
+    width: number;
+    height: number;
 }

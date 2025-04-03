@@ -55,33 +55,32 @@ public class DocumentToImageConverter {
     }
 
     // ---------- PDF 处理 ----------
-    public static void convertPdfFirstPage(String pdfPath, String outputPath) throws IOException {
+    public static String convertPdfFirstPage(String pdfPath, String outputPath) throws IOException {
         try (PDDocument document = PDDocument.load(new File(pdfPath))) {
             PDFRenderer renderer = new PDFRenderer(document);
             BufferedImage image = renderer.renderImage(0, 1.5f); // 1.5倍缩放提升清晰度
 
             // 生成缩略图
-            ImageUtil.writeThumbnail(image, outputPath);
+            return ImageUtil.writeThumbnail(image, outputPath);
         }
     }
 
     // ---------- PPT 处理 ----------
-    public static void convertPptFirstPage(String pptPath, String outputPath) throws IOException {
+    public static String convertPptFirstPage(String pptPath, String outputPath) throws IOException {
         try (SlideShow<?, ?> slideShow = new XMLSlideShow(new FileInputStream(pptPath))) {
             Dimension pageSize = slideShow.getPageSize();
             BufferedImage image = new BufferedImage(pageSize.width, pageSize.height, BufferedImage.TYPE_INT_RGB);
             Graphics2D graphics = image.createGraphics();
             slideShow.getSlides().get(0).draw(graphics); // 绘制第一页
+            graphics.dispose();
 
             // 生成缩略图
-            ImageUtil.writeThumbnail(image, outputPath);
-
-            graphics.dispose();
+            return ImageUtil.writeThumbnail(image, outputPath);
         }
     }
 
     // ---------- word 处理 ----------
-    public static void convertWordToImage(String wordPath, String outputPath) throws Exception {
+    public static String convertWordToImage(String wordPath, String outputPath) throws Exception {
 
         String pdfPath = wordPath.replace(".docx", ".pdf");
         pdfPath = pdfPath.replace(".doc", ".pdf");
@@ -90,9 +89,11 @@ public class DocumentToImageConverter {
         convertWordToPdf(wordPath, pdfPath);
 
         // Step 3: Convert PDF first page to image
-        convertPdfFirstPage(pdfPath, outputPath);
+        String thumbRatio = convertPdfFirstPage(pdfPath, outputPath);
 
         FileUtil.del(pdfPath);
+
+        return thumbRatio;
     }
 
     private static void convertWordToPdf(String wordPath, String outputPath) throws Exception {
@@ -115,7 +116,7 @@ public class DocumentToImageConverter {
      * @param excelPath
      * @param outputPath
      */
-    public static void convertExcelToImage(String excelPath, String outputPath){
+    public static String convertExcelToImage(String excelPath, String outputPath){
         // A4 纸尺寸（300 DPI）
         final int A4_WIDTH = 2480;
         final int A4_HEIGHT = 3508;
@@ -159,10 +160,12 @@ public class DocumentToImageConverter {
             }
 
             // 保存图像
-            ImageUtil.writeThumbnail(image, outputPath);
+            return ImageUtil.writeThumbnail(image, outputPath);
         } catch (IOException e) {
             log.error("转换失败", e);
         }
+
+        return null;
     }
 
     private static String getCellValue(Cell cell) {
@@ -189,7 +192,7 @@ public class DocumentToImageConverter {
      * @param txtPath
      * @param outputPath
      */
-    public static void convertTxtToImage(String txtPath, String outputPath) {
+    public static String convertTxtToImage(String txtPath, String outputPath) {
         // A4 纸尺寸（300 DPI）
         final int A4_WIDTH = 2480;
         final int A4_HEIGHT = 3508;
@@ -215,13 +218,13 @@ public class DocumentToImageConverter {
                 g2d.drawString(line, 50, y); // 每行的x坐标为50像素
                 y += 20; // 每行的高度为20像素
             }
+            g2d.dispose();
 
             // 保存图像
-            ImageUtil.writeThumbnail(image, outputPath);
-
-            g2d.dispose();
+            return ImageUtil.writeThumbnail(image, outputPath);
         } catch (IOException e) {
             log.error("转换失败", e);
         }
+        return null;
     }
 }

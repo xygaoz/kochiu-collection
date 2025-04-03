@@ -18,6 +18,8 @@ spring:
       max-file-size: 10MB
       #请求总上传大小
       max-request-size: 100MB
+  jackson:
+    default-property-inclusion: non_null
 
 #指定mybatis-config.xml的位置
 mybatis-plus:

@@ -1,11 +1,15 @@
 package com.keem.kochiu.collection.service;
 
+import com.github.pagehelper.PageInfo;
+import com.keem.kochiu.collection.data.bo.PageBo;
 import com.keem.kochiu.collection.data.bo.UploadBo;
 import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.data.vo.FileVo;
+import com.keem.kochiu.collection.data.vo.PageVo;
 import com.keem.kochiu.collection.data.vo.ResourceVo;
 import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.entity.UserResource;
+import com.keem.kochiu.collection.enums.SaveTypeEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.repository.SysUserRepository;
 import com.keem.kochiu.collection.repository.UserResourceRepository;
@@ -84,7 +88,9 @@ public class UserResourceService {
      * @return
      * @throws CollectionException
      */
-    public List<ResourceVo> getResourceList(UserDto userDto, int cateSno) throws CollectionException {
+    public PageVo<ResourceVo> getResourceList(UserDto userDto,
+                                                String contextPath, int cateSno,
+                                                PageBo pageBo) throws CollectionException {
 
         Integer userId = userDto != null ? userDto.getUserId() : null;
         if(userId == null){
@@ -96,10 +102,53 @@ public class UserResourceService {
             throw new CollectionException("非法请求。");
         }
 
-        List<UserResource> resourceList = resourceRepository.getResourceList(userId, cateSno);
-        return resourceList.stream().map(resource -> ResourceVo.builder()
-                .resourceId(resource.getResourceId())
-                .thumbnailUrl("/" + resource.getResourceId() + "/" + resource.getThumbUrl().replace("/" + user.getUserCode() + "/", ""))
-                .build()).toList();
+        PageInfo<UserResource> resourceList = resourceRepository.getResourceList(userId, cateSno, pageBo);
+        List<ResourceVo> datas = resourceList
+                .getList()
+                .stream()
+                .map(resource -> {
+                        //缩略图宽高
+                        String thumbRatio = resource.getThumbRatio();
+                        int width = 150;
+                        int height = 200;
+                        if(thumbRatio != null){
+                            String[] split = thumbRatio.split("x");
+                            width = Integer.parseInt(split[0]);
+                            height = Integer.parseInt(split[1]);
+                        }
+
+                        return ResourceVo.builder()
+                                .resourceId(resource.getResourceId())
+                                .thumbnailUrl(buildThumbnailUr(user, resource, contextPath))
+                                .title(resource.getTitle())
+                                .sourceFileName(resource.getSourceFileName())
+                                .width(width)
+                                .height(height)
+                                .build();
+                    }
+                ).toList();
+
+        return PageVo.<ResourceVo>builder()
+                .list(datas)
+                .pageNum(resourceList.getPageNum())
+                .pageSize(resourceList.getPageSize())
+                .total(resourceList.getTotal())
+                .pages(resourceList.getPages())
+                .build();
+    }
+
+    /**
+     * 构建缩略图url
+     * @param user
+     * @param resource
+     * @param contextPath
+     * @return
+     */
+    private String buildThumbnailUr(SysUser user, UserResource resource, String contextPath){
+
+        if(SaveTypeEnum.getByCode(resource.getSaveType()) != SaveTypeEnum.NETWORK){
+            return contextPath + "/" + resource.getResourceId() + "/" + resource.getThumbUrl().replace("/" + user.getUserCode() + "/", "");
+        }
+        return resource.getThumbUrl();
     }
 }

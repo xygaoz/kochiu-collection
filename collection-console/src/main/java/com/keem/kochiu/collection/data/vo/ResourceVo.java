@@ -16,4 +16,6 @@ public class ResourceVo {
     private String size;
     private Integer isPublic;
     private Integer star;
+    private Integer width;
+    private Integer height;
 }

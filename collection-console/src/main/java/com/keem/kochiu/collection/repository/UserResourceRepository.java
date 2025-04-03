@@ -2,14 +2,16 @@ package com.keem.kochiu.collection.repository;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.keem.kochiu.collection.data.bo.PageBo;
 import com.keem.kochiu.collection.data.dto.ResourceDto;
 import com.keem.kochiu.collection.entity.UserResource;
 import com.keem.kochiu.collection.enums.SaveTypeEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.mapper.UserResourceMapper;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class UserResourceRepository extends ServiceImpl<UserResourceMapper, UserResource>{
@@ -39,6 +41,7 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
         userResource.setResolutionRatio(resourceDto.getResolutionRatio());
         userResource.setSize(resourceDto.getSize());
         userResource.setThumbUrl(resourceDto.getThumbUrl());
+        userResource.setThumbRatio(resourceDto.getThumbRatio());
         if (this.save(userResource)) {
             // 获取最后插入的行ID
             Long resourceId = baseMapper.selectLastInsertId();
@@ -56,11 +59,14 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
      * @return
      * @throws CollectionException
      */
-    public List<UserResource> getResourceList(int userId, int cateSno) throws CollectionException {
+    public PageInfo<UserResource> getResourceList(int userId, int cateSno, PageBo pageBo) throws CollectionException {
 
-        LambdaQueryWrapper<UserResource> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(UserResource::getUserId, userId);
-        lambdaQueryWrapper.eq(UserResource::getCateId, categoryRepository.getCateId(userId, cateSno));
-        return baseMapper.selectList(lambdaQueryWrapper);
+        try(Page<UserResource> page = PageHelper.startPage(pageBo.getPageNum(), pageBo.getPageSize())) {
+
+            LambdaQueryWrapper<UserResource> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(UserResource::getUserId, userId);
+            lambdaQueryWrapper.eq(UserResource::getCateId, categoryRepository.getCateId(userId, cateSno));
+            return new PageInfo<>(baseMapper.selectList(lambdaQueryWrapper));
+        }
     }
 }

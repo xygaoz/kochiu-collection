@@ -37,6 +37,14 @@ routes.push(
         name: "help",
         meta: { title: '帮助', icon: 'Help', iconType: 'icons-vue', style: 'color: rgb(59,130,246)' },
     },
+    // router.ts 中添加动态路由规则
+    {
+        path: '/Category/:cateId',  // 动态参数（注意大小写统一）
+        name: 'category-detail',    // 固定名称
+        component: () => import('@/components/category/CategoryFile.vue'),
+        meta: { showInMenu: false },
+        props: true  // 将路由参数自动作为props传递
+    }
 )
 
 //创建路由，并且暴露出去

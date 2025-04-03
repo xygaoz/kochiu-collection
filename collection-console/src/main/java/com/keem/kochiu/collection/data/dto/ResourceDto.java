@@ -15,4 +15,5 @@ public class ResourceDto {
     private String resolutionRatio;
     private Long size;
     private String thumbUrl;
+    private String thumbRatio;
 }

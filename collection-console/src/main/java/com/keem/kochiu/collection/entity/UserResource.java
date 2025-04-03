@@ -26,6 +26,7 @@ public class UserResource extends BaseEntity{
     private Integer deleted;
     private String fileExt;
     private String resolutionRatio;
+    private String thumbRatio;
     private Long size;
     private Integer isPublic;
     private Integer star;
