@@ -9,6 +9,7 @@ import com.keem.kochiu.collection.data.vo.PageVo;
 import com.keem.kochiu.collection.data.vo.ResourceVo;
 import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.entity.UserResource;
+import com.keem.kochiu.collection.enums.FileTypeEnum;
 import com.keem.kochiu.collection.enums.SaveTypeEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.repository.SysUserRepository;
@@ -118,12 +119,18 @@ public class UserResourceService {
                         }
 
                         return ResourceVo.builder()
-                                .resourceId(resource.getResourceId())
-                                .thumbnailUrl(buildThumbnailUr(user, resource, contextPath))
+                                .resourceUrl(buildResourceUrl(user, resource, contextPath))
+                                .thumbnailUrl(contextPath + "/" + resource.getResourceId() + "/" + resource.getThumbUrl().replace("/" + user.getUserCode() + "/", ""))
                                 .title(resource.getTitle())
+                                .description(resource.getDescription())
                                 .sourceFileName(resource.getSourceFileName())
                                 .width(width)
                                 .height(height)
+                                .fileType(FileTypeEnum.getByValue(resource.getFileExt()).getDesc())
+                                .size(resource.getSize())
+                                .resolutionRatio(resource.getResolutionRatio())
+                                .createTime(resource.getCreateTime())
+                                .updateTime(resource.getUpdateTime())
                                 .build();
                     }
                 ).toList();
@@ -138,16 +145,16 @@ public class UserResourceService {
     }
 
     /**
-     * 构建缩略图url
+     * 构建url
      * @param user
      * @param resource
      * @param contextPath
      * @return
      */
-    private String buildThumbnailUr(SysUser user, UserResource resource, String contextPath){
+    private String buildResourceUrl(SysUser user, UserResource resource, String contextPath){
 
         if(SaveTypeEnum.getByCode(resource.getSaveType()) != SaveTypeEnum.NETWORK){
-            return contextPath + "/" + resource.getResourceId() + "/" + resource.getThumbUrl().replace("/" + user.getUserCode() + "/", "");
+            return contextPath + "/" + resource.getResourceId() + "/" + resource.getResourceUrl().replace("/" + user.getUserCode() + "/", "");
         }
         return resource.getThumbUrl();
     }

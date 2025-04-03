@@ -22,8 +22,9 @@ export interface Resource {
     isPublic: number;
     star: number;
     tags: string[];
-    createdTime: string;
+    createTime: string;
     updateTime: string;
     width: number;
     height: number;
+    fileType: string;
 }

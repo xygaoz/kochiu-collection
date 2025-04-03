@@ -61,14 +61,22 @@
                                     <div class="detail-value">{{ selectedImage.sourceFileName }}</div>
                                 </div>
                                 <div class="detail-row">
+                                    <div class="detail-label">文件类型</div>
+                                    <div class="detail-value">{{ selectedImage.fileType }}</div>
+                                </div>
+                                <div class="detail-row" v-if="selectedImage.resolutionRatio">
+                                    <div class="detail-label">分辨率</div>
+                                    <div class="detail-value">{{ selectedImage.resolutionRatio }}</div>
+                                </div>
+                                <div class="detail-row">
                                     <div class="detail-label">文件大小</div>
                                     <div class="detail-value">{{ formatSize(selectedImage.size) }}</div>
                                 </div>
                                 <div class="detail-row">
                                     <div class="detail-label">创建时间</div>
-                                    <div class="detail-value">{{ formatTime(selectedImage.createdTime) }}</div>
+                                    <div class="detail-value">{{ formatTime(selectedImage.createTime) }}</div>
                                 </div>
-                                <div class="detail-row">
+                                <div class="detail-row" v-if="selectedImage.updateTime">
                                     <div class="detail-label">修改时间</div>
                                     <div class="detail-value">{{ formatTime(selectedImage.updateTime) }}</div>
                                 </div>
@@ -135,7 +143,7 @@ const cateId = route.params.cateId as string;
 const files = ref<Resource[]>([]);
 const selectedImage = ref<Resource | null>(null);
 const loading = ref(true);
-const columnWidth = ref(240)
+const columnWidth = ref(180)
 const currentPage = ref(1)
 const pageSize = ref(500)
 const total = ref(0)
@@ -264,7 +272,6 @@ const handleDownload = (image: Resource) => {
     width: 100%;
     height: 100%;
     background-color: #f9f9f9;
-    border-left: 1px solid #ddd;
 }
 
 .tags span {
@@ -336,7 +343,6 @@ const handleDownload = (image: Resource) => {
 .detail-aside {
     background-color: #fff;
     border-left: 1px solid #e6e6e6;
-    height: calc(100vh - 60px); /* 减去footer高度 */
     display: flex;
     flex-direction: column;
     overflow: hidden; /* 禁止滚动条 */
