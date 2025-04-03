@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Data
 public class ResourceVo {
 
+    private Long resourceId;
     private String thumbnailUrl;
     private String resourceUrl;
     private String sourceFileName;

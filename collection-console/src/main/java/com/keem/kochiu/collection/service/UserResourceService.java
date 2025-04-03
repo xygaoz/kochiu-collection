@@ -119,6 +119,7 @@ public class UserResourceService {
                         }
 
                         return ResourceVo.builder()
+                                .resourceId(resource.getResourceId())
                                 .resourceUrl(buildResourceUrl(user, resource, contextPath))
                                 .thumbnailUrl(contextPath + "/" + resource.getResourceId() + "/" + resource.getThumbUrl().replace("/" + user.getUserCode() + "/", ""))
                                 .title(resource.getTitle())

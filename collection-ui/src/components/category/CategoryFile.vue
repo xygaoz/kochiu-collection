@@ -42,7 +42,7 @@
                     <el-aside width="280px" class="detail-aside">
                         <div class="image-details" v-if="selectedImage">
                             <div class="detail-header">
-                                <h3>文件详情</h3>
+                                <div>文件详情</div>
                                 <el-button
                                     type="primary"
                                     size="small"
