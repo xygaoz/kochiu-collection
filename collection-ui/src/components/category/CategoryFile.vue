@@ -6,37 +6,37 @@
             <el-container>
                 <el-container style="margin: 0">
                     <el-main class="image-container">
-                        <div
-                            v-for="(image, index) in files"
-                            :key="index"
-                            class="waterfall-item"
-                            :style="{ width: `${columnWidth}px` }"
-                        >
-                            <el-card shadow="hover" :body-style="{ padding: '0px' }"
-                                     :class="{ 'selected-card': selectedImage?.resourceId === image.resourceId }"
-                            >
-                                <div class="image-wrapper" @click="handlePreview(image)">
-                                    <el-image
-                                        :src="image.thumbnailUrl"
-                                        fit="cover"
-                                        loading="lazy"
-                                        class="waterfall-image"
-                                        :style="{ height: `${image.height * (columnWidth / image.width)}px` }"
-                                    >
-                                        <template #error>
-                                            <div class="image-error">
-                                                <img
-                                                    src="/images/default-thumbnail.jpg"
-                                                    style="height:100%;object-fit: contain;background-color: #f5f5f5;"
-                                                 alt="">
-                                            </div>
-                                        </template>
-                                    </el-image>
-                                </div>
-                                <div class="image-info">
-                                    <div class="image-title">{{ image.title || image.sourceFileName }}</div>
-                                </div>
-                            </el-card>
+                        <div class="grid-container">
+                            <div v-for="(image, index) in files" :key="index" class="grid-item">
+                                <el-card
+                                    shadow="hover"
+                                    :body-style="{ padding: '0px' }"
+                                    :class="{ 'selected-card': selectedImage?.resourceId === image.resourceId }"
+                                >
+                                    <div class="image-wrapper" @click="handlePreview(image)">
+                                        <el-image
+                                            :src="image.thumbnailUrl"
+                                            fit="cover"
+                                            loading="lazy"
+                                            class="waterfall-image"
+                                            :style="{ height: `${image.height * (columnWidth / image.width)}px` }"
+                                        >
+                                            <template #error>
+                                                <div class="image-error">
+                                                    <img
+                                                        src="/images/default-thumbnail.jpg"
+                                                        style="height:100%;object-fit: contain;background-color: #f5f5f5;"
+                                                        alt=""
+                                                    >
+                                                </div>
+                                            </template>
+                                        </el-image>
+                                    </div>
+                                    <div class="image-info">
+                                        <div class="image-title">{{ image.title || image.sourceFileName }}</div>
+                                    </div>
+                                </el-card>
+                            </div>
                         </div>
                     </el-main>
                     <el-aside width="280px" class="detail-aside">
@@ -217,14 +217,15 @@ const handleDownload = (image: Resource) => {
     height: 100%;
 }
 
-.waterfall-item {
-    transition: all 0.3s ease;
-    margin-bottom: 16px;
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-auto-flow: dense;
+    gap: 16px;
+}
 
-    &:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    }
+.grid-item {
+    break-inside: avoid;
 }
 
 .image-wrapper {
@@ -254,6 +255,9 @@ const handleDownload = (image: Resource) => {
 
 .image-title{
     padding: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* 响应式调整 */
@@ -265,6 +269,7 @@ const handleDownload = (image: Resource) => {
     .image-container {
         height: 150px; /* 移动端减小高度 */
         margin: 0!important;
+        padding: 15px;
     }
 }
 
@@ -289,10 +294,12 @@ const handleDownload = (image: Resource) => {
 }
 
 .el-card {
+    width: 100%;
     transition: all 0.3s ease;
     border-radius: 5px;
     overflow: hidden;
-    border: 1px solid #ebeef5; /* 默认边框 */
+    border: 1px solid #ebeef5;
+    margin-bottom: 0; /* 由 masonry-item 控制间距 */
 }
 
 /* 普通卡片悬停效果 */
@@ -320,6 +327,7 @@ const handleDownload = (image: Resource) => {
 
 .image-container{
     margin: 0;
+    padding: 15px;
 }
 
 .image-error {
@@ -392,9 +400,15 @@ const handleDownload = (image: Resource) => {
 }
 
 /* 响应式调整 */
-@media (max-width: 992px) {
-    .detail-aside {
-        width: 240px !important;
+@media (max-width: 1200px) {
+    .masonry-grid {
+        padding: 0 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .masonry-item {
+        margin-bottom: 12px;
     }
 }
 
