@@ -36,7 +36,7 @@
                                     {{ menuItem.meta?.title || menuItem.name }}
                                 </div>
                                 <!-- 添加按钮 -->
-                                <el-icon v-if="menuItem.path === '/category'" @click="addCategory" class="add_category" title="新分类">
+                                <el-icon v-if="menuItem.path === '/Category'" @click="addCategory" class="add_category" title="新分类">
                                     <Plus />
                                 </el-icon>
                             </template>

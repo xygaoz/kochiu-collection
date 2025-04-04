@@ -28,8 +28,8 @@
             </div>
             <template #tip>
                 <div class="el-upload__tip">
-                    每个文件大小不超过 100MB，支持上传文件类型：
-                    <em>*.jpg、*.jpeg、*.png、*.gif、*.bmp、*.webp、*.psd、*.doc 、*.docx、*.xls、*.xlsx、*.ppt、*.pptx、*.pdf、*.txt、*.mp4、*.avi、*.wmv、*.mov、*.mkv、*.mp3、*.wav、*.flac</em>
+                    支持格式：图片（JPG/PNG/GIF等）、文档（PDF/DOCX等）、视频（MP4/AVI等）、音频（MP3/WAV等）<br>
+                    单文件最大 100MB
                 </div>
             </template>
         </el-upload>
