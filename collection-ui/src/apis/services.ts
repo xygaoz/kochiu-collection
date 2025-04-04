@@ -74,6 +74,7 @@ export const uploadFile = (file: File, categorySno: string): Promise<any> => {
     formData.append('file', file);
     formData.append('categoryId', categorySno);
 
+    const ld = loading("上传中")
     return httpInstance.post("/upload", formData).then((model: any) => {
         if (model) {
             console.log("文件上传成功:", model);
@@ -83,6 +84,8 @@ export const uploadFile = (file: File, categorySno: string): Promise<any> => {
     }).catch((error) => {
         console.error("文件上传失败:", error);
         throw error; // 抛出错误以便调用者处理
+    }).finally(() => {
+        ld.close();
     });
 }
 

@@ -28,7 +28,7 @@
             </div>
             <template #tip>
                 <div class="el-upload__tip">
-                    每个文件大小不超过 2MB，支持上传文件类型：
+                    每个文件大小不超过 100MB，支持上传文件类型：
                     <em>*.jpg、*.jpeg、*.png、*.gif、*.bmp、*.webp、*.psd、*.doc 、*.docx、*.xls、*.xlsx、*.ppt、*.pptx、*.pdf、*.txt、*.mp4、*.avi、*.wmv、*.mov、*.mkv、*.mp3、*.wav、*.flac</em>
                 </div>
             </template>
@@ -52,7 +52,7 @@ const allowedTypes = [
     'application/pdf', 'text/plain', 'video/mp4', 'video/avi', 'video/wmv', 'video/quicktime',
     'video/x-matroska', 'audio/mpeg', 'audio/wav', 'audio/flac'
 ];
-const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+const maxSize = 100 * 1024 * 1024; // 100MB in bytes
 
 // 上传前的文件检查
 const beforeUpload = (file: File) => {
@@ -64,7 +64,7 @@ const beforeUpload = (file: File) => {
 
     const isLtMaxSize = file.size <= maxSize;
     if (!isLtMaxSize) {
-        ElMessage.error(`文件大小不能超过 2MB`);
+        ElMessage.error(`文件大小不能超过 100MB`);
         return false;
     }
 
