@@ -1,0 +1,39 @@
+server:
+  ## 服务端口（可选，默认9000）
+  port: 9000
+  servlet:
+  ## 服务上下文（可选，默认/collection）
+    context-path: /collection
+
+collection:
+  ## 服务端存储路径
+  upload-path: /Volumes/Document/Temp/collection
+  ## LibreOffice安装路径（可选）
+  office-home: /Applications/LibreOffice.app/Contents
+  ## 文件上传类型（可选，以下类型已经支持，如要添加，请自行修改，测试未必通过）
+  upload-type:
+    image:
+      - jpg
+      - jpeg
+      - gif
+      - bmp
+      - png
+      - webp
+    document:
+      - pdf
+      - txt
+      - doc
+      - docx
+      - xls
+      - xlsx
+      - ppt
+      - pptx
+    video:
+      - mp4
+      - mov
+      - avi
+    audio:
+      - wav
+      - mp3
+      - flac
+    other:
