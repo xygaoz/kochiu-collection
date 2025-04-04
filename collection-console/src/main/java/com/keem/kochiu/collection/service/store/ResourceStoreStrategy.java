@@ -1,4 +1,4 @@
-package com.keem.kochiu.collection.service.strategy;
+package com.keem.kochiu.collection.service.store;
 
 import com.keem.kochiu.collection.data.bo.UploadBo;
 import com.keem.kochiu.collection.data.dto.UserDto;
@@ -8,7 +8,7 @@ import com.keem.kochiu.collection.exception.CollectionException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public interface ResourceStrategy {
+public interface ResourceStoreStrategy {
 
     /**
      * 保存文件

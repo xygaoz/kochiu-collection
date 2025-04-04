@@ -14,7 +14,10 @@ public class CollectionProperties {
 
     private String uploadPath = "/";
     private Map<String, List<String>> uploadType;
+    // office安装目录
     private String officeHome;
+    // ffmpeg安装目录
+    private String ffmpegPath;
 
     public Collection<String> getUploadTypes() {
         Set<String> values = new HashSet<>();

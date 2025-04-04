@@ -1,0 +1,108 @@
+package com.keem.kochiu.collection.service.file;
+
+import cn.hutool.core.io.FileUtil;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.keem.kochiu.collection.data.dto.ResourceDto;
+import com.keem.kochiu.collection.enums.FileTypeEnum;
+import com.keem.kochiu.collection.properties.CollectionProperties;
+import org.apache.poi.hwpf.HWPFDocument;
+import org.apache.poi.hwpf.extractor.WordExtractor;
+import org.jodconverter.core.office.OfficeManager;
+import org.jodconverter.local.LocalConverter;
+import org.jodconverter.local.office.LocalOfficeManager;
+import org.springframework.stereotype.Service;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+
+@Service("doc")
+public class DocFileStrategy implements FileStrategy{
+
+    protected final CollectionProperties properties;
+    protected final PdfFileStrategy pdfFileStrategy;
+
+    public DocFileStrategy(CollectionProperties properties, PdfFileStrategy pdfFileStrategy) {
+        this.properties = properties;
+        this.pdfFileStrategy = pdfFileStrategy;
+    }
+
+    /**
+     * 生成缩略图
+     *
+     * @param filePath
+     * @param thumbFilePath
+     * @param fileType
+     * @param resourceDto
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public String createThumbnail(String filePath,
+                                  String thumbFilePath,
+                                  String thumbUrl,
+                                  FileTypeEnum fileType,
+                                  ResourceDto resourceDto) throws Exception {
+
+        String pdfPath = filePath.replace(".doc", ".pdf");
+
+        // Step 1: Convert Word to HTML
+        if(properties.getOfficeHome() != null && new File(properties.getOfficeHome()).exists()){
+            convertDocToPdfOfJodconverter(filePath, pdfPath);
+        }
+        else {
+            convertDocToPdf(filePath, pdfPath);
+        }
+
+        // Step 3: Convert PDF first page to image
+        String thumbRatio = pdfFileStrategy.createThumbnail(pdfPath, thumbFilePath, thumbUrl, fileType, resourceDto);
+        resourceDto.setThumbRatio(thumbRatio);
+        resourceDto.setThumbUrl(thumbUrl);
+
+        FileUtil.del(pdfPath);
+
+        return thumbRatio;
+    }
+
+    private void convertDocToPdf(String wordPath, String outputPath) throws Exception{
+        try (FileInputStream fis = new FileInputStream(wordPath);
+             HWPFDocument doc = new HWPFDocument(fis)) {
+
+            WordExtractor extractor = new WordExtractor(doc);
+            String text = extractor.getText();
+
+            // 创建 PDF
+            Document pdfDoc = new Document();
+            PdfWriter.getInstance(pdfDoc, new FileOutputStream(outputPath));
+            pdfDoc.open();
+            pdfDoc.add(new Paragraph(text));  // 仅提取文本，不保留格式
+            pdfDoc.close();
+
+            System.out.println("PDF 生成成功！");
+        } catch (Exception e) {
+            System.err.println("转换失败：" + e.getMessage());
+        }
+    }
+
+    protected void convertDocToPdfOfJodconverter(String wordPath, String outputPath) throws Exception{
+        // 启动 LibreOffice 服务
+        OfficeManager officeManager = LocalOfficeManager.builder()
+                .officeHome(properties.getOfficeHome())  // 修改为你的 LibreOffice 路径
+                .install()
+                .build();
+        try {
+            officeManager.start();
+            LocalConverter.make()
+                    .convert(new File(wordPath))
+                    .to(new File(outputPath))
+                    .execute();
+            System.out.println("PDF 转换成功！");
+        } catch (Exception e) {
+            System.err.println("转换失败：" + e.getMessage());
+        } finally {
+            officeManager.stop();
+        }
+    }
+}

@@ -10,6 +10,8 @@ collection:
   upload-path: /Volumes/Document/Temp/collection
   ## LibreOffice安装路径（可选）
   office-home: /Applications/LibreOffice.app/Contents
+  ## FFmpeg安装路径（可选）
+  ffmpeg-path: /opt/homebrew/Cellar/ffmpeg/7.1.1_1/bin
   ## 文件上传类型（可选，以下类型已经支持，如要添加，请自行修改，测试未必通过）
   upload-type:
     image:

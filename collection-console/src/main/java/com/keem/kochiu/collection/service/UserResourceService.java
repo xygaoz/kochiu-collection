@@ -15,7 +15,7 @@ import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.properties.CollectionProperties;
 import com.keem.kochiu.collection.repository.SysUserRepository;
 import com.keem.kochiu.collection.repository.UserResourceRepository;
-import com.keem.kochiu.collection.service.strategy.ResourceStrategyFactory;
+import com.keem.kochiu.collection.service.store.ResourceStrategyFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 

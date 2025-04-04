@@ -1,4 +1,4 @@
-package com.keem.kochiu.collection.service.strategy;
+package com.keem.kochiu.collection.service.store;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -9,10 +9,10 @@ import java.util.Map;
 public class ResourceStrategyFactory {
 
     // 自动注入所有策略实现（Key为Bean名称，Value为策略实例）
-    private final Map<String, ResourceStrategy> strategyMap;
+    private final Map<String, ResourceStoreStrategy> strategyMap;
 
     @Autowired
-    public ResourceStrategyFactory(Map<String, ResourceStrategy> strategyMap) {
+    public ResourceStrategyFactory(Map<String, ResourceStoreStrategy> strategyMap) {
         this.strategyMap = strategyMap;
     }
 
@@ -21,8 +21,8 @@ public class ResourceStrategyFactory {
      * @param type 策略标识
      * @return 具体策略实例
      */
-    public ResourceStrategy getStrategy(String type) {
-        ResourceStrategy strategy = strategyMap.get(type);
+    public ResourceStoreStrategy getStrategy(String type) {
+        ResourceStoreStrategy strategy = strategyMap.get(type);
         if (strategy == null) {
             return strategyMap.get("local");
         }

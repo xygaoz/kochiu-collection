@@ -1,4 +1,4 @@
-package com.keem.kochiu.collection.service.strategy;
+package com.keem.kochiu.collection.service.store;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.unit.DataSizeUtil;
@@ -14,15 +14,13 @@ import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.properties.CollectionProperties;
 import com.keem.kochiu.collection.repository.SysUserRepository;
 import com.keem.kochiu.collection.repository.UserResourceRepository;
-import com.keem.kochiu.collection.util.DocumentToImageConverter;
+import com.keem.kochiu.collection.service.file.FileStrategy;
+import com.keem.kochiu.collection.service.file.FileStrategyFactory;
 import com.keem.kochiu.collection.util.ImageUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
-import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
@@ -30,24 +28,25 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 
 @Slf4j
 @Service("local")
-public class LocalStrategy implements ResourceStrategy {
+public class LocalStoreStrategy implements ResourceStoreStrategy {
 
     private final CollectionProperties pluServiceProperties;
     private final UserResourceRepository resourceRepository;
     private final SysUserRepository userRepository;
+    private final FileStrategyFactory fileStrategyFactory;
     private final static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
 
-    public LocalStrategy(CollectionProperties pluServiceProperties,
-                         UserResourceRepository resourceRepository,
-                         SysUserRepository userRepository) {
+    public LocalStoreStrategy(CollectionProperties pluServiceProperties,
+                              UserResourceRepository resourceRepository,
+                              SysUserRepository userRepository, FileStrategyFactory fileStrategyFactory) {
         this.pluServiceProperties = pluServiceProperties;
         this.resourceRepository = resourceRepository;
         this.userRepository = userRepository;
+        this.fileStrategyFactory = fileStrategyFactory;
     }
 
     /**
@@ -127,82 +126,14 @@ public class LocalStrategy implements ResourceStrategy {
     private void createThumbnail(ResourceDto resourceDto, FileTypeEnum fileType, String filePath){
 
         //判断文件是否需要生成缩略图
-        String thumbUrl;
         if(fileType.isThumb()) {
             String thumbFilePath = filePath.replace("." + resourceDto.getFileExt(), "_thumb.png");
-            thumbUrl = resourceDto.getResourceUrl().replace("." + resourceDto.getFileExt(), "_thumb.png");
+            String thumbUrl = resourceDto.getResourceUrl().replace("." + resourceDto.getFileExt(), "_thumb.png");
 
+            FileStrategy fileStrategy = fileStrategyFactory.getStrategy(fileType);
             try {
-                switch (fileType) {
-                    case jpg:
-                    case jpeg:
-                    case gif:
-                    case bmp:
-                    case png:
-                    case webp:
-                        String resolutionRation = createImageThumbnail(filePath, thumbFilePath, fileType, resourceDto);
-                        resourceDto.setResolutionRatio(resolutionRation);
-                        resourceDto.setThumbUrl(thumbUrl);
-                        break;
-                    case pdf:
-                        resourceDto.setThumbRatio(DocumentToImageConverter.convertPptToImage(filePath, thumbFilePath));
-                        resourceDto.setThumbUrl(thumbUrl);
-                        break;
-                    case doc:
-                    case docx:
-                        resourceDto.setThumbRatio(DocumentToImageConverter.convertWordToImage(filePath, thumbFilePath));
-                        resourceDto.setThumbUrl(thumbUrl);
-                        break;
-                    case xls:
-                    case xlsx:
-                        resourceDto.setThumbRatio(DocumentToImageConverter.convertExcelToImage(filePath, thumbFilePath));
-                        resourceDto.setThumbUrl(thumbUrl);
-                        break;
-                    case ppt:
-                    case pptx:
-                        resourceDto.setThumbRatio(DocumentToImageConverter.convertPptFirstPage(filePath, thumbFilePath));
-                        resourceDto.setThumbUrl(thumbUrl);
-                        break;
-                    case txt:
-                        resourceDto.setThumbRatio(DocumentToImageConverter.convertTxtToImage(filePath, thumbFilePath));
-                        resourceDto.setThumbUrl(thumbUrl);
-                        break;
-                    case mp4:
-                    case mov:
-                    case avi:
-                    case wav:
-                    case mp3:
-                    case flac: {
-                        Resource resource = new ClassPathResource("/images/" + fileType.name() + ".png");
-                        if (resource.exists()) {
-                            try {
-                                FileUtil.copyFile(resource.getInputStream(), new File(thumbFilePath), StandardCopyOption.REPLACE_EXISTING);
-                                resourceDto.setThumbUrl(thumbUrl);
-                                BufferedImage image = ImageIO.read(resource.getInputStream());
-                                resourceDto.setThumbRatio(image.getWidth() + "x" + image.getHeight());
-                            } catch (IOException e) {
-                                log.error("缩略图生成失败", e);
-                            }
-                        }
-                        break;
-                    }
-                    default:
-                        Resource resource = new ClassPathResource("/images/unknown.png");
-                        if(resource.exists()){
-                            try {
-                                FileUtil.copyFile(resource.getInputStream(), new File(thumbFilePath), StandardCopyOption.REPLACE_EXISTING);
-                                resourceDto.setThumbUrl(thumbUrl);
-                                BufferedImage image = ImageIO.read(resource.getInputStream());
-                                resourceDto.setThumbRatio(image.getWidth() + "x" + image.getHeight());
-                            }
-                            catch (IOException e) {
-                                log.error("缩略图生成失败", e);
-                            }
-                        }
-
-                }
-            }
-            catch (Exception e) {
+                fileStrategy.createThumbnail(filePath, thumbFilePath, thumbUrl, fileType, resourceDto);
+            } catch (Exception e) {
                 log.error("缩略图生成失败", e);
             }
         }
