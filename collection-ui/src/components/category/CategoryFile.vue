@@ -319,20 +319,45 @@ const playVideo = (file: Resource) => {
     break-inside: avoid;
 }
 
+/* 图片容器 */
 .image-wrapper {
     cursor: pointer;
     overflow: hidden;
     border-radius: 4px 4px 0 0;
+    max-height: 300px;  /* 新增：限制最大高度 */
+    display: flex;       /* 新增：确保图片居中 */
+    align-items: center; /* 新增：垂直居中 */
+    justify-content: center; /* 新增：水平居中 */
+    background-color: #f5f5f5; /* 可选：添加背景色 */
 }
 
+/* 图片本身 */
 .waterfall-image {
     width: 100%;
+    max-height: 300px;  /* 关键：限制图片最大高度 */
+    object-fit: contain; /* 保持比例，完整显示 */
     display: block;
     transition: transform 0.3s ease;
+}
 
-    &:hover {
-        transform: scale(1.05);
-    }
+.waterfall-image:hover {
+    transform: scale(1.05);
+}
+
+.image-error {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center; /* 水平居中 */
+    align-items: center;     /* 垂直居中（可选） */
+    overflow: hidden;        /* 防止图片溢出 */
+}
+
+/* 图片加载错误时的占位图 */
+.image-error img {
+    max-width: 100%;
+    max-height: 300px;  /* 与主图保持一致 */
+    object-fit: contain;
 }
 
 .image-info {
@@ -419,23 +444,6 @@ const playVideo = (file: Resource) => {
 .image-container{
     margin: 0;
     padding: 15px;
-}
-
-.image-error {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center; /* 水平居中 */
-    align-items: center;     /* 垂直居中（可选） */
-    overflow: hidden;        /* 防止图片溢出 */
-}
-
-.image-error img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;     /* 保持比例完整显示 */
-    display: block;          /* 消除图片底部间隙 */
-    margin: 0 auto;          /* 水平居中备用方案 */
 }
 
 /* 详情侧边栏样式 */

@@ -4,6 +4,7 @@ import cn.hutool.core.io.FileUtil;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
+import com.keem.kochiu.collection.properties.CollectionProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
@@ -17,9 +18,13 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.docx4j.Docx4J;
 import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.jodconverter.core.office.OfficeManager;
+import org.jodconverter.local.LocalConverter;
+import org.jodconverter.local.filter.PagesSelectorFilter;
+import org.jodconverter.local.office.LocalOfficeManager;
 
-import java.awt.*;
 import java.awt.Color;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,6 +41,7 @@ import java.util.Objects;
 @Slf4j
 public class DocumentToImageConverter {
 
+    static CollectionProperties properties = SpringBeanUtil.getBean(CollectionProperties.class);
     static {
         try {
             // 精确注册字体名称（与 Word 文档中字体名称一致）
@@ -70,6 +76,50 @@ public class DocumentToImageConverter {
         }
     }
 
+    /**
+     * PPT 转图片
+     * @param pptPath
+     * @param outputPath
+     * @return
+     * @throws Exception
+     */
+    public static String convertPptToImage(String pptPath, String outputPath) throws Exception {
+
+        if (properties.getOfficeHome() != null && new File(properties.getOfficeHome()).exists()) {
+            String pdfPath = pptPath.replace(".pptx", ".pdf");
+            pdfPath = pdfPath.replace(".ppt", ".pdf");
+
+            OfficeManager officeManager = LocalOfficeManager.builder()
+                    .officeHome(properties.getOfficeHome())
+                    .install()
+                    .build();
+
+            try {
+                officeManager.start();
+
+                LocalConverter.builder()
+                        .officeManager(officeManager)
+                        .filterChain(
+                                // 设置页码范围（如第1-3页）
+                                new PagesSelectorFilter(1, 1)
+                        )
+                        .build()
+                        .convert(new File(pptPath))
+                        .to(new File(pdfPath))
+                        .execute();
+
+                String thumbRatio = convertPdfFirstPage(pdfPath, outputPath);
+                FileUtil.del(pdfPath);
+                return thumbRatio;
+            } finally {
+                officeManager.stop();
+            }
+        }
+        else{
+            return convertPptFirstPage(pptPath, outputPath);
+        }
+    }
+
     // ---------- PPT 处理 ----------
     public static String convertPptFirstPage(String pptPath, String outputPath) throws IOException {
         try (SlideShow<?, ?> slideShow = new XMLSlideShow(new FileInputStream(pptPath))) {
@@ -92,10 +142,20 @@ public class DocumentToImageConverter {
 
         // Step 1: Convert Word to HTML
         if(wordPath.endsWith(".docx")) {
-            convertDocxToPdf(wordPath, pdfPath);
+            if(properties.getOfficeHome() != null && new File(properties.getOfficeHome()).exists()){
+                convertDocToPdfOfJodconverter(wordPath, pdfPath);
+            }
+            else {
+                convertDocxToPdf(wordPath, pdfPath);
+            }
         }
         else if(wordPath.endsWith(".doc")) {
-            convertDocToPdf(wordPath, pdfPath);
+            if(properties.getOfficeHome() != null && new File(properties.getOfficeHome()).exists()){
+                convertDocToPdfOfJodconverter(wordPath, pdfPath);
+            }
+            else {
+                convertDocToPdf(wordPath, pdfPath);
+            }
         }
 
         // Step 3: Convert PDF first page to image
@@ -141,12 +201,54 @@ public class DocumentToImageConverter {
         }
     }
 
+    private static void convertDocToPdfOfJodconverter(String wordPath, String outputPath) throws Exception{
+        // 启动 LibreOffice 服务
+        OfficeManager officeManager = LocalOfficeManager.builder()
+                .officeHome(properties.getOfficeHome())  // 修改为你的 LibreOffice 路径
+                .install()
+                .build();
+        try {
+            officeManager.start();
+            LocalConverter.make()
+                    .convert(new File(wordPath))
+                    .to(new File(outputPath))
+                    .execute();
+            System.out.println("PDF 转换成功！");
+        } catch (Exception e) {
+            System.err.println("转换失败：" + e.getMessage());
+        } finally {
+            officeManager.stop();
+        }
+    }
+
+    /**
+     * 将 Excel 转换为图片
+     * @param excelPath
+     * @param outputPath
+     * @return
+     */
+    public static String convertExcelToImage(String excelPath, String outputPath) throws Exception {
+        if(properties.getOfficeHome() != null && new File(properties.getOfficeHome()).exists()) {
+            String pdfPath = excelPath.replace(".xlsx", ".pdf");
+            pdfPath = pdfPath.replace(".xls", ".pdf");
+
+            convertExcelToPdfOfJodconverter(excelPath, pdfPath);
+
+            String thumbRatio = convertPdfFirstPage(pdfPath, outputPath);
+            FileUtil.del(pdfPath);
+            return thumbRatio;
+        }
+        else{
+            return convertExcelToImageOfDraw(excelPath, outputPath);
+        }
+    }
+
     /**
      * 将 Excel 转换为图片
      * @param excelPath
      * @param outputPath
      */
-    public static String convertExcelToImage(String excelPath, String outputPath){
+    private static String convertExcelToImageOfDraw(String excelPath, String outputPath){
         // A4 纸尺寸（300 DPI）
         final int A4_WIDTH = 2480;
         final int A4_HEIGHT = 3508;
@@ -214,6 +316,26 @@ public class DocumentToImageConverter {
                 return cell.getCellFormula();
             default:
                 return "";
+        }
+    }
+
+    private static void convertExcelToPdfOfJodconverter(String excelPath, String outputPath) throws Exception{
+        // 启动 LibreOffice 服务
+        OfficeManager officeManager = LocalOfficeManager.builder()
+                .officeHome(properties.getOfficeHome())  // 修改为你的 LibreOffice 路径
+                .install()
+                .build();
+        try {
+            officeManager.start();
+            LocalConverter.make()
+                    .convert(new File(excelPath))
+                    .to(new File(outputPath))
+                    .execute();
+            System.out.println("Excel 转换成功！");
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            officeManager.stop();
         }
     }
 

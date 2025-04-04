@@ -14,6 +14,7 @@ public class CollectionProperties {
 
     private String uploadPath = "/";
     private Map<String, List<String>> uploadType;
+    private String officeHome;
 
     public Collection<String> getUploadTypes() {
         Set<String> values = new HashSet<>();

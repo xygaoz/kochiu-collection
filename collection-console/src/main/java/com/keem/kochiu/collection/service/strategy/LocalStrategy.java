@@ -145,7 +145,7 @@ public class LocalStrategy implements ResourceStrategy {
                         resourceDto.setThumbUrl(thumbUrl);
                         break;
                     case pdf:
-                        resourceDto.setThumbRatio(DocumentToImageConverter.convertPdfFirstPage(filePath, thumbFilePath));
+                        resourceDto.setThumbRatio(DocumentToImageConverter.convertPptToImage(filePath, thumbFilePath));
                         resourceDto.setThumbUrl(thumbUrl);
                         break;
                     case doc:
