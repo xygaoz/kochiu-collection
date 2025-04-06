@@ -1,7 +1,7 @@
 <template>
   <div id="app">
-    <LoginUI v-if="!state.isLoggedIn" @login-success="handleLoginSuccess" />
-    <MainUI v-else />
+    <LoginUI v-if="state.isShow === 1" @login-success="handleLoginSuccess" />
+    <MainUI v-else-if="state.isShow === 2" />
   </div>
 </template>
 
@@ -24,27 +24,27 @@ let isRefreshing = false;
 
 export default class App extends Vue {
     state = reactive({
-        isLoggedIn: false
+        isShow: 0
     });
 
     async mounted() {
         // 初始状态
-        this.state.isLoggedIn = true;
+        this.state.isShow = 0;
 
         if (!isRefreshing) {
             isRefreshing = true;
 
             try {
-                // 获取token并设置isLoggedIn状态
+                // 获取token并设置isShow状态
                 const token = tokenStore.getToken();
                 if (token) {
-                    this.state.isLoggedIn = true;
+                    this.state.isShow = 2;
                 } else {
-                    this.state.isLoggedIn = false;
+                    this.state.isShow = 1;
                     // 尝试用refreshToken获取新accessToken
                     refreshAccessToken().then(newToken => {
                         if (newToken) {
-                            this.state.isLoggedIn = true;
+                            this.state.isShow = 2;
                         }
                     }).catch(error => {
                         console.error('Failed to refresh access token:', error);
@@ -52,7 +52,7 @@ export default class App extends Vue {
                 }
             }
             catch (error) {
-                this.state.isLoggedIn = false;
+                this.state.isShow = 1;
             }
             finally {
                 isRefreshing = false;
@@ -61,7 +61,7 @@ export default class App extends Vue {
     }
 
     handleLoginSuccess() {
-        this.state.isLoggedIn = true;
+        this.state.isShow = 2;
     }
 }
 </script>
