@@ -29,4 +29,6 @@ export interface Resource {
     height: number;
     fileType: string;
     typeName: string;
+    mimeType: string;
+    previewUrl: string;
 }

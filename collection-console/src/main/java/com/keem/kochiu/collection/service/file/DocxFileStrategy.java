@@ -59,8 +59,7 @@ public class DocxFileStrategy extends DocFileStrategy{
         String thumbRatio = pdfFileStrategy.createThumbnail(pdfPath, thumbFilePath, thumbUrl, fileType, resourceDto);
         resourceDto.setThumbRatio(thumbRatio);
         resourceDto.setThumbUrl(thumbUrl);
-
-        FileUtil.del(pdfPath);
+        resourceDto.setPreviewUrl(thumbUrl.replace("_thumb.png", ".pdf"));
 
         return thumbRatio;
     }

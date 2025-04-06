@@ -11,4 +11,5 @@ public class UploadBo {
     @NotNull(message = "文件不能为空")
     private MultipartFile file;
     private int categoryId;
+    private boolean overwrite;
 }

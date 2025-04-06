@@ -2,7 +2,6 @@ package com.keem.kochiu.collection.service.store;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.unit.DataSizeUtil;
-import cn.hutool.crypto.digest.DigestUtil;
 import com.keem.kochiu.collection.data.bo.UploadBo;
 import com.keem.kochiu.collection.data.dto.ResourceDto;
 import com.keem.kochiu.collection.data.dto.UserDto;
@@ -16,14 +15,12 @@ import com.keem.kochiu.collection.repository.SysUserRepository;
 import com.keem.kochiu.collection.repository.UserResourceRepository;
 import com.keem.kochiu.collection.service.file.FileStrategy;
 import com.keem.kochiu.collection.service.file.FileStrategyFactory;
-import com.keem.kochiu.collection.util.ImageUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -53,7 +50,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
      * 保存文件
      * @param uploadBo
      */
-    public FileVo saveFile(UploadBo uploadBo, UserDto userDto) throws CollectionException {
+    public FileVo saveFile(UploadBo uploadBo, UserDto userDto, String md5) throws CollectionException {
 
         //判断文件类型
         String extension = FilenameUtils.getExtension(uploadBo.getFile().getOriginalFilename());
@@ -77,7 +74,6 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
 
         String filePath;
         try {
-            String md5 = DigestUtil.md5Hex(DigestUtil.md5Hex(uploadBo.getFile().getBytes()));
             url += "/" + md5 + "." + extension;
             returnUrl += "/" + md5 + "." + extension;
             filePath = recFilePathDir + url;
@@ -97,6 +93,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
                 .resourceUrl(url)
                 .fileExt(extension)
                 .size(uploadBo.getFile().getSize())
+                .md5(md5)
                .build();
         //生成缩略图
         createThumbnail(resourceDto, fileType, filePath);
@@ -140,30 +137,6 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
     }
 
     /**
-     * 生成图片缩略图
-     * @param filePath
-     * @param thumbFilePath
-     * @param fileType
-     * @return
-     * @throws IOException
-     */
-    private String createImageThumbnail(String filePath, String thumbFilePath,
-                                        FileTypeEnum fileType,
-                                        ResourceDto resourceDto) throws IOException {
-
-        String resolutionRation = null;
-        //生成缩略图
-        // 读取原始图片
-        BufferedImage srcImg = ImageUtil.readImageWithFallback(filePath);
-        if(fileType.isResolutionRatio()){
-            resolutionRation = srcImg.getWidth() + "x" + srcImg.getHeight();
-        }
-        resourceDto.setThumbRatio(ImageUtil.writeThumbnail(srcImg, thumbFilePath));
-
-        return resolutionRation;
-    }
-
-    /**
      * 下载文件
      * @param request
      * @param resourceId
@@ -192,7 +165,9 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
             return;
         }
         url = "/" + user.getUserCode() + url;
-        if(!url.equals(resource.getResourceUrl()) && !url.equals(resource.getThumbUrl())){
+        if(!url.equals(resource.getResourceUrl())
+                && !url.equals(resource.getThumbUrl())
+                && !url.equals(resource.getPreviewUrl())){
             response.setStatus(404);
             return;
         }
@@ -208,13 +183,15 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
         response.setHeader("Content-Length", String.valueOf(file.length()));
         response.setContentType(FileTypeEnum.getByValue(resource.getResourceType()).getMimeType());
         String ext = FilenameUtils.getExtension(file.getName());
-        if(!FileTypeEnum.getByValue(ext).getMimeType().startsWith("images/")){
-            response.setHeader("Content-Disposition", "attachment;filename=" +
-                URLEncoder.encode(resource.getSourceFileName(), StandardCharsets.UTF_8));
-        }
-        else{
-            response.setHeader("Content-Disposition", "inline;filename=" +
-                URLEncoder.encode(file.getName(), StandardCharsets.UTF_8));
+        if(url.equals(resource.getResourceUrl())){
+            if(!FileTypeEnum.getByValue(ext).getMimeType().startsWith("images/")){
+                response.setHeader("Content-Disposition", "attachment;filename=" +
+                    URLEncoder.encode(resource.getSourceFileName(), StandardCharsets.UTF_8));
+            }
+            else{
+                response.setHeader("Content-Disposition", "inline;filename=" +
+                    URLEncoder.encode(file.getName(), StandardCharsets.UTF_8));
+            }
         }
         try {
             FileUtil.writeToStream(file, response.getOutputStream());

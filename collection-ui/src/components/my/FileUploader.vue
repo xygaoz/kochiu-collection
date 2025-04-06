@@ -14,6 +14,15 @@
             </el-select>
             </div>
         </div>
+        <div class="overwrite">
+            <div class="select-label">覆盖</div>
+            <div class="select-container">
+                <el-radio-group v-model="overwrite">
+                    <el-radio label="true">是</el-radio>
+                    <el-radio label="false">否</el-radio>
+                </el-radio-group>
+            </div>
+        </div>
 
         <el-upload
             class="upload-area"
@@ -54,6 +63,11 @@ const allowedTypes = [
 ];
 const maxSize = 100 * 1024 * 1024; // 100MB in bytes
 
+// 分类相关
+const categories = reactive<Category[]>([])
+const selectedCategory = ref<string | null>(null);
+const overwrite = ref<string | null>("false");
+
 // 上传前的文件检查
 const beforeUpload = (file: File) => {
     const isAllowedType = allowedTypes.includes(file.type);
@@ -69,7 +83,7 @@ const beforeUpload = (file: File) => {
     }
 
     // 调用上传文件的方法
-    uploadFile(file, selectedCategory.value!).then((response) => {
+    uploadFile(file, selectedCategory.value!, overwrite.value!).then((response) => {
         if (response) {
             ElMessage.success("文件上传成功");
         }
@@ -80,10 +94,6 @@ const beforeUpload = (file: File) => {
 
     return false; // 阻止默认上传行为
 }
-
-// 分类相关
-const categories = reactive<Category[]>([])
-const selectedCategory = ref<string | null>(null);
 
 // 获取分类信息
 onMounted(() => {
@@ -126,6 +136,13 @@ onMounted(() => {
     float: left;
     display: flex;
     margin: 10px 0 10px 0;
+}
+
+.overwrite{
+    width: 100%;
+    margin: 10px 0 10px 0;
+    float: left;
+    display: flex;
 }
 
 .select-label{

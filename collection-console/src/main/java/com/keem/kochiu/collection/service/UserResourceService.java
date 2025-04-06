@@ -1,5 +1,6 @@
 package com.keem.kochiu.collection.service;
 
+import cn.hutool.crypto.digest.DigestUtil;
 import com.github.pagehelper.PageInfo;
 import com.keem.kochiu.collection.data.bo.PageBo;
 import com.keem.kochiu.collection.data.bo.UploadBo;
@@ -16,13 +17,16 @@ import com.keem.kochiu.collection.properties.CollectionProperties;
 import com.keem.kochiu.collection.repository.SysUserRepository;
 import com.keem.kochiu.collection.repository.UserResourceRepository;
 import com.keem.kochiu.collection.service.store.ResourceStrategyFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
+@Slf4j
 @Service
 public class UserResourceService {
 
@@ -57,8 +61,25 @@ public class UserResourceService {
         if (user == null) {
             throw new CollectionException("非法请求。");
         }
-        return resourceStrategyFactory.getStrategy(user.getStrategy())
-                .saveFile(uploadBo, userDto);
+
+        try {
+            String md5 = DigestUtil.md5Hex(DigestUtil.md5Hex(uploadBo.getFile().getBytes()));
+            List<UserResource> resources =resourceRepository.countFileMd5(userId, md5);
+            if(!resources.isEmpty() && !uploadBo.isOverwrite()){
+                throw new CollectionException("文件已存在");
+            }
+
+            FileVo fileVo = resourceStrategyFactory.getStrategy(user.getStrategy())
+                    .saveFile(uploadBo, userDto, md5);
+            //保存成功。删除原有记录
+            if(!resources.isEmpty() && uploadBo.isOverwrite()){
+                resourceRepository.removeById(resources.get(0).getResourceId(), true);
+            }
+            return fileVo;
+        }catch (IOException e){
+            log.error("文件保存失败", e);
+            throw new CollectionException("文件保存失败");
+        }
     }
 
     /**
@@ -94,7 +115,7 @@ public class UserResourceService {
      * @throws CollectionException
      */
     public PageVo<ResourceVo> getResourceList(UserDto userDto,
-                                                String contextPath, int cateSno,
+                                                int cateSno,
                                                 PageBo pageBo) throws CollectionException {
 
         Integer userId = userDto != null ? userDto.getUserId() : null;
@@ -122,17 +143,20 @@ public class UserResourceService {
                             height = Integer.parseInt(split[1]);
                         }
 
+                        FileTypeEnum fileType = FileTypeEnum.getByValue(resource.getFileExt());
                         return ResourceVo.builder()
                                 .resourceId(resource.getResourceId())
-                                .resourceUrl(buildResourceUrl(user, resource, contextPath))
-                                .thumbnailUrl(StringUtils.isNotBlank(resource.getThumbUrl()) ? contextPath + "/" + resource.getResourceId() + "/" + resource.getThumbUrl().replace("/" + user.getUserCode() + "/", "") : null)
+                                .resourceUrl(buildResourceUrl(user, resource))
+                                .thumbnailUrl(StringUtils.isNotBlank(resource.getThumbUrl()) ? "/resource/" + resource.getResourceId() + "/" + resource.getThumbUrl().replace("/" + user.getUserCode() + "/", "") : null)
+                                .previewUrl(StringUtils.isNotBlank(resource.getPreviewUrl()) ? "/resource/" + resource.getResourceId() + "/" + resource.getPreviewUrl().replace("/" + user.getUserCode() + "/", "") : null)
                                 .title(resource.getTitle())
                                 .description(resource.getDescription())
                                 .sourceFileName(resource.getSourceFileName())
                                 .width(width)
                                 .height(height)
-                                .fileType(FileTypeEnum.getByValue(resource.getFileExt()).getDesc())
+                                .fileType(fileType.getDesc())
                                 .typeName(properties.getResourceType(resource.getFileExt()).name().toLowerCase())
+                                .mimeType(fileType.getMimeType())
                                 .size(resource.getSize())
                                 .resolutionRatio(resource.getResolutionRatio())
                                 .createTime(resource.getCreateTime())
@@ -154,13 +178,12 @@ public class UserResourceService {
      * 构建url
      * @param user
      * @param resource
-     * @param contextPath
      * @return
      */
-    private String buildResourceUrl(SysUser user, UserResource resource, String contextPath){
+    private String buildResourceUrl(SysUser user, UserResource resource){
 
         if(SaveTypeEnum.getByCode(resource.getSaveType()) != SaveTypeEnum.NETWORK){
-            return contextPath + "/" + resource.getResourceId() + "/" + resource.getResourceUrl().replace("/" + user.getUserCode() + "/", "");
+            return "/resource/" + resource.getResourceId() + "/" + resource.getResourceUrl().replace("/" + user.getUserCode() + "/", "");
         }
         return resource.getThumbUrl();
     }

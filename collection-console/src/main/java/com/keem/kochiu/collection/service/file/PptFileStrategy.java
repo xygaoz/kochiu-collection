@@ -78,7 +78,7 @@ public class PptFileStrategy implements FileStrategy{
                         .execute();
 
                 thumbRatio = pdfFileStrategy.createThumbnail(pdfPath, thumbFilePath, thumbUrl, fileType, resourceDto);
-                FileUtil.del(pdfPath);
+                resourceDto.setPreviewUrl(thumbUrl.replace("_thumb.png", ".pdf"));
             } finally {
                 officeManager.stop();
             }

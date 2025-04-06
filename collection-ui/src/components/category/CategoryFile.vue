@@ -81,6 +81,28 @@
                                     您的浏览器不支持音频播放
                                 </audio>
 
+                                <!-- Office文件预览和PDF预览 -->
+                                <div v-else-if="isOfficeFile(selectedImage) || isPdf(selectedImage)" class="office-preview">
+                                    <el-image
+                                        :src="selectedImage.thumbnailUrl"
+                                        fit="contain"
+                                        class="preview-content"
+                                        @click="handleShowDoc(selectedImage)"
+                                    >
+                                        <template #error>
+                                            <el-icon><Document /></el-icon>
+                                            <span>点击预览按钮查看文档</span>
+                                            <el-button
+                                                type="primary"
+                                                size="small"
+                                                @click="handleShowDoc(selectedImage)"
+                                            >
+                                                预览文档
+                                            </el-button>
+                                        </template>
+                                    </el-image>
+                                </div>
+
                                 <!-- 其他文件 -->
                                 <div v-else class="unsupported-file">
                                     <el-image
@@ -199,14 +221,34 @@
             </el-container>
         </template>
     </div>
+
+    <!-- PDF预览弹窗 -->
+    <el-dialog
+        v-model="pdfDialogVisible"
+        title="Office和PDF预览"
+        width="80%"
+        top="5vh"
+        destroy-on-close
+        class="pdf-dialog"
+        :fullscreen="isMobile"
+    >
+    <div class="pdf-container">
+        <iframe
+            v-if="pdfDialogVisible"
+            :src="`/pdfjs/web/viewer.html?file=${encodeURIComponent(pdfPreviewUrl)}`"
+            frameborder="0"
+            class="pdf-iframe"
+        ></iframe>
+    </div>
+    </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, ref } from "vue";
 import { listCategoryFiles } from "@/apis/services";
 import { useRoute } from "vue-router";
 import { Resource } from "@/apis/interface";
-import { Download } from "@element-plus/icons-vue";
+import { Document, Download } from "@element-plus/icons-vue";
 
 const route = useRoute();
 const cateId = route.params.cateId as string;
@@ -219,6 +261,8 @@ const pageSize = ref(500)
 const total = ref(0)
 const videoDialogVisible = ref(false)
 const currentVideoUrl = ref('')
+const pdfDialogVisible = ref(false);
+const pdfPreviewUrl = ref('');
 
 // 加载数据
 onMounted(async () => {
@@ -233,6 +277,9 @@ onMounted(async () => {
     } finally {
         loading.value = false;
     }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
 });
 
 
@@ -263,6 +310,11 @@ const handlePageChange = (page: number) => {
     // 实际项目中这里应该调用API获取对应页面的数据
 }
 
+const handleShowDoc = (image: Resource) => {
+    pdfPreviewUrl.value = image.previewUrl;
+    pdfDialogVisible.value = true;
+};
+
 const handleDownload = (image: Resource) => {
     // 实现下载逻辑
     console.log('下载文件:', image.sourceFileName);
@@ -286,6 +338,33 @@ const playVideo = (file: Resource) => {
     currentVideoUrl.value = file.resourceUrl;
     videoDialogVisible.value = true
 }
+
+// 新增文件类型判断方法
+const isOfficeFile = (file: Resource) => {
+    const officeTypes = [
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+    ];
+    return officeTypes.includes(file.mimeType) && file.previewUrl;
+};
+
+const isPdf = (file: Resource) => {
+    return file.fileType === 'application/pdf' && file.previewUrl;
+};
+
+const isMobile = ref(false)
+
+const checkMobile = () => {
+    isMobile.value = window.innerWidth <= 768
+}
+
+onBeforeUnmount(() => {
+    window.removeEventListener('resize', checkMobile)
+})
 </script>
 
 <style scoped>
@@ -530,8 +609,8 @@ const playVideo = (file: Resource) => {
 }
 
 .image-preview {
+    height: 300px; /* 增大高度以适应文档预览 */
     padding: 10px;
-    height: 200px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -547,6 +626,7 @@ const playVideo = (file: Resource) => {
     object-fit: contain;  /* 保持比例，完整显示 */
     display: block;       /* 避免图片底部间隙 */
     margin: 0 auto;       /* 水平居中 */
+    cursor: pointer;
 }
 
 .audio-preview {
@@ -585,6 +665,63 @@ const playVideo = (file: Resource) => {
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
+}
+
+.office-preview, .pdf-preview {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f5f5f5;
+}
+
+.office-placeholder .el-icon {
+    font-size: 48px;
+    color: #409eff;
+}
+
+/* PDF 弹窗容器 */
+.pdf-dialog {
+    display: flex;
+    flex-direction: column;
+}
+
+/* 响应式判断（可选） */
+@media (max-width: 768px) {
+    .pdf-dialog {
+        width: 95% !important;
+        top: 2vh !important;
+    }
+}
+
+/* PDF 容器（关键样式） */
+.pdf-container {
+    position: relative;
+    width: 100%;
+    height: calc(100vh - 150px); /* 动态高度 */
+    min-height: 500px; /* 最小高度保证 */
+    overflow: hidden;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+}
+
+/* PDF iframe（关键样式） */
+.pdf-iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .pdf-container {
+        height: calc(100vh - 120px); /* 移动端更大高度 */
+        min-height: 300px;
+    }
 }
 
 </style>

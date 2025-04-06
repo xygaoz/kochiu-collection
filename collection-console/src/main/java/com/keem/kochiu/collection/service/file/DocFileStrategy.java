@@ -61,7 +61,7 @@ public class DocFileStrategy implements FileStrategy{
         resourceDto.setThumbRatio(thumbRatio);
         resourceDto.setThumbUrl(thumbUrl);
 
-        FileUtil.del(pdfPath);
+        resourceDto.setPreviewUrl(thumbUrl.replace("_thumb.png", ".pdf"));
 
         return thumbRatio;
     }

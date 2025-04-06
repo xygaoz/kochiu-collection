@@ -16,7 +16,7 @@ public interface ResourceStoreStrategy {
      * @return
      * @throws CollectionException
      */
-    FileVo saveFile(UploadBo uploadBo, UserDto user) throws CollectionException;
+    FileVo saveFile(UploadBo uploadBo, UserDto user, String md5) throws CollectionException;
 
     /**
      * 下载文件

@@ -69,10 +69,11 @@ export const listCategory = (): Promise<Category[]> => {
 }
 
 // 新增上传文件的方法
-export const uploadFile = (file: File, categorySno: string): Promise<any> => {
+export const uploadFile = (file: File, categorySno: string, overwrite: string): Promise<any> => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('categoryId', categorySno);
+    formData.append('overwrite', overwrite);
 
     const ld = loading("上传中")
     return httpInstance.post("/upload", formData).then((model: any) => {

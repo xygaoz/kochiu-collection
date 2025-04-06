@@ -64,8 +64,7 @@ public class XlsFileStrategy implements FileStrategy{
             convertExcelToPdfOfJodconverter(filePath, pdfPath);
 
             thumbRatio = pdfFileStrategy.createThumbnail(pdfPath, thumbFilePath, thumbUrl, fileType, resourceDto);
-
-            FileUtil.del(pdfPath);
+            resourceDto.setPreviewUrl(thumbUrl.replace("_thumb.png", ".pdf"));
         }
         else{
             thumbRatio = convertExcelToImageOfDraw(filePath, thumbFilePath);

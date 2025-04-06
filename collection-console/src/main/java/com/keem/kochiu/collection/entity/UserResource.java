@@ -23,6 +23,7 @@ public class UserResource extends BaseEntity{
     private String resourceUrl;
     private String resourceType;
     private String thumbUrl;
+    private String previewUrl;
     private Integer deleted;
     private String fileExt;
     private String resolutionRatio;
@@ -30,4 +31,5 @@ public class UserResource extends BaseEntity{
     private Long size;
     private Integer isPublic;
     private Integer star;
+    private String md5;
 }

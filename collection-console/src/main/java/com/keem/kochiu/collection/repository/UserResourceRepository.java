@@ -13,6 +13,8 @@ import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.mapper.UserResourceMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserResourceRepository extends ServiceImpl<UserResourceMapper, UserResource>{
 
@@ -42,6 +44,8 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
         userResource.setSize(resourceDto.getSize());
         userResource.setThumbUrl(resourceDto.getThumbUrl());
         userResource.setThumbRatio(resourceDto.getThumbRatio());
+        userResource.setPreviewUrl(resourceDto.getPreviewUrl());
+        userResource.setMd5(resourceDto.getMd5());
         if (this.save(userResource)) {
             // 获取最后插入的行ID
             Long resourceId = baseMapper.selectLastInsertId();
@@ -68,5 +72,19 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
             lambdaQueryWrapper.eq(UserResource::getCateId, categoryRepository.getCateId(userId, cateSno));
             return new PageInfo<>(baseMapper.selectList(lambdaQueryWrapper));
         }
+    }
+
+    /**
+     * 根据md5查询文件是否存在
+     * @param userId
+     * @param md5
+     * @return
+     */
+    public List<UserResource> countFileMd5(int userId, String md5){
+
+        LambdaQueryWrapper<UserResource> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UserResource::getUserId, userId);
+        lambdaQueryWrapper.eq(UserResource::getMd5, md5);
+        return baseMapper.selectList(lambdaQueryWrapper);
     }
 }

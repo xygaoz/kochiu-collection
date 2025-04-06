@@ -256,6 +256,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="thumb_url" remarks="缩略图路径" type="VARCHAR(200)"/>
+            <column name="preview_url" remarks="预览路径" type="VARCHAR(200)"/>
             <column name="deleted" remarks="是否删除" type="INTEGER" defaultValue="0"/>
             <column name="CATE_ID" remarks="分类ID" type="INTEGER" defaultValue="1">
                 <constraints nullable="false"/>
@@ -275,6 +276,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="star" remarks="星级" type="INTEGER" defaultValue="0"/>
+            <column name="md5" remarks="文件md5值" type="VARCHAR(32)"/>
             <column name="CREATE_TIME" remarks="创建时间" type="date"/>
             <column name="CREATE_BY" remarks="创建人" type="VARCHAR(20)"/>
             <column name="UPDATE_TIME" remarks="更新时间" type="date"/>
@@ -290,5 +292,47 @@
                 columnName="RESOURCE_ID"
                 columnDataType="INTEGER"
         />
+    </changeSet>
+
+    <changeSet id="kcdb_12" author="kochiu" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="user_resource_index1" tableName="user_resource"/>
+            </not>
+        </preConditions>
+        <createIndex
+                indexName="user_resource_index1"
+                tableName="user_resource">
+            <column name="USER_ID"/>
+            <column name="md5"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="kcdb_13" author="kochiu" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="user_resource_index2" tableName="user_resource"/>
+            </not>
+        </preConditions>
+        <createIndex
+                indexName="user_resource_index2"
+                tableName="user_resource">
+            <column name="USER_ID"/>
+            <column name="CATE_ID"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="kcdb_14" author="kochiu" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="user_resource_index3" tableName="user_resource"/>
+            </not>
+        </preConditions>
+        <createIndex
+                indexName="user_resource_index3"
+                tableName="user_resource">
+            <column name="USER_ID"/>
+            <column name="title"/>
+        </createIndex>
     </changeSet>
 </databaseChangeLog>

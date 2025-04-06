@@ -11,10 +11,7 @@ import com.keem.kochiu.collection.enums.PermitEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.service.CheckPermitAspect;
 import com.keem.kochiu.collection.service.UserResourceService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -36,7 +33,7 @@ public class UserResourceController {
         return DefaultResult.ok(resourceService.saveFile(uploadBo, CheckPermitAspect.USER_INFO.get()));
     }
 
-    @GetMapping("/{resourceId}/**")
+    @GetMapping("/resource/{resourceId}/**")
     public void download(HttpServletRequest request, HttpServletResponse response, @PathVariable int resourceId){
 
         resourceService.download(request, response, resourceId);
@@ -47,17 +44,6 @@ public class UserResourceController {
     public DefaultResult<PageVo<ResourceVo>> getResourceList(HttpServletRequest request,
                                                              @PathVariable int cateId,
                                                              PageBo pageBo) throws CollectionException {
-        // 获取协议
-        String scheme = request.getScheme();
-        // 获取域名/IP
-        String serverName = request.getServerName();
-        // 获取端口
-        int serverPort = request.getServerPort();
-
-        // 拼接成字符串
-        String baseUrl = scheme + "://" + serverName + (serverPort == 80 || serverPort == 443 ? "" : ":" + serverPort)
-                + request.getContextPath();
-
-        return DefaultResult.ok(resourceService.getResourceList(CheckPermitAspect.USER_INFO.get(), baseUrl, cateId, pageBo));
+        return DefaultResult.ok(resourceService.getResourceList(CheckPermitAspect.USER_INFO.get(), cateId, pageBo));
     }
 }

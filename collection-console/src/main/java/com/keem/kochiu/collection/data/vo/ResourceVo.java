@@ -12,6 +12,7 @@ public class ResourceVo {
     private Long resourceId;
     private String thumbnailUrl;
     private String resourceUrl;
+    private String previewUrl;
     private String sourceFileName;
     private String title;
     private String description;
@@ -25,4 +26,5 @@ public class ResourceVo {
     private Integer height;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
+    private String mimeType;
 }
