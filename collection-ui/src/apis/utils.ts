@@ -40,7 +40,7 @@ httpInstance.interceptors.request.use(config => {
     return Promise.reject(error);
 });
 
-let isRefreshing: boolean = false; // 是否正在刷新Token
+let isRefreshing = false; // 是否正在刷新Token
 let failedQueue: any[] = []; // 存储刷新Token期间的失败请求
 
 // 处理队列中的失败请求
@@ -132,7 +132,6 @@ httpInstance.interceptors.response.use(
 // 刷新Token的函数
 export const refreshAccessToken = async () => {
     try {
-        debugger
         const refreshToken = getRefreshToken(); // 从HttpOnly Cookie获取
         if (refreshToken.value === '') {
             return null;
@@ -203,7 +202,6 @@ export const downloadFile = (url: string, data: any) => {
         },
     })
         .then(res => {
-            debugger
             const str = res.headers['content-disposition']
             if (!res || !str) {
                 ElMessage.error('下载失败！')

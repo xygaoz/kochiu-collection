@@ -95,7 +95,6 @@ const login = async () => {
                 return
             }
             const res = await loginService({ ...loginForm.value, password: encryptedPassword });
-            debugger
             if (res) {
                 if(res.token) {
                     tokenStore.setToken(res.token, res.expirySeconds); // 保存token
@@ -129,7 +128,6 @@ onMounted(async () => {
 // 加密密码的方法
 const encryptPassword = (password) => {
 
-    debugger
     // 创建JSEncrypt实例
     const encryptor = new JSEncrypt();
     encryptor.setPublicKey(publicKey);
