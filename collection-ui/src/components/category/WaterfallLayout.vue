@@ -248,31 +248,11 @@ onBeforeUnmount(() => {
     transition: all 0.3s ease;
 }
 
-.el-card {
-    width: 100%;
-    height: 100%;
-    transition: all 0.3s ease;
-    border-radius: 5px;
-    overflow: hidden;
-    border: 1px solid #ebeef5;
-}
-
-.image-wrapper {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    border-radius: 4px 4px 0 0;
-    background-color: #f5f5f5;
-    position: relative;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
 
 .waterfall-image {
     object-fit: contain;
     transition: transform 0.3s ease;
+    border-bottom: solid 1px #f2f2f2;
 }
 
 .waterfall-image:hover {
@@ -294,8 +274,43 @@ onBeforeUnmount(() => {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    background-color: #f1f1f1;
     padding: 12px;
+    margin-bottom: 0;
+    border-radius: 0 0 5px 5px;
+}
+
+.image-title{
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.el-card {
+    width: 100%;
+    height: 100%;
+    transition: all 0.3s ease;
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid #ebeef5;
+    display: flex;
+    flex-direction: column;
+}
+
+.el-card, .el-card * {
+    box-sizing: border-box;
+}
+
+.image-wrapper {
+    width: 100%;
+    flex-grow: 1; /* 确保图片区域占据剩余空间 */
+    overflow: hidden;
+    border-radius: 4px 4px 0 0;
+    background-color: #f5f5f5;
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .selected-card {

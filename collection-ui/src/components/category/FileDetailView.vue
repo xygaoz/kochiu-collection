@@ -79,14 +79,11 @@
 
         <div class="detail-header">
             <div>文件详情</div>
-            <el-button
-                type="primary"
-                size="small"
+            <el-icon class="download-file"
                 @click="emit('download', file)"
-                :icon="Download"
             >
-                下载
-            </el-button>
+                <Download/>
+            </el-icon>
         </div>
 
         <el-divider />
@@ -165,10 +162,10 @@
 
 <script>
 import { ref, computed } from 'vue'
-import { Document, Picture } from '@element-plus/icons-vue'
+import { Document, Download, Picture } from "@element-plus/icons-vue";
 
 export default {
-    components: { Document, Picture },
+    components: { Download, Document, Picture },
     props: {
         file: {
             type: Object,
@@ -324,5 +321,9 @@ export default {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+}
+
+.download-file{
+    cursor: pointer;
 }
 </style>
