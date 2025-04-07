@@ -40,170 +40,13 @@
                         </div>
                     </el-main>
                     <el-aside width="280px" class="detail-aside">
-                        <div class="image-details" v-if="selectedImage">
-                            <div class="image-preview">
-                                <!-- 图片预览 -->
-                                <el-image
-                                    v-if="isImage(selectedImage)"
-                                    :src="selectedImage.resourceUrl"
-                                    :preview-src-list="[selectedImage.resourceUrl]"
-                                    fit="contain"
-                                    class="preview-content"
-                                    hide-on-click-modal
-                                >
-                                    <template #error>
-                                        <div class="preview-error">
-                                            <el-icon><Picture /></el-icon>
-                                            <span>图片加载失败</span>
-                                        </div>
-                                    </template>
-                                </el-image>
-
-                                <!-- 视频预览 -->
-                                <video
-                                    v-else-if="isVideo(selectedImage)"
-                                    controls
-                                    class="preview-content"
-                                    :poster="selectedImage.thumbnailUrl"
-                                    @click.stop="playVideo(selectedImage)"
-                                >
-                                    <source :src="selectedImage.resourceUrl" :type="selectedImage.fileType">
-                                    您的浏览器不支持视频播放
-                                </video>
-
-                                <!-- 音频预览 -->
-                                <audio
-                                    v-else-if="isAudio(selectedImage)"
-                                    controls
-                                    class="preview-content audio-preview"
-                                >
-                                    <source :src="selectedImage.resourceUrl" :type="selectedImage.fileType">
-                                    您的浏览器不支持音频播放
-                                </audio>
-
-                                <!-- Office文件预览和PDF预览 -->
-                                <div v-else-if="isOfficeFile(selectedImage) || isPdf(selectedImage)" class="office-preview">
-                                    <el-image
-                                        :src="selectedImage.thumbnailUrl"
-                                        fit="contain"
-                                        class="preview-content"
-                                        @click="handleShowDoc(selectedImage)"
-                                    >
-                                        <template #error>
-                                            <el-icon><Document /></el-icon>
-                                            <span>点击预览按钮查看文档</span>
-                                            <el-button
-                                                type="primary"
-                                                size="small"
-                                                @click="handleShowDoc(selectedImage)"
-                                            >
-                                                预览文档
-                                            </el-button>
-                                        </template>
-                                    </el-image>
-                                </div>
-
-                                <!-- 其他文件 -->
-                                <div v-else class="unsupported-file">
-                                    <el-image
-                                        :src="selectedImage.thumbnailUrl"
-                                        fit="contain"
-                                        class="preview-content"
-                                    >
-                                        <template #error>
-                                            <el-icon><Document /></el-icon>
-                                            <span>不支持预览此文件类型</span>
-                                        </template>
-                                    </el-image>
-                                </div>
-                            </div>
-
-                            <!-- 视频弹窗 -->
-                            <el-dialog
-                                v-model="videoDialogVisible"
-                                title="视频播放"
-                                width="70%"
-                                top="5vh"
-                                destroy-on-close
-                            >
-                                <video
-                                    controls
-                                    autoplay
-                                    style="width: 100%"
-                                    :src="currentVideoUrl"
-                                ></video>
-                            </el-dialog>
-                            <div class="detail-header">
-                                <div>文件详情</div>
-                                <el-button
-                                    type="primary"
-                                    size="small"
-                                    @click="handleDownload(selectedImage)"
-                                    :icon="Download"
-                                >
-                                    下载
-                                </el-button>
-                            </div>
-
-                            <el-divider />
-
-                            <div class="detail-content">
-                                <div class="detail-row">
-                                    <div class="detail-label">文件名</div>
-                                    <div class="detail-value">{{ selectedImage.sourceFileName }}</div>
-                                </div>
-                                <div class="detail-row">
-                                    <div class="detail-label">文件类型</div>
-                                    <div class="detail-value">{{ selectedImage.fileType }}</div>
-                                </div>
-                                <div class="detail-row" v-if="selectedImage.resolutionRatio">
-                                    <div class="detail-label">分辨率</div>
-                                    <div class="detail-value">{{ selectedImage.resolutionRatio }}</div>
-                                </div>
-                                <div class="detail-row">
-                                    <div class="detail-label">文件大小</div>
-                                    <div class="detail-value">{{ formatSize(selectedImage.size) }}</div>
-                                </div>
-                                <div class="detail-row">
-                                    <div class="detail-label">创建时间</div>
-                                    <div class="detail-value">{{ formatTime(selectedImage.createTime) }}</div>
-                                </div>
-                                <div class="detail-row" v-if="selectedImage.updateTime">
-                                    <div class="detail-label">修改时间</div>
-                                    <div class="detail-value">{{ formatTime(selectedImage.updateTime) }}</div>
-                                </div>
-                                <div class="detail-row">
-                                    <div class="detail-label">评分</div>
-                                    <div class="detail-value">
-                                        <el-rate
-                                            v-model="selectedImage.star"
-                                            disabled
-                                            show-score
-                                            text-color="#ff9900"
-                                            score-template="{value} 分"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div class="tag-section" v-if="selectedImage.tags?.length">
-                                    <el-divider>标签</el-divider>
-                                    <div class="tags">
-                                        <el-tag
-                                            v-for="tag in selectedImage.tags"
-                                            :key="tag"
-                                            size="small"
-                                            type="info"
-                                            class="tag-item"
-                                        >
-                                            {{ tag }}
-                                        </el-tag>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div v-else class="empty-aside">
-                            <el-empty description="请选择图片查看详情" :image-size="100" />
-                        </div>
+                        <FileDetailView
+                            v-if="selectedImage"
+                            :file="selectedImage"
+                            @download="handleDownload"
+                            @preview-doc="handleShowDoc"
+                        />
+                        <el-empty v-else description="请选择文件查看详情" />
                     </el-aside>
                 </el-container>
                 <el-footer>
@@ -223,24 +66,10 @@
     </div>
 
     <!-- PDF预览弹窗 -->
-    <el-dialog
+    <PdfPreviewDialog
         v-model="pdfDialogVisible"
-        title="Office和PDF预览"
-        width="80%"
-        top="5vh"
-        destroy-on-close
-        class="pdf-dialog"
-        :fullscreen="isMobile"
-    >
-    <div class="pdf-container">
-        <iframe
-            v-if="pdfDialogVisible"
-            :src="`/pdfjs/web/viewer.html?file=${encodeURIComponent(pdfPreviewUrl)}`"
-            frameborder="0"
-            class="pdf-iframe"
-        ></iframe>
-    </div>
-    </el-dialog>
+        :url="pdfPreviewUrl"
+    />
 </template>
 
 <script setup lang="ts">
@@ -248,7 +77,8 @@ import { onBeforeUnmount, onMounted, ref } from "vue";
 import { listCategoryFiles } from "@/apis/services";
 import { useRoute } from "vue-router";
 import { Resource } from "@/apis/interface";
-import { Document, Download } from "@element-plus/icons-vue";
+import PdfPreviewDialog from "@/components/category/PdfPreviewDialog.vue";
+import FileDetailView from "@/components/category/FileDetailView.vue";
 
 const route = useRoute();
 const cateId = route.params.cateId as string;
@@ -259,8 +89,6 @@ const columnWidth = ref(180)
 const currentPage = ref(1)
 const pageSize = ref(500)
 const total = ref(0)
-const videoDialogVisible = ref(false)
-const currentVideoUrl = ref('')
 const pdfDialogVisible = ref(false);
 const pdfPreviewUrl = ref('');
 
@@ -283,24 +111,6 @@ onMounted(async () => {
 });
 
 
-// 辅助方法：格式化文件大小
-const formatSize = (bytes?: number) => {
-    if (!bytes) return "未知";
-    const units = ["B", "KB", "MB", "GB"];
-    let size = bytes;
-    let unitIndex = 0;
-    while (size >= 1024 && unitIndex < units.length - 1) {
-        size /= 1024;
-        unitIndex++;
-    }
-    return `${size.toFixed(2)} ${units[unitIndex]}`;
-};
-
-// 辅助方法：格式化时间
-const formatTime = (timeStr?: string) => {
-    return timeStr ? new Date(timeStr).toLocaleString() : "未知";
-};
-
 const handlePreview = (image: Resource) => {
     selectedImage.value = image;
 }
@@ -318,42 +128,6 @@ const handleShowDoc = (image: Resource) => {
 const handleDownload = (image: Resource) => {
     // 实现下载逻辑
     console.log('下载文件:', image.sourceFileName);
-};
-
-// 文件类型判断方法
-const isImage = (file: Resource) => {
-    return file.typeName == 'image'
-}
-
-const isVideo = (file: Resource) => {
-    return file.typeName == 'video'
-}
-
-const isAudio = (file: Resource) => {
-    return file.typeName == 'audio'
-}
-
-// 播放视频方法
-const playVideo = (file: Resource) => {
-    currentVideoUrl.value = file.resourceUrl;
-    videoDialogVisible.value = true
-}
-
-// 新增文件类型判断方法
-const isOfficeFile = (file: Resource) => {
-    const officeTypes = [
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/vnd.ms-excel',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'application/vnd.ms-powerpoint',
-        'application/vnd.openxmlformats-officedocument.presentationml.presentation'
-    ];
-    return officeTypes.includes(file.mimeType) && file.previewUrl;
-};
-
-const isPdf = (file: Resource) => {
-    return file.fileType === 'application/pdf' && file.previewUrl;
 };
 
 const isMobile = ref(false)
@@ -457,30 +231,12 @@ onBeforeUnmount(() => {
 
 /* 响应式调整 */
 @media (max-width: 768px) {
-    .image-gallery {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    }
 
     .image-container {
         height: 150px; /* 移动端减小高度 */
         margin: 0!important;
         padding: 15px;
     }
-}
-
-.image-details {
-    width: 100%;
-    height: 100%;
-    background-color: #f9f9f9;
-}
-
-.tags span {
-    display: inline-block;
-    background-color: #e0e0e0;
-    padding: 2px 8px;
-    margin-right: 6px;
-    border-radius: 4px;
-    font-size: 12px;
 }
 
 .el-footer{
@@ -534,49 +290,6 @@ onBeforeUnmount(() => {
     overflow: hidden; /* 禁止滚动条 */
 }
 
-.detail-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 16px 0;
-    flex-shrink: 0; /* 防止压缩 */
-}
-
-.detail-content {
-    padding: 0 16px;
-    flex-grow: 1;
-    overflow-y: auto; /* 内容区域可滚动 */
-    margin-bottom: 16px;
-    background: #fafafa;
-}
-
-.detail-table {
-    margin-bottom: 16px;
-}
-
-:deep(.detail-table .el-descriptions__label) {
-    width: 80px;
-    color: #666;
-}
-
-.tag-section {
-    margin-top: 8px;
-}
-
-.tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.empty-aside {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    height: 100%;
-    padding: 20px;
-}
-
 /* 响应式调整 */
 @media (max-width: 1200px) {
     .masonry-grid {
@@ -588,62 +301,6 @@ onBeforeUnmount(() => {
     .masonry-item {
         margin-bottom: 12px;
     }
-}
-
-.detail-row {
-    display: flex;
-    margin-bottom: 12px;
-    font-size: 12px;
-}
-.detail-label {
-    width: 80px;
-    color: #666;
-    padding-right: 12px;
-}
-.detail-value {
-    flex: 1;
-}
-
-.el-rate{
-    height: 18px!important;
-}
-
-.image-preview {
-    height: 300px; /* 增大高度以适应文档预览 */
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #f5f5f5;
-    border-bottom: 1px solid #eee;
-    overflow: hidden;
-}
-
-/* 图片/视频预览内容 */
-.preview-content {
-    max-width: 100%;      /* 宽度不超过容器 */
-    max-height: 100%;     /* 高度不超过容器 */
-    object-fit: contain;  /* 保持比例，完整显示 */
-    display: block;       /* 避免图片底部间隙 */
-    margin: 0 auto;       /* 水平居中 */
-    cursor: pointer;
-}
-
-.audio-preview {
-    width: 100%;
-    padding: 0 20px;
-}
-
-.preview-error,
-.unsupported-file {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: #999;
-    font-size: 14px;
-    width: 100%;
-    height: 100%;
 }
 
 .preview-error .el-icon,
@@ -667,53 +324,9 @@ onBeforeUnmount(() => {
     object-fit: contain;
 }
 
-.office-preview, .pdf-preview {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #f5f5f5;
-}
-
 .office-placeholder .el-icon {
     font-size: 48px;
     color: #409eff;
-}
-
-/* PDF 弹窗容器 */
-.pdf-dialog {
-    display: flex;
-    flex-direction: column;
-}
-
-/* 响应式判断（可选） */
-@media (max-width: 768px) {
-    .pdf-dialog {
-        width: 95% !important;
-        top: 2vh !important;
-    }
-}
-
-/* PDF 容器（关键样式） */
-.pdf-container {
-    position: relative;
-    width: 100%;
-    height: calc(100vh - 150px); /* 动态高度 */
-    min-height: 500px; /* 最小高度保证 */
-    overflow: hidden;
-    background-color: #f5f5f5;
-    border-radius: 4px;
-}
-
-/* PDF iframe（关键样式） */
-.pdf-iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: none;
 }
 
 /* 移动端适配 */
