@@ -13,6 +13,13 @@ routes.push(
         ]
     },
     {
+        path: '/Tag',
+        name: 'tag',
+        meta: { title: '标签', icon: 'icon-col-biaoqian_o', iconType: 'iconfont', style: 'font-size: 21px; color: rgb(59,130,246' },
+        children: [
+        ]
+    },
+    {
         path: '/My',
         name: "my",
         meta: { title: '我的', icon: 'Avatar', iconType: 'icons-vue', style: 'color: rgb(59,130,246)' },
@@ -29,7 +36,20 @@ routes.push(
                 component: () => import('@/components/my/FileUploader.vue'),
                 meta: { title: '批量导入', icon: 'icon-col-piliangdaoru1', iconType: 'iconfont', style: 'font-size: 18px; color: rgb(59,130,246); margin: 0 3px 0 0' },
             },
-            ]
+            {
+                path: '/Recycle',
+                name: 'recycle',
+                component: () => import('@/components/my/Recycle.vue'),
+                meta: { title: '回收站', icon: 'icon-col-huishouzhanx', iconType: 'iconfont', style: 'font-size: 18px; color: rgb(59,130,246); margin: 0 3px 0 0' },
+            },
+        ]
+    },
+    {
+        path: '/System',
+        name: 'system',
+        meta: { title: '系统管理', icon: 'icon-col-shezhi', iconType: 'iconfont', style: 'font-size: 21px; color: rgb(59,130,246' },
+        children: [
+        ]
     },
     {
         path: '/Help',
@@ -42,6 +62,13 @@ routes.push(
         path: '/Category/:cateId',  // 动态参数（注意大小写统一）
         name: 'category-detail',    // 固定名称
         component: () => import('@/components/category/CategoryFile.vue'),
+        meta: { showInMenu: false },
+        props: true  // 将路由参数自动作为props传递
+    },
+    {
+        path: '/Tag/:tagId',  // 动态参数（注意大小写统一）
+        name: 'tag-detail',    // 固定名称
+        component: () => import('@/components/tag/TagFile.vue'),
         meta: { showInMenu: false },
         props: true  // 将路由参数自动作为props传递
     }

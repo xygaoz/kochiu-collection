@@ -12,7 +12,7 @@ import lombok.EqualsAndHashCode;
 public class UserResourceTag extends BaseEntity{
 
     @TableId(type = IdType.INPUT)
-    private Integer tagId;
+    private Long tagId;
     private Integer userId;
     private Integer resourceId;
     private String tagName;

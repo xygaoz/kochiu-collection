@@ -12,4 +12,5 @@ public class ResInfoBo {
     private String title;
     private String description;
     private Integer star;
+    private String tagName;
 }

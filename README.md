@@ -8,7 +8,7 @@
 - 访问 `http://localhost:8080`。
 ### 后端依赖
 - 安装 LibreOffice(可选)<br>
-如不安装LibreOffice，office文件生成缩略图可能会比较粗糙。
+如不安装LibreOffice，office文件生成缩略图可能会比较粗糙，且不能预览。
   - Windows: 从 [LibreOffice](https://www.libreoffice.org/)官网 下载安装，默认路径为 C:\Program Files\LibreOffice。
   - Linux: sudo apt install libreoffice (Ubuntu/Debian) 或 sudo yum install libreoffice (CentOS)。
   - macOS: 通过 Homebrew 安装：brew install --cask libreoffice。

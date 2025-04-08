@@ -8,6 +8,7 @@ import com.keem.kochiu.collection.data.bo.UploadBo;
 import com.keem.kochiu.collection.data.vo.FileVo;
 import com.keem.kochiu.collection.data.vo.PageVo;
 import com.keem.kochiu.collection.data.vo.ResourceVo;
+import com.keem.kochiu.collection.data.dto.TagDto;
 import com.keem.kochiu.collection.enums.PermitEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.service.CheckPermitAspect;
@@ -47,17 +48,29 @@ public class UserResourceController {
 
     @CheckPermit
     @PostMapping(PUBLIC_URL + "/resource/{cateId}")
-    public DefaultResult<PageVo<ResourceVo>> getResourceList(HttpServletRequest request,
-                                                             @PathVariable int cateId,
+    public DefaultResult<PageVo<ResourceVo>> getResourceList(@PathVariable int cateId,
                                                              PageBo pageBo) throws CollectionException {
         return DefaultResult.ok(resourceService.getResourceList(CheckPermitAspect.USER_INFO.get(), cateId, pageBo));
     }
 
     @CheckPermit
     @PostMapping(PUBLIC_URL + "/updateInfo")
-    public DefaultResult<ResourceVo> updateResourceInfo(HttpServletRequest request,
-                                                    @Valid ResInfoBo resourceInfo) throws CollectionException {
+    public DefaultResult<ResourceVo> updateResourceInfo(@Valid ResInfoBo resourceInfo) throws CollectionException {
         resourceService.updateResourceInfo(CheckPermitAspect.USER_INFO.get(), resourceInfo);
         return DefaultResult.ok();
     }
+
+    @CheckPermit
+    @PostMapping(PUBLIC_URL + "/addTag")
+    public DefaultResult<TagDto> addResourceTag(@Valid ResInfoBo resourceInfo) throws CollectionException {
+        return DefaultResult.ok(resourceService.addResourceTag(CheckPermitAspect.USER_INFO.get(), resourceInfo));
+    }
+
+    @CheckPermit
+    @PostMapping(PUBLIC_URL + "/removeTag")
+    public DefaultResult<TagDto> removeResourceTag(@Valid TagDto tagDto) throws CollectionException {
+        resourceService.removeResourceTag(CheckPermitAspect.USER_INFO.get(), tagDto);
+        return DefaultResult.ok();
+    }
+
 }

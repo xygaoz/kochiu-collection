@@ -123,3 +123,21 @@ export const updateResource = (resourceId: number, params: any): Promise<any> =>
         ld.close();
     });
 }
+
+export const addResourceTag = (resourceId: number, params: any): Promise<any> => {
+    params["resourceId"] = resourceId;
+    return httpInstance.post("/addTag", params).then((model: any) => {
+        if (model) {
+            return model;
+        }
+    });
+}
+
+export const removeResourceTag = (resourceId: number, params: any): Promise<any> => {
+    params["resourceId"] = resourceId;
+    return httpInstance.post("/removeTag", params).then((model: any) => {
+        if (model) {
+            return model;
+        }
+    });
+}

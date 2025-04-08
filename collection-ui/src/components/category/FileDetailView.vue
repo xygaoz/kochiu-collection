@@ -190,25 +190,38 @@
             <div class="detail-row">
                 <div class="detail-label">标签</div>
                 <div class="detail-value">
-                    <div class="tags-container">
-                        <!-- 已有标签展示 -->
-                        <div v-for="tag in localFile.tags" :key="tag.tagId" class="tag-item">
-                            <span>{{ tag.tagName }}</span>
-                            <el-icon class="delete-icon" @click="removeTag(tag.tagId)">
-                                <Close />
-                            </el-icon>
+                    <div class="tag-section">
+                        <div class="tags">
+                            <el-tag
+                                v-for="tag in localFile.tags"
+                                :key="tag.tagId"
+                                closable
+                                :disable-transitions="false"
+                                @close="handleTagClose(tag)"
+                                @click.stop
+                            >
+                                {{ tag.tagName }}
+                            </el-tag>
+                            <el-input
+                                v-if="tagInputVisible"
+                                ref="tagInputRef"
+                                v-model="tagInputValue"
+                                class="tag-input"
+                                size="small"
+                                @keyup.enter="handleTagInputConfirm"
+                                @blur="handleTagInputConfirm"
+                                @click.stop
+                            />
+                            <el-button
+                                v-else
+                                class="button-new-tag"
+                                size="small"
+                                @click="showTagInput"
+                                @click.stop
+                            >
+                                + 新标签
+                            </el-button>
                         </div>
-
-                        <!-- 新标签输入框 -->
-                        <el-input
-                            v-model="newTagName"
-                            ref="tagInput"
-                            size="small"
-                            class="new-tag-input"
-                            placeholder="+ 添加标签"
-                            @keyup.enter="addTag"
-                            @blur="addTag"
-                        />
                     </div>
                 </div>
             </div>
@@ -235,13 +248,13 @@
 <script lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick, PropType, watch } from "vue";
 import { Document, Download, Picture, Loading, Close } from '@element-plus/icons-vue'
-import { ElMessage, ElInput } from 'element-plus'
-import { updateResource } from '@/apis/services'
+import { ElMessage, ElInput, InputInstance } from "element-plus";
+import { addResourceTag, removeResourceTag, updateResource } from "@/apis/services";
 import type { Resource, Tag } from '@/apis/interface'
 
 export default {
     name: 'FileDetail',
-    components: { Close, Download, Document, Picture, Loading },
+    components: { Download, Document, Picture, Loading },
     props: {
         file: {
             type: Object as PropType<Resource>,
@@ -286,8 +299,10 @@ export default {
         const saving = ref<boolean>(false)
         const titleInput = ref<InstanceType<typeof ElInput> | null>(null)
         const descInput = ref<InstanceType<typeof ElInput> | null>(null)
-        const newTagName = ref<string>('')
-        const tagInput = ref<InstanceType<typeof ElInput> | null>(null)
+
+        const tagInputVisible = ref(false)
+        const tagInputValue = ref('')
+        const tagInputRef = ref<InstanceType<typeof ElInput> | null>(null)
 
         // 计算属性
         const isImageType = computed<boolean>(() => props.file.typeName === 'image')
@@ -330,9 +345,6 @@ export default {
 
         const startEditing = async (field: EditableField): Promise<void> => {
             editingField.value = field
-            originalValue.value = field === 'tags'
-                ? [...(localFile.value.tags || [])]
-                : localFile.value[field]?.toString() || ''
 
             await nextTick()
 
@@ -426,67 +438,67 @@ export default {
             }
         }
 
-        const addTag = async (): Promise<void> => {
-            const tagName = newTagName.value.trim()
-            if (!tagName) return
-
-            if (localFile.value.tags?.some(t => t.tagName === tagName)) {
-                ElMessage.warning('标签已存在')
-                newTagName.value = ''
-                return
-            }
-
-            try {
-                const newTag: Tag = {
-                    tagId: Date.now(), // 临时ID，实际应从API获取
-                    tagName: tagName
-                }
-
-                const updatedTags = [...(localFile.value.tags || []), newTag]
-                const updatedFile: Resource = {
-                    ...localFile.value,
-                    tags: updatedTags
-                }
-
-                await updateResource(localFile.value.resourceId, {
-                    tagIds: updatedTags.map(t => t.tagId)
-                })
-
-                localFile.value = updatedFile
-                emit('update-file', updatedFile)
-
-                newTagName.value = ''
-                ElMessage.success('标签添加成功')
-            } catch (error) {
-                ElMessage.error(`添加标签失败: ${error instanceof Error ? error.message : String(error)}`)
-            }
-        }
-
-        const removeTag = async (tagId: number): Promise<void> => {
-            try {
-                const updatedTags = localFile.value.tags?.filter(t => t.tagId !== tagId) || []
-                const updatedFile: Resource = {
-                    ...localFile.value,
-                    tags: updatedTags
-                }
-
-                await updateResource(localFile.value.resourceId, {
-                    tagIds: updatedTags.map(t => t.tagId)
-                })
-
-                localFile.value = updatedFile
-                emit('update-file', updatedFile)
-
-                ElMessage.success('标签已删除')
-            } catch (error) {
-                ElMessage.error(`删除标签失败: ${error instanceof Error ? error.message : String(error)}`)
-            }
-        }
-
-        const focusInput = (): void => {
+        const showTagInput = () => {
+            tagInputVisible.value = true
             nextTick(() => {
-                tagInput.value?.focus()
+                tagInputRef.value?.focus()
             })
+        }
+
+        const handleTagInputConfirm = async () => {
+            if (tagInputValue.value) {
+                try {
+                    saving.value = true
+                    // Call API to add tag
+                    const newTag = await addResourceTag(localFile.value.resourceId, {
+                        tagName: tagInputValue.value
+                    })
+
+                    // Update local state
+                    const updatedTags = [...localFile.value.tags, newTag]
+                    localFile.value.tags = updatedTags
+
+                    // Emit update event
+                    const updatedFile = {
+                        ...props.file,
+                        tags: updatedTags
+                    }
+                    emit('update-file', updatedFile)
+
+                } catch (error) {
+                    ElMessage.error(`添加标签失败: ${error instanceof Error ? error.message : String(error)}`)
+                } finally {
+                    saving.value = false
+                    tagInputVisible.value = false
+                    tagInputValue.value = ''
+                }
+            } else {
+                tagInputVisible.value = false
+            }
+        }
+
+        const handleTagClose = async (tag: Tag) => {
+            try {
+                saving.value = true
+
+                await removeResourceTag(localFile.value.resourceId, {
+                    tagId: tag.tagId
+                })
+
+                const updatedTags = localFile.value.tags.filter(t => t.tagId !== tag.tagId)
+                localFile.value.tags = updatedTags
+
+                // Emit update event
+                const updatedFile = {
+                    ...props.file,
+                    tags: updatedTags
+                }
+                emit('update-file', updatedFile)
+            } catch (error) {
+                ElMessage.error(`移除标签失败: ${error instanceof Error ? error.message : String(error)}`)
+            } finally {
+                saving.value = false
+            }
         }
 
         // 生命周期
@@ -526,11 +538,12 @@ export default {
             titleInput,
             descInput,
             handleRateChange,
-            newTagName,
-            tagInput,
-            addTag,
-            removeTag,
-            focusInput
+            tagInputVisible,
+            tagInputValue,
+            tagInputRef,
+            showTagInput,
+            handleTagInputConfirm,
+            handleTagClose,
         }
     }
 }
@@ -613,14 +626,30 @@ export default {
     flex: 1;
 }
 
-.tag-section {
-    margin-top: 8px;
+.el-rate{
+    height: 21px!important;
 }
 
 .tags {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+    align-items: center;
+}
+
+.tag-input {
+    width: 80px;
+}
+
+.button-new-tag {
+    height: 24px;
+    line-height: 22px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.el-tag {
+    cursor: default;
 }
 
 .download-file{

@@ -1,9 +1,11 @@
 package com.keem.kochiu.collection.data.vo;
 
+import com.keem.kochiu.collection.data.dto.TagDto;
 import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Builder
 @Data
@@ -27,4 +29,5 @@ public class ResourceVo {
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     private String mimeType;
+    private List<TagDto> tags;
 }
