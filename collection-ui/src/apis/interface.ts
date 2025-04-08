@@ -11,6 +11,11 @@ export interface PageInfo<T> {
     list: T[];
 }
 
+export interface Tag{
+    tagId: number;
+    tagName: string;
+}
+
 export interface Resource {
     resourceId: number;
     resourceUrl: string;
@@ -22,7 +27,7 @@ export interface Resource {
     size: number;
     isPublic: number;
     star: number;
-    tags: string[];
+    tags: Tag[];
     createTime: string;
     updateTime: string;
     width: number;
