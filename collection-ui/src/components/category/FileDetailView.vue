@@ -187,18 +187,29 @@
                 </div>
             </div>
 
-            <div class="tag-section" v-if="file.tags?.length">
-                <el-divider>标签</el-divider>
-                <div class="tags">
-                    <el-tag
-                        v-for="tag in file.tags"
-                        :key="tag"
-                        size="small"
-                        type="info"
-                        class="tag-item"
-                    >
-                        {{ tag }}
-                    </el-tag>
+            <div class="detail-row">
+                <div class="detail-label">标签</div>
+                <div class="detail-value">
+                    <div class="tags-container">
+                        <!-- 已有标签展示 -->
+                        <div v-for="tag in localFile.tags" :key="tag.tagId" class="tag-item">
+                            <span>{{ tag.tagName }}</span>
+                            <el-icon class="delete-icon" @click="removeTag(tag.tagId)">
+                                <Close />
+                            </el-icon>
+                        </div>
+
+                        <!-- 新标签输入框 -->
+                        <el-input
+                            v-model="newTagName"
+                            ref="tagInput"
+                            size="small"
+                            class="new-tag-input"
+                            placeholder="+ 添加标签"
+                            @keyup.enter="addTag"
+                            @blur="addTag"
+                        />
+                    </div>
                 </div>
             </div>
         </div>
@@ -221,38 +232,68 @@
     </div>
 </template>
 
-<script>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
-import { Document, Download, Picture, Loading } from "@element-plus/icons-vue";
-import { updateResource } from "@/apis/services";
-import { ElMessage } from "element-plus";
-import { watch } from "vue";
+<script lang="ts">
+import { ref, computed, onMounted, onUnmounted, nextTick, PropType, watch } from "vue";
+import { Document, Download, Picture, Loading, Close } from '@element-plus/icons-vue'
+import { ElMessage, ElInput } from 'element-plus'
+import { updateResource } from '@/apis/services'
+import type { Resource, Tag } from '@/apis/interface'
 
 export default {
-    components: { Download, Document, Picture, Loading },
+    name: 'FileDetail',
+    components: { Close, Download, Document, Picture, Loading },
     props: {
         file: {
-            type: Object,
-            required: true
+            type: Object as PropType<Resource>,
+            required: true,
+            default: () => ({
+                resourceId: 0,
+                resourceUrl: '',
+                thumbnailUrl: '',
+                sourceFileName: '',
+                title: '',
+                description: '',
+                resolutionRatio: '',
+                size: 0,
+                isPublic: 0,
+                star: 0,
+                tags: [],
+                createTime: '',
+                updateTime: '',
+                width: 0,
+                height: 0,
+                fileType: '',
+                typeName: '',
+                mimeType: '',
+                previewUrl: ''
+            })
         }
     },
-    emits: ['download', 'preview-doc', 'update-file'],
-    setup(props, { emit }) {
+    emits: {
+        'download': (file: Resource) => !!file,
+        'preview-doc': (file: Resource) => !!file,
+        'update-file': (file: Resource) => !!file
+    },
+    setup(props: { file: Resource }, { emit }: { emit: (event: string, ...args: any[]) => void }) {
+        type EditableField = 'title' | 'description' | 'tags'
+
         // 状态定义
-        const localCurrentVideoUrl = ref('');
-        const localVideoDialogVisible = ref(false);
-        const localFile = ref({...props.file});
-        const editingField = ref(null);
-        const originalValue = ref('');
-        const saving = ref(false);
-        const titleInput = ref(null);
-        const descInput = ref(null);
+        const localCurrentVideoUrl = ref<string>('')
+        const localVideoDialogVisible = ref<boolean>(false)
+        const localFile = ref<Resource>({...props.file})
+        const editingField = ref<EditableField | ''>('')
+        const originalValue = ref<string | Tag[] | undefined>()
+        const saving = ref<boolean>(false)
+        const titleInput = ref<InstanceType<typeof ElInput> | null>(null)
+        const descInput = ref<InstanceType<typeof ElInput> | null>(null)
+        const newTagName = ref<string>('')
+        const tagInput = ref<InstanceType<typeof ElInput> | null>(null)
 
         // 计算属性
-        const isImageType = computed(() => props.file.typeName === 'image');
-        const isVideoType = computed(() => props.file.typeName === 'video');
-        const isAudioType = computed(() => props.file.typeName === 'audio');
-        const isOfficeType = computed(() => {
+        const isImageType = computed<boolean>(() => props.file.typeName === 'image')
+        const isVideoType = computed<boolean>(() => props.file.typeName === 'video')
+        const isAudioType = computed<boolean>(() => props.file.typeName === 'audio')
+        const isOfficeType = computed<boolean>(() => {
             const officeTypes = [
                 'application/msword',
                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -260,148 +301,209 @@ export default {
                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                 'application/vnd.ms-powerpoint',
                 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
-            ];
-            return officeTypes.includes(props.file.mimeType) && props.file.previewUrl;
-        });
-        const isPdfType = computed(() => props.file.fileType === 'application/pdf' && props.file.previewUrl);
+            ]
+            return officeTypes.includes(props.file.mimeType) && !!props.file.previewUrl
+        })
+        const isPdfType = computed<boolean>(() => props.file.fileType === 'application/pdf' && !!props.file.previewUrl)
 
         // 方法定义
-        const handlePlayVideo = () => {
-            localCurrentVideoUrl.value = props.file.resourceUrl;
-            localVideoDialogVisible.value = true;
-        };
+        const handlePlayVideo = (): void => {
+            localCurrentVideoUrl.value = props.file.resourceUrl
+            localVideoDialogVisible.value = true
+        }
 
-        const formatSize = (bytes) => {
-            if (!bytes) return "未知";
-            const units = ["B", "KB", "MB", "GB"];
-            let size = bytes;
-            let unitIndex = 0;
+        const formatSize = (bytes: number): string => {
+            if (!bytes) return '未知'
+            const units = ['B', 'KB', 'MB', 'GB']
+            let size = bytes
+            let unitIndex = 0
             while (size >= 1024 && unitIndex < units.length - 1) {
-                size /= 1024;
-                unitIndex++;
+                size /= 1024
+                unitIndex++
             }
-            return `${size.toFixed(2)} ${units[unitIndex]}`;
-        };
+            return `${size.toFixed(2)} ${units[unitIndex]}`
+        }
 
-        const formatTime = (timeStr) => {
-            return timeStr ? new Date(timeStr).toLocaleString() : "未知";
-        };
+        const formatTime = (timeStr: string): string => {
+            return timeStr ? new Date(timeStr).toLocaleString() : '未知'
+        }
 
-        const startEditing = async (field) => {
-            editingField.value = field;
-            originalValue.value = localFile.value[field];
+        const startEditing = async (field: EditableField): Promise<void> => {
+            editingField.value = field
+            originalValue.value = field === 'tags'
+                ? [...(localFile.value.tags || [])]
+                : localFile.value[field]?.toString() || ''
 
-            await nextTick();
+            await nextTick()
 
-            if (field === 'title' && titleInput.value) {
-                titleInput.value.focus();
-            } else if (field === 'description' && descInput.value) {
-                descInput.value.focus();
+            const inputRef = field === 'title' ? titleInput.value : descInput.value
+            if (inputRef) {
+                inputRef.focus()
             }
-        };
+        }
 
-        // 新增评分变化处理函数
-        const handleRateChange = async (value) => {
-            saving.value = true;
+        const handleRateChange = async (value: number): Promise<void> => {
+            saving.value = true
             try {
-                // 调用API更新
                 await updateResource(localFile.value.resourceId, {
                     star: value
-                });
+                })
 
-                // 构造更新后的完整文件对象
-                const updatedFile = {
+                const updatedFile: Resource = {
                     ...props.file,
                     star: value
-                };
+                }
 
-                // 更新本地副本
-                localFile.value = updatedFile;
+                localFile.value = updatedFile
+                emit('update-file', updatedFile)
 
-                // 通知父组件
-                emit('update-file', updatedFile);
-
-                ElMessage.success('评分更新');
+                ElMessage.success('评分更新成功')
             } catch (error) {
-                // 恢复原始值
-                localFile.value.star = props.file.star;
-                ElMessage.error('评分更新失败: ' + error.message);
+                localFile.value.star = props.file.star
+                ElMessage.error(`评分更新失败: ${error instanceof Error ? error.message : String(error)}`)
             } finally {
-                saving.value = false;
+                saving.value = false
             }
-        };
+        }
 
-        // 修改保存方法以排除评分字段
-        const saveField = async (field) => {
-            if (!editingField.value) return;
+        const saveField = async (field: EditableField): Promise<void> => {
+            if (!editingField.value) return
 
-            if (localFile.value[field] === originalValue.value) {
-                editingField.value = null;
-                return;
+            const currentValue = field === 'tags'
+                ? localFile.value.tags
+                : localFile.value[field]
+
+            if (JSON.stringify(currentValue) === JSON.stringify(originalValue.value)) {
+                editingField.value = ''
+                return
             }
 
-            saving.value = true;
+            saving.value = true
             try {
-                // 调用API更新
                 await updateResource(localFile.value.resourceId, {
-                    [field]: localFile.value[field]
-                });
+                    [field]: currentValue
+                })
 
-                // 构造更新后的完整文件对象
-                const updatedFile = {
+                const updatedFile: Resource = {
                     ...props.file,
-                    [field]: localFile.value[field]
-                };
+                    [field]: currentValue
+                }
 
-                // 通知父组件
-                emit('update-file', updatedFile);
+                emit('update-file', updatedFile)
+                localFile.value = updatedFile
 
-                // 更新本地副本
-                localFile.value = updatedFile;
-
-                ElMessage.success('更新成功');
+                ElMessage.success('更新成功')
             } catch (error) {
-                // 恢复原始值
-                localFile.value[field] = originalValue.value;
-                ElMessage.error('更新失败: ' + error.message);
+                if (field === 'tags') {
+                    localFile.value.tags = originalValue.value as Tag[] || []
+                } else {
+                    localFile.value[field] = originalValue.value as string
+                }
+                ElMessage.error(`更新失败: ${error instanceof Error ? error.message : String(error)}`)
             } finally {
-                saving.value = false;
-                editingField.value = null;
+                saving.value = false
+                editingField.value = ''
             }
-        };
+        }
 
-        const cancelEditing = () => {
+        const cancelEditing = (): void => {
             if (editingField.value) {
-                localFile.value[editingField.value] = originalValue.value;
-                editingField.value = null;
+                if (editingField.value === 'tags') {
+                    localFile.value.tags = originalValue.value as Tag[] || []
+                } else {
+                    localFile.value[editingField.value] = originalValue.value as string
+                }
+                editingField.value = ''
             }
-        };
+        }
 
-        const handleClickOutside = (event) => {
-            const isClickInsideEditor = event.target.closest('.el-input') ||
-                event.target.closest('.editable-field');
+        const handleClickOutside = (event: MouseEvent): void => {
+            const target = event.target as HTMLElement
+            const isClickInsideEditor = target.closest('.el-input') || target.closest('.editable-field')
 
             if (editingField.value && !isClickInsideEditor) {
-                saveField(editingField.value);
+                saveField(editingField.value)
             }
-        };
+        }
+
+        const addTag = async (): Promise<void> => {
+            const tagName = newTagName.value.trim()
+            if (!tagName) return
+
+            if (localFile.value.tags?.some(t => t.tagName === tagName)) {
+                ElMessage.warning('标签已存在')
+                newTagName.value = ''
+                return
+            }
+
+            try {
+                const newTag: Tag = {
+                    tagId: Date.now(), // 临时ID，实际应从API获取
+                    tagName: tagName
+                }
+
+                const updatedTags = [...(localFile.value.tags || []), newTag]
+                const updatedFile: Resource = {
+                    ...localFile.value,
+                    tags: updatedTags
+                }
+
+                await updateResource(localFile.value.resourceId, {
+                    tagIds: updatedTags.map(t => t.tagId)
+                })
+
+                localFile.value = updatedFile
+                emit('update-file', updatedFile)
+
+                newTagName.value = ''
+                ElMessage.success('标签添加成功')
+            } catch (error) {
+                ElMessage.error(`添加标签失败: ${error instanceof Error ? error.message : String(error)}`)
+            }
+        }
+
+        const removeTag = async (tagId: number): Promise<void> => {
+            try {
+                const updatedTags = localFile.value.tags?.filter(t => t.tagId !== tagId) || []
+                const updatedFile: Resource = {
+                    ...localFile.value,
+                    tags: updatedTags
+                }
+
+                await updateResource(localFile.value.resourceId, {
+                    tagIds: updatedTags.map(t => t.tagId)
+                })
+
+                localFile.value = updatedFile
+                emit('update-file', updatedFile)
+
+                ElMessage.success('标签已删除')
+            } catch (error) {
+                ElMessage.error(`删除标签失败: ${error instanceof Error ? error.message : String(error)}`)
+            }
+        }
+
+        const focusInput = (): void => {
+            nextTick(() => {
+                tagInput.value?.focus()
+            })
+        }
 
         // 生命周期
         onMounted(() => {
-            document.addEventListener('click', handleClickOutside);
-        });
+            document.addEventListener('click', handleClickOutside)
+        })
 
         onUnmounted(() => {
-            document.removeEventListener('click', handleClickOutside);
-        });
+            document.removeEventListener('click', handleClickOutside)
+        })
 
         // 监听props变化
-        watch(() => props.file, (newVal) => {
-            // 只有当不是当前编辑的字段时才更新
+        watch(() => props.file, (newVal: Resource) => {
             if (!editingField.value) {
-                localFile.value = {...newVal};
+                localFile.value = {...newVal}
             }
-        }, { deep: true });
+        }, { deep: true })
 
         return {
             isImageType,
@@ -423,10 +525,15 @@ export default {
             emit,
             titleInput,
             descInput,
-            handleRateChange
-        };
+            handleRateChange,
+            newTagName,
+            tagInput,
+            addTag,
+            removeTag,
+            focusInput
+        }
     }
-};
+}
 </script>
 
 <style scoped>
