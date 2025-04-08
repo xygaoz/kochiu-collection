@@ -9,7 +9,6 @@ import com.github.pagehelper.PageInfo;
 import com.keem.kochiu.collection.data.bo.PageBo;
 import com.keem.kochiu.collection.data.bo.ResInfoBo;
 import com.keem.kochiu.collection.data.dto.ResourceDto;
-import com.keem.kochiu.collection.data.vo.ResourceVo;
 import com.keem.kochiu.collection.entity.UserResource;
 import com.keem.kochiu.collection.enums.SaveTypeEnum;
 import com.keem.kochiu.collection.exception.CollectionException;

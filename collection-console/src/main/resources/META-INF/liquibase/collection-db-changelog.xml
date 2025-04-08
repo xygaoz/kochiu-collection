@@ -335,4 +335,40 @@
             <column name="title"/>
         </createIndex>
     </changeSet>
+
+    <changeSet id="kcdb_15" author="kochiu" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="user_resource_tag"/>
+            </not>
+        </preConditions>
+        <createTable remarks="用户资源标签表" tableName="user_resource_tag">
+            <column name="tag_id" type="INTEGER" remarks="标签id">
+                <constraints nullable="false"/>
+            </column>
+            <column name="RESOURCE_ID" remarks="资源ID" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="USER_ID" remarks="用户ID" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tag_name" remarks="标签名" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATE_TIME" remarks="创建时间" type="date"/>
+            <column name="CREATE_BY" remarks="创建人" type="VARCHAR(20)"/>
+            <column name="UPDATE_TIME" remarks="更新时间" type="date"/>
+            <column name="UPDATE_BY" remarks="更新人" type="VARCHAR(20)"/>
+            <column name="DB_VERSION" remarks="数据版本" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- 添加主键自增元数据 -->
+        <addAutoIncrement
+                tableName="user_resource_tag"
+                columnName="tag_id"
+                columnDataType="INTEGER"
+        />
+    </changeSet>
 </databaseChangeLog>
