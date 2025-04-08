@@ -3,6 +3,7 @@ package com.keem.kochiu.collection.service;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.github.pagehelper.PageInfo;
 import com.keem.kochiu.collection.data.bo.PageBo;
+import com.keem.kochiu.collection.data.bo.ResInfoBo;
 import com.keem.kochiu.collection.data.bo.UploadBo;
 import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.data.vo.FileVo;
@@ -52,19 +53,10 @@ public class UserResourceService {
      */
     public FileVo saveFile(UploadBo uploadBo, UserDto userDto) throws CollectionException {
 
-        Integer userId = userDto != null ? userDto.getUserId() : null;
-        if(userId == null){
-            throw new CollectionException("非法请求。");
-        }
-
-        SysUser user = userRepository.getById(userId);
-        if (user == null) {
-            throw new CollectionException("非法请求。");
-        }
-
+        SysUser user = userRepository.getUser(userDto);
         try {
             String md5 = DigestUtil.md5Hex(DigestUtil.md5Hex(uploadBo.getFile().getBytes()));
-            List<UserResource> resources =resourceRepository.countFileMd5(userId, md5);
+            List<UserResource> resources =resourceRepository.countFileMd5(user.getUserId(), md5);
             if(!resources.isEmpty() && !uploadBo.isOverwrite()){
                 throw new CollectionException("文件已存在");
             }
@@ -118,17 +110,8 @@ public class UserResourceService {
                                                 int cateSno,
                                                 PageBo pageBo) throws CollectionException {
 
-        Integer userId = userDto != null ? userDto.getUserId() : null;
-        if(userId == null){
-            throw new CollectionException("非法请求。");
-        }
-
-        SysUser user = userRepository.getById(userId);
-        if (user == null) {
-            throw new CollectionException("非法请求。");
-        }
-
-        PageInfo<UserResource> resourceList = resourceRepository.getResourceList(userId, cateSno, pageBo);
+        SysUser user = userRepository.getUser(userDto);
+        PageInfo<UserResource> resourceList = resourceRepository.getResourceList(user.getUserId(), cateSno, pageBo);
         List<ResourceVo> datas = resourceList
                 .getList()
                 .stream()
@@ -186,5 +169,21 @@ public class UserResourceService {
             return "/resource/" + resource.getResourceId() + "/" + resource.getResourceUrl().replace("/" + user.getUserCode() + "/", "");
         }
         return resource.getThumbUrl();
+    }
+
+    /**
+     * 更新资源信息
+     * @param userDto
+     * @param resourceInfo
+     */
+    public void updateResourceInfo(UserDto userDto, ResInfoBo resourceInfo) throws CollectionException {
+
+        if(StringUtils.isBlank(resourceInfo.getTitle()) && StringUtils.isBlank(resourceInfo.getDescription())
+            && resourceInfo.getStar() == null){
+            throw new CollectionException("更新内容不能为空");
+        }
+
+        SysUser user = userRepository.getUser(userDto);
+        resourceRepository.updateResourceInfo(user.getUserId(), resourceInfo);
     }
 }

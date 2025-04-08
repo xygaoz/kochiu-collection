@@ -10,6 +10,8 @@ public final class Constant {
      */
     public static final String HEADER_AUTHORIZATION = "Authorization";
 
+    public static final String PUBLIC_URL = "/api/v1";
+
     public static final String TOKEN_PARAMS_FLAG = "params";
     public static final String TOKEN_API_FLAG = "api";
     public static final String TOKEN_TYPE_FLAG = "type";

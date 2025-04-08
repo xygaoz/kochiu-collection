@@ -110,3 +110,16 @@ export const listCategoryFiles = (cateId: string, page: number, size: number): P
         ld.close();
     });
 }
+
+export const updateResource = (resourceId: number, params: any): Promise<any> => {
+    const ld = loading("修改中")
+    params["resourceId"] = resourceId;
+    return httpInstance.post("/updateInfo", params).then((model: any) => {
+        if (model) {
+            console.log("修改成功:", model);
+            return model;
+        }
+    }).finally(() => {
+        ld.close();
+    });
+}

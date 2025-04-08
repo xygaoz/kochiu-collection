@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import static com.keem.kochiu.collection.Constant.PUBLIC_URL;
+
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping(PUBLIC_URL)
 public class UserCategoryController {
 
     private final UserCategoryService userCategoryService;

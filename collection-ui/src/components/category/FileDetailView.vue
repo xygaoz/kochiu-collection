@@ -80,7 +80,7 @@
         <div class="detail-header">
             <div>文件详情</div>
             <el-icon class="download-file"
-                @click="emit('download', file)"
+                     @click="emit('download', file)"
             >
                 <Download/>
             </el-icon>
@@ -89,6 +89,60 @@
         <el-divider />
 
         <div class="detail-content">
+            <div class="detail-row">
+                <div class="detail-label">文件标题</div>
+                <div class="detail-value">
+                    <el-input
+                        v-if="editingField === 'title'"
+                        ref="titleInput"
+                        v-model="localFile.title"
+                        size="small"
+                        @blur="saveField('title')"
+                        @keyup.enter="saveField('title')"
+                        @keyup.esc="cancelEditing"
+                        @click.stop
+                        :disabled="saving"
+                        autofocus
+                    >
+                        <template #suffix>
+                            <el-icon v-if="saving" class="is-loading">
+                                <Loading />
+                            </el-icon>
+                        </template>
+                    </el-input>
+                    <div v-else @click.stop="startEditing('title')" class="editable-field" :class="{ 'empty-value': !localFile.title }">
+                        {{ localFile.title || '无标题' }}
+                    </div>
+                </div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">文件描述</div>
+                <div class="detail-value">
+                    <el-input
+                        v-if="editingField === 'description'"
+                        ref="descInput"
+                        v-model="localFile.description"
+                        type="textarea"
+                        :rows="2"
+                        size="small"
+                        @blur="saveField('description')"
+                        @keyup.enter="saveField('description')"
+                        @keyup.esc="cancelEditing"
+                        @click.stop
+                        :disabled="saving"
+                        autofocus
+                    >
+                        <template #suffix>
+                            <el-icon v-if="saving" class="is-loading">
+                                <Loading />
+                            </el-icon>
+                        </template>
+                    </el-input>
+                    <div v-else @click.stop="startEditing('description')" class="editable-field" :class="{ 'empty-value': !localFile.description }">
+                        {{ localFile.description || '无描述' }}
+                    </div>
+                </div>
+            </div>
             <div class="detail-row">
                 <div class="detail-label">文件名</div>
                 <div class="detail-value">{{ file.sourceFileName }}</div>
@@ -161,27 +215,36 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue'
-import { Document, Download, Picture } from "@element-plus/icons-vue";
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { Document, Download, Picture, Loading } from "@element-plus/icons-vue";
+import { updateResource } from "@/apis/services";
+import { ElMessage } from "element-plus";
+import { watch } from "vue";
 
 export default {
-    components: { Download, Document, Picture },
+    components: { Download, Document, Picture, Loading },
     props: {
         file: {
             type: Object,
             required: true
         }
     },
-    emits: ['download', 'preview-doc'],
+    emits: ['download', 'preview-doc', 'update:file'],
     setup(props, { emit }) {
-        // 视频相关状态
-        const localCurrentVideoUrl = ref('')
-        const localVideoDialogVisible = ref(false)
+        // 状态定义
+        const localCurrentVideoUrl = ref('');
+        const localVideoDialogVisible = ref(false);
+        const localFile = ref({...props.file});
+        const editingField = ref(null);
+        const originalValue = ref('');
+        const saving = ref(false);
+        const titleInput = ref(null);
+        const descInput = ref(null);
 
-        // 计算属性判断文件类型
-        const isImageType = computed(() => props.file.typeName === 'image')
-        const isVideoType = computed(() => props.file.typeName === 'video')
-        const isAudioType = computed(() => props.file.typeName === 'audio')
+        // 计算属性
+        const isImageType = computed(() => props.file.typeName === 'image');
+        const isVideoType = computed(() => props.file.typeName === 'video');
+        const isAudioType = computed(() => props.file.typeName === 'audio');
         const isOfficeType = computed(() => {
             const officeTypes = [
                 'application/msword',
@@ -190,34 +253,117 @@ export default {
                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                 'application/vnd.ms-powerpoint',
                 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
-            ]
-            return officeTypes.includes(props.file.mimeType) && props.file.previewUrl
-        })
-        const isPdfType = computed(() => props.file.fileType === 'application/pdf' && props.file.previewUrl)
+            ];
+            return officeTypes.includes(props.file.mimeType) && props.file.previewUrl;
+        });
+        const isPdfType = computed(() => props.file.fileType === 'application/pdf' && props.file.previewUrl);
 
-        // 播放视频方法
+        // 方法定义
         const handlePlayVideo = () => {
-            localCurrentVideoUrl.value = props.file.resourceUrl
-            localVideoDialogVisible.value = true
-        }
+            localCurrentVideoUrl.value = props.file.resourceUrl;
+            localVideoDialogVisible.value = true;
+        };
 
-        // 辅助方法：格式化文件大小
         const formatSize = (bytes) => {
-            if (!bytes) return "未知"
-            const units = ["B", "KB", "MB", "GB"]
-            let size = bytes
-            let unitIndex = 0
+            if (!bytes) return "未知";
+            const units = ["B", "KB", "MB", "GB"];
+            let size = bytes;
+            let unitIndex = 0;
             while (size >= 1024 && unitIndex < units.length - 1) {
-                size /= 1024
-                unitIndex++
+                size /= 1024;
+                unitIndex++;
             }
-            return `${size.toFixed(2)} ${units[unitIndex]}`
-        }
+            return `${size.toFixed(2)} ${units[unitIndex]}`;
+        };
 
-        // 辅助方法：格式化时间
         const formatTime = (timeStr) => {
-            return timeStr ? new Date(timeStr).toLocaleString() : "未知"
-        }
+            return timeStr ? new Date(timeStr).toLocaleString() : "未知";
+        };
+
+        const startEditing = async (field) => {
+            editingField.value = field;
+            originalValue.value = localFile.value[field];
+
+            await nextTick();
+
+            if (field === 'title' && titleInput.value) {
+                titleInput.value.focus();
+            } else if (field === 'description' && descInput.value) {
+                descInput.value.focus();
+            }
+        };
+
+        const saveField = async (field) => {
+            if (!editingField.value) return;
+
+            // 如果没有修改，直接退出编辑
+            if (localFile.value[field] === originalValue.value) {
+                editingField.value = null;
+                return;
+            }
+
+            saving.value = true;
+            try {
+                // 调用API更新
+                await updateResource(localFile.value.resourceId, {
+                    [field]: localFile.value[field]
+                });
+
+                // 构造更新后的完整文件对象
+                const updatedFile = {
+                    ...props.file,
+                    [field]: localFile.value[field]
+                };
+
+                // 通知父组件
+                emit('update:file', updatedFile);
+
+                // 更新本地副本
+                localFile.value = updatedFile;
+
+                ElMessage.success('更新成功');
+            } catch (error) {
+                // 恢复原始值
+                localFile.value[field] = originalValue.value;
+                ElMessage.error('更新失败: ' + error.message);
+            } finally {
+                saving.value = false;
+                editingField.value = null;
+            }
+        };
+
+        const cancelEditing = () => {
+            if (editingField.value) {
+                localFile.value[editingField.value] = originalValue.value;
+                editingField.value = null;
+            }
+        };
+
+        const handleClickOutside = (event) => {
+            const isClickInsideEditor = event.target.closest('.el-input') ||
+                event.target.closest('.editable-field');
+
+            if (editingField.value && !isClickInsideEditor) {
+                saveField(editingField.value);
+            }
+        };
+
+        // 生命周期
+        onMounted(() => {
+            document.addEventListener('click', handleClickOutside);
+        });
+
+        onUnmounted(() => {
+            document.removeEventListener('click', handleClickOutside);
+        });
+
+        // 监听props变化
+        watch(() => props.file, (newVal) => {
+            // 只有当不是当前编辑的字段时才更新
+            if (!editingField.value) {
+                localFile.value = {...newVal};
+            }
+        }, { deep: true });
 
         return {
             isImageType,
@@ -230,10 +376,18 @@ export default {
             handlePlayVideo,
             formatSize,
             formatTime,
-            emit
-        }
+            localFile,
+            editingField,
+            saving,
+            startEditing,
+            saveField,
+            cancelEditing,
+            emit,
+            titleInput,
+            descInput
+        };
     }
-}
+};
 </script>
 
 <style scoped>
@@ -325,5 +479,35 @@ export default {
 
 .download-file{
     cursor: pointer;
+}
+
+.empty-value {
+    color: #999;
+    font-style: italic;
+}
+
+.editable-field {
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+}
+
+.editable-field:hover {
+    background-color: #f0f0f0;
+}
+
+.is-loading {
+    animation: rotating 2s linear infinite;
+}
+
+@keyframes rotating {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 </style>
