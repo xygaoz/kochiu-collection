@@ -171,12 +171,19 @@
                 <div class="detail-label">评分</div>
                 <div class="detail-value">
                     <el-rate
-                        :model-value="file.star"
-                        disabled
+                        v-model="localFile.star"
+                        @change="handleRateChange"
+                        :disabled="saving"
                         show-score
                         text-color="#ff9900"
                         score-template="{value} 分"
-                    />
+                    >
+                        <template #suffix>
+                            <el-icon v-if="saving" class="is-loading">
+                                <Loading />
+                            </el-icon>
+                        </template>
+                    </el-rate>
                 </div>
             </div>
 
@@ -229,7 +236,7 @@ export default {
             required: true
         }
     },
-    emits: ['download', 'preview-doc', 'update:file'],
+    emits: ['download', 'preview-doc', 'update-file'],
     setup(props, { emit }) {
         // 状态定义
         const localCurrentVideoUrl = ref('');
@@ -293,10 +300,41 @@ export default {
             }
         };
 
+        // 新增评分变化处理函数
+        const handleRateChange = async (value) => {
+            saving.value = true;
+            try {
+                // 调用API更新
+                await updateResource(localFile.value.resourceId, {
+                    star: value
+                });
+
+                // 构造更新后的完整文件对象
+                const updatedFile = {
+                    ...props.file,
+                    star: value
+                };
+
+                // 更新本地副本
+                localFile.value = updatedFile;
+
+                // 通知父组件
+                emit('update-file', updatedFile);
+
+                ElMessage.success('评分更新');
+            } catch (error) {
+                // 恢复原始值
+                localFile.value.star = props.file.star;
+                ElMessage.error('评分更新失败: ' + error.message);
+            } finally {
+                saving.value = false;
+            }
+        };
+
+        // 修改保存方法以排除评分字段
         const saveField = async (field) => {
             if (!editingField.value) return;
 
-            // 如果没有修改，直接退出编辑
             if (localFile.value[field] === originalValue.value) {
                 editingField.value = null;
                 return;
@@ -316,7 +354,7 @@ export default {
                 };
 
                 // 通知父组件
-                emit('update:file', updatedFile);
+                emit('update-file', updatedFile);
 
                 // 更新本地副本
                 localFile.value = updatedFile;
@@ -384,7 +422,8 @@ export default {
             cancelEditing,
             emit,
             titleInput,
-            descInput
+            descInput,
+            handleRateChange
         };
     }
 };

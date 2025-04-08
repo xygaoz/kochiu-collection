@@ -17,6 +17,7 @@
                         :file="selectedImage"
                         @download="handleDownload"
                         @preview-doc="handleShowDoc"
+                        @update-file="handleUpdateFile"
                     />
                     <el-empty v-else description="请选择文件查看详情" />
                 </el-aside>
@@ -77,6 +78,18 @@ const handleShowDoc = (image: Resource) => {
 const handleDownload = (image: Resource) => {
     console.log('下载文件:', image.sourceFileName);
 };
+
+const handleUpdateFile = (params: Resource) => {
+    const index = files.value.findIndex(file => file.resourceId === params.resourceId);
+    if (index !== -1) {
+        // 更新文件对象
+        files.value[index] = { ...files.value[index], ...params };
+        console.log('文件已更新:', params);
+    } else {
+        console.warn('未找到对应的文件:', params.resourceId);
+    }
+};
+
 </script>
 
 <style scoped>

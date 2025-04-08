@@ -144,6 +144,7 @@ public class UserResourceService {
                                 .resolutionRatio(resource.getResolutionRatio())
                                 .createTime(resource.getCreateTime())
                                 .updateTime(resource.getUpdateTime())
+                                .star(resource.getStar())
                                 .build();
                     }
                 ).toList();
