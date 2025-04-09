@@ -30,4 +30,11 @@ public class UserCategoryController {
 
         return DefaultResult.ok(userCategoryService.getCategoryList(CheckPermitAspect.USER_INFO.get()));
     }
+
+    @CheckPermit
+    @GetMapping("/category/all")
+    public DefaultResult<List<CategoryVo>> getAllCategory() throws CollectionException {
+
+        return DefaultResult.ok(userCategoryService.getAllCategory(CheckPermitAspect.USER_INFO.get()));
+    }
 }

@@ -133,9 +133,9 @@
 import { ref, onMounted } from "vue";
 import router, { routes } from "@/apis/base-routes";
 import { RouteRecordRaw } from "vue-router";
-import { listCategory } from "@/apis/services";
+import { listCategory, listTag } from "@/apis/services";
 import { Plus } from "@element-plus/icons-vue"; // 导入listCategory方法
-import { Category } from "@/apis/interface"; // 导入Category接口
+import { Category, Tag } from "@/apis/interface"; // 导入Category接口
 
 const menu = ref(routes.filter(route => route.meta?.showInMenu !== false));
 const defaultOpeneds = ref(['/My', '/Category']); // 添加默认展开的子菜单路径
@@ -144,6 +144,7 @@ const defaultOpeneds = ref(['/My', '/Category']); // 添加默认展开的子菜
 onMounted(() => {
     router.push(routes[0]);
     loadCategories(); // 调用加载分类的方法
+    loadTags(); // 调用加载标签的方法
 });
 
 // 加载分类的方法
@@ -181,6 +182,40 @@ const loadCategories = async () => {
     }
 };
 
+// 加载标签的方法
+const loadTags = async () => {
+    try {
+        const tags: Tag[] = await listTag();
+        if (tags && tags.length > 0) {
+            // 找到/tag路由
+            const tagRoute = menu.value.find(route => route.path === '/Tag');
+            if (tagRoute && tagRoute.children) {
+                // 获取现有的"所有分类"菜单项
+                const allTagItem = tagRoute.children.find(child => child.name === 'allTag');
+
+                // 创建动态分类菜单项数组
+                const dynamicItems = tags.map(tag => ({
+                    path: `/Tag/${tag.tagId}`,
+                    meta: {
+                        title: tag.tagName,
+                        tagId: tag.tagId,
+                        icon: 'icon-col-biaoqian',  // 添加图标
+                        iconType: 'iconfont',
+                        style: 'font-size: 18px; color: rgb(59,130,246)'
+                    }
+                }));
+
+                // 重新设置children数组，动态项在前，"所有分类"在后
+                tagRoute.children = [
+                    ...dynamicItems,
+                    ...(allTagItem ? [allTagItem] : [])
+                ];
+            }
+        }
+    } catch (error) {
+        console.error('加载标签失败:', error);
+    }
+};
 // 菜单项点击事件
 const menuItemClick = (item: RouteRecordRaw) => {
     // 统一使用path跳转

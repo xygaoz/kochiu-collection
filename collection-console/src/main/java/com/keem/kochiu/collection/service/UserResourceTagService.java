@@ -4,7 +4,7 @@ import com.keem.kochiu.collection.data.bo.ResInfoBo;
 import com.keem.kochiu.collection.data.dto.TagDto;
 import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.entity.SysUser;
-import com.keem.kochiu.collection.entity.UserResourceTag;
+import com.keem.kochiu.collection.entity.UserTag;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.repository.SysUserRepository;
 import com.keem.kochiu.collection.repository.UserResourceTagRepository;
@@ -70,5 +70,22 @@ public class UserResourceTagService {
 
         SysUser user = userRepository.getUser(userDto);
         userResourceTagRepository.removeResourceTag(user.getUserId(), tagDto.getResourceId(), tagDto.getTagId());
+    }
+
+    /**
+     * 获取资源标签列表(菜单专用)
+     * @param userDto
+     * @return
+     * @throws CollectionException
+     */
+    public List<TagDto> getTagList(UserDto userDto) throws CollectionException {
+
+        SysUser user = userRepository.getUser(userDto);
+        List<UserTag> tagList = userTagRepository.getTagList(user.getUserId());
+
+        return tagList.stream().map(tag -> TagDto.builder()
+                .tagId(tag.getTagId())
+                .tagName(tag.getTagName())
+                .build()).toList();
     }
 }

@@ -35,4 +35,24 @@ public class UserCategoryService {
                 .sno(category.getSno())
                 .build()).toList();
     }
+
+    /**
+     * 获取所有分类列表
+     * @param userDto
+     * @return
+     * @throws CollectionException
+     */
+    public List<CategoryVo> getAllCategory(UserDto userDto) throws CollectionException {
+
+        Integer userId = userDto != null ? userDto.getUserId() : null;
+        if(userId == null){
+            throw new CollectionException("非法请求。");
+        }
+
+        List<UserCategory> categoryList = userCategoryRepository.getAllCategory(userId);
+        return categoryList.stream().map(category -> CategoryVo.builder()
+                .cateName(category.getCateName())
+                .sno(category.getSno())
+                .build()).toList();
+    }
 }

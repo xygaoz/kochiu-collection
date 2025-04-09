@@ -81,4 +81,11 @@ public class UserCategoryRepository extends ServiceImpl<UserCategoryMapper, User
             return baseMapper.listCategoryByResourceNum(userId, sysConfigProperties.getListCategoryNum());
         }
     }
+
+    public List<UserCategory> getAllCategory(int userId) {
+
+        LambdaQueryWrapper<UserCategory> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UserCategory::getUserId, userId);
+        return this.list(lambdaQueryWrapper);
+    }
 }

@@ -49,7 +49,7 @@
 import { UploadFilled } from '@element-plus/icons-vue'
 import { ElMessage } from "element-plus";
 import { ref, onMounted, reactive } from "vue";
-import { listCategory, uploadFile } from "@/apis/services"; // 导入uploadFile方法
+import { getAllCategory, uploadFile } from "@/apis/services"; // 导入uploadFile方法
 import { Category } from "@/apis/interface"; // 导入Category接口
 
 // 定义允许的文件类型和最大文件大小（2MB）
@@ -97,7 +97,7 @@ const beforeUpload = (file: File) => {
 
 // 获取分类信息
 onMounted(() => {
-    listCategory().then((response: Category[]) => {
+    getAllCategory().then((response: Category[]) => {
         categories.length = 0
         response.forEach((item: Category) => {
             categories.push({

@@ -1,5 +1,5 @@
 import httpInstance from "@/apis/utils"; // 导入httpInstance
-import { Category, PageInfo, Resource } from "@/apis/interface"; // 导入Category接口
+import { Category, PageInfo, Resource, Tag } from "@/apis/interface"; // 导入Category接口
 import { loading } from "@/apis/utils";
 
 export const tokenStore = {
@@ -60,6 +60,30 @@ export const listCategory = (): Promise<Category[]> => {
     return httpInstance.get("/category/list").then((model: any) => {
         if (model) {
             return model as Category[];
+        }
+        return [];
+    }).catch((error) => {
+        console.error("获取分类失败:", error);
+        return [];
+    });
+}
+
+export const getAllCategory = (): Promise<Category[]> => {
+    return httpInstance.get("/category/all").then((model: any) => {
+        if (model) {
+            return model as Category[];
+        }
+        return [];
+    }).catch((error) => {
+        console.error("获取分类失败:", error);
+        return [];
+    });
+}
+
+export const listTag = (): Promise<Tag[]> => {
+    return httpInstance.get("/tag/list").then((model: any) => {
+        if (model) {
+            return model as Tag[];
         }
         return [];
     }).catch((error) => {

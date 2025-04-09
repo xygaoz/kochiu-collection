@@ -27,7 +27,7 @@ routes.push(
                 path: '/AllTag',
                 name: 'allTag',
                 component: () => import('@/components/tag/AllTag.vue'),
-                meta: { title: '所有标签', icon: 'icon-col-24gl-tags4', iconType: 'iconfont', style: 'font-size: 21px; color: rgb(59,130,246' },
+                meta: { title: '所有标签', icon: 'icon-col-24gl-tags4', iconType: 'iconfont', style: 'font-size: 17px; color: rgb(59,130,246' },
             },
         ]
     },
