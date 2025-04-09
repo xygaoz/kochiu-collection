@@ -33,14 +33,14 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
-import { listCategoryFiles } from "@/apis/services";
+import { listCategoryFiles, listTagFiles } from "@/apis/services";
 import { Resource } from "@/apis/interface";
 import PdfPreviewDialog from "@/components/category/PdfPreviewDialog.vue";
 import FileDetailView from "@/components/category/FileDetailView.vue";
 import WaterfallLayout from "@/components/category/WaterfallLayout.vue";
 
 const route = useRoute();
-const cateId = route.params.cateId as string;
+const tagId = route.params.tagId as string;
 const files = ref<Resource[]>([]);
 const selectedImage = ref<Resource | null>(null);
 const loading = ref(true);
@@ -54,7 +54,7 @@ const currentComponent = WaterfallLayout;
 // 加载数据
 onMounted(async () => {
     try {
-        const data = await listCategoryFiles(cateId, currentPage.value, pageSize.value);
+        const data = await listTagFiles(tagId, currentPage.value, pageSize.value);
         files.value = data.list;
         total.value = data.total;
         currentPage.value = data.pageNum;

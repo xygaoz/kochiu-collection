@@ -12,7 +12,6 @@ import com.keem.kochiu.collection.data.vo.PageVo;
 import com.keem.kochiu.collection.data.vo.ResourceVo;
 import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.entity.UserResource;
-import com.keem.kochiu.collection.entity.UserResourceTag;
 import com.keem.kochiu.collection.entity.UserTag;
 import com.keem.kochiu.collection.enums.FileTypeEnum;
 import com.keem.kochiu.collection.enums.SaveTypeEnum;
@@ -114,64 +113,13 @@ public class UserResourceService {
      * @return
      * @throws CollectionException
      */
-    public PageVo<ResourceVo> getResourceList(UserDto userDto,
-                                                int cateSno,
-                                                PageBo pageBo) throws CollectionException {
+    public PageVo<ResourceVo> getResourceListByCate(UserDto userDto,
+                                                    int cateSno,
+                                                    PageBo pageBo) throws CollectionException {
 
         SysUser user = userRepository.getUser(userDto);
-        PageInfo<UserResource> resourceList = resourceRepository.getResourceList(user.getUserId(), cateSno, pageBo);
-        List<ResourceVo> datas = resourceList
-                .getList()
-                .stream()
-                .map(resource -> {
-                        //缩略图宽高
-                        String thumbRatio = resource.getThumbRatio();
-                        int width = 150;
-                        int height = 200;
-                        if(thumbRatio != null){
-                            String[] split = thumbRatio.split("x");
-                            width = Integer.parseInt(split[0]);
-                            height = Integer.parseInt(split[1]);
-                        }
-
-                        FileTypeEnum fileType = FileTypeEnum.getByValue(resource.getFileExt());
-
-                        //获取资源标签
-                        List<UserTag> tags = tagRepository.getTagList(user.getUserId(), resource.getResourceId());
-
-                        return ResourceVo.builder()
-                                .resourceId(resource.getResourceId())
-                                .resourceUrl(buildResourceUrl(user, resource))
-                                .thumbnailUrl(StringUtils.isNotBlank(resource.getThumbUrl()) ? "/resource/" + resource.getResourceId() + "/" + resource.getThumbUrl().replace("/" + user.getUserCode() + "/", "") : null)
-                                .previewUrl(StringUtils.isNotBlank(resource.getPreviewUrl()) ? "/resource/" + resource.getResourceId() + "/" + resource.getPreviewUrl().replace("/" + user.getUserCode() + "/", "") : null)
-                                .title(resource.getTitle())
-                                .description(resource.getDescription())
-                                .sourceFileName(resource.getSourceFileName())
-                                .width(width)
-                                .height(height)
-                                .fileType(fileType.getDesc())
-                                .typeName(properties.getResourceType(resource.getFileExt()).name().toLowerCase())
-                                .mimeType(fileType.getMimeType())
-                                .size(resource.getSize())
-                                .resolutionRatio(resource.getResolutionRatio())
-                                .createTime(resource.getCreateTime())
-                                .updateTime(resource.getUpdateTime())
-                                .star(resource.getStar())
-                                .tags(tags.stream().map(tag -> TagDto.builder()
-                                        .tagId(tag.getTagId())
-                                        .tagName(tag.getTagName())
-                                        .build()).toList())
-                                .build();
-                    }
-                ).toList();
-
-        return PageVo.<ResourceVo>builder()
-                .list(datas)
-                .pageNum(resourceList.getPageNum())
-                .pageSize(resourceList.getPageSize())
-                .total(resourceList.getTotal())
-                .pages(resourceList.getPages())
-                .build();
+        PageInfo<UserResource> resourceList = resourceRepository.getResourceListByCate(user.getUserId(), cateSno, pageBo);
+        return buildResourceList(user, resourceList);
     }
 
     /**
@@ -202,6 +150,83 @@ public class UserResourceService {
 
         SysUser user = userRepository.getUser(userDto);
         resourceRepository.updateResourceInfo(user.getUserId(), resourceInfo);
+    }
+
+    /**
+     * 获取用户标签资源列表
+     * @param userDto
+     * @param tagId
+     * @return
+     * @throws CollectionException
+     */
+    public PageVo<ResourceVo> getResourceListByTag(UserDto userDto,
+                                                    int tagId,
+                                                    PageBo pageBo) throws CollectionException {
+
+        SysUser user = userRepository.getUser(userDto);
+        PageInfo<UserResource> resourceList = resourceRepository.getResourceListByTag(user.getUserId(), tagId, pageBo);
+        return buildResourceList(user, resourceList);
+    }
+
+    /**
+     * 构建资源列表
+     * @param user
+     * @param resourceList
+     * @return
+     */
+    private PageVo<ResourceVo> buildResourceList(SysUser user, PageInfo<UserResource> resourceList) {
+        List<ResourceVo> datas = resourceList
+                .getList()
+                .stream()
+                .map(resource -> {
+                            //缩略图宽高
+                            String thumbRatio = resource.getThumbRatio();
+                            int width = 150;
+                            int height = 200;
+                            if(thumbRatio != null){
+                                String[] split = thumbRatio.split("x");
+                                width = Integer.parseInt(split[0]);
+                                height = Integer.parseInt(split[1]);
+                            }
+
+                            FileTypeEnum fileType = FileTypeEnum.getByValue(resource.getFileExt());
+
+                            //获取资源标签
+                            List<UserTag> tags = tagRepository.getTagList(user.getUserId(), resource.getResourceId());
+
+                            return ResourceVo.builder()
+                                    .resourceId(resource.getResourceId())
+                                    .resourceUrl(buildResourceUrl(user, resource))
+                                    .thumbnailUrl(StringUtils.isNotBlank(resource.getThumbUrl()) ? "/resource/" + resource.getResourceId() + "/" + resource.getThumbUrl().replace("/" + user.getUserCode() + "/", "") : null)
+                                    .previewUrl(StringUtils.isNotBlank(resource.getPreviewUrl()) ? "/resource/" + resource.getResourceId() + "/" + resource.getPreviewUrl().replace("/" + user.getUserCode() + "/", "") : null)
+                                    .title(resource.getTitle())
+                                    .description(resource.getDescription())
+                                    .sourceFileName(resource.getSourceFileName())
+                                    .width(width)
+                                    .height(height)
+                                    .fileType(fileType.getDesc())
+                                    .typeName(properties.getResourceType(resource.getFileExt()).name().toLowerCase())
+                                    .mimeType(fileType.getMimeType())
+                                    .size(resource.getSize())
+                                    .resolutionRatio(resource.getResolutionRatio())
+                                    .createTime(resource.getCreateTime())
+                                    .updateTime(resource.getUpdateTime())
+                                    .star(resource.getStar())
+                                    .tags(tags.stream().map(tag -> TagDto.builder()
+                                            .tagId(tag.getTagId())
+                                            .tagName(tag.getTagName())
+                                            .build()).toList())
+                                    .build();
+                        }
+                ).toList();
+
+        return PageVo.<ResourceVo>builder()
+                .list(datas)
+                .pageNum(resourceList.getPageNum())
+                .pageSize(resourceList.getPageSize())
+                .total(resourceList.getTotal())
+                .pages(resourceList.getPages())
+                .build();
     }
 
 }

@@ -6,4 +6,9 @@
         SELECT last_insert_rowid() FROM user_resource WHERE rowid = (SELECT last_insert_rowid())
     </select>
 
+    <select id="selectTagResource" resultType="com.keem.kochiu.collection.entity.UserResource">
+        select * from user_resource r join user_resource_tag t on r.RESOURCE_ID=t.RESOURCE_ID and r.USER_ID=t.USER_ID
+            join user_tag g on t.TAG_ID=g.TAG_ID and t.USER_ID=g.USER_ID
+        where r.USER_ID=#{userId} and g.TAG_ID=#{tagId} and r.DELETED=0
+    </select>
 </mapper>

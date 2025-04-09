@@ -223,7 +223,10 @@ const menuItemClick = (item: RouteRecordRaw) => {
         console.error('路由跳转失败:', err)
         // 失败时降级处理
         if (item.path.includes('/Category/')) {
-            router.push('/Category')
+            router.push('/AllCategory')
+        }
+        else if (item.path.includes('/Tag/')) {
+            router.push('/AllTag')
         }
     })
 }

@@ -69,13 +69,14 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
      * @return
      * @throws CollectionException
      */
-    public PageInfo<UserResource> getResourceList(int userId, int cateSno, PageBo pageBo) throws CollectionException {
+    public PageInfo<UserResource> getResourceListByCate(int userId, int cateSno, PageBo pageBo) throws CollectionException {
 
         try(Page<UserResource> page = PageHelper.startPage(pageBo.getPageNum(), pageBo.getPageSize())) {
 
             LambdaQueryWrapper<UserResource> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(UserResource::getUserId, userId);
             lambdaQueryWrapper.eq(UserResource::getCateId, categoryRepository.getCateId(userId, cateSno));
+            lambdaQueryWrapper.eq(UserResource::getDeleted, 0);
             return new PageInfo<>(baseMapper.selectList(lambdaQueryWrapper));
         }
     }
@@ -111,6 +112,21 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
             lambdaUpdateWrapper.set(resourceInfo.getStar() != null, UserResource::getStar, resourceInfo.getStar());
 
             baseMapper.update(null, lambdaUpdateWrapper);
+        }
+    }
+
+    /**
+     * 获取标签下资源列表
+     * @param userId
+     * @param tagId
+     * @return
+     * @throws CollectionException
+     */
+    public PageInfo<UserResource> getResourceListByTag(int userId, int tagId, PageBo pageBo) throws CollectionException {
+
+        try(Page<UserResource> page = PageHelper.startPage(pageBo.getPageNum(), pageBo.getPageSize())) {
+
+            return new PageInfo<>(baseMapper.selectTagResource(userId, tagId));
         }
     }
 

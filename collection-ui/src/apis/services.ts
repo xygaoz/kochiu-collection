@@ -116,7 +116,7 @@ export const uploadFile = (file: File, categorySno: string, overwrite: string): 
 
 export const listCategoryFiles = (cateId: string, page: number, size: number): Promise<PageInfo<Resource>> => {
     const ld = loading("加载中")
-    return httpInstance.post("/resource/" + cateId, {
+    return httpInstance.post("/resource/category/" + cateId, {
         params: {
             pageNum: page,
             pageSize: size
@@ -163,5 +163,26 @@ export const removeResourceTag = (resourceId: number, params: any): Promise<any>
         if (model) {
             return model;
         }
+    });
+}
+
+export const listTagFiles = (tagId: string, page: number, size: number): Promise<PageInfo<Resource>> => {
+    const ld = loading("加载中")
+    return httpInstance.post("/resource/tag/" + tagId, {
+        params: {
+            pageNum: page,
+            pageSize: size
+        }
+    }).then((model: any) => {
+        if (model) {
+            console.log("获取文件列表成功:", model);
+            return model as PageInfo<Resource>;
+        }
+        return { pageNum: 0, pageSize: 0, total: 0, pages: 0, list: [] };
+    }).catch((error) => {
+        console.error("获取文件列表失败:", error);
+        return { pageNum: 0, pageSize: 0, total: 0, pages: 0, list: [] };
+    }).finally(() => {
+        ld.close();
     });
 }

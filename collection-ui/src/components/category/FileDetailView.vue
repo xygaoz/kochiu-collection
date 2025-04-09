@@ -80,7 +80,6 @@
         <div class="detail-header">
             <div>文件详情</div>
             <el-icon class="download-file"
-                     @click="emit('download', file)"
             >
                 <Download/>
             </el-icon>
@@ -247,8 +246,8 @@
 
 <script lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick, PropType, watch } from "vue";
-import { Document, Download, Picture, Loading, Close } from '@element-plus/icons-vue'
-import { ElMessage, ElInput, InputInstance } from "element-plus";
+import { Document, Download, Picture, Loading } from '@element-plus/icons-vue'
+import { ElMessage, ElInput } from "element-plus";
 import { addResourceTag, removeResourceTag, updateResource } from "@/apis/services";
 import type { Resource, Tag } from '@/apis/interface'
 
@@ -283,7 +282,6 @@ export default {
         }
     },
     emits: {
-        'download': (file: Resource) => !!file,
         'preview-doc': (file: Resource) => !!file,
         'update-file': (file: Resource) => !!file
     },
@@ -368,8 +366,6 @@ export default {
 
                 localFile.value = updatedFile
                 emit('update-file', updatedFile)
-
-                ElMessage.success('评分更新成功')
             } catch (error) {
                 localFile.value.star = props.file.star
                 ElMessage.error(`评分更新失败: ${error instanceof Error ? error.message : String(error)}`)
@@ -403,8 +399,6 @@ export default {
 
                 emit('update-file', updatedFile)
                 localFile.value = updatedFile
-
-                ElMessage.success('更新成功')
             } catch (error) {
                 if (field === 'tags') {
                     localFile.value.tags = originalValue.value as Tag[] || []

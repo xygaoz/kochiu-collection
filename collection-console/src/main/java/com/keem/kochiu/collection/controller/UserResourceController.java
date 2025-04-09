@@ -51,10 +51,10 @@ public class UserResourceController {
     }
 
     @CheckPermit
-    @PostMapping(PUBLIC_URL + "/resource/{cateId}")
-    public DefaultResult<PageVo<ResourceVo>> getResourceList(@PathVariable int cateId,
-                                                             PageBo pageBo) throws CollectionException {
-        return DefaultResult.ok(resourceService.getResourceList(CheckPermitAspect.USER_INFO.get(), cateId, pageBo));
+    @PostMapping(PUBLIC_URL + "/resource/category/{cateId}")
+    public DefaultResult<PageVo<ResourceVo>> getResourceListByCate(@PathVariable int cateId,
+                                                                   PageBo pageBo) throws CollectionException {
+        return DefaultResult.ok(resourceService.getResourceListByCate(CheckPermitAspect.USER_INFO.get(), cateId, pageBo));
     }
 
     @CheckPermit
@@ -75,6 +75,13 @@ public class UserResourceController {
     public DefaultResult<TagDto> removeResourceTag(@Valid TagDto tagDto) throws CollectionException {
         tagService.removeResourceTag(CheckPermitAspect.USER_INFO.get(), tagDto);
         return DefaultResult.ok();
+    }
+
+    @CheckPermit
+    @PostMapping(PUBLIC_URL + "/resource/tag/{tagId}")
+    public DefaultResult<PageVo<ResourceVo>> getResourceListByTag(@PathVariable int tagId,
+                                                                   PageBo pageBo) throws CollectionException {
+        return DefaultResult.ok(resourceService.getResourceListByTag(CheckPermitAspect.USER_INFO.get(), tagId, pageBo));
     }
 
 }

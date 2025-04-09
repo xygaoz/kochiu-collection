@@ -80,7 +80,7 @@ routes.push(
     {
         path: '/Tag/:tagId',  // 动态参数（注意大小写统一）
         name: 'tag-detail',    // 固定名称
-        component: () => import('@/components/tag/AllTag.vue'),
+        component: () => import('@/components/tag/TagFile.vue'),
         meta: { showInMenu: false },
         props: true  // 将路由参数自动作为props传递
     }
