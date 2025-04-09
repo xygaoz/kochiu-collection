@@ -38,6 +38,7 @@ import { Resource } from "@/apis/interface";
 import PdfPreviewDialog from "@/components/category/PdfPreviewDialog.vue";
 import FileDetailView from "@/components/category/FileDetailView.vue";
 import WaterfallLayout from "@/components/category/WaterfallLayout.vue";
+import { ElMessage } from "element-plus";
 
 const route = useRoute();
 const tagId = route.params.tagId as string;
@@ -70,6 +71,10 @@ const handlePreview = (image: Resource) => {
 };
 
 const handleShowDoc = (image: Resource) => {
+    if(!image.previewUrl){
+        ElMessage.warning('该文件不支持预览');
+        return;
+    }
     pdfPreviewUrl.value = image.previewUrl;
     pdfDialogVisible.value = true;
 };
