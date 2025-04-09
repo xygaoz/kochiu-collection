@@ -1,7 +1,6 @@
 package com.keem.kochiu.collection.exception;
 
 import com.keem.kochiu.collection.data.DefaultResult;
-import com.keem.kochiu.collection.enums.ErrorCodeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Primary;

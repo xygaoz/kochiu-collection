@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4879248 */
-  src: url('iconfont.woff2?t=1744094537174') format('woff2'),
-       url('iconfont.woff?t=1744094537174') format('woff'),
-       url('iconfont.ttf?t=1744094537174') format('truetype');
+  src: url('iconfont.woff2?t=1744162106630') format('woff2'),
+       url('iconfont.woff?t=1744162106630') format('woff'),
+       url('iconfont.ttf?t=1744162106630') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,38 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-col-fenlei3:before {
+  content: "\e600";
+}
+
+.icon-col-fenlei1:before {
+  content: "\e657";
+}
+
+.icon-col-biaoqian:before {
+  content: "\e63e";
+}
+
+.icon-col-biaoqian1:before {
+  content: "\e645";
+}
+
+.icon-col-fenlei2:before {
+  content: "\e71b";
+}
+
+.icon-col-24gl-tags4:before {
+  content: "\e87d";
+}
+
+.icon-col-quanbufenlei:before {
+  content: "\e63d";
+}
+
+.icon-col-quanbu:before {
+  content: "\e603";
 }
 
 .icon-col-huishouzhanx:before {

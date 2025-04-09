@@ -1,6 +1,5 @@
 package com.keem.kochiu.collection.service;
 
-import cn.hutool.core.map.MapUtil;
 import com.keem.kochiu.collection.data.dto.TokenDto;
 import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.exception.CollectionException;
@@ -19,7 +18,6 @@ import java.util.Map;
 import static com.keem.kochiu.collection.Constant.TOKEN_API_FLAG;
 import static com.keem.kochiu.collection.Constant.TOKEN_PARAMS_FLAG;
 import static com.keem.kochiu.collection.enums.ErrorCodeEnum.*;
-import static com.keem.kochiu.collection.enums.ErrorCodeEnum.ERROR_TOKEN_INVALID;
 
 @Slf4j
 @Service

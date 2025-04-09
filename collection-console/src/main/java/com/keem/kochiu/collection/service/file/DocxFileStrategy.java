@@ -1,23 +1,13 @@
 package com.keem.kochiu.collection.service.file;
 
-import cn.hutool.core.io.FileUtil;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.pdf.PdfWriter;
 import com.keem.kochiu.collection.data.dto.ResourceDto;
 import com.keem.kochiu.collection.enums.FileTypeEnum;
 import com.keem.kochiu.collection.properties.CollectionProperties;
-import org.apache.poi.hwpf.HWPFDocument;
-import org.apache.poi.hwpf.extractor.WordExtractor;
 import org.docx4j.Docx4J;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.jodconverter.core.office.OfficeManager;
-import org.jodconverter.local.LocalConverter;
-import org.jodconverter.local.office.LocalOfficeManager;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
 @Service("docx")

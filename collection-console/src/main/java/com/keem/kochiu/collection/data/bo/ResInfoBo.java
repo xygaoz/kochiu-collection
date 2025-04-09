@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull;
 public class ResInfoBo {
 
     @NotNull(message = "resourceId不能为空")
-    private Integer resourceId;
+    private Long resourceId;
     private String title;
     private String description;
     private Integer star;

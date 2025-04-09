@@ -14,4 +14,5 @@ public class TagDto {
     @NotNull(message = "tagId不能为空")
     private Long tagId;
     private String tagName;
+    private Long resourceId;
 }

@@ -2,6 +2,8 @@ package com.keem.kochiu.collection.config;
 
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
+import com.keem.kochiu.collection.properties.SysConfigProperties;
+import com.keem.kochiu.collection.repository.SysConfigRepository;
 import liquibase.Liquibase;
 import liquibase.database.Database;
 import liquibase.database.DatabaseConnection;
@@ -13,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 
 import javax.sql.DataSource;
 
@@ -26,7 +29,7 @@ public class DatabaseConfiguration {
 
     protected static final String LIQUIBASE_CHANGELOG_PREFIX = "KC_DB_";
 
-    @Bean
+    @Bean("KoChiuCollection")
     @Qualifier("KoChiuCollection")
     public Liquibase producerLiquibase(DataSource dataSource) throws DatabaseException {
         log.info("Configuring Liquibase");
@@ -72,5 +75,17 @@ public class DatabaseConfiguration {
         // 添加乐观锁插件
         interceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
         return interceptor;
+    }
+
+    @DependsOn("KoChiuCollection")
+    @Bean
+    public SysConfigProperties sysConfigProperties(SysConfigRepository sysConfigRepository) {
+        SysConfigProperties properties = new SysConfigProperties(sysConfigRepository);
+        try {
+            properties.afterPropertiesSet();
+        } catch (Exception e) {
+            log.error("sysConfigProperties init error", e);
+        }
+        return properties;
     }
 }

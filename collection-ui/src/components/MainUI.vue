@@ -6,7 +6,7 @@
                     class="el-menu-vertical-demo"
                     background-color="#fff"
                     text-color="#525252"
-                    active-text-color="rgb(215, 24, 24)"
+                    active-text-color="rgb(59,130,246)"
                     style="height: 100%"
                     :default-openeds="defaultOpeneds"
                 >
@@ -151,17 +151,29 @@ const loadCategories = async () => {
     try {
         const categories: Category[] = await listCategory();
         if (categories && categories.length > 0) {
-            // 找到/category路由并添加子菜单
+            // 找到/category路由
             const categoryRoute = menu.value.find(route => route.path === '/Category');
             if (categoryRoute && categoryRoute.children) {
-                categoryRoute.children = categories.map(category => ({
-                    path: `/Category/${category.sno}`,  // 完整路径（大小写一致）
-                    // 不再需要name字段，因为使用path导航
+                // 获取现有的"所有分类"菜单项
+                const allCategoryItem = categoryRoute.children.find(child => child.name === 'allCategory');
+
+                // 创建动态分类菜单项数组
+                const dynamicItems = categories.map(category => ({
+                    path: `/Category/${category.sno}`,
                     meta: {
                         title: category.cateName,
-                        cateId: category.sno  // 存储分类ID备用
+                        cateId: category.sno,
+                        icon: 'icon-col-fenlei3',  // 添加图标
+                        iconType: 'iconfont',
+                        style: 'font-size: 18px; color: rgb(59,130,246)'
                     }
-                }))
+                }));
+
+                // 重新设置children数组，动态项在前，"所有分类"在后
+                categoryRoute.children = [
+                    ...dynamicItems,
+                    ...(allCategoryItem ? [allCategoryItem] : [])
+                ];
             }
         }
     } catch (error) {

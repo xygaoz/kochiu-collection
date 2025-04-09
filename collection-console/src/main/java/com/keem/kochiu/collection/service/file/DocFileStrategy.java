@@ -1,6 +1,5 @@
 package com.keem.kochiu.collection.service.file;
 
-import cn.hutool.core.io.FileUtil;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;

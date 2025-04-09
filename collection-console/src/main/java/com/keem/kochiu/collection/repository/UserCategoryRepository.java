@@ -3,14 +3,22 @@ package com.keem.kochiu.collection.repository;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.keem.kochiu.collection.entity.UserCategory;
+import com.keem.kochiu.collection.enums.CategoryByEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.mapper.UserCategoryMapper;
+import com.keem.kochiu.collection.properties.SysConfigProperties;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class UserCategoryRepository extends ServiceImpl<UserCategoryMapper, UserCategory>{
+
+    private final SysConfigProperties sysConfigProperties;
+
+    public UserCategoryRepository(SysConfigProperties sysConfigProperties) {
+        this.sysConfigProperties = sysConfigProperties;
+    }
 
     /**
      * 获取分类id
@@ -54,10 +62,23 @@ public class UserCategoryRepository extends ServiceImpl<UserCategoryMapper, User
      * @return
      */
     public List<UserCategory> getCategoryList(int userId) {
-        LambdaQueryWrapper<UserCategory> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(UserCategory::getUserId, userId);
-        lambdaQueryWrapper.orderByAsc(UserCategory::getSno);
 
-        return this.list(lambdaQueryWrapper);
+        if(sysConfigProperties.getListCategoryBy() == CategoryByEnum.CREATE_TIME_ABS ||
+                sysConfigProperties.getListCategoryBy() == CategoryByEnum.CREATE_TIME_DESC) {
+            LambdaQueryWrapper<UserCategory> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(UserCategory::getUserId, userId);
+            if(sysConfigProperties.getListCategoryBy() == CategoryByEnum.CREATE_TIME_ABS) {
+                lambdaQueryWrapper.orderByAsc(UserCategory::getCreateTime);
+            }
+            else{
+                lambdaQueryWrapper.orderByDesc(UserCategory::getCreateTime);
+            }
+            lambdaQueryWrapper.last("limit " + sysConfigProperties.getListCategoryNum());
+
+            return this.list(lambdaQueryWrapper);
+        }
+        else{
+            return baseMapper.listCategoryByResourceNum(userId, sysConfigProperties.getListCategoryNum());
+        }
     }
 }

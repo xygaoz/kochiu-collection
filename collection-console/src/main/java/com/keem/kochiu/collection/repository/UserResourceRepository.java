@@ -9,9 +9,7 @@ import com.github.pagehelper.PageInfo;
 import com.keem.kochiu.collection.data.bo.PageBo;
 import com.keem.kochiu.collection.data.bo.ResInfoBo;
 import com.keem.kochiu.collection.data.dto.ResourceDto;
-import com.keem.kochiu.collection.data.dto.TagDto;
 import com.keem.kochiu.collection.entity.UserResource;
-import com.keem.kochiu.collection.entity.UserResourceTag;
 import com.keem.kochiu.collection.enums.SaveTypeEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.mapper.UserResourceMapper;
@@ -116,48 +114,4 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
         }
     }
 
-    /**
-     * 添加标签
-     * @param userId
-     * @param resourceInfo
-     * @return
-     * @throws CollectionException
-     */
-    public TagDto addTag(int userId, ResInfoBo resourceInfo) throws CollectionException {
-
-        //判断标签是否重复
-        if(!tagRepository.existsTag(userId, resourceInfo.getResourceId(), resourceInfo.getTagName())){
-            //新标签
-            UserResourceTag userResourceTag = new UserResourceTag();
-            userResourceTag.setResourceId(resourceInfo.getResourceId());
-            userResourceTag.setTagName(resourceInfo.getTagName());
-            userResourceTag.setUserId(userId);
-            if(tagRepository.save(userResourceTag)){
-                // 获取最后插入的行ID
-                Long tagId = baseMapper.selectLastInsertId();
-                return TagDto.builder()
-                        .tagId(tagId)
-                        .tagName(resourceInfo.getTagName())
-                        .build();
-            }
-            return null;
-        }
-        else{
-            throw new CollectionException("标签重复");
-        }
-    }
-
-    /**
-     * 删除资源标签
-     * @param userId
-     * @param tagDto
-     * @throws CollectionException
-     */
-    public void removeResourceTag(int userId, TagDto tagDto) throws CollectionException {
-
-        LambdaQueryWrapper<UserResourceTag> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(UserResourceTag::getUserId, userId);
-        lambdaQueryWrapper.eq(UserResourceTag::getTagId, tagDto.getTagId());
-        tagRepository.remove(lambdaQueryWrapper);
-    }
 }

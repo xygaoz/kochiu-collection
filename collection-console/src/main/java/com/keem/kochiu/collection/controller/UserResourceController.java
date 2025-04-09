@@ -5,14 +5,15 @@ import com.keem.kochiu.collection.data.DefaultResult;
 import com.keem.kochiu.collection.data.bo.PageBo;
 import com.keem.kochiu.collection.data.bo.ResInfoBo;
 import com.keem.kochiu.collection.data.bo.UploadBo;
+import com.keem.kochiu.collection.data.dto.TagDto;
 import com.keem.kochiu.collection.data.vo.FileVo;
 import com.keem.kochiu.collection.data.vo.PageVo;
 import com.keem.kochiu.collection.data.vo.ResourceVo;
-import com.keem.kochiu.collection.data.dto.TagDto;
 import com.keem.kochiu.collection.enums.PermitEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.service.CheckPermitAspect;
 import com.keem.kochiu.collection.service.UserResourceService;
+import com.keem.kochiu.collection.service.UserResourceTagService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,9 +29,12 @@ import static com.keem.kochiu.collection.Constant.PUBLIC_URL;
 public class UserResourceController {
 
     private final UserResourceService resourceService;
+    private final UserResourceTagService tagService;
 
-    public UserResourceController(UserResourceService resourceService) {
+    public UserResourceController(UserResourceService resourceService,
+                                  UserResourceTagService tagService) {
         this.resourceService = resourceService;
+        this.tagService = tagService;
     }
 
     @CheckPermit(on = {PermitEnum.UI, PermitEnum.API})
@@ -63,13 +67,13 @@ public class UserResourceController {
     @CheckPermit
     @PostMapping(PUBLIC_URL + "/addTag")
     public DefaultResult<TagDto> addResourceTag(@Valid ResInfoBo resourceInfo) throws CollectionException {
-        return DefaultResult.ok(resourceService.addResourceTag(CheckPermitAspect.USER_INFO.get(), resourceInfo));
+        return DefaultResult.ok(tagService.addResourceTag(CheckPermitAspect.USER_INFO.get(), resourceInfo));
     }
 
     @CheckPermit
     @PostMapping(PUBLIC_URL + "/removeTag")
     public DefaultResult<TagDto> removeResourceTag(@Valid TagDto tagDto) throws CollectionException {
-        resourceService.removeResourceTag(CheckPermitAspect.USER_INFO.get(), tagDto);
+        tagService.removeResourceTag(CheckPermitAspect.USER_INFO.get(), tagDto);
         return DefaultResult.ok();
     }
 

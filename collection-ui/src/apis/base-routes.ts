@@ -10,13 +10,25 @@ routes.push(
         name: 'category',
         meta: { title: '分类', icon: 'icon-col-fenlei', iconType: 'iconfont', style: 'font-size: 21px; color: rgb(59,130,246' },
         children: [
+            {
+                path: '/AllCategory',
+                name: 'allCategory',
+                component: () => import('@/components/category/AllCategory.vue'),
+                meta: { title: '所有分类', icon: 'icon-col-fenlei2', iconType: 'iconfont', style: 'font-size: 21px; color: rgb(59,130,246' },
+            },
         ]
     },
     {
         path: '/Tag',
         name: 'tag',
-        meta: { title: '标签', icon: 'icon-col-biaoqian_o', iconType: 'iconfont', style: 'font-size: 21px; color: rgb(59,130,246' },
+        meta: { title: '标签', icon: 'icon-col-biaoqian1', iconType: 'iconfont', style: 'font-size: 20px; color: rgb(59,130,246); margin: 0 1px 0 0;' },
         children: [
+            {
+                path: '/AllTag',
+                name: 'allTag',
+                component: () => import('@/components/tag/AllTag.vue'),
+                meta: { title: '所有标签', icon: 'icon-col-24gl-tags4', iconType: 'iconfont', style: 'font-size: 21px; color: rgb(59,130,246' },
+            },
         ]
     },
     {
@@ -40,7 +52,7 @@ routes.push(
                 path: '/Recycle',
                 name: 'recycle',
                 component: () => import('@/components/my/Recycle.vue'),
-                meta: { title: '回收站', icon: 'icon-col-huishouzhanx', iconType: 'iconfont', style: 'font-size: 18px; color: rgb(59,130,246); margin: 0 3px 0 0' },
+                meta: { title: '回收站', icon: 'icon-col-huishouzhanx', iconType: 'iconfont', style: 'font-size: 22px; color: rgb(59,130,246); margin: 0 1px 0 0' },
             },
         ]
     },
@@ -68,7 +80,7 @@ routes.push(
     {
         path: '/Tag/:tagId',  // 动态参数（注意大小写统一）
         name: 'tag-detail',    // 固定名称
-        component: () => import('@/components/tag/TagFile.vue'),
+        component: () => import('@/components/tag/AllTag.vue'),
         meta: { showInMenu: false },
         props: true  // 将路由参数自动作为props传递
     }

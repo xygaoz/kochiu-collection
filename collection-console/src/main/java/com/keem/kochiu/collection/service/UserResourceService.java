@@ -5,21 +5,22 @@ import com.github.pagehelper.PageInfo;
 import com.keem.kochiu.collection.data.bo.PageBo;
 import com.keem.kochiu.collection.data.bo.ResInfoBo;
 import com.keem.kochiu.collection.data.bo.UploadBo;
+import com.keem.kochiu.collection.data.dto.TagDto;
 import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.data.vo.FileVo;
 import com.keem.kochiu.collection.data.vo.PageVo;
 import com.keem.kochiu.collection.data.vo.ResourceVo;
-import com.keem.kochiu.collection.data.dto.TagDto;
 import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.entity.UserResource;
 import com.keem.kochiu.collection.entity.UserResourceTag;
+import com.keem.kochiu.collection.entity.UserTag;
 import com.keem.kochiu.collection.enums.FileTypeEnum;
 import com.keem.kochiu.collection.enums.SaveTypeEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.properties.CollectionProperties;
 import com.keem.kochiu.collection.repository.SysUserRepository;
 import com.keem.kochiu.collection.repository.UserResourceRepository;
-import com.keem.kochiu.collection.repository.UserResourceTagRepository;
+import com.keem.kochiu.collection.repository.UserTagRepository;
 import com.keem.kochiu.collection.service.store.ResourceStrategyFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -38,13 +39,13 @@ public class UserResourceService {
     private final SysUserRepository userRepository;
     private final UserResourceRepository resourceRepository;
     private final CollectionProperties properties;
-    private final UserResourceTagRepository tagRepository;
+    private final UserTagRepository tagRepository;
 
     public UserResourceService(ResourceStrategyFactory resourceStrategyFactory,
                                SysUserRepository userRepository,
                                UserResourceRepository resourceRepository,
                                CollectionProperties properties,
-                               UserResourceTagRepository tagRepository) {
+                               UserTagRepository tagRepository) {
         this.resourceStrategyFactory = resourceStrategyFactory;
         this.userRepository = userRepository;
         this.resourceRepository = resourceRepository;
@@ -136,7 +137,7 @@ public class UserResourceService {
                         FileTypeEnum fileType = FileTypeEnum.getByValue(resource.getFileExt());
 
                         //获取资源标签
-                        List<UserResourceTag> tags = tagRepository.getTagList(user.getUserId(), resource.getResourceId());
+                        List<UserTag> tags = tagRepository.getTagList(user.getUserId(), resource.getResourceId());
 
                         return ResourceVo.builder()
                                 .resourceId(resource.getResourceId())
@@ -156,7 +157,10 @@ public class UserResourceService {
                                 .createTime(resource.getCreateTime())
                                 .updateTime(resource.getUpdateTime())
                                 .star(resource.getStar())
-                                .tags(tags.stream().map(tag -> new TagDto(tag.getTagId(), tag.getTagName())).toList())
+                                .tags(tags.stream().map(tag -> TagDto.builder()
+                                        .tagId(tag.getTagId())
+                                        .tagName(tag.getTagName())
+                                        .build()).toList())
                                 .build();
                     }
                 ).toList();
@@ -200,31 +204,4 @@ public class UserResourceService {
         resourceRepository.updateResourceInfo(user.getUserId(), resourceInfo);
     }
 
-    /**
-     * 添加资源标签
-     * @param userDto
-     * @param resourceInfo
-     * @return
-     * @throws CollectionException
-     */
-    public TagDto addResourceTag(UserDto userDto, ResInfoBo resourceInfo) throws CollectionException {
-
-        if(StringUtils.isBlank(resourceInfo.getTagName())){
-            throw new CollectionException("标签不能为空");
-        }
-        SysUser user = userRepository.getUser(userDto);
-        return resourceRepository.addTag(user.getUserId(), resourceInfo);
-    }
-
-    /**
-     * 删除资源标签
-     * @param userDto
-     * @param tagDto
-     * @throws CollectionException
-     */
-    public void removeResourceTag(UserDto userDto, TagDto tagDto) throws CollectionException {
-
-        SysUser user = userRepository.getUser(userDto);
-        resourceRepository.removeResourceTag(user.getUserId(), tagDto);
-    }
 }

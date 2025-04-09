@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.keem.kochiu.collection.mapper.UserTagMapper">
+
+    <select id="selectLastInsertId" resultType="java.lang.Long">
+        SELECT last_insert_rowid() FROM user_tag WHERE rowid = (SELECT last_insert_rowid())
+    </select>
+
+    <select id="listTagByResourceNum" resultType="com.keem.kochiu.collection.entity.UserTag">
+        select t.TAG_ID,t.Tag_NAME,count(1)
+            from user_resource_tag c
+                join user_resource r on c.RESOURCE_ID=r.RESOURCE_ID
+                join user_tag t on c.TAG_ID=t.TAG_ID and t.USER_ID=c.USER_ID
+        where c.USER_ID = #{userId}
+        group by t.TAG_ID,t.Tag_NAME
+        order by count(1) desc
+        limit #{limit}
+    </select>
+
+    <select id="listTag" resultType="com.keem.kochiu.collection.entity.UserTag">
+        select t.TAG_ID,t.Tag_NAME
+        from user_resource_tag c
+                 join user_resource r on c.RESOURCE_ID=r.RESOURCE_ID
+                 join user_tag t on c.TAG_ID=t.TAG_ID and t.USER_ID=c.USER_ID
+        where c.USER_ID = #{userId} and c.RESOURCE_ID=#{resourceId}
+    </select>
+
+</mapper>

@@ -343,7 +343,7 @@
             </not>
         </preConditions>
         <createTable remarks="用户资源标签表" tableName="user_resource_tag">
-            <column name="tag_id" type="INTEGER" remarks="标签id">
+            <column name="res_tag_id" type="INTEGER" remarks="标签id">
                 <constraints nullable="false"/>
             </column>
             <column name="RESOURCE_ID" remarks="资源ID" type="INTEGER">
@@ -352,7 +352,7 @@
             <column name="USER_ID" remarks="用户ID" type="INTEGER">
                 <constraints nullable="false"/>
             </column>
-            <column name="tag_name" remarks="标签名" type="VARCHAR(20)">
+            <column name="TAG_ID" remarks="标签ID" type="INTEGER">
                 <constraints nullable="false"/>
             </column>
             <column name="CREATE_TIME" remarks="创建时间" type="date"/>
@@ -367,8 +367,90 @@
         <!-- 添加主键自增元数据 -->
         <addAutoIncrement
                 tableName="user_resource_tag"
+                columnName="res_tag_id"
+                columnDataType="INTEGER"
+        />
+    </changeSet>
+
+    <changeSet id="kcdb_16" author="kochiu" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="user_tag"/>
+            </not>
+        </preConditions>
+        <createTable remarks="用户标签表" tableName="user_tag">
+            <column name="tag_id" type="INTEGER" remarks="标签id">
+                <constraints nullable="false"/>
+            </column>
+            <column name="USER_ID" remarks="用户ID" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tag_name" remarks="标签" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATE_TIME" remarks="创建时间" type="date"/>
+            <column name="CREATE_BY" remarks="创建人" type="VARCHAR(20)"/>
+            <column name="UPDATE_TIME" remarks="更新时间" type="date"/>
+            <column name="UPDATE_BY" remarks="更新人" type="VARCHAR(20)"/>
+            <column name="DB_VERSION" remarks="数据版本" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- 添加主键自增元数据 -->
+        <addAutoIncrement
+                tableName="user_tag"
                 columnName="tag_id"
                 columnDataType="INTEGER"
         />
     </changeSet>
+
+    <changeSet id="kcdb_17" author="kochiu" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="user_tag_idx1" tableName="user_tag"/>
+            </not>
+        </preConditions>
+        <createIndex
+                indexName="user_tag_idx1"
+                tableName="user_tag" unique="true">
+            <column name="USER_ID"/>
+            <column name="tag_name"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="kcdb_18" author="kochiu" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="sys_config"/>
+            </not>
+        </preConditions>
+        <createTable remarks="系统配置表" tableName="sys_config">
+            <column name="config_id" type="INTEGER" remarks="配置id">
+                <constraints nullable="false"/>
+            </column>
+            <column name="config_key" remarks="配置key" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="config_value" remarks="配置值" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="config_desc" remarks="配置描述" type="VARCHAR(100)"/>
+            <column name="CREATE_TIME" remarks="创建时间" type="date"/>
+            <column name="CREATE_BY" remarks="创建人" type="VARCHAR(20)"/>
+            <column name="UPDATE_TIME" remarks="更新时间" type="date"/>
+            <column name="UPDATE_BY" remarks="更新人" type="VARCHAR(20)"/>
+            <column name="DB_VERSION" remarks="数据版本" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- 添加主键自增元数据 -->
+        <addAutoIncrement
+                tableName="sys_config"
+                columnName="config_id"
+                columnDataType="INTEGER"
+        />
+    </changeSet>
+
 </databaseChangeLog>
