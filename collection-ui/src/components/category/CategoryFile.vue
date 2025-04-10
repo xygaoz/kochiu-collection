@@ -1,56 +1,25 @@
 <template>
-    <div class="category-file-container">
-        <div v-if="loading" class="loading">加载中...</div>
-        <div v-else-if="files.length === 0" class="empty">暂无文件</div>
-        <template v-else>
-            <div class="main-layout">
-                <component
-                    :is="currentComponent"
-                    :files="files"
-                    :selectedImage="selectedImage"
-                    @preview="handlePreview"
-                />
-
-                <el-aside class="detail-aside">
-                    <FileDetailView
-                        v-if="selectedImage"
-                        :file="selectedImage"
-                        @preview-doc="handleShowDoc"
-                        @update-file="handleUpdateFile"
-                    />
-                    <el-empty v-else description="请选择文件查看详情" />
-                </el-aside>
-            </div>
-        </template>
-    </div>
-
-    <PdfPreviewDialog
-        v-model="pdfDialogVisible"
-        :url="pdfPreviewUrl"
+    <ResourceView
+        v-model:files="files"
+        :loading="loading"
+        @update-file="handleFileUpdate"
     />
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { listCategoryFiles } from "@/apis/services";
-import { Resource } from "@/apis/interface";
-import PdfPreviewDialog from "@/components/category/PdfPreviewDialog.vue";
-import FileDetailView from "@/components/category/FileDetailView.vue";
-import WaterfallLayout from "@/components/category/WaterfallLayout.vue";
-import { ElMessage } from "element-plus";
+import type { Resource } from "@/apis/interface";
+import ResourceView from "@/components/common/ResourceView.vue";
 
 const route = useRoute();
 const cateId = route.params.cateId as string;
 const files = ref<Resource[]>([]);
-const selectedImage = ref<Resource | null>(null);
 const loading = ref(true);
 const currentPage = ref(1);
 const pageSize = ref(500);
 const total = ref(0);
-const pdfDialogVisible = ref(false);
-const pdfPreviewUrl = ref('');
-const currentComponent = WaterfallLayout;
 
 // 加载数据
 onMounted(async () => {
@@ -66,20 +35,8 @@ onMounted(async () => {
     }
 });
 
-const handlePreview = (image: Resource) => {
-    selectedImage.value = image;
-};
-
-const handleShowDoc = (image: Resource) => {
-    if(!image.previewUrl){
-        ElMessage.warning('该文件不支持预览');
-        return;
-    }
-    pdfPreviewUrl.value = image.previewUrl;
-    pdfDialogVisible.value = true;
-};
-
-const handleUpdateFile = (params: Resource) => {
+// 处理文件更新
+const handleFileUpdate = (params: Resource): void => {
     const index = files.value.findIndex(file => file.resourceId === params.resourceId);
     if (index !== -1) {
         // 更新文件对象
@@ -89,50 +46,7 @@ const handleUpdateFile = (params: Resource) => {
         console.warn('未找到对应的文件:', params.resourceId);
     }
 };
-
 </script>
 
 <style scoped>
-.loading {
-    padding: 20px;
-    text-align: center;
-    color: #666;
-}
-
-.empty {
-    padding: 100px;
-    text-align: center;
-    color: #666;
-    font-size: 21px;
-    width: 100%;
-}
-
-.category-file-container {
-    display: flex;
-    flex-direction: column;
-    height: calc(100vh - 60px);
-    overflow: hidden;
-}
-
-.main-layout {
-    display: flex;
-    height: 100%;
-    overflow: hidden;
-}
-
-.detail-aside {
-    width: 280px;
-    background-color: #fff;
-    border-left: 1px solid #e6e6e6;
-    overflow-y: auto;
-    height: 100%;
-    flex-shrink: 0;
-}
-
-/* 响应式调整 */
-@media (max-width: 768px) {
-    .detail-aside {
-        display: none;
-    }
-}
 </style>
