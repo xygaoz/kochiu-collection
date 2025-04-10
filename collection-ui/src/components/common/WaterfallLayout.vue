@@ -18,33 +18,44 @@
                     <el-card
                         shadow="hover"
                         :body-style="{ padding: '0px' }"
-                        :class="{ 'selected-card': selectedImage?.resourceId === item.image.resourceId }"
+                        :class="{ 'selected-card': selectedImage?.resourceId === item.image.resourceId
+                         || isMultipleSelect(item.image), 'show-checkbox': isMultipleSelect(item.image)}"
                     >
-                        <div
-                            class="image-wrapper"
-                            @click="handlePreview(item.image)"
-                            :style="{ height: `${item.displayHeight}px` }"
-                        >
-                            <el-image
-                                :src="item.image.thumbnailUrl"
-                                fit="contain"
-                                loading="lazy"
-                                class="waterfall-image"
-                                :style="getImageStyle(item)"
-                            >
-                                <template #error>
-                                    <div class="image-error">
-                                        <img
-                                            src="/images/default-thumbnail.jpg"
-                                            style="width:100%;height:100%;object-fit:contain;background-color:#f5f5f5;"
-                                            alt=""
-                                        >
-                                    </div>
-                                </template>
-                            </el-image>
+                        <div class="image-select">
+                            <el-checkbox
+                                :key="'checkbox-' + item.image.resourceId + forceRender"
+                                :checked="isMultipleSelect(item.image)"
+                                @change="(val: boolean) => handleMultipleSelect(val, item.image)"
+                            />
                         </div>
-                        <div class="image-info">
-                            <div class="image-title">{{ item.image.title || item.image.sourceFileName }}</div>
+                        <div class="resource-wrapper"
+                             @click="handlePreview(item.image)"
+                        >
+                            <div
+                                class="image-wrapper"
+                                :style="{ height: `${item.displayHeight}px` }"
+                            >
+                                <el-image
+                                    :src="item.image.thumbnailUrl"
+                                    fit="contain"
+                                    loading="lazy"
+                                    class="waterfall-image"
+                                    :style="getImageStyle(item)"
+                                >
+                                    <template #error>
+                                        <div class="image-error">
+                                            <img
+                                                src="/images/default-thumbnail.jpg"
+                                                style="width:100%;height:100%;object-fit:contain;background-color:#f5f5f5;"
+                                                alt=""
+                                            >
+                                        </div>
+                                    </template>
+                                </el-image>
+                            </div>
+                            <div class="image-info">
+                                <div class="image-title">{{ item.image.title || item.image.sourceFileName }}</div>
+                            </div>
                         </div>
                     </el-card>
                 </div>
@@ -54,13 +65,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, defineProps, defineEmits } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, defineProps, defineEmits, nextTick } from "vue";
 import type { Resource } from "@/apis/interface";
 
 // 使用 TypeScript 类型定义 props
 const props = defineProps<{
     files: Resource[];
-    selectedImage: Resource | null;
 }>();
 
 // 定义并实际使用 emit
@@ -68,14 +78,13 @@ const emit = defineEmits<{
     (e: 'preview', image: Resource): void;
 }>();
 
-const handlePreview = (image: Resource) => {
-    emit('preview', image);
-};
-
 const waterfallContainer = ref<HTMLElement | null>(null);
 const containerWidth = ref(0);
 const baseWidth = ref(200);
 const maxHeight = ref(200);
+const selectedImage = ref<Resource>();
+const multipleSelected = ref<Resource[]>([]);
+const forceRender = ref(0);
 
 interface LayoutItem {
     image: Resource;
@@ -87,6 +96,21 @@ interface LayoutItem {
 interface ComputedRow {
     items: LayoutItem[];
 }
+
+const handlePreview = async (image: Resource) => {
+    forceRender.value++;
+
+    // 清空多选数组
+    multipleSelected.value = [];
+
+    // 设置当前选中项
+    selectedImage.value = image;
+
+    // 确保UI更新
+    await nextTick();
+
+    emit('preview', image);
+};
 
 // 计算最优的行布局
 const computedRows = computed<ComputedRow[]>(() => {
@@ -212,6 +236,26 @@ const updateContainerWidth = () => {
     }
 };
 
+//判断是否多选
+const isMultipleSelect = (image: Resource) => {
+    const result = multipleSelected.value.some(item => item.resourceId === image.resourceId);
+    console.log(`Check ${image.resourceId}:`, result, 'in', multipleSelected.value);
+    return result;
+}
+
+const handleMultipleSelect = (checked: boolean, resource: Resource) => {
+    if (checked) {
+        if (!isMultipleSelect(resource)) {
+            multipleSelected.value = [...multipleSelected.value, resource];
+        }
+    } else {
+        multipleSelected.value = multipleSelected.value.filter(
+            item => item.resourceId !== resource.resourceId
+        );
+    }
+    console.log('Current selection:', multipleSelected.value); // 调试用
+}
+
 onMounted(() => {
     updateContainerWidth();
     window.addEventListener('resize', updateContainerWidth);
@@ -294,10 +338,15 @@ onBeforeUnmount(() => {
     border: 1px solid #ebeef5;
     display: flex;
     flex-direction: column;
+    position: relative;
 }
 
 .el-card, .el-card * {
     box-sizing: border-box;
+}
+
+.resource-wrapper{
+    cursor: pointer;
 }
 
 .image-wrapper {
@@ -307,7 +356,6 @@ onBeforeUnmount(() => {
     border-radius: 4px 4px 0 0;
     background-color: #f5f5f5;
     position: relative;
-    cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -319,6 +367,24 @@ onBeforeUnmount(() => {
 
 .selected-card:hover {
     box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3) !important;
+}
+
+.image-select{
+    position: absolute;
+    top: 2px;
+    right: 10px;
+    z-index: 100;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.el-card:hover .image-select {
+    opacity: 1;
+}
+
+/* 当 isMultipleSelect 为 true 时强制显示 */
+.el-card.show-checkbox .image-select {
+    opacity: 1 !important;
 }
 
 /* 响应式调整 */
