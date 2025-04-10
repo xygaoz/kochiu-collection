@@ -4,6 +4,7 @@
             <el-aside style="width: 250px;">
                 <el-menu
                     class="el-menu-vertical-demo"
+                    :default-active="activeMenu"
                     background-color="#fff"
                     text-color="#525252"
                     active-text-color="rgb(59,130,246)"
@@ -135,7 +136,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, nextTick } from "vue";
 import router, { routes } from "@/apis/base-routes";
 import { RouteRecordRaw } from "vue-router";
 import { listCategory, listTag } from "@/apis/services";
@@ -143,6 +144,7 @@ import { Plus } from "@element-plus/icons-vue"; // 导入listCategory方法
 import { Category, Tag } from "@/apis/interface";
 import CategoryDialog from "@/components/category/CategoryDialog.vue"; // 导入Category接口
 
+const activeMenu = ref(''); // 当前激活的菜单项
 const menu = ref(routes.filter(route => route.meta?.showInMenu !== false));
 const defaultOpeneds = ref(['/My', '/Category']); // 添加默认展开的子菜单路径
 const categoryDialog = ref()
@@ -172,6 +174,9 @@ const loadCategories = async () => {
 
 // 更新分类菜单项
 const updateCategoryMenu = (categories: Category[]) => {
+    // 保存当前路由路径
+    const currentPath = router.currentRoute.value.path
+
     // 重新初始化菜单
     initMenu();
 
@@ -200,6 +205,25 @@ const updateCategoryMenu = (categories: Category[]) => {
         ...dynamicItems,
         ...(allCategoryItem ? [allCategoryItem] : [])
     ];
+
+    // 如果当前路由是分类页面，保持当前路由不变
+    if (currentPath.startsWith('/Category')) {
+        const currentSno = currentPath.split('/').pop()
+        const exists = categories.some(c => c.sno.toString() === currentSno)
+
+        // 如果当前分类仍然存在，保持选中状态
+        if (exists) {
+            nextTick(() => {
+                /// 设置激活菜单项
+                activeMenu.value = currentPath;
+                // 如果需要，也可以手动滚动到可见区域
+                setTimeout(() => {
+                    const activeItem = document.querySelector(`.el-menu-item[index="${currentPath}"]`);
+                    activeItem?.scrollIntoView({ block: 'nearest' });
+                }, 100);
+            })
+        }
+    }
 };
 
 // 添加分类
@@ -211,14 +235,6 @@ const addCategory = (e: Event) => {
 // 处理分类确认
 const handleCategoryConfirm = async () => {
     await loadCategories()
-
-    // 如果当前路由是分类页面，刷新视图
-    if (router.currentRoute.value.path.startsWith('/Category')) {
-        router.replace('/Category')
-        setTimeout(() => {
-            router.replace(router.currentRoute.value.fullPath)
-        }, 50)
-    }
 }
 
 // 加载标签的方法
