@@ -66,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, defineProps, defineEmits, nextTick } from "vue";
+import { computed, defineEmits, defineProps, nextTick, onBeforeUnmount, onMounted, ref, defineExpose } from "vue";
 import type { Resource } from "@/apis/interface";
 
 // 使用 TypeScript 类型定义 props
@@ -77,6 +77,7 @@ const props = defineProps<{
 // 定义并实际使用 emit
 const emit = defineEmits<{
     (e: 'preview', image: Resource): void;
+    (e: 'multiple-selected', images: Resource[]): void;
 }>();
 
 const waterfallContainer = ref<HTMLElement | null>(null);
@@ -111,6 +112,9 @@ const handlePreview = async (image: Resource) => {
     await nextTick();
 
     emit('preview', image);
+
+    //使用 multipleSelected.value 传递实际值
+    emit('multiple-selected', multipleSelected.value);
 };
 
 // 计算最优的行布局
@@ -244,9 +248,7 @@ const hasAnySelection = computed(() => {
 
 //判断是否多选
 const isMultipleSelect = (image: Resource) => {
-    const result = multipleSelected.value.some(item => item.resourceId === image.resourceId);
-    console.log(`Check ${image.resourceId}:`, result, 'in', multipleSelected.value);
-    return result;
+    return multipleSelected.value.some(item => item.resourceId === image.resourceId);
 }
 
 const handleMultipleSelect = (checked: boolean, resource: Resource) => {
@@ -259,8 +261,22 @@ const handleMultipleSelect = (checked: boolean, resource: Resource) => {
             item => item.resourceId !== resource.resourceId
         );
     }
-    console.log('Current selection:', multipleSelected.value); // 调试用
+
+    //使用 multipleSelected.value 传递实际值
+    emit('multiple-selected', multipleSelected.value);
 }
+
+const clearSelection = async () => {
+    forceRender.value++;
+    // 清空多选数组
+    multipleSelected.value = [];
+    // 确保UI更新
+    await nextTick();
+}
+
+defineExpose({
+    clearSelection
+})
 
 onMounted(() => {
     updateContainerWidth();

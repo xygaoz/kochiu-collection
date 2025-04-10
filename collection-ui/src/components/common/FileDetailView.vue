@@ -6,6 +6,7 @@
                 v-if="isImageType"
                 :src="file.resourceUrl"
                 :preview-src-list="[file.resourceUrl]"
+                :style="imageStyle"
                 fit="contain"
                 class="preview-content"
                 hide-on-click-modal
@@ -79,10 +80,11 @@
 
         <div class="detail-header">
             <div>文件详情</div>
-            <el-icon class="download-file"
-            >
-                <Download/>
-            </el-icon>
+            <el-tooltip content="下载原文件" placement="bottom">
+                <el-icon class="download-file">
+                    <Download/>
+                </el-icon>
+            </el-tooltip>
         </div>
 
         <el-divider />
@@ -246,14 +248,14 @@
 
 <script lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick, PropType, watch } from "vue";
-import { Document, Download, Picture, Loading } from '@element-plus/icons-vue'
+import { Document, Download, Picture, Loading, CloseBold } from "@element-plus/icons-vue";
 import { ElMessage, ElInput } from "element-plus";
 import { addResourceTag, removeResourceTag, updateResource } from "@/apis/services";
 import type { Resource, Tag } from '@/apis/interface'
 
 export default {
     name: 'FileDetail',
-    components: { Download, Document, Picture, Loading },
+    components: { CloseBold, Download, Document, Picture, Loading },
     props: {
         file: {
             type: Object as PropType<Resource>,
@@ -318,6 +320,19 @@ export default {
             return officeTypes.includes(props.file.mimeType) && !!props.file.previewUrl
         })
         const isPdfType = computed<boolean>(() => props.file.fileType === 'application/pdf' && !!props.file.previewUrl)
+
+        const imageStyle = computed(() => {
+            if (!props.file.width || !props.file.height) return {};
+
+            const aspectRatio = props.file.width / props.file.height;
+            const isPortrait = aspectRatio < 1; // 竖构图
+
+            return {
+                width: isPortrait ? 'auto' : '100%',
+                height: isPortrait ? '100%' : 'auto',
+                'object-fit': 'contain'
+            };
+        });
 
         // 方法定义
         const handlePlayVideo = (): void => {
@@ -538,6 +553,7 @@ export default {
             showTagInput,
             handleTagInputConfirm,
             handleTagClose,
+            imageStyle,
         }
     }
 }
@@ -568,6 +584,10 @@ export default {
     display: block;
     margin: 0 auto;
     cursor: pointer;
+}
+
+.preview-content .el-image__inner{
+    max-height: 280px!important;
 }
 
 .audio-preview {
