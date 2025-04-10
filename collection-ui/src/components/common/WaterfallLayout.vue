@@ -19,7 +19,8 @@
                         shadow="hover"
                         :body-style="{ padding: '0px' }"
                         :class="{ 'selected-card': selectedImage?.resourceId === item.image.resourceId
-                         || isMultipleSelect(item.image), 'show-checkbox': isMultipleSelect(item.image)}"
+                         || isMultipleSelect(item.image),
+                         'show-checkbox': hasAnySelection || isMultipleSelect(item.image)}"
                     >
                         <div class="image-select">
                             <el-checkbox
@@ -236,6 +237,11 @@ const updateContainerWidth = () => {
     }
 };
 
+// 添加计算属性
+const hasAnySelection = computed(() => {
+    return multipleSelected.value.length > 0;
+});
+
 //判断是否多选
 const isMultipleSelect = (image: Resource) => {
     const result = multipleSelected.value.some(item => item.resourceId === image.resourceId);
@@ -378,13 +384,9 @@ onBeforeUnmount(() => {
     transition: opacity 0.2s;
 }
 
-.el-card:hover .image-select {
-    opacity: 1;
-}
-
-/* 当 isMultipleSelect 为 true 时强制显示 */
+.el-card:hover .image-select,
 .el-card.show-checkbox .image-select {
-    opacity: 1 !important;
+    opacity: 1;
 }
 
 /* 响应式调整 */
