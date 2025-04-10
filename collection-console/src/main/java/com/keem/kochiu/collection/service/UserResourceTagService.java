@@ -37,11 +37,8 @@ public class UserResourceTagService {
      * @return
      * @throws CollectionException
      */
-    public TagDto addResourceTag(UserDto userDto, ResInfoBo resourceInfo) throws CollectionException {
+    public TagDto addResourceTag(UserDto userDto, TagDto resourceInfo) throws CollectionException {
 
-        if(StringUtils.isBlank(resourceInfo.getTagName())){
-            throw new CollectionException("标签不能为空");
-        }
         SysUser user = userRepository.getUser(userDto);
         Long tagId = userTagRepository.existsTag(user.getUserId(), resourceInfo.getTagName());
         if(tagId == null){

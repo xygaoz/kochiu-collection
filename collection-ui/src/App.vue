@@ -1,7 +1,8 @@
 <template>
   <div id="app">
-    <LoginUI v-if="state.isShow === 1" @login-success="handleLoginSuccess" />
-    <MainUI v-else-if="state.isShow === 2" />
+        <LoginUI v-if="state.isShow === 1" @login-success="handleLoginSuccess" />
+        <MainUI v-else-if="state.isShow === 2" />
+        <div v-else>请稍后</div>
   </div>
 </template>
 

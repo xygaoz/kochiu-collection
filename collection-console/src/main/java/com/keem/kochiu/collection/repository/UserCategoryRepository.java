@@ -2,6 +2,7 @@ package com.keem.kochiu.collection.repository;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.keem.kochiu.collection.data.vo.CategoryVo;
 import com.keem.kochiu.collection.entity.UserCategory;
 import com.keem.kochiu.collection.enums.CategoryByEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
@@ -87,5 +88,39 @@ public class UserCategoryRepository extends ServiceImpl<UserCategoryMapper, User
         LambdaQueryWrapper<UserCategory> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(UserCategory::getUserId, userId);
         return this.list(lambdaQueryWrapper);
+    }
+
+    /**
+     * 添加分类
+     * @param userId
+     * @param cateName
+     * @return
+     */
+    public CategoryVo addCategory(int userId, String cateName) {
+
+        UserCategory userCategory = new UserCategory();
+        userCategory.setUserId(userId);
+        userCategory.setCateName(cateName);
+        userCategory.setSno(getLastSno(userId) + 1);
+        if(save(userCategory)){
+            return CategoryVo.builder()
+                    .cateName(cateName)
+                    .sno(userCategory.getSno())
+                    .cateId(baseMapper.selectLastInsertId())
+                    .build();
+        }
+        return null;
+    }
+
+    private int getLastSno(int userId) {
+        LambdaQueryWrapper<UserCategory> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UserCategory::getUserId, userId);
+        lambdaQueryWrapper.orderByDesc(UserCategory::getSno);
+        lambdaQueryWrapper.last("limit 1");
+        UserCategory userCategory = this.getOne(lambdaQueryWrapper);
+        if(userCategory == null){
+            return 0;
+        }
+        return userCategory.getSno();
     }
 }

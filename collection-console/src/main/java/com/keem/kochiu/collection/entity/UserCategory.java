@@ -1,5 +1,6 @@
 package com.keem.kochiu.collection.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -10,7 +11,7 @@ import lombok.EqualsAndHashCode;
 @TableName("user_category")
 public class UserCategory extends BaseEntity {
 
-    @TableId
+    @TableId(type = IdType.INPUT)
     private Integer cateId;
     private Integer userId;
     private String cateName;

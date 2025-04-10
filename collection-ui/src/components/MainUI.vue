@@ -127,6 +127,11 @@
             </el-container>
         </el-container>
     </div>
+    <!-- 对话框组件 -->
+    <CategoryDialog
+        ref="categoryDialog"
+        @confirm="handleCategoryConfirm"
+    />
 </template>
 
 <script setup lang="ts">
@@ -135,52 +140,86 @@ import router, { routes } from "@/apis/base-routes";
 import { RouteRecordRaw } from "vue-router";
 import { listCategory, listTag } from "@/apis/services";
 import { Plus } from "@element-plus/icons-vue"; // 导入listCategory方法
-import { Category, Tag } from "@/apis/interface"; // 导入Category接口
+import { Category, Tag } from "@/apis/interface";
+import CategoryDialog from "@/components/category/CategoryDialog.vue"; // 导入Category接口
 
 const menu = ref(routes.filter(route => route.meta?.showInMenu !== false));
 const defaultOpeneds = ref(['/My', '/Category']); // 添加默认展开的子菜单路径
+const categoryDialog = ref()
+
+// 初始化菜单
+const initMenu = () => {
+    menu.value = JSON.parse(JSON.stringify(routes.filter(route => route.meta?.showInMenu !== false)));
+};
 
 // 初始加载dom
 onMounted(() => {
+    initMenu();
     router.push(routes[0]);
     loadCategories(); // 调用加载分类的方法
     loadTags(); // 调用加载标签的方法
 });
 
-// 加载分类的方法
+// 加载分类并更新菜单
 const loadCategories = async () => {
     try {
         const categories: Category[] = await listCategory();
-        if (categories && categories.length > 0) {
-            // 找到/category路由
-            const categoryRoute = menu.value.find(route => route.path === '/Category');
-            if (categoryRoute && categoryRoute.children) {
-                // 获取现有的"所有分类"菜单项
-                const allCategoryItem = categoryRoute.children.find(child => child.name === 'allCategory');
-
-                // 创建动态分类菜单项数组
-                const dynamicItems = categories.map(category => ({
-                    path: `/Category/${category.sno}`,
-                    meta: {
-                        title: category.cateName,
-                        cateId: category.sno,
-                        icon: 'icon-col-fenlei3',  // 添加图标
-                        iconType: 'iconfont',
-                        style: 'font-size: 18px; color: rgb(59,130,246)'
-                    }
-                }));
-
-                // 重新设置children数组，动态项在前，"所有分类"在后
-                categoryRoute.children = [
-                    ...dynamicItems,
-                    ...(allCategoryItem ? [allCategoryItem] : [])
-                ];
-            }
-        }
+        updateCategoryMenu(categories);
     } catch (error) {
         console.error('加载分类失败:', error);
     }
 };
+
+// 更新分类菜单项
+const updateCategoryMenu = (categories: Category[]) => {
+    // 重新初始化菜单
+    initMenu();
+
+    // 找到/category路由
+    const categoryRoute = menu.value.find(route => route.path === '/Category');
+    if (!categoryRoute || !categoryRoute.children) return;
+
+    // 获取现有的"所有分类"菜单项
+    const allCategoryItem = categoryRoute.children.find(child => child.name === 'allCategory');
+
+    // 创建动态分类菜单项数组
+    const dynamicItems = categories.map(category => ({
+        path: `/Category/${category.sno}`,
+        name: `category-${category.sno}`,
+        meta: {
+            title: category.cateName,
+            cateId: category.sno,
+            icon: 'icon-col-fenlei3',
+            iconType: 'iconfont',
+            style: 'font-size: 18px; color: rgb(59,130,246)'
+        }
+    }));
+
+    // 更新children数组
+    categoryRoute.children = [
+        ...dynamicItems,
+        ...(allCategoryItem ? [allCategoryItem] : [])
+    ];
+};
+
+// 添加分类
+const addCategory = (e: Event) => {
+    e.stopPropagation()
+    categoryDialog.value.open()
+}
+
+// 处理分类确认
+const handleCategoryConfirm = async () => {
+    await loadCategories()
+
+    // 如果当前路由是分类页面，刷新视图
+    if (router.currentRoute.value.path.startsWith('/Category')) {
+        router.replace('/Category')
+        setTimeout(() => {
+            router.replace(router.currentRoute.value.fullPath)
+        }, 50)
+    }
+}
 
 // 加载标签的方法
 const loadTags = async () => {
@@ -229,12 +268,6 @@ const menuItemClick = (item: RouteRecordRaw) => {
             router.push('/AllTag')
         }
     })
-}
-
-// 添加分类的点击事件
-function addCategory() {
-    console.log('添加分类按钮被点击');
-    // 在这里添加添加分类的逻辑
 }
 
 </script>

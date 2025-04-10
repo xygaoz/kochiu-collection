@@ -1,5 +1,6 @@
 package com.keem.kochiu.collection.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -10,7 +11,7 @@ import lombok.EqualsAndHashCode;
 @TableName("sys_security")
 public class SysSecurity extends BaseEntity {
 
-    @TableId
+    @TableId(type = IdType.INPUT)
     private Integer id;
     private String publicKey;
     private String privateKey;

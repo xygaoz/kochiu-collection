@@ -1,6 +1,8 @@
 package com.keem.kochiu.collection.controller;
 
+import com.keem.kochiu.collection.annotation.Add;
 import com.keem.kochiu.collection.annotation.CheckPermit;
+import com.keem.kochiu.collection.annotation.Remove;
 import com.keem.kochiu.collection.data.DefaultResult;
 import com.keem.kochiu.collection.data.bo.PageBo;
 import com.keem.kochiu.collection.data.bo.ResInfoBo;
@@ -14,6 +16,7 @@ import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.service.CheckPermitAspect;
 import com.keem.kochiu.collection.service.UserResourceService;
 import com.keem.kochiu.collection.service.UserResourceTagService;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -66,13 +69,13 @@ public class UserResourceController {
 
     @CheckPermit
     @PostMapping(PUBLIC_URL + "/addTag")
-    public DefaultResult<TagDto> addResourceTag(@Valid ResInfoBo resourceInfo) throws CollectionException {
+    public DefaultResult<TagDto> addResourceTag(@Validated({Add.class}) TagDto resourceInfo) throws CollectionException {
         return DefaultResult.ok(tagService.addResourceTag(CheckPermitAspect.USER_INFO.get(), resourceInfo));
     }
 
     @CheckPermit
     @PostMapping(PUBLIC_URL + "/removeTag")
-    public DefaultResult<TagDto> removeResourceTag(@Valid TagDto tagDto) throws CollectionException {
+    public DefaultResult<TagDto> removeResourceTag(@Validated({Remove.class}) TagDto tagDto) throws CollectionException {
         tagService.removeResourceTag(CheckPermitAspect.USER_INFO.get(), tagDto);
         return DefaultResult.ok();
     }

@@ -211,6 +211,13 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+
+        <!-- 添加主键自增元数据 -->
+        <addAutoIncrement
+                tableName="user_category"
+                columnName="CATE_ID"
+                columnDataType="INTEGER"
+        />
     </changeSet>
 
     <changeSet id="kcdb_10" author="kochiu" runOnChange="true">
