@@ -4,10 +4,7 @@ import com.keem.kochiu.collection.annotation.Add;
 import com.keem.kochiu.collection.annotation.CheckPermit;
 import com.keem.kochiu.collection.annotation.Remove;
 import com.keem.kochiu.collection.data.DefaultResult;
-import com.keem.kochiu.collection.data.bo.PageBo;
-import com.keem.kochiu.collection.data.bo.ResInfoBo;
-import com.keem.kochiu.collection.data.bo.UploadBo;
-import com.keem.kochiu.collection.data.bo.BatchUpdateBo;
+import com.keem.kochiu.collection.data.bo.*;
 import com.keem.kochiu.collection.data.dto.TagDto;
 import com.keem.kochiu.collection.data.vo.FileVo;
 import com.keem.kochiu.collection.data.vo.PageVo;
@@ -102,4 +99,18 @@ public class UserResourceController {
         resourceService.batchUpdate(CheckPermitAspect.USER_INFO.get(), batchUpdateBo);
         return DefaultResult.ok();
     }
+
+    @CheckPermit
+    @PostMapping(RESOURCE_PATH + "/batchAddTag")
+    public DefaultResult<TagDto> batchAddTag(@Validated({Add.class}) BatchTagBo tagDto) throws CollectionException {
+        return DefaultResult.ok(tagService.batchAddTag(CheckPermitAspect.USER_INFO.get(), tagDto));
+    }
+
+    @CheckPermit
+    @PostMapping(RESOURCE_PATH + "/batchRemoveTag")
+    public DefaultResult<TagDto> batchRemoveTag(@Validated({Remove.class}) BatchTagBo tagDto) throws CollectionException {
+        tagService.batchRemoveTag(CheckPermitAspect.USER_INFO.get(), tagDto);
+        return DefaultResult.ok();
+    }
+
 }

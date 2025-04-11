@@ -1,6 +1,6 @@
 package com.keem.kochiu.collection.service;
 
-import com.keem.kochiu.collection.data.bo.ResInfoBo;
+import com.keem.kochiu.collection.data.bo.BatchTagBo;
 import com.keem.kochiu.collection.data.dto.TagDto;
 import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.entity.SysUser;
@@ -9,10 +9,10 @@ import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.repository.SysUserRepository;
 import com.keem.kochiu.collection.repository.UserResourceTagRepository;
 import com.keem.kochiu.collection.repository.UserTagRepository;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class UserResourceTagService {
@@ -40,6 +40,18 @@ public class UserResourceTagService {
     public TagDto addResourceTag(UserDto userDto, TagDto resourceInfo) throws CollectionException {
 
         SysUser user = userRepository.getUser(userDto);
+        return addResourceTag(user, resourceInfo);
+    }
+
+    /**
+     * 公共添加资源标签
+     * @param user
+     * @param resourceInfo
+     * @return
+     * @throws CollectionException
+     */
+    private TagDto addResourceTag(SysUser user, TagDto resourceInfo) throws CollectionException {
+
         Long tagId = userTagRepository.existsTag(user.getUserId(), resourceInfo.getTagName());
         if(tagId == null){
             tagId = userTagRepository.addTag(user.getUserId(), resourceInfo.getTagName());
@@ -58,6 +70,30 @@ public class UserResourceTagService {
     }
 
     /**
+     * 批量添加资源标签
+     * @param userDto
+     * @param batchTagBo
+     * @return
+     * @throws CollectionException
+     */
+    public TagDto batchAddTag(UserDto userDto, BatchTagBo batchTagBo) throws CollectionException {
+
+        SysUser user = userRepository.getUser(userDto);
+        AtomicReference<TagDto> returnTagDto = new AtomicReference<>();
+        batchTagBo.getResourceIds().forEach(resourceId -> {
+            try {
+                returnTagDto.set(addResourceTag(user, TagDto.builder()
+                        .resourceId(resourceId)
+                        .tagName(batchTagBo.getTagName())
+                        .build()));
+            } catch (CollectionException ignored) {
+                // ignored
+            }
+        });
+        return returnTagDto.get();
+    }
+
+    /**
      * 删除资源标签
      * @param userDto
      * @param tagDto
@@ -67,6 +103,21 @@ public class UserResourceTagService {
 
         SysUser user = userRepository.getUser(userDto);
         userResourceTagRepository.removeResourceTag(user.getUserId(), tagDto.getResourceId(), tagDto.getTagId());
+    }
+
+    /**
+     * 批量删除资源标签
+     */
+    public void batchRemoveTag(UserDto userDto, BatchTagBo batchTagBo) throws CollectionException {
+
+        SysUser user = userRepository.getUser(userDto);
+        batchTagBo.getResourceIds().forEach(resourceId -> {
+            try {
+                userResourceTagRepository.removeResourceTag(user.getUserId(), resourceId, batchTagBo.getTagId());
+            } catch (CollectionException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     /**

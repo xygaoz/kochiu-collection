@@ -151,6 +151,7 @@ const handleUpdateSuccess = (resources: Resource[]) => {
     overflow-y: auto;
     height: 100%;
     flex-shrink: 0;
+    padding: 0!important;
 }
 
 @media (max-width: 768px) {

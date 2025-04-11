@@ -82,6 +82,25 @@ export const removeResourceTag = (resourceId: number, params: any): Promise<any>
     });
 }
 
+
+export const bacthAddTag = (resourceIds: number[], params: any): Promise<any> => {
+    params["resourceIds"] = resourceIds;
+    return httpInstance.post("/resource/batchAddTag", params).then((model: any) => {
+        if (model) {
+            return model;
+        }
+    });
+}
+
+export const bacthRemoveTag = (resourceIds: number[], params: any): Promise<any> => {
+    params["resourceIds"] = resourceIds;
+    return httpInstance.post("/resource/batchRemoveTag", params).then((model: any) => {
+        if (model) {
+            return model;
+        }
+    });
+}
+
 export const listTagFiles = (tagId: string, page: number, size: number): Promise<PageInfo<Resource>> => {
     const ld = loading("加载中")
     return httpInstance.post("/resource/tag/" + tagId, {

@@ -621,7 +621,7 @@ export default {
 }
 
 .detail-content {
-    padding: 0 16px;
+    padding: 0 16px 10px 16px;
 }
 
 .detail-row {
