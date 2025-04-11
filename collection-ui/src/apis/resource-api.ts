@@ -49,13 +49,19 @@ export const updateResource = (resourceId: number, params: any): Promise<any> =>
     const ld = loading("修改中")
     params["resourceId"] = resourceId;
     return httpInstance.post("/resource/updateInfo", params).then((model: any) => {
-        if (model) {
-            console.log("修改成功:", model);
-            return model;
-        }
+        console.log("修改成功:", model);
+        return true;
     }).finally(() => {
         ld.close();
     });
+}
+
+export const bacthUpdateResource = (resourceIds: number[], params: any): Promise<any> => {
+    params["resourceIds"] = resourceIds;
+    return httpInstance.post("/resource/batchUpdate", params).then((model: any) => {
+        console.log("修改成功:", model);
+        return true;
+    })
 }
 
 export const addResourceTag = (resourceId: number, params: any): Promise<any> => {

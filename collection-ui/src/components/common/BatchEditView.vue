@@ -66,6 +66,7 @@ import { ref, computed, nextTick, defineProps, defineEmits } from 'vue';
 import { ElMessage } from 'element-plus';
 import type { Resource, Tag } from '@/apis/interface';
 import { CircleCheck, CloseBold, Connection, Delete } from "@element-plus/icons-vue";
+import { bacthUpdateResource } from "@/apis/resource-api";
 
 interface Props {
     selectedFiles: Resource[];
@@ -162,10 +163,20 @@ const handleBatchUpdate = async () => {
             description: batchForm.value.description || undefined,
         };
 
-        // await batchUpdateResources(resourceIds, updateData);
+        if(await bacthUpdateResource(resourceIds, updateData)) {
+            //更新资源数据
+            props.selectedFiles.forEach(file => {
+                if(batchForm.value.title) {
+                    file.title = batchForm.value.title;
+                }
+                if(batchForm.value.description) {
+                    file.description = batchForm.value.description;
+                }
+            });
 
-        ElMessage.success('批量更新成功');
-        emit('update-success');
+            emit('update-success', props.selectedFiles);
+            ElMessage.success('批量更新成功');
+        }
     } catch (error) {
         ElMessage.error('批量更新失败');
     } finally {

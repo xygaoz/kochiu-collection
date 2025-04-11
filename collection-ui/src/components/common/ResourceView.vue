@@ -25,6 +25,7 @@
                         v-else-if="selectedResources.length > 0"
                         :selected-files="selectedResources"
                         @clear-selection="handleClearSelection"
+                        @update-success="handleUpdateSuccess"
                     />
                     <el-empty v-else description="请选择文件查看详情" />
                 </el-aside>
@@ -106,6 +107,12 @@ const handleMultipleSelected = (resources: Resource[]) => {
 const handleClearSelection = () => {
     layoutRef.value?.clearSelection?.()
     selectedResources.value = []
+}
+
+const handleUpdateSuccess = (resources: Resource[]) => {
+    resources.forEach(resource => {
+        handleUpdateFile(resource)
+    });
 }
 </script>
 
