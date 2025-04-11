@@ -1,68 +1,73 @@
 <template>
-    <el-main class="image-container">
-        <div
-            class="waterfall-container"
-            ref="waterfallContainer"
-        >
+    <el-container>
+        <el-header class="search-header">
+
+        </el-header>
+        <el-main class="image-container">
             <div
-                v-for="(row, rowIndex) in computedRows"
-                :key="rowIndex"
-                class="waterfall-row"
+                class="waterfall-container"
+                ref="waterfallContainer"
             >
                 <div
-                    v-for="(item, index) in row.items"
-                    :key="index"
-                    class="waterfall-item"
-                    :style="getItemStyle(item)"
+                    v-for="(row, rowIndex) in computedRows"
+                    :key="rowIndex"
+                    class="waterfall-row"
                 >
-                    <el-card
-                        shadow="hover"
-                        :body-style="{ padding: '0px' }"
-                        :class="{ 'selected-card': selectedImage?.resourceId === item.image.resourceId
+                    <div
+                        v-for="(item, index) in row.items"
+                        :key="index"
+                        class="waterfall-item"
+                        :style="getItemStyle(item)"
+                    >
+                        <el-card
+                            shadow="hover"
+                            :body-style="{ padding: '0px' }"
+                            :class="{ 'selected-card': selectedImage?.resourceId === item.image.resourceId
                          || isMultipleSelect(item.image),
                          'show-checkbox': hasAnySelection || isMultipleSelect(item.image)}"
-                    >
-                        <div class="image-select">
-                            <el-checkbox
-                                :key="'checkbox-' + item.image.resourceId + forceRender"
-                                :checked="isMultipleSelect(item.image)"
-                                @change="(val: boolean) => handleMultipleSelect(val, item.image)"
-                            />
-                        </div>
-                        <div class="resource-wrapper"
-                             @click="handlePreview(item.image)"
                         >
-                            <div
-                                class="image-wrapper"
-                                :style="{ height: `${item.displayHeight}px` }"
+                            <div class="image-select">
+                                <el-checkbox
+                                    :key="'checkbox-' + item.image.resourceId + forceRender"
+                                    :checked="isMultipleSelect(item.image)"
+                                    @change="(val: boolean) => handleMultipleSelect(val, item.image)"
+                                />
+                            </div>
+                            <div class="resource-wrapper"
+                                 @click="handlePreview(item.image)"
                             >
-                                <el-image
-                                    :src="item.image.thumbnailUrl"
-                                    fit="contain"
-                                    loading="lazy"
-                                    class="waterfall-image"
-                                    :style="getImageStyle(item)"
+                                <div
+                                    class="image-wrapper"
+                                    :style="{ height: `${item.displayHeight}px` }"
                                 >
-                                    <template #error>
-                                        <div class="image-error">
-                                            <img
-                                                src="/images/default-thumbnail.jpg"
-                                                style="width:100%;height:100%;object-fit:contain;background-color:#f5f5f5;"
-                                                alt=""
-                                            >
-                                        </div>
-                                    </template>
-                                </el-image>
+                                    <el-image
+                                        :src="item.image.thumbnailUrl"
+                                        fit="contain"
+                                        loading="lazy"
+                                        class="waterfall-image"
+                                        :style="getImageStyle(item)"
+                                    >
+                                        <template #error>
+                                            <div class="image-error">
+                                                <img
+                                                    src="/images/default-thumbnail.jpg"
+                                                    style="width:100%;height:100%;object-fit:contain;background-color:#f5f5f5;"
+                                                    alt=""
+                                                >
+                                            </div>
+                                        </template>
+                                    </el-image>
+                                </div>
+                                <div class="image-info">
+                                    <div class="image-title">{{ item.image.title || item.image.sourceFileName }}</div>
+                                </div>
                             </div>
-                            <div class="image-info">
-                                <div class="image-title">{{ item.image.title || item.image.sourceFileName }}</div>
-                            </div>
-                        </div>
-                    </el-card>
+                        </el-card>
+                    </div>
                 </div>
             </div>
-        </div>
-    </el-main>
+        </el-main>
+    </el-container>
 </template>
 
 <script setup lang="ts">
@@ -289,6 +294,10 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.search-header{
+    height: 32px;
+}
+
 .image-container {
     flex: 1;
     padding: 15px;
