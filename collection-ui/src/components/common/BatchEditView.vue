@@ -66,7 +66,7 @@
         </div>
         <div class="detail-row">
             <div class="detail-value">
-                <div class="tags">
+                <TransitionGroup name="tag" tag="div" class="tags">
                     <!-- 实线标签（可删除） -->
                     <el-tag
                         v-for="tag in tagState.commonTags"
@@ -83,26 +83,28 @@
                         @click="addTagToMissingFiles(tag)">
                         {{ tag.tagName }}
                     </el-tag>
-                    <el-input
-                        v-if="tagInputVisible"
-                        ref="tagInputRef"
-                        v-model="tagInputValue"
-                        class="tag-input"
-                        size="small"
-                        @keyup.enter="handleTagInputConfirm"
-                        @blur="handleTagInputConfirm"
-                        @click.stop
-                    />
-                    <el-button
-                        v-else
-                        class="button-new-tag"
-                        size="small"
-                        @click="showTagInput"
-                        @click.stop
-                    >
-                        + 新标签
-                    </el-button>
-                </div>
+                    <Transition name="fade">
+                        <el-input
+                            v-if="tagInputVisible"
+                            ref="tagInputRef"
+                            v-model="tagInputValue"
+                            class="tag-input"
+                            size="small"
+                            @keyup.enter="handleTagInputConfirm"
+                            @blur="handleTagInputConfirm"
+                            @click.stop
+                        />
+                        <el-button
+                            v-else
+                            class="button-new-tag"
+                            size="small"
+                            @click="showTagInput"
+                            @click.stop
+                        >
+                            + 新标签
+                        </el-button>
+                    </Transition>
+                </TransitionGroup>
             </div>
         </div>
     </div>
@@ -448,7 +450,6 @@ watch(() => props.selectedFiles, (newVal) => {
 <style scoped>
 .batch-edit-view {
     padding: 16px;
-    height: 100%;
     display: flex;
     flex-direction: column;
 }
@@ -472,6 +473,34 @@ watch(() => props.selectedFiles, (newVal) => {
     flex-wrap: wrap;
     gap: 8px;
     align-items: center;
+    transition: all 0.3s ease; /* 新增：容器过渡 */
+}
+
+.el-tag {
+    transition:
+        all 0.3s ease,
+        transform 0.2s ease; /* 包含变形动画 */
+}
+
+.dashed-tag {
+    transition:
+        border 0.3s ease,
+        background-color 0.3s ease;
+}
+
+/* 标签入场动画 */
+.tag-enter-active {
+    transition: all 0.3s ease;
+}
+
+.tag-enter-from {
+    opacity: 0;
+    transform: scale(0.8) translateY(5px);
+}
+
+/* 标签状态变化动画 */
+.tag-state-change {
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
 .tag-input {
