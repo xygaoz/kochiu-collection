@@ -314,24 +314,44 @@ const addTagToMissingFiles = async (tag: Tag) => {
 // 从所有文件移除标签
 const removeTag = async (tag: Tag) => {
     try {
-        // 1. 从所有选中文件中移除
-        const resourceIds = props.selectedFiles.map((file: Resource) => file.resourceId);
-        await bacthRemoveTag(resourceIds, { tagId: tag.tagId });
+        // 1. 防御性检查
+        if (!localSelectedFiles.value || !Array.isArray(localSelectedFiles.value)) {
+            console.error("文件数据未正确初始化");
+            return
+        }
 
-        // 2. 创建新数组更新本地状态（不直接修改props）
-        const updatedFiles = props.selectedFiles.map((file: Resource) => ({
-            ...file,
-            tags: (file.tags || []).filter(t => t.tagId !== tag.tagId)
-        }));
+        // 2. 创建更新副本（深拷贝）
+        const updatedFiles = JSON.parse(JSON.stringify(localSelectedFiles.value));
 
+        // 3. 更新本地状态
+        updatedFiles.forEach((file: Resource) => {
+            file.tags = (file.tags || []).filter(t => t.tagId !== tag.tagId);
+        });
+
+        // 4. 立即更新UI状态
+        localSelectedFiles.value = updatedFiles;
+        updateTagClassification();
+
+        // 5. 异步操作
+        await bacthRemoveTag(
+            updatedFiles.map(f => f.resourceId),
+            { tagId: tag.tagId }
+        );
+
+        // 6. 通知父组件
         emit('update-success', updatedFiles);
+        ElMessage.success('标签已移除');
     } catch (error) {
-        ElMessage.error('移除标签失败');
         console.error('移除标签失败:', error);
+        ElMessage.error(`移除失败: ${error instanceof Error ? error.message : '未知错误'}`);
+
+        // 7. 回滚UI状态
+        updateTagClassification();
     }
 };
 
 const handleTagInputConfirm = async () => {
+    // 0. 空值检查
     if (!tagInputValue.value?.trim()) {
         tagInputVisible.value = false;
         return;
@@ -341,8 +361,13 @@ const handleTagInputConfirm = async () => {
         saving.value = true;
         const tagName = tagInputValue.value.trim();
 
-        // 检查是否已存在该标签
-        const alreadyExists = props.selectedFiles.some(file =>
+        // 1. 防御性检查
+        if (!localSelectedFiles.value || !Array.isArray(localSelectedFiles.value)) {
+            throw new Error("文件数据未初始化");
+        }
+
+        // 2. 检查标签是否已存在（不区分大小写）
+        const alreadyExists = localSelectedFiles.value.some(file =>
             file.tags?.some(t => t.tagName.toLowerCase() === tagName.toLowerCase())
         );
 
@@ -351,22 +376,54 @@ const handleTagInputConfirm = async () => {
             return;
         }
 
-        // 调用API添加标签
-        const resourceIds = props.selectedFiles.map(file => file.resourceId);
-        const newTag = await bacthAddTag(resourceIds, { tagName });
+        // 3. 创建新标签对象
+        const newTag: Tag = {
+            tagId: Date.now(), // 临时ID，实际应由API返回
+            tagName: tagName
+        };
 
-        // 创建新数组更新状态（不直接修改props）
-        const updatedFiles = props.selectedFiles.map(file => ({
-            ...file,
-            tags: [...(file.tags || []), newTag]
-        }));
+        // 4. 深拷贝当前状态
+        const updatedFiles = JSON.parse(JSON.stringify(localSelectedFiles.value));
 
-        emit('update-success', updatedFiles);
-        ElMessage.success(`成功添加标签到 ${updatedFiles.length} 个文件`);
+        // 5. 更新所有文件的标签
+        updatedFiles.forEach((file: Resource) => {
+            file.tags = [...(file.tags || []), newTag];
+        });
+
+        // 6. 立即更新本地状态
+        localSelectedFiles.value = updatedFiles;
+        updateTagClassification();
+
+        // 7. 调用API（使用真实API返回的标签）
+        const apiTag = await bacthAddTag(
+            updatedFiles.map(f => f.resourceId),
+            { tagName }
+        );
+
+        // 8. 用API返回的标签更新状态（如果不同）
+        if (apiTag && apiTag.tagId !== newTag.tagId) {
+            localSelectedFiles.value = localSelectedFiles.value.map(file => ({
+                ...file,
+                tags: file.tags?.map(t =>
+                    t.tagId === newTag.tagId ? apiTag : t
+                ) || []
+            }));
+            updateTagClassification();
+        }
+
+        // 9. 通知父组件
+        emit('update-success', [...localSelectedFiles.value]);
+        ElMessage.success(`标签 "${tagName}" 添加成功`);
+
     } catch (error) {
         console.error('添加标签失败:', error);
-        ElMessage.error(`添加标签失败: ${getErrorMessage(error)}`);
+        ElMessage.error(`添加失败: ${getErrorMessage(error)}`);
+
+        // 10. 回滚状态
+        updateTagClassification();
+
     } finally {
+        // 11. 重置UI状态
         saving.value = false;
         tagInputVisible.value = false;
         tagInputValue.value = '';
