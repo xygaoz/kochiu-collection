@@ -121,7 +121,7 @@ const handlePreview = async (image: Resource) => {
 const computedRows = computed<ComputedRow[]>(() => {
     if (!props.files.length || !containerWidth.value) return [];
 
-    const gap = 16;
+    const gap = 10;
     const rows: ComputedRow[] = [];
     let currentRow: LayoutItem[] = [];
     let currentRowWidth = 0;
@@ -204,7 +204,7 @@ const computedRows = computed<ComputedRow[]>(() => {
 const adjustRowToFit = (items: LayoutItem[], targetWidth: number): LayoutItem[] | null => {
     if (items.length === 0) return null;
 
-    const gap = 16;
+    const gap = 10;
     const totalGaps = (items.length - 1) * gap;
     const totalContentWidth = targetWidth - totalGaps;
 
@@ -299,12 +299,12 @@ onBeforeUnmount(() => {
 .waterfall-container {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 10px;
 }
 
 .waterfall-row {
     display: flex;
-    gap: 16px;
+    gap: 10px;
     width: 100%;
     justify-content: flex-start;
 }
@@ -335,12 +335,14 @@ onBeforeUnmount(() => {
 }
 
 .image-info {
-    text-align: center;
+    position: absolute;
+    bottom: 0;
+    left: 0;
     font-size: 14px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    padding: 12px;
+    padding: 10px;
     margin-bottom: 0;
     border-radius: 0 0 5px 5px;
 }
@@ -349,6 +351,7 @@ onBeforeUnmount(() => {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    color: #ddd;
 }
 
 .el-card {
@@ -369,6 +372,7 @@ onBeforeUnmount(() => {
 
 .resource-wrapper{
     cursor: pointer;
+    position: relative;
 }
 
 .image-wrapper {
