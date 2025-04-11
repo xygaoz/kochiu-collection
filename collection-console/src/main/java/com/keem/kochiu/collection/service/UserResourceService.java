@@ -5,7 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.keem.kochiu.collection.data.bo.PageBo;
 import com.keem.kochiu.collection.data.bo.ResInfoBo;
 import com.keem.kochiu.collection.data.bo.UploadBo;
-import com.keem.kochiu.collection.data.bo.batchUpdateBo;
+import com.keem.kochiu.collection.data.bo.BatchUpdateBo;
 import com.keem.kochiu.collection.data.dto.TagDto;
 import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.data.vo.FileVo;
@@ -29,7 +29,6 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -237,7 +236,7 @@ public class UserResourceService {
      * @param batchUpdateBo
      * @throws CollectionException
      */
-    public void batchUpdate(UserDto userDto, batchUpdateBo batchUpdateBo) throws CollectionException {
+    public void batchUpdate(UserDto userDto, BatchUpdateBo batchUpdateBo) throws CollectionException {
 
         SysUser user = userRepository.getUser(userDto);
         batchUpdateBo.getResourceIds().forEach(resourceId -> {

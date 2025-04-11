@@ -7,7 +7,7 @@ import javax.validation.constraints.Size;
 import java.util.List;
 
 @Data
-public class batchUpdateBo {
+public class BatchUpdateBo {
 
     @NotNull
     @Size(min = 1)

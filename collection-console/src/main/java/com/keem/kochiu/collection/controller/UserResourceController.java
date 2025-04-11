@@ -7,7 +7,7 @@ import com.keem.kochiu.collection.data.DefaultResult;
 import com.keem.kochiu.collection.data.bo.PageBo;
 import com.keem.kochiu.collection.data.bo.ResInfoBo;
 import com.keem.kochiu.collection.data.bo.UploadBo;
-import com.keem.kochiu.collection.data.bo.batchUpdateBo;
+import com.keem.kochiu.collection.data.bo.BatchUpdateBo;
 import com.keem.kochiu.collection.data.dto.TagDto;
 import com.keem.kochiu.collection.data.vo.FileVo;
 import com.keem.kochiu.collection.data.vo.PageVo;
@@ -98,7 +98,7 @@ public class UserResourceController {
 
     @CheckPermit
     @PostMapping(RESOURCE_PATH + "/batchUpdate")
-    public DefaultResult<ResourceVo> batchUpdate(@Validated batchUpdateBo batchUpdateBo) throws CollectionException {
+    public DefaultResult<ResourceVo> batchUpdate(@Validated BatchUpdateBo batchUpdateBo) throws CollectionException {
         resourceService.batchUpdate(CheckPermitAspect.USER_INFO.get(), batchUpdateBo);
         return DefaultResult.ok();
     }
