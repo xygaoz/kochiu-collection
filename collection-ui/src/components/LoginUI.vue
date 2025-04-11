@@ -56,7 +56,7 @@
 import { ref, defineEmits, onMounted } from "vue"; // 添加onMounted
 import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router"; // 导入useRouter
-import { getPublicKey, loginService, tokenStore } from "@/apis/services"; // 导入getPublicKey方法
+import { getPublicKey, loginService, tokenStore } from "@/apis/system-api"; // 导入getPublicKey方法
 import { JSEncrypt } from 'jsencrypt';
 import Cookies from 'js-cookie';
 

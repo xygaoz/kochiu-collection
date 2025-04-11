@@ -19,7 +19,7 @@ import java.util.List;
 import static com.keem.kochiu.collection.Constant.PUBLIC_URL;
 
 @RestController
-@RequestMapping(PUBLIC_URL)
+@RequestMapping(PUBLIC_URL + "/category")
 public class UserCategoryController {
 
     private final UserCategoryService userCategoryService;
@@ -29,21 +29,21 @@ public class UserCategoryController {
     }
 
     @CheckPermit
-    @GetMapping("/category/list")
+    @GetMapping("/list")
     public DefaultResult<List<CategoryVo>> getCategoryList() throws CollectionException {
 
         return DefaultResult.ok(userCategoryService.getCategoryList(CheckPermitAspect.USER_INFO.get()));
     }
 
     @CheckPermit
-    @GetMapping("/category/all")
+    @GetMapping("/all")
     public DefaultResult<List<CategoryVo>> getAllCategory() throws CollectionException {
 
         return DefaultResult.ok(userCategoryService.getAllCategory(CheckPermitAspect.USER_INFO.get()));
     }
 
     @CheckPermit
-    @PostMapping("/category/add")
+    @PostMapping("/add")
     public DefaultResult<CategoryVo> addCategory(@Validated({Add.class}) CategoryBo categoryBo) throws CollectionException {
 
         return DefaultResult.ok(userCategoryService.addCategory(CheckPermitAspect.USER_INFO.get(), categoryBo));

@@ -49,8 +49,9 @@
 import { UploadFilled } from '@element-plus/icons-vue'
 import { ElMessage } from "element-plus";
 import { ref, onMounted, reactive } from "vue";
-import { getAllCategory, uploadFile } from "@/apis/services"; // 导入uploadFile方法
-import { Category } from "@/apis/interface"; // 导入Category接口
+import { uploadFile } from "@/apis/resource-api"; // 导入uploadFile方法
+import { Category } from "@/apis/interface";
+import { getAllCategory } from "@/apis/category-api"; // 导入Category接口
 
 // 定义允许的文件类型和最大文件大小（2MB）
 const allowedTypes = [

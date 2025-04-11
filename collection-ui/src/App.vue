@@ -11,7 +11,7 @@ import { Options, Vue } from 'vue-class-component';
 import MainUI from './components/MainUI.vue';
 import { reactive } from 'vue';
 import LoginUI from "@/components/LoginUI.vue";
-import { tokenStore } from "@/apis/services";
+import { tokenStore } from "@/apis/system-api";
 import { refreshAccessToken } from "@/apis/utils"; // 引入tokenStore
 
 let isRefreshing = false;

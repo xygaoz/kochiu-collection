@@ -3,7 +3,7 @@ import { h, ref, render } from "vue";
 import { ElLoading, ElMessage } from "element-plus";
 import qs from "qs";
 import router from "@/apis/base-routes"; // 引入qs库来处理form-data
-import { tokenStore } from "@/apis/services";
+import { tokenStore } from "@/apis/system-api";
 import Cookies from "js-cookie"; // 引入tokenStore
 
 const httpInstance = axios.create({

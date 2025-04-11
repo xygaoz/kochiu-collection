@@ -43,7 +43,7 @@
 <script setup lang="ts">
 import { ref, reactive, nextTick, defineEmits, defineExpose } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
-import { createCategory, updateCategory } from '@/apis/services'
+import { createCategory, updateCategory } from '@/apis/category-api'
 
 const emit = defineEmits(['confirm'])
 

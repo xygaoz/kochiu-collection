@@ -114,6 +114,7 @@ const actions = [
         handler: () => emit('move'),
     }
 ]
+
 // 显示标签输入框
 const showTagInput = () => {
     tagInputVisible.value = true;
@@ -147,22 +148,24 @@ const handleBatchUpdate = async () => {
         ElMessage.warning('请先选择文件');
         return;
     }
+    if(!batchForm.value.title && !batchForm.value.description){
+        ElMessage.warning('请先设置标题或描述');
+        return;
+    }
 
     try {
         saving.value = true;
 
-        // const resourceIds = props.selectedFiles.map(file => file.resourceId);
-        // const updateData = {
-        //     title: batchForm.value.title || undefined,
-        //     description: batchForm.value.description || undefined,
-        //     tagNames: batchForm.value.tags.map(tag => tag.tagName)
-        // };
+        const resourceIds = props.selectedFiles.map(file => file.resourceId);
+        const updateData = {
+            title: batchForm.value.title || undefined,
+            description: batchForm.value.description || undefined,
+        };
 
         // await batchUpdateResources(resourceIds, updateData);
 
         ElMessage.success('批量更新成功');
         emit('update-success');
-        batchForm.value = { title: '', description: '', tags: [] };
     } catch (error) {
         ElMessage.error('批量更新失败');
     } finally {

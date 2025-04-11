@@ -248,14 +248,14 @@
 
 <script lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick, PropType, watch } from "vue";
-import { Document, Download, Picture, Loading, CloseBold } from "@element-plus/icons-vue";
+import { Document, Download, Picture, Loading } from "@element-plus/icons-vue";
 import { ElMessage, ElInput } from "element-plus";
-import { addResourceTag, removeResourceTag, updateResource } from "@/apis/services";
+import { addResourceTag, removeResourceTag, updateResource } from "@/apis/resource-api";
 import type { Resource, Tag } from '@/apis/interface'
 
 export default {
     name: 'FileDetail',
-    components: { CloseBold, Download, Document, Picture, Loading },
+    components: { Download, Document, Picture, Loading },
     props: {
         file: {
             type: Object as PropType<Resource>,

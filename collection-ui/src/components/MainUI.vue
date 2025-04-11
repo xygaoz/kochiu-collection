@@ -139,10 +139,11 @@
 import { ref, onMounted, nextTick } from "vue";
 import router, { routes } from "@/apis/base-routes";
 import { RouteRecordRaw } from "vue-router";
-import { listCategory, listTag } from "@/apis/services";
 import { Plus } from "@element-plus/icons-vue"; // 导入listCategory方法
 import { Category, Tag } from "@/apis/interface";
-import CategoryDialog from "@/components/category/CategoryDialog.vue"; // 导入Category接口
+import CategoryDialog from "@/components/category/CategoryDialog.vue";
+import { listCategory } from "@/apis/category-api";
+import { listTag } from "@/apis/tag-api"; // 导入Category接口
 
 const activeMenu = ref(''); // 当前激活的菜单项
 const menu = ref(routes.filter(route => route.meta?.showInMenu !== false));

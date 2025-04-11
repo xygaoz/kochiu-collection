@@ -7,9 +7,9 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
+import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
-import { listTagFiles } from "@/apis/services";
+import { listTagFiles } from "@/apis/resource-api";
 import type { Resource } from "@/apis/interface";
 import ResourceView from "@/components/common/ResourceView.vue";
 

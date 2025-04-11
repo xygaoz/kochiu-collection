@@ -22,12 +22,9 @@ import java.util.List;
 public class UserResourceRepository extends ServiceImpl<UserResourceMapper, UserResource>{
 
     private final UserCategoryRepository categoryRepository;
-    private final UserResourceTagRepository tagRepository;
 
-    public UserResourceRepository(UserCategoryRepository categoryRepository,
-                                  UserResourceTagRepository tagRepository) {
+    public UserResourceRepository(UserCategoryRepository categoryRepository) {
         this.categoryRepository = categoryRepository;
-        this.tagRepository = tagRepository;
     }
 
     /**
@@ -100,7 +97,7 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
      * @param userId
      * @param resourceInfo
      */
-    public void updateResourceInfo(int userId, ResInfoBo resourceInfo) throws CollectionException {
+    public void updateResourceInfo(int userId, ResInfoBo resourceInfo) {
 
         if(!(StringUtils.isBlank(resourceInfo.getTitle()) && StringUtils.isBlank(resourceInfo.getDescription())
                 && resourceInfo.getStar() == null)) {
@@ -120,14 +117,12 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
      * @param userId
      * @param tagId
      * @return
-     * @throws CollectionException
      */
-    public PageInfo<UserResource> getResourceListByTag(int userId, int tagId, PageBo pageBo) throws CollectionException {
+    public PageInfo<UserResource> getResourceListByTag(int userId, int tagId, PageBo pageBo) {
 
         try(Page<UserResource> page = PageHelper.startPage(pageBo.getPageNum(), pageBo.getPageSize())) {
 
             return new PageInfo<>(baseMapper.selectTagResource(userId, tagId));
         }
     }
-
 }

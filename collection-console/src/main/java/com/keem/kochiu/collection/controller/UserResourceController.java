@@ -7,6 +7,7 @@ import com.keem.kochiu.collection.data.DefaultResult;
 import com.keem.kochiu.collection.data.bo.PageBo;
 import com.keem.kochiu.collection.data.bo.ResInfoBo;
 import com.keem.kochiu.collection.data.bo.UploadBo;
+import com.keem.kochiu.collection.data.bo.batchUpdateBo;
 import com.keem.kochiu.collection.data.dto.TagDto;
 import com.keem.kochiu.collection.data.vo.FileVo;
 import com.keem.kochiu.collection.data.vo.PageVo;
@@ -33,6 +34,7 @@ public class UserResourceController {
 
     private final UserResourceService resourceService;
     private final UserResourceTagService tagService;
+    private final static String RESOURCE_PATH = PUBLIC_URL + "/resource";
 
     public UserResourceController(UserResourceService resourceService,
                                   UserResourceTagService tagService) {
@@ -41,7 +43,7 @@ public class UserResourceController {
     }
 
     @CheckPermit(on = {PermitEnum.UI, PermitEnum.API})
-    @PostMapping(PUBLIC_URL + "/upload")
+    @PostMapping(RESOURCE_PATH + "/upload")
     public DefaultResult<FileVo> upload(@Valid UploadBo uploadBo) throws CollectionException {
 
         return DefaultResult.ok(resourceService.saveFile(uploadBo, CheckPermitAspect.USER_INFO.get()));
@@ -54,37 +56,50 @@ public class UserResourceController {
     }
 
     @CheckPermit
-    @PostMapping(PUBLIC_URL + "/resource/category/{cateId}")
+    @PostMapping(RESOURCE_PATH + "/category/{cateId}")
     public DefaultResult<PageVo<ResourceVo>> getResourceListByCate(@PathVariable int cateId,
                                                                    PageBo pageBo) throws CollectionException {
         return DefaultResult.ok(resourceService.getResourceListByCate(CheckPermitAspect.USER_INFO.get(), cateId, pageBo));
     }
 
     @CheckPermit
-    @PostMapping(PUBLIC_URL + "/updateInfo")
+    @PostMapping(RESOURCE_PATH + "/updateInfo")
     public DefaultResult<ResourceVo> updateResourceInfo(@Valid ResInfoBo resourceInfo) throws CollectionException {
         resourceService.updateResourceInfo(CheckPermitAspect.USER_INFO.get(), resourceInfo);
         return DefaultResult.ok();
     }
 
     @CheckPermit
-    @PostMapping(PUBLIC_URL + "/addTag")
+    @PostMapping(RESOURCE_PATH + "/addTag")
     public DefaultResult<TagDto> addResourceTag(@Validated({Add.class}) TagDto resourceInfo) throws CollectionException {
         return DefaultResult.ok(tagService.addResourceTag(CheckPermitAspect.USER_INFO.get(), resourceInfo));
     }
 
     @CheckPermit
-    @PostMapping(PUBLIC_URL + "/removeTag")
+    @PostMapping(RESOURCE_PATH + "/removeTag")
     public DefaultResult<TagDto> removeResourceTag(@Validated({Remove.class}) TagDto tagDto) throws CollectionException {
         tagService.removeResourceTag(CheckPermitAspect.USER_INFO.get(), tagDto);
         return DefaultResult.ok();
     }
 
+    /**
+     * 根据标签获取资源列表
+     * @param tagId
+     * @param pageBo
+     * @return
+     * @throws CollectionException
+     */
     @CheckPermit
-    @PostMapping(PUBLIC_URL + "/resource/tag/{tagId}")
+    @PostMapping(RESOURCE_PATH + "/tag/{tagId}")
     public DefaultResult<PageVo<ResourceVo>> getResourceListByTag(@PathVariable int tagId,
                                                                    PageBo pageBo) throws CollectionException {
         return DefaultResult.ok(resourceService.getResourceListByTag(CheckPermitAspect.USER_INFO.get(), tagId, pageBo));
     }
 
+    @CheckPermit
+    @PostMapping(RESOURCE_PATH + "/batchUpdate")
+    public DefaultResult<ResourceVo> batchUpdate(@Validated batchUpdateBo batchUpdateBo) throws CollectionException {
+        resourceService.batchUpdate(CheckPermitAspect.USER_INFO.get(), batchUpdateBo);
+        return DefaultResult.ok();
+    }
 }

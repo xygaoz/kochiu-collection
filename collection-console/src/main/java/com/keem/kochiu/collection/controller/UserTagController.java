@@ -15,7 +15,7 @@ import java.util.List;
 import static com.keem.kochiu.collection.Constant.PUBLIC_URL;
 
 @RestController
-@RequestMapping(PUBLIC_URL)
+@RequestMapping(PUBLIC_URL + "/tag")
 public class UserTagController {
 
     private final UserResourceTagService tagService;
@@ -25,7 +25,7 @@ public class UserTagController {
     }
 
     @CheckPermit
-    @GetMapping("/tag/list")
+    @GetMapping("/list")
     public DefaultResult<List<TagDto>> getTagList() throws CollectionException {
 
         return DefaultResult.ok(tagService.getTagList(CheckPermitAspect.USER_INFO.get()));
