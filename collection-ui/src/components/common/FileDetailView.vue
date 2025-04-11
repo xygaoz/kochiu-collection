@@ -189,41 +189,37 @@
             </div>
 
             <div class="detail-row">
-                <div class="detail-label">标签</div>
-                <div class="detail-value">
-                    <div class="tag-section">
-                        <div class="tags">
-                            <el-tag
-                                v-for="tag in localFile.tags"
-                                :key="tag.tagId"
-                                closable
-                                :disable-transitions="false"
-                                @close="handleTagClose(tag)"
-                                @click.stop
-                            >
-                                {{ tag.tagName }}
-                            </el-tag>
-                            <el-input
-                                v-if="tagInputVisible"
-                                ref="tagInputRef"
-                                v-model="tagInputValue"
-                                class="tag-input"
-                                size="small"
-                                @keyup.enter="handleTagInputConfirm"
-                                @blur="handleTagInputConfirm"
-                                @click.stop
-                            />
-                            <el-button
-                                v-else
-                                class="button-new-tag"
-                                size="small"
-                                @click="showTagInput"
-                                @click.stop
-                            >
-                                + 新标签
-                            </el-button>
-                        </div>
-                    </div>
+                <div class="tags">
+                    <div class="tag-label">标签</div>
+                    <el-tag
+                        v-for="tag in localFile.tags"
+                        :key="tag.tagId"
+                        closable
+                        :disable-transitions="false"
+                        @close="handleTagClose(tag)"
+                        @click.stop
+                    >
+                        {{ tag.tagName }}
+                    </el-tag>
+                    <el-input
+                        v-if="tagInputVisible"
+                        ref="tagInputRef"
+                        v-model="tagInputValue"
+                        class="tag-input"
+                        size="small"
+                        @keyup.enter="handleTagInputConfirm"
+                        @blur="handleTagInputConfirm"
+                        @click.stop
+                    />
+                    <el-button
+                        v-else
+                        class="button-new-tag"
+                        size="small"
+                        @click="showTagInput"
+                        @click.stop
+                    >
+                        + 新标签
+                    </el-button>
                 </div>
             </div>
         </div>
@@ -642,6 +638,15 @@ export default {
 
 .el-rate{
     height: 21px!important;
+}
+
+/* 标签文字 */
+.tag-label {
+    color: #666;
+    padding-right: 5px;
+    height: 32px;
+    line-height: 32px;
+    flex-shrink: 0;
 }
 
 .tags {

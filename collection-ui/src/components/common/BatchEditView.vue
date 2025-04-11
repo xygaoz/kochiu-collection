@@ -60,52 +60,47 @@
                 </el-form-item>
             </el-form>
         </div>
-        <!-- 显示标签 -->
         <div class="detail-row">
-            标签
-        </div>
-        <div class="detail-row">
-            <div class="detail-value">
-                <TransitionGroup name="tag" tag="div" class="tags">
-                    <!-- 实线标签（可删除） -->
-                    <el-tag
-                        v-for="tag in tagState.commonTags"
-                        :key="tag.tagId"
-                        closable
-                        @close="removeTag(tag)">
-                        {{ tag.tagName }}
-                    </el-tag>
+            <TransitionGroup name="tag" tag="div" class="tags">
+                <div class="tag-label">标签</div>
+                <!-- 实线标签（可删除） -->
+                <el-tag
+                    v-for="tag in tagState.commonTags"
+                    :key="tag.tagId"
+                    closable
+                    @close="removeTag(tag)">
+                    {{ tag.tagName }}
+                </el-tag>
 
-                    <el-tag
-                        v-for="tag in tagState.partialTags"
-                        :key="tag.tagName"
-                        class="dashed-tag"
-                        @click="addTagToMissingFiles(tag)">
-                        {{ tag.tagName }}
-                    </el-tag>
-                    <Transition name="fade">
-                        <el-input
-                            v-if="tagInputVisible"
-                            ref="tagInputRef"
-                            v-model="tagInputValue"
-                            class="tag-input"
-                            size="small"
-                            @keyup.enter="handleTagInputConfirm"
-                            @blur="handleTagInputConfirm"
-                            @click.stop
-                        />
-                        <el-button
-                            v-else
-                            class="button-new-tag"
-                            size="small"
-                            @click="showTagInput"
-                            @click.stop
-                        >
-                            + 新标签
-                        </el-button>
-                    </Transition>
-                </TransitionGroup>
-            </div>
+                <el-tag
+                    v-for="tag in tagState.partialTags"
+                    :key="tag.tagName"
+                    class="dashed-tag"
+                    @click="addTagToMissingFiles(tag)">
+                    {{ tag.tagName }}
+                </el-tag>
+                <Transition name="fade">
+                    <el-input
+                        v-if="tagInputVisible"
+                        ref="tagInputRef"
+                        v-model="tagInputValue"
+                        class="tag-input"
+                        size="small"
+                        @keyup.enter="handleTagInputConfirm"
+                        @blur="handleTagInputConfirm"
+                        @click.stop
+                    />
+                    <el-button
+                        v-else
+                        class="button-new-tag"
+                        size="small"
+                        @click="showTagInput"
+                        @click.stop
+                    >
+                        + 新标签
+                    </el-button>
+                </Transition>
+            </TransitionGroup>
         </div>
     </div>
 </template>
@@ -563,9 +558,22 @@ watch(() => props.selectedFiles, (newVal) => {
     font-size: 14px;
 }
 
-.detail-value {
-    flex: 1;
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
 }
+
+/* 标签文字 */
+.tag-label {
+    color: #666;
+    padding-right: 5px;
+    height: 32px;
+    line-height: 32px;
+    flex-shrink: 0;
+}
+
 .dashed-tag {
     border: dashed 1px rgb(198, 198, 198);
     cursor: pointer;
