@@ -1,73 +1,68 @@
 <template>
-    <el-container>
-        <el-header class="search-header">
-
-        </el-header>
-        <el-main class="image-container">
+    <el-main class="image-container">
+        <div
+            class="waterfall-container"
+            ref="waterfallContainer"
+        >
             <div
-                class="waterfall-container"
-                ref="waterfallContainer"
+                v-for="(row, rowIndex) in computedRows"
+                :key="rowIndex"
+                class="waterfall-row"
             >
                 <div
-                    v-for="(row, rowIndex) in computedRows"
-                    :key="rowIndex"
-                    class="waterfall-row"
+                    v-for="(item, index) in row.items"
+                    :key="index"
+                    class="waterfall-item"
+                    :style="getItemStyle(item)"
                 >
-                    <div
-                        v-for="(item, index) in row.items"
-                        :key="index"
-                        class="waterfall-item"
-                        :style="getItemStyle(item)"
-                    >
-                        <el-card
-                            shadow="hover"
-                            :body-style="{ padding: '0px' }"
-                            :class="{ 'selected-card': selectedImage?.resourceId === item.image.resourceId
+                    <el-card
+                        shadow="hover"
+                        :body-style="{ padding: '0px' }"
+                        :class="{ 'selected-card': selectedImage?.resourceId === item.image.resourceId
                          || isMultipleSelect(item.image),
                          'show-checkbox': hasAnySelection || isMultipleSelect(item.image)}"
+                    >
+                        <div class="image-select">
+                            <el-checkbox
+                                :key="'checkbox-' + item.image.resourceId + forceRender"
+                                :checked="isMultipleSelect(item.image)"
+                                @change="(val: boolean) => handleMultipleSelect(val, item.image)"
+                            />
+                        </div>
+                        <div class="resource-wrapper"
+                             @click="handlePreview(item.image)"
                         >
-                            <div class="image-select">
-                                <el-checkbox
-                                    :key="'checkbox-' + item.image.resourceId + forceRender"
-                                    :checked="isMultipleSelect(item.image)"
-                                    @change="(val: boolean) => handleMultipleSelect(val, item.image)"
-                                />
-                            </div>
-                            <div class="resource-wrapper"
-                                 @click="handlePreview(item.image)"
+                            <div
+                                class="image-wrapper"
+                                :style="{ height: `${item.displayHeight}px` }"
                             >
-                                <div
-                                    class="image-wrapper"
-                                    :style="{ height: `${item.displayHeight}px` }"
+                                <el-image
+                                    :src="item.image.thumbnailUrl"
+                                    fit="contain"
+                                    loading="lazy"
+                                    class="waterfall-image"
+                                    :style="getImageStyle(item)"
                                 >
-                                    <el-image
-                                        :src="item.image.thumbnailUrl"
-                                        fit="contain"
-                                        loading="lazy"
-                                        class="waterfall-image"
-                                        :style="getImageStyle(item)"
-                                    >
-                                        <template #error>
-                                            <div class="image-error">
-                                                <img
-                                                    src="/images/default-thumbnail.jpg"
-                                                    style="width:100%;height:100%;object-fit:contain;background-color:#f5f5f5;"
-                                                    alt=""
-                                                >
-                                            </div>
-                                        </template>
-                                    </el-image>
-                                </div>
-                                <div class="image-info">
-                                    <div class="image-title">{{ item.image.title || item.image.sourceFileName }}</div>
-                                </div>
+                                    <template #error>
+                                        <div class="image-error">
+                                            <img
+                                                src="/images/default-thumbnail.jpg"
+                                                style="width:100%;height:100%;object-fit:contain;background-color:#f5f5f5;"
+                                                alt=""
+                                            >
+                                        </div>
+                                    </template>
+                                </el-image>
                             </div>
-                        </el-card>
-                    </div>
+                            <div class="image-info">
+                                <div class="image-title">{{ item.image.title || item.image.sourceFileName }}</div>
+                            </div>
+                        </div>
+                    </el-card>
                 </div>
             </div>
-        </el-main>
-    </el-container>
+        </div>
+    </el-main>
 </template>
 
 <script setup lang="ts">
@@ -142,7 +137,7 @@ const computedRows = computed<ComputedRow[]>(() => {
         const aspectRatio = image.width / image.height;
         const isPortrait = aspectRatio < 1;
 
-        // 计算初始显示尺寸
+        // 计算初始显示尺寸（优先使用baseWidth）
         let displayWidth = isPortrait ? baseWidth.value : maxHeight.value * aspectRatio;
         let displayHeight = isPortrait ? baseWidth.value / aspectRatio : maxHeight.value;
 
@@ -168,7 +163,7 @@ const computedRows = computed<ComputedRow[]>(() => {
         }
         // 如果不能放入当前行
         else {
-            // 调整当前行以完美填满容器
+            // 对于非最后一行，调整行内项目以填满宽度
             if (currentRow.length > 0) {
                 const adjustedRow = adjustRowToFit(currentRow, containerWidth.value);
                 if (adjustedRow) {
@@ -177,7 +172,7 @@ const computedRows = computed<ComputedRow[]>(() => {
                 currentRow = [];
                 currentRowWidth = 0;
             } else {
-                // 单个项目太宽，强制显示并缩小
+                // 单个项目太宽的情况
                 const adjustedWidth = containerWidth.value;
                 const adjustedHeight = adjustedWidth / aspectRatio;
                 currentRow.push({
@@ -194,17 +189,22 @@ const computedRows = computed<ComputedRow[]>(() => {
         }
     }
 
-    // 添加最后一行
+    // 添加最后一行（保持baseWidth基准，不调整宽度）
     if (currentRow.length > 0) {
-        const adjustedRow = adjustRowToFit(currentRow, containerWidth.value);
-        if (adjustedRow) {
-            rows.push({ items: adjustedRow });
-        }
+        // 重新按照baseWidth计算最后一行
+        const lastRow = currentRow.map(item => {
+            const isPortrait = item.aspectRatio < 1;
+            return {
+                ...item,
+                displayWidth: isPortrait ? baseWidth.value : item.displayHeight * item.aspectRatio,
+                displayHeight: isPortrait ? baseWidth.value / item.aspectRatio : item.displayHeight
+            };
+        });
+        rows.push({ items: lastRow });
     }
 
     return rows;
 });
-
 // 调整行内项目以精确填满指定宽度
 const adjustRowToFit = (items: LayoutItem[], targetWidth: number): LayoutItem[] | null => {
     if (items.length === 0) return null;

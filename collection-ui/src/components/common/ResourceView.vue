@@ -4,16 +4,18 @@
         <div v-else-if="files.length === 0" class="empty">暂无文件</div>
         <template v-else>
             <div class="main-layout">
-                <component
-                    ref="layoutRef"
-                    :is="currentComponent"
-                    :files="files"
-                    :selectedResources="selectedResources"
-                    :selectedResource="selectedResource"
-                    @preview="handlePreview"
-                    @multiple-selected="handleMultipleSelected"
-                />
-
+                <el-container>
+                    <el-header class="search-header">Header</el-header>
+                    <component
+                        ref="layoutRef"
+                        :is="currentComponent"
+                        :files="files"
+                        :selectedResources="selectedResources"
+                        :selectedResource="selectedResource"
+                        @preview="handlePreview"
+                        @multiple-selected="handleMultipleSelected"
+                    />
+                </el-container>
                 <el-aside class="detail-aside">
                     <FileDetailView
                         v-if="selectedResource && selectedResources.length === 0"
@@ -142,6 +144,10 @@ const handleUpdateSuccess = (resources: Resource[]) => {
     display: flex;
     height: 100%;
     overflow: hidden;
+}
+
+.search-header{
+    height: 32px;
 }
 
 .detail-aside {
