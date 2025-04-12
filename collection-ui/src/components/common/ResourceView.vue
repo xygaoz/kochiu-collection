@@ -6,7 +6,10 @@
             <div class="main-layout">
                 <el-container class="main-container">
                     <el-header class="search-header" :style="headerHeightStyle">
-                        <SearchForm @expand-change="handleExpandChange" />
+                        <SearchFormView
+                            @expand-change="handleExpandChange"
+                            @search="handleSearch"
+                        />
                     </el-header>
                     <el-main class="content-area" :style="contentMarginStyle">
                         <component
@@ -47,13 +50,13 @@
 
 <script setup lang="ts">
 import { ref, defineProps, defineEmits, watch, computed } from "vue";
-import { Resource } from "@/apis/interface";
+import { Resource, SearchForm } from "@/apis/interface";
 import PdfPreviewDialog from "@/components/common/PdfPreviewDialog.vue";
 import FileDetailView from "@/components/common/FileDetailView.vue";
 import WaterfallLayout from "@/components/common/WaterfallLayout.vue";
 import { ElMessage } from "element-plus";
 import BatchEditView from "@/components/common/BatchEditView.vue";
-import SearchForm from "@/components/common/SearchForm.vue";
+import SearchFormView from "@/components/common/SearchFormView.vue";
 
 const formExpanded = ref(false);
 const headerHeight = ref('32px');
@@ -69,7 +72,7 @@ const props = defineProps({
     }
 });
 
-const emit = defineEmits(['update-file']);
+const emit = defineEmits(['update-file', 'filter-data']);
 
 const selectedResource = ref<Resource | null>(null);
 const pdfDialogVisible = ref(false);
@@ -138,6 +141,10 @@ const handleUpdateSuccess = (resources: Resource[]) => {
         handleUpdateFile(resource);
     });
 };
+
+const handleSearch = (searchForm: SearchForm) => {
+    emit('filter-data', searchForm);
+}
 </script>
 
 <style scoped>

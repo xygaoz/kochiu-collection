@@ -11,6 +11,14 @@ public interface UserResourceMapper extends BaseMapper<UserResource> {
     Long selectLastInsertId();
 
     List<UserResource> selectTagResource(@Param("userId") int userId, @Param("tagId") int tagId);
+
+    List<UserResource> selectCategoryResource(
+            @Param("userId") int userId,
+            @Param("cateId") Long cateId,
+            @Param("keyword") String keyword,
+            @Param("types") String[] types,
+            @Param("tagNames") String[] tagNames
+    );
 }
 
 

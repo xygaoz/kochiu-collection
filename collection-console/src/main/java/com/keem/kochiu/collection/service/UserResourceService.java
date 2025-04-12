@@ -2,10 +2,7 @@ package com.keem.kochiu.collection.service;
 
 import cn.hutool.crypto.digest.DigestUtil;
 import com.github.pagehelper.PageInfo;
-import com.keem.kochiu.collection.data.bo.PageBo;
-import com.keem.kochiu.collection.data.bo.ResInfoBo;
-import com.keem.kochiu.collection.data.bo.UploadBo;
-import com.keem.kochiu.collection.data.bo.BatchUpdateBo;
+import com.keem.kochiu.collection.data.bo.*;
 import com.keem.kochiu.collection.data.dto.TagDto;
 import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.data.vo.FileVo;
@@ -116,10 +113,10 @@ public class UserResourceService {
      */
     public PageVo<ResourceVo> getResourceListByCate(UserDto userDto,
                                                     int cateSno,
-                                                    PageBo pageBo) throws CollectionException {
+                                                    FilterResourceBo filterResourceBo) throws CollectionException {
 
         SysUser user = userRepository.getUser(userDto);
-        PageInfo<UserResource> resourceList = resourceRepository.getResourceListByCate(user.getUserId(), cateSno, pageBo);
+        PageInfo<UserResource> resourceList = resourceRepository.getResourceListByCate(user.getUserId(), cateSno, filterResourceBo);
         return buildResourceList(user, resourceList);
     }
 

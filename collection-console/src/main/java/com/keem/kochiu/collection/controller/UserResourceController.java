@@ -55,8 +55,8 @@ public class UserResourceController {
     @CheckPermit
     @PostMapping(RESOURCE_PATH + "/category/{cateId}")
     public DefaultResult<PageVo<ResourceVo>> getResourceListByCate(@PathVariable int cateId,
-                                                                   PageBo pageBo) throws CollectionException {
-        return DefaultResult.ok(resourceService.getResourceListByCate(CheckPermitAspect.USER_INFO.get(), cateId, pageBo));
+                                                                   FilterResourceBo filterResourceBo) throws CollectionException {
+        return DefaultResult.ok(resourceService.getResourceListByCate(CheckPermitAspect.USER_INFO.get(), cateId, filterResourceBo));
     }
 
     @CheckPermit

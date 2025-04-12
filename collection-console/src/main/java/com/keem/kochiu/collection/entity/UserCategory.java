@@ -12,7 +12,7 @@ import lombok.EqualsAndHashCode;
 public class UserCategory extends BaseEntity {
 
     @TableId(type = IdType.INPUT)
-    private Integer cateId;
+    private Long cateId;
     private Integer userId;
     private String cateName;
     private Integer sno;

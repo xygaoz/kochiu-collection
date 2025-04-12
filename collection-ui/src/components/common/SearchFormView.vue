@@ -94,17 +94,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, nextTick, onMounted, watchEffect, onUnmounted, watch } from "vue";
+import { ref, reactive, nextTick, onMounted, onUnmounted, watch, defineEmits } from "vue";
 import { ElInput, ElMessage } from "element-plus";
 import { ArrowDown } from '@element-plus/icons-vue';
 import { getResourceTypes } from "@/apis/system-api";
-import type { ResourceType } from "@/apis/interface";
-
-interface SearchForm {
-    keyword: string;
-    types: string[];
-    tags: string[];
-}
+import type { ResourceType, SearchForm } from "@/apis/interface";
 
 const searchFormRef = ref();
 const inputValue = ref('');
@@ -116,7 +110,7 @@ const isExpanding = ref(false);
 const isCollapsing = ref(false);
 const showCollapseButton = ref(false);
 const wrapperRef = ref<HTMLElement>();
-const emit = defineEmits(['expand-change']);
+const emit = defineEmits(['expand-change', 'search']);
 
 const searchForm = reactive<SearchForm>({
     keyword: '',
@@ -134,13 +128,13 @@ const checkCollapseNeed = () => {
 
             // 仅自动展开，不自动折叠
             if (needsCollapse && !isExpanded.value) {
-                toggleExpand(true);
+                toggleExpand();
             }
         }
     });
 };
 
-const toggleExpand = (autoExpand = false) => {
+const toggleExpand = () => {
     if (isExpanding.value || isCollapsing.value) return;
 
     if (isExpanded.value) {
@@ -168,7 +162,7 @@ const toggleExpand = (autoExpand = false) => {
 };
 
 const handleSearch = () => {
-    console.log('搜索条件:', searchForm);
+    emit('search', searchForm);
 };
 
 const resetForm = () => {

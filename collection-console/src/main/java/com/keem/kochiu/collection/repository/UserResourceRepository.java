@@ -6,17 +6,22 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.keem.kochiu.collection.data.bo.FilterResourceBo;
 import com.keem.kochiu.collection.data.bo.PageBo;
 import com.keem.kochiu.collection.data.bo.ResInfoBo;
 import com.keem.kochiu.collection.data.dto.ResourceDto;
 import com.keem.kochiu.collection.entity.UserResource;
+import com.keem.kochiu.collection.enums.FileTypeEnum;
+import com.keem.kochiu.collection.enums.ResourceTypeEnum;
 import com.keem.kochiu.collection.enums.SaveTypeEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.mapper.UserResourceMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class UserResourceRepository extends ServiceImpl<UserResourceMapper, UserResource>{
@@ -66,15 +71,21 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
      * @return
      * @throws CollectionException
      */
-    public PageInfo<UserResource> getResourceListByCate(int userId, int cateSno, PageBo pageBo) throws CollectionException {
+    public PageInfo<UserResource> getResourceListByCate(int userId, int cateSno, FilterResourceBo filterResourceBo) throws CollectionException {
 
-        try(Page<UserResource> page = PageHelper.startPage(pageBo.getPageNum(), pageBo.getPageSize())) {
+        try(Page<UserResource> page = PageHelper.startPage(filterResourceBo.getPageNum(), filterResourceBo.getPageSize())) {
 
-            LambdaQueryWrapper<UserResource> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-            lambdaQueryWrapper.eq(UserResource::getUserId, userId);
-            lambdaQueryWrapper.eq(UserResource::getCateId, categoryRepository.getCateId(userId, cateSno));
-            lambdaQueryWrapper.eq(UserResource::getDeleted, 0);
-            return new PageInfo<>(baseMapper.selectList(lambdaQueryWrapper));
+            Set<String> fileExtList = new HashSet<>();
+            if(filterResourceBo.getTypes() != null) {
+                for (String type : filterResourceBo.getTypes()) {
+                    fileExtList.addAll(FileTypeEnum.getNames(ResourceTypeEnum.getByValue(type)));
+                }
+            }
+            return new PageInfo<>(baseMapper.selectCategoryResource(userId,
+                    categoryRepository.getCateId(userId, cateSno),
+                    filterResourceBo.getKeyword(),
+                    fileExtList.toArray(new String[0]),
+                    filterResourceBo.getTags()));
         }
     }
 

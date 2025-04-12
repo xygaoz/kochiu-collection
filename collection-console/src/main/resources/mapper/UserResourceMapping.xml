@@ -11,4 +11,32 @@
             join user_tag g on t.TAG_ID=g.TAG_ID and t.USER_ID=g.USER_ID
         where r.USER_ID=#{userId} and g.TAG_ID=#{tagId} and r.DELETED=0
     </select>
+
+    <select id="selectCategoryResource" resultType="com.keem.kochiu.collection.entity.UserResource">
+        SELECT DISTINCT r.*
+        FROM user_resource r
+            join user_category c on r.CATE_ID=c.CATE_ID
+            left JOIN user_resource_tag t ON r.RESOURCE_ID = t.RESOURCE_ID AND r.USER_ID = t.USER_ID
+            left JOIN user_tag g ON t.TAG_ID = g.TAG_ID AND t.USER_ID = g.USER_ID
+        WHERE r.USER_ID = #{userId}
+            AND r.DELETED = 0
+            AND c.CATE_ID = #{cateId}
+            <if test="keyword != null and keyword != ''">
+                <bind name="pattern" value="'%' + keyword + '%'"/>
+                AND (r.TITLE LIKE #{pattern} OR r.DESCRIPTION LIKE #{pattern})
+            </if>
+            <if test="types != null and types.length > 0">
+                AND r.FILE_EXT IN
+                <foreach collection="types" item="type" open="(" separator="," close=")">
+                    #{type}
+                </foreach>
+            </if>
+            <if test="tagNames != null and tagNames.length > 0">
+                AND g.tag_name IN
+                <foreach collection="tagNames" item="tagName" open="(" separator="," close=")">
+                    #{tagName}
+                </foreach>
+            </if>
+        ORDER BY r.CREATE_TIME DESC
+    </select>
 </mapper>

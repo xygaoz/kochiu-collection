@@ -14,7 +14,7 @@ public class UserResource extends BaseEntity{
     @TableId(type = IdType.INPUT)
     private Long resourceId;
     private Integer userId;
-    private Integer cateId;
+    private Long cateId;
     private String sourceFileName;
     private String title;
     private String description;

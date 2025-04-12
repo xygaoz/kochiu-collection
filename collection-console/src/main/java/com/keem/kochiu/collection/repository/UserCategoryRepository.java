@@ -28,7 +28,7 @@ public class UserCategoryRepository extends ServiceImpl<UserCategoryMapper, User
      * @return
      * @throws CollectionException
      */
-    public int getCateId(int userId, int sno) throws CollectionException {
+    public Long getCateId(int userId, int sno) throws CollectionException {
 
         LambdaQueryWrapper<UserCategory> lambdaQueryWrapper = new LambdaQueryWrapper<UserCategory>()
                 .eq(UserCategory::getUserId, userId)
@@ -45,7 +45,7 @@ public class UserCategoryRepository extends ServiceImpl<UserCategoryMapper, User
         }
     }
 
-    private int getMinSnoCate(int userId) throws CollectionException {
+    private Long getMinSnoCate(int userId) throws CollectionException {
         LambdaQueryWrapper<UserCategory> lambdaQueryWrapper = new LambdaQueryWrapper<UserCategory>()
                 .eq(UserCategory::getUserId, userId)
                 .orderByAsc(UserCategory::getSno)

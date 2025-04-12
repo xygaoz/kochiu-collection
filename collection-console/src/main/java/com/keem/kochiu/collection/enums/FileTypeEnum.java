@@ -2,6 +2,9 @@ package com.keem.kochiu.collection.enums;
 
 import lombok.Getter;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static com.keem.kochiu.collection.enums.ResourceTypeEnum.*;
 
 @Getter
@@ -51,4 +54,11 @@ public enum FileTypeEnum {
         return unknown;
     }
 
+    public static FileTypeEnum[] getByDesc(ResourceTypeEnum resourceType) {
+        return Arrays.stream(values()).filter(fileTypeEnum -> fileTypeEnum.desc == resourceType).toArray(FileTypeEnum[]::new);
+    }
+
+    public static List<String> getNames(ResourceTypeEnum resourceType){
+        return Arrays.stream(getByDesc(resourceType)).map(FileTypeEnum::name).toList();
+    }
 }

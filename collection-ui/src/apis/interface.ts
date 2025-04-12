@@ -42,3 +42,9 @@ export interface ResourceType {
     label: string;
     value: string;
 }
+
+export interface SearchForm {
+    keyword: string;
+    types: string[];
+    tags: string[];
+}

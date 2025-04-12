@@ -33,7 +33,11 @@ httpInstance.interceptors.request.use(config => {
         config.headers['Authorization'] = token;
     }
     if (config.data && config.headers['Content-Type'] === 'application/x-www-form-urlencoded') {
-        config.data = qs.stringify(config.data);
+        config.data = qs.stringify(config.data, {
+            allowDots: false,  // 禁用 `params.pageNum` 变成 `params[pageNum]`
+            arrayFormat: 'repeat',  // 数组变成 `types=IMAGE&types=VIDEO`
+            encode: false,  // 不额外编码（可选）
+        });
     }
     return config;
 }, error => {
