@@ -331,7 +331,7 @@ const removeTag = async (tag: Tag) => {
 
         // 5. 异步操作
         await batchRemoveTag(
-            updatedFiles.map(f => f.resourceId),
+            updatedFiles.map((f: Resource) => f.resourceId),
             { tagId: tag.tagId }
         );
 
@@ -393,7 +393,7 @@ const handleTagInputConfirm = async () => {
 
         // 7. 调用API（使用真实API返回的标签）
         const apiTag = await batchAddTag(
-            updatedFiles.map(f => f.resourceId),
+            updatedFiles.map((f: Resource) => f.resourceId),
             { tagName }
         );
 
