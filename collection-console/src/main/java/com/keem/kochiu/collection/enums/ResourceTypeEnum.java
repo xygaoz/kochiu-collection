@@ -1,19 +1,24 @@
 package com.keem.kochiu.collection.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum ResourceTypeEnum {
 
-    UNKNOWN(0),
-    IMAGE(1),
-    VIDEO(2),
-    AUDIO(3),
-    DOCUMENT(4),
-    OTHER(5),
+    IMAGE(1, "图像"),
+    VIDEO(2, "视频"),
+    AUDIO(3, "音频"),
+    DOCUMENT(4, "文档"),
+    OTHER(5, "其他"),
+    UNKNOWN(0, "未知"),
     ;
 
     final int i;
+    final String label;
 
-    ResourceTypeEnum(int i) {
+    ResourceTypeEnum(int i, String label) {
         this.i = i;
+        this.label = label;
     }
 
     public static ResourceTypeEnum getByValue(int i) {
@@ -34,7 +39,4 @@ public enum ResourceTypeEnum {
         return null;
     }
 
-    public int getValue() {
-        return i;
-    }
 }

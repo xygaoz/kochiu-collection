@@ -4,17 +4,21 @@
         <div v-else-if="files.length === 0" class="empty">暂无文件</div>
         <template v-else>
             <div class="main-layout">
-                <el-container>
-                    <el-header class="search-header">Header</el-header>
-                    <component
-                        ref="layoutRef"
-                        :is="currentComponent"
-                        :files="files"
-                        :selectedResources="selectedResources"
-                        :selectedResource="selectedResource"
-                        @preview="handlePreview"
-                        @multiple-selected="handleMultipleSelected"
-                    />
+                <el-container class="main-container">
+                    <el-header class="search-header" :style="headerHeightStyle">
+                        <SearchForm @expand-change="handleExpandChange" />
+                    </el-header>
+                    <el-main class="content-area" :style="contentMarginStyle">
+                        <component
+                            ref="layoutRef"
+                            :is="currentComponent"
+                            :files="files"
+                            :selectedResources="selectedResources"
+                            :selectedResource="selectedResource"
+                            @preview="handlePreview"
+                            @multiple-selected="handleMultipleSelected"
+                        />
+                    </el-main>
                 </el-container>
                 <el-aside class="detail-aside">
                     <FileDetailView
@@ -42,13 +46,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineProps, defineEmits, watch } from "vue";
+import { ref, defineProps, defineEmits, watch, computed } from "vue";
 import { Resource } from "@/apis/interface";
 import PdfPreviewDialog from "@/components/common/PdfPreviewDialog.vue";
 import FileDetailView from "@/components/common/FileDetailView.vue";
 import WaterfallLayout from "@/components/common/WaterfallLayout.vue";
 import { ElMessage } from "element-plus";
 import BatchEditView from "@/components/common/BatchEditView.vue";
+import SearchForm from "@/components/common/SearchForm.vue";
+
+const formExpanded = ref(false);
+const headerHeight = ref('32px');
 
 const props = defineProps({
     files: {
@@ -70,10 +78,24 @@ const currentComponent = WaterfallLayout;
 const selectedResources = ref<Resource[]>([]);
 const layoutRef = ref<{
     clearSelection: () => void
-} | null>(null)
+} | null>(null);
+
+const handleExpandChange = (expanded: boolean) => {
+    formExpanded.value = expanded;
+    headerHeight.value = expanded ? 'auto' : '32px';
+};
+
+const headerHeightStyle = computed(() => ({
+    height: headerHeight.value,
+    minHeight: '32px'
+}));
+
+const contentMarginStyle = computed(() => ({
+    marginTop: formExpanded.value ? '40px' : '0',
+    transition: 'margin-top 0.3s ease'
+}));
 
 watch(() => props.files, (newFiles) => {
-    // 如果选中的资源还在列表中，保持选中状态
     if (selectedResource.value) {
         const exists = newFiles.some(file => file.resourceId === selectedResource.value?.resourceId);
         if (!exists) {
@@ -107,15 +129,15 @@ const handleMultipleSelected = (resources: Resource[]) => {
 };
 
 const handleClearSelection = () => {
-    layoutRef.value?.clearSelection?.()
-    selectedResources.value = []
-}
+    layoutRef.value?.clearSelection?.();
+    selectedResources.value = [];
+};
 
 const handleUpdateSuccess = (resources: Resource[]) => {
     resources.forEach(resource => {
-        handleUpdateFile(resource)
+        handleUpdateFile(resource);
     });
-}
+};
 </script>
 
 <style scoped>
@@ -146,8 +168,23 @@ const handleUpdateSuccess = (resources: Resource[]) => {
     overflow: hidden;
 }
 
-.search-header{
-    height: 32px;
+.main-container {
+    position: relative;
+    flex: 1;
+}
+
+.search-header {
+    padding: 5px 18px;
+    position: relative;
+    overflow: visible;
+    transition: height 0.3s ease;
+    z-index: 1;
+}
+
+.content-area {
+    will-change: margin-top;
+    overflow: auto;
+    height: calc(100% - 32px);
 }
 
 .detail-aside {
@@ -157,7 +194,7 @@ const handleUpdateSuccess = (resources: Resource[]) => {
     overflow-y: auto;
     height: 100%;
     flex-shrink: 0;
-    padding: 0!important;
+    padding: 0 !important;
 }
 
 @media (max-width: 768px) {

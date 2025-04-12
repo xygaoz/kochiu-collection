@@ -19,7 +19,7 @@ import java.util.Map;
 import static com.keem.kochiu.collection.Constant.*;
 
 @Controller
-@RequestMapping(PUBLIC_URL)
+@RequestMapping(PUBLIC_URL + "/sys")
 public class SysSecurityController {
 
     private final SysUserService userService;

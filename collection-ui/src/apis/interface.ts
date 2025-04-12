@@ -37,3 +37,8 @@ export interface Resource {
     mimeType: string;
     previewUrl: string;
 }
+
+export interface ResourceType {
+    label: string;
+    value: string;
+}

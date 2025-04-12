@@ -205,7 +205,7 @@ public class UserResourceService {
                                     .sourceFileName(resource.getSourceFileName())
                                     .width(width)
                                     .height(height)
-                                    .fileType(fileType.getDesc())
+                                    .fileType(fileType.getDesc().getLabel())
                                     .typeName(properties.getResourceType(resource.getFileExt()).name().toLowerCase())
                                     .mimeType(fileType.getMimeType())
                                     .size(resource.getSize())
