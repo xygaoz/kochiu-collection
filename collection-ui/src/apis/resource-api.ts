@@ -1,7 +1,7 @@
 
 // 新增上传文件的方法
 import httpInstance, { loading } from "@/apis/utils";
-import { PageInfo, Resource } from "@/apis/interface";
+import { PageInfo, Resource, Tag } from "@/apis/interface";
 
 export const uploadFile = (file: File, categorySno: string, overwrite: string): Promise<any> => {
     const formData = new FormData();
@@ -45,7 +45,7 @@ export const listCategoryFiles = (cateId: string, page: number, size: number): P
     });
 }
 
-export const updateResource = (resourceId: number, params: any): Promise<any> => {
+export const updateResource = (resourceId: number, params: any): Promise<boolean> => {
     const ld = loading("修改中")
     params["resourceId"] = resourceId;
     return httpInstance.post("/resource/updateInfo", params).then((model: any) => {
@@ -56,7 +56,7 @@ export const updateResource = (resourceId: number, params: any): Promise<any> =>
     });
 }
 
-export const bacthUpdateResource = (resourceIds: number[], params: any): Promise<any> => {
+export const bacthUpdateResource = (resourceIds: number[], params: any): Promise<boolean> => {
     params["resourceIds"] = resourceIds;
     return httpInstance.post("/resource/batchUpdate", params).then((model: any) => {
         console.log("修改成功:", model);
@@ -64,7 +64,7 @@ export const bacthUpdateResource = (resourceIds: number[], params: any): Promise
     })
 }
 
-export const addResourceTag = (resourceId: number, params: any): Promise<any> => {
+export const addResourceTag = (resourceId: number, params: any): Promise<Tag> => {
     params["resourceId"] = resourceId;
     return httpInstance.post("/resource/addTag", params).then((model: any) => {
         if (model) {
@@ -83,7 +83,7 @@ export const removeResourceTag = (resourceId: number, params: any): Promise<any>
 }
 
 
-export const bacthAddTag = (resourceIds: number[], params: any): Promise<any> => {
+export const batchAddTag = (resourceIds: number[], params: any): Promise<any> => {
     params["resourceIds"] = resourceIds;
     return httpInstance.post("/resource/batchAddTag", params).then((model: any) => {
         if (model) {
@@ -92,7 +92,7 @@ export const bacthAddTag = (resourceIds: number[], params: any): Promise<any> =>
     });
 }
 
-export const bacthRemoveTag = (resourceIds: number[], params: any): Promise<any> => {
+export const batchRemoveTag = (resourceIds: number[], params: any): Promise<any> => {
     params["resourceIds"] = resourceIds;
     return httpInstance.post("/resource/batchRemoveTag", params).then((model: any) => {
         if (model) {

@@ -110,7 +110,7 @@ import { ref, computed, nextTick, defineProps, defineEmits, watch, reactive, onM
 import { ElMessage } from 'element-plus';
 import type { Resource, Tag } from '@/apis/interface';
 import { CircleCheck, CloseBold, Connection, Delete } from "@element-plus/icons-vue";
-import { bacthAddTag, bacthRemoveTag, bacthUpdateResource } from "@/apis/resource-api";
+import { batchAddTag, batchRemoveTag, bacthUpdateResource } from "@/apis/resource-api";
 
 interface Props {
     selectedFiles: Resource[];
@@ -295,7 +295,7 @@ const addTagToMissingFiles = async (tag: Tag) => {
         updateTagClassification();
 
         // 异步操作
-        await bacthAddTag(resourceIds, { tagName: tag.tagName });
+        await batchAddTag(resourceIds, { tagName: tag.tagName });
 
         emit('update-success', updatedFiles);
         ElMessage.success(`标签已添加`);
@@ -330,7 +330,7 @@ const removeTag = async (tag: Tag) => {
         updateTagClassification();
 
         // 5. 异步操作
-        await bacthRemoveTag(
+        await batchRemoveTag(
             updatedFiles.map(f => f.resourceId),
             { tagId: tag.tagId }
         );
@@ -392,7 +392,7 @@ const handleTagInputConfirm = async () => {
         updateTagClassification();
 
         // 7. 调用API（使用真实API返回的标签）
-        const apiTag = await bacthAddTag(
+        const apiTag = await batchAddTag(
             updatedFiles.map(f => f.resourceId),
             { tagName }
         );

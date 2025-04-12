@@ -77,7 +77,7 @@ httpInstance.interceptors.response.use(
 
         // 401处理逻辑（Token过期）
         if (status === 401) {
-            if (originalRequest.url.includes('/api/v1/refresh')) {
+            if (originalRequest.url.includes('/api/v1/sys/refresh')) {
                 // 刷新Token接口也返回401，说明refreshToken过期
                 ElMessage.error('登录已过期，请重新登录');
                 clearAuthData();
@@ -136,7 +136,7 @@ export const refreshAccessToken = async () => {
         if (refreshToken.value === '') {
             return null;
         }
-        const response = await axios.post('/api/v1/refresh', {}, {
+        const response = await axios.post('/api/v1/sys/refresh', {}, {
             headers: {
                 'Authorization': refreshToken.value // 提取ref的值
             }
