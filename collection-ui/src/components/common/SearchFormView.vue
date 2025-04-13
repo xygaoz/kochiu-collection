@@ -40,7 +40,9 @@
                     </el-checkbox-group>
                 </el-form-item>
 
-                <el-form-item label="标签" prop="tags" class="form-item tag-item">
+                <el-form-item label="标签" prop="tags" class="form-item tag-item"
+                              v-if="props.dataType != 'tag'"
+                >
                     <div class="tag-container">
                         <el-tag
                             v-for="tag in searchForm.tags"
@@ -95,11 +97,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, nextTick, onMounted, onUnmounted, watch, defineEmits } from "vue";
+import { ref, reactive, nextTick, onMounted, onUnmounted, watch, defineEmits, defineProps } from "vue";
 import { ElInput, ElMessage } from "element-plus";
 import { ArrowDown } from '@element-plus/icons-vue';
 import { getResourceTypes } from "@/apis/system-api";
-import type { ResourceType, SearchForm } from "@/apis/interface";
+import type { Resource, ResourceType, SearchForm } from "@/apis/interface";
 
 const searchFormRef = ref();
 const inputValue = ref('');
@@ -112,6 +114,13 @@ const isCollapsing = ref(false);
 const showCollapseButton = ref(false);
 const wrapperRef = ref<HTMLElement>();
 const emit = defineEmits(['expand-change', 'search']);
+
+const props = defineProps({
+    dataType: {
+        type: String,
+        default: 'category'
+    }
+});
 
 const searchForm = reactive<SearchForm>({
     keyword: '',

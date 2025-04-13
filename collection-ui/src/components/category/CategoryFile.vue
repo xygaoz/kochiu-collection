@@ -2,6 +2,7 @@
     <ResourceView
         v-model:files="files"
         :loading="loading"
+        :data-type="dataType"
         @update-file="handleFileUpdate"
         @filter-data="handleSearch"
     />
@@ -21,6 +22,7 @@ const currentPage = ref(1);
 const pageSize = ref(500);
 const total = ref(0);
 const cateId = ref("")
+const dataType = ref("category")
 
 watch(
     () => route.params.cateId,

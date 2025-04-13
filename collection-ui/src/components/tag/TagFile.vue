@@ -2,13 +2,14 @@
     <ResourceView
         v-model:files="files"
         :loading="loading"
+        :data-type="dataType"
         @update-file="handleFileUpdate"
         @filter-data="handleSearch"
     />
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
+import { ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { listTagFiles } from "@/apis/resource-api";
 import { Resource, SearchForm } from "@/apis/interface";
@@ -21,6 +22,7 @@ const currentPage = ref(1);
 const pageSize = ref(500);
 const total = ref(0);
 const tagId = ref("")
+const dataType = ref("tag")
 
 watch(
     () => route.params.tagId,
