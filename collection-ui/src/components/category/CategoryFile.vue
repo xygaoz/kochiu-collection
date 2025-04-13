@@ -20,6 +20,7 @@ const loading = ref(true);
 const currentPage = ref(1);
 const pageSize = ref(500);
 const total = ref(0);
+const cateId = ref("")
 
 watch(
     () => route.params.cateId,
@@ -29,6 +30,7 @@ watch(
             try {
                 loading.value = true;
                 const id = Array.isArray(newId) ? newId[0] : newId;
+                cateId.value = id
                 const data = await listCategoryFiles(id, currentPage.value, pageSize.value, {});
                 files.value = data.list;
                 total.value = data.total;
@@ -59,7 +61,7 @@ const handleSearch = async (searchForm: SearchForm) => {
     try {
         loading.value = true;
         currentPage.value = 1
-        const data = await listCategoryFiles(cateId, currentPage.value, pageSize.value, searchForm);
+        const data = await listCategoryFiles(cateId.value, currentPage.value, pageSize.value, searchForm);
         files.value = data.list;
         total.value = data.total;
         currentPage.value = data.pageNum;
