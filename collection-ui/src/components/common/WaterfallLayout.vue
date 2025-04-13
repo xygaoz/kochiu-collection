@@ -1,4 +1,5 @@
 <template>
+    <!-- 模板部分保持不变 -->
     <div
         class="waterfall-container"
         ref="waterfallContainer"
@@ -187,17 +188,15 @@ const computedRows = computed<ComputedRow[]>(() => {
         }
     }
 
-    // 添加最后一行（保持baseWidth基准，不调整宽度）
+    // 添加最后一行（不调整宽度，保持原始尺寸）
     if (currentRow.length > 0) {
-        const adjustedRow = adjustRowToFit(currentRow, containerWidth.value);
-        if (adjustedRow) {
-            rows.push({ items: adjustedRow });
-        }
+        rows.push({ items: [...currentRow] });
     }
 
     return rows;
 });
-// 调整行内项目以精确填满指定宽度
+
+// 调整行内项目以精确填满指定宽度（仅用于非最后一行）
 const adjustRowToFit = (items: LayoutItem[], targetWidth: number): LayoutItem[] | null => {
     if (items.length === 0) return null;
 
@@ -286,6 +285,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* 样式部分保持不变 */
 .search-header{
     height: 32px;
 }
