@@ -189,16 +189,10 @@ const computedRows = computed<ComputedRow[]>(() => {
 
     // 添加最后一行（保持baseWidth基准，不调整宽度）
     if (currentRow.length > 0) {
-        // 重新按照baseWidth计算最后一行
-        const lastRow = currentRow.map(item => {
-            const isPortrait = item.aspectRatio < 1;
-            return {
-                ...item,
-                displayWidth: isPortrait ? baseWidth.value : item.displayHeight * item.aspectRatio,
-                displayHeight: isPortrait ? baseWidth.value / item.aspectRatio : item.displayHeight
-            };
-        });
-        rows.push({ items: lastRow });
+        const adjustedRow = adjustRowToFit(currentRow, containerWidth.value);
+        if (adjustedRow) {
+            rows.push({ items: adjustedRow });
+        }
     }
 
     return rows;
