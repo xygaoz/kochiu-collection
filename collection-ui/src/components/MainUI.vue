@@ -121,8 +121,12 @@
                 </el-header>
 
                 <el-main class="el-main">
-                    <RouterView v-slot="{ Component }" :menuItemClick="menuItemClick">
-                        <component :is="Component"></component>
+                    <RouterView v-slot="{ Component, route }">
+                        <component
+                            :is="Component"
+                            :key="route.fullPath"
+                            @menuItemClick="menuItemClick"
+                        />
                     </RouterView>
                 </el-main>
             </el-container>

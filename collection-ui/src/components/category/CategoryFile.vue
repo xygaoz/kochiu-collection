@@ -8,34 +8,40 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { listCategoryFiles } from "@/apis/resource-api";
 import { Resource, SearchForm } from "@/apis/interface";
 import ResourceView from "@/components/common/ResourceView.vue";
 
 const route = useRoute();
-const cateId = route.params.cateId as string;
 const files = ref<Resource[]>([]);
 const loading = ref(true);
 const currentPage = ref(1);
 const pageSize = ref(500);
 const total = ref(0);
 
-// 加载数据
-onMounted(async () => {
-    try {
-        loading.value = true;
-        const data = await listCategoryFiles(cateId, currentPage.value, pageSize.value, {});
-        files.value = data.list;
-        total.value = data.total;
-        currentPage.value = data.pageNum;
-    } catch (error) {
-        console.error("加载失败:", error);
-    } finally {
-        loading.value = false;
-    }
-});
+watch(
+    () => route.params.cateId,
+    async (newId) => {
+        if (newId) {
+            // 重新加载数据
+            try {
+                loading.value = true;
+                const id = Array.isArray(newId) ? newId[0] : newId;
+                const data = await listCategoryFiles(id, currentPage.value, pageSize.value, {});
+                files.value = data.list;
+                total.value = data.total;
+                currentPage.value = data.pageNum;
+            } catch (error) {
+                console.error("加载失败:", error);
+            } finally {
+                loading.value = false;
+            }
+        }
+    },
+    { immediate: true }
+);
 
 // 处理文件更新
 const handleFileUpdate = (params: Resource): void => {
