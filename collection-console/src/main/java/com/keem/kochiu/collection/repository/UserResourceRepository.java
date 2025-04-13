@@ -129,11 +129,11 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
      * @param tagId
      * @return
      */
-    public PageInfo<UserResource> getResourceListByTag(int userId, int tagId, PageBo pageBo) {
+    public PageInfo<UserResource> getResourceListByTag(int userId, int tagId, FilterResourceBo filterResourceBo) {
 
-        try(Page<UserResource> page = PageHelper.startPage(pageBo.getPageNum(), pageBo.getPageSize())) {
+        try(Page<UserResource> page = PageHelper.startPage(filterResourceBo.getPageNum(), filterResourceBo.getPageSize())) {
 
-            return new PageInfo<>(baseMapper.selectTagResource(userId, tagId));
+            return new PageInfo<>(baseMapper.selectTagResource(userId, tagId, filterResourceBo.getKeyword(), filterResourceBo.getTypes()));
         }
     }
 }

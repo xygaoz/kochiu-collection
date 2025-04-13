@@ -82,15 +82,15 @@ public class UserResourceController {
     /**
      * 根据标签获取资源列表
      * @param tagId
-     * @param pageBo
+     * @param filterResourceBo
      * @return
      * @throws CollectionException
      */
     @CheckPermit
     @PostMapping(RESOURCE_PATH + "/tag/{tagId}")
     public DefaultResult<PageVo<ResourceVo>> getResourceListByTag(@PathVariable int tagId,
-                                                                   PageBo pageBo) throws CollectionException {
-        return DefaultResult.ok(resourceService.getResourceListByTag(CheckPermitAspect.USER_INFO.get(), tagId, pageBo));
+                                                                  FilterResourceBo filterResourceBo) throws CollectionException {
+        return DefaultResult.ok(resourceService.getResourceListByTag(CheckPermitAspect.USER_INFO.get(), tagId, filterResourceBo));
     }
 
     @CheckPermit

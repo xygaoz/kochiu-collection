@@ -10,6 +10,16 @@
         select * from user_resource r join user_resource_tag t on r.RESOURCE_ID=t.RESOURCE_ID and r.USER_ID=t.USER_ID
             join user_tag g on t.TAG_ID=g.TAG_ID and t.USER_ID=g.USER_ID
         where r.USER_ID=#{userId} and g.TAG_ID=#{tagId} and r.DELETED=0
+            <if test="keyword != null and keyword != ''">
+                <bind name="pattern" value="'%' + keyword + '%'"/>
+                AND (r.TITLE LIKE #{pattern} OR r.DESCRIPTION LIKE #{pattern})
+            </if>
+            <if test="types != null and types.length > 0">
+                AND r.FILE_EXT IN
+                <foreach collection="types" item="type" open="(" separator="," close=")">
+                    #{type}
+                </foreach>
+            </if>
     </select>
 
     <select id="selectCategoryResource" resultType="com.keem.kochiu.collection.entity.UserResource">

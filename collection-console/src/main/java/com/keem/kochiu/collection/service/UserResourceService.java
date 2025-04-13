@@ -158,11 +158,11 @@ public class UserResourceService {
      * @throws CollectionException
      */
     public PageVo<ResourceVo> getResourceListByTag(UserDto userDto,
-                                                    int tagId,
-                                                    PageBo pageBo) throws CollectionException {
+                                                   int tagId,
+                                                   FilterResourceBo filterResourceBo) throws CollectionException {
 
         SysUser user = userRepository.getUser(userDto);
-        PageInfo<UserResource> resourceList = resourceRepository.getResourceListByTag(user.getUserId(), tagId, pageBo);
+        PageInfo<UserResource> resourceList = resourceRepository.getResourceListByTag(user.getUserId(), tagId, filterResourceBo);
         return buildResourceList(user, resourceList);
     }
 

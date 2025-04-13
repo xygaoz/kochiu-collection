@@ -10,7 +10,11 @@ public interface UserResourceMapper extends BaseMapper<UserResource> {
 
     Long selectLastInsertId();
 
-    List<UserResource> selectTagResource(@Param("userId") int userId, @Param("tagId") int tagId);
+    List<UserResource> selectTagResource(@Param("userId") int userId,
+                                         @Param("tagId") int tagId,
+                                         @Param("keyword") String keyword,
+                                         @Param("types") String[] types
+                                         );
 
     List<UserResource> selectCategoryResource(
             @Param("userId") int userId,
