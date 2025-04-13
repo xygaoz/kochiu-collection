@@ -3,37 +3,47 @@
         v-model:files="files"
         :loading="loading"
         @update-file="handleFileUpdate"
+        @filter-data="handleSearch"
     />
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { listTagFiles } from "@/apis/resource-api";
-import type { Resource } from "@/apis/interface";
-import ResourceView from "@/components/common/ResourceView1.vue";
+import { Resource, SearchForm } from "@/apis/interface";
+import ResourceView from "@/components/common/ResourceView.vue";
 
 const route = useRoute();
-const tagId = route.params.tagId as string;
 const files = ref<Resource[]>([]);
 const loading = ref(true);
 const currentPage = ref(1);
 const pageSize = ref(500);
 const total = ref(0);
+const tagId = ref("")
 
-// 加载数据
-onMounted(async () => {
-    try {
-        const data = await listTagFiles(tagId, currentPage.value, pageSize.value);
-        files.value = data.list;
-        total.value = data.total;
-        currentPage.value = data.pageNum;
-    } catch (error) {
-        console.error("加载失败:", error);
-    } finally {
-        loading.value = false;
-    }
-});
+watch(
+    () => route.params.tagId,
+    async (newId) => {
+        if (newId) {
+            // 重新加载数据
+            try {
+                loading.value = true;
+                const id = Array.isArray(newId) ? newId[0] : newId;
+                tagId.value = id
+                const data = await listTagFiles(id, currentPage.value, pageSize.value, {});
+                files.value = data.list;
+                total.value = data.total;
+                currentPage.value = data.pageNum;
+            } catch (error) {
+                console.error("加载失败:", error);
+            } finally {
+                loading.value = false;
+            }
+        }
+    },
+    { immediate: true }
+);
 
 // 处理文件更新
 const handleFileUpdate = (params: Resource): void => {
@@ -44,6 +54,21 @@ const handleFileUpdate = (params: Resource): void => {
         console.log('文件已更新:', params);
     } else {
         console.warn('未找到对应的文件:', params.resourceId);
+    }
+};
+
+const handleSearch = async (searchForm: SearchForm) => {
+    try {
+        loading.value = true;
+        currentPage.value = 1
+        const data = await listTagFiles(tagId.value, currentPage.value, pageSize.value, searchForm);
+        files.value = data.list;
+        total.value = data.total;
+        currentPage.value = data.pageNum;
+    } catch (error) {
+        console.error("加载失败:", error);
+    } finally {
+        loading.value = false;
     }
 };
 </script>

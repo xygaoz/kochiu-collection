@@ -104,14 +104,17 @@ export const batchRemoveTag = (resourceIds: number[], params: any): Promise<any>
     });
 }
 
-export const listTagFiles = (tagId: string, page: number, size: number): Promise<PageInfo<Resource>> => {
+export const listTagFiles = (tagId: string, page: number, size: number, params: any): Promise<PageInfo<Resource>> => {
     const ld = loading("加载中")
-    return httpInstance.post("/resource/tag/" + tagId, {
-        params: {
-            pageNum: page,
-            pageSize: size
-        }
-    }).then((model: any) => {
+    // 合并分页参数和其他参数
+    const requestParams: { [key: string]: any } = {
+        pageNum: page,
+        pageSize: size
+    };
+    Object.keys(params).forEach(key => {
+        requestParams[key] = params[key];
+    });
+    return httpInstance.post("/resource/tag/" + tagId, requestParams).then((model: any) => {
         if (model) {
             console.log("获取文件列表成功:", model);
             return model as PageInfo<Resource>;
