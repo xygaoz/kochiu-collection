@@ -65,7 +65,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineEmits, defineProps, nextTick, onBeforeUnmount, onMounted, ref, defineExpose } from "vue";
+import {
+    computed,
+    defineEmits,
+    defineProps,
+    nextTick,
+    onBeforeUnmount,
+    onMounted,
+    ref,
+    defineExpose,
+    watch
+} from "vue";
 import type { Resource } from "@/apis/interface";
 
 // 使用 TypeScript 类型定义 props
@@ -274,6 +284,14 @@ defineExpose({
     clearSelection
 })
 
+// 添加对 files 的监听
+watch(() => props.files, (newFiles, oldFiles) => {
+    // 当 files 发生变化时清空多选
+    if (newFiles !== oldFiles) {
+        clearSelection();
+    }
+});
+
 onMounted(() => {
     updateContainerWidth();
     window.addEventListener('resize', updateContainerWidth);
@@ -333,6 +351,7 @@ onBeforeUnmount(() => {
     padding: 10px;
     margin-bottom: 0;
     border-radius: 0 0 5px 5px;
+    max-width: 140px;
 }
 
 .image-title{

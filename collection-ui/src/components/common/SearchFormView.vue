@@ -27,7 +27,8 @@
                 </el-form-item>
 
                 <el-form-item label="类别" prop="types" class="form-item">
-                    <el-checkbox-group v-model="searchForm.types" size="small" class="checkbox-group">
+                    <el-checkbox-group v-model="searchForm.types" size="small" class="checkbox-group"
+                        @change="handleSearch">
                         <el-checkbox-button
                             v-for="type in typeOptions"
                             :key="type.value"
@@ -185,13 +186,12 @@ const handleInputConfirm = () => {
     if (val) {
         if (!searchForm.tags.includes(val)) {
             searchForm.tags.push(val);
-        } else {
-            ElMessage.warning("标签已存在");
         }
     }
     inputVisible.value = false;
     inputValue.value = '';
     checkCollapseNeed();
+    handleSearch();
 };
 
 const handleClose = (tag: string) => {
