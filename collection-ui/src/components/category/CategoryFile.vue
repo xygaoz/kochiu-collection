@@ -1,5 +1,5 @@
 <template>
-    <ResourceView
+    <Test
         v-model:files="files"
         :loading="loading"
         @update-file="handleFileUpdate"
@@ -12,7 +12,7 @@ import { ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { listCategoryFiles } from "@/apis/resource-api";
 import { Resource, SearchForm } from "@/apis/interface";
-import ResourceView from "@/components/common/ResourceView.vue";
+import Test from "@/components/common/ResourceView.vue";
 
 const route = useRoute();
 const files = ref<Resource[]>([]);

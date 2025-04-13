@@ -127,9 +127,9 @@ const checkCollapseNeed = () => {
             showCollapseButton.value = needsCollapse;
 
             // 仅自动展开，不自动折叠
-            if (needsCollapse && !isExpanded.value) {
-                toggleExpand();
-            }
+            // if (needsCollapse && !isExpanded.value) {
+            //     toggleExpand();
+            // }
         }
     });
 };
@@ -163,12 +163,14 @@ const toggleExpand = () => {
 
 const handleSearch = () => {
     emit('search', searchForm);
+    isExpanded.value = false;
 };
 
 const resetForm = () => {
     searchFormRef.value?.resetFields();
     searchForm.tags = [];
     checkCollapseNeed();
+    emit('search', searchForm);
 };
 
 const showInput = () => {
@@ -220,7 +222,7 @@ watch(() => [...searchForm.tags, searchForm.types, searchForm.keyword], () => {
 
 <style scoped>
 .search-form-wrapper {
-    height: 32px;
+    height: 36px;
     overflow: hidden;
     position: relative;
     transition:
@@ -264,6 +266,7 @@ watch(() => [...searchForm.tags, searchForm.types, searchForm.keyword], () => {
     gap: 8px;
     flex-shrink: 0;
     margin-left: auto;
+    margin-top: 4px;
 }
 
 .form-item {
