@@ -1,5 +1,5 @@
 <template>
-    <el-container class="page-container">
+    <el-container class="resource-view-container">
         <el-container class="main-container">
             <el-header class="search-header" :style="headerHeightStyle">
                 <SearchFormView
@@ -139,8 +139,10 @@ const handleUpdateSuccess = (resources: Resource[]) => {
 </script>
 
 <style scoped>
-.page-container {
-    height: 100vh;
+.resource-view-container {
+    display: flex;
+    height: calc(100vh - 60px);
+    overflow: hidden;
 }
 
 .main-container {

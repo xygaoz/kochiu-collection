@@ -285,18 +285,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* 样式部分保持不变 */
-.search-header{
-    height: 32px;
-}
-
-.image-container {
-    flex: 1;
-    padding: 15px;
-    overflow-y: auto;
-    height: 100%;
-}
-
 .waterfall-container {
     display: flex;
     flex-direction: column;
@@ -314,7 +302,6 @@ onBeforeUnmount(() => {
     flex-shrink: 0;
     transition: all 0.3s ease;
 }
-
 
 .waterfall-image {
     object-fit: contain;

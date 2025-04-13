@@ -11,7 +11,7 @@ import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { listTagFiles } from "@/apis/resource-api";
 import type { Resource } from "@/apis/interface";
-import ResourceView from "@/components/common/ResourceView.vue";
+import ResourceView from "@/components/common/ResourceView1.vue";
 
 const route = useRoute();
 const tagId = route.params.tagId as string;
