@@ -24,6 +24,7 @@ export interface Resource {
     sourceFileName: string;
     title: string;
     description: string;
+    cateName: string;
     resolutionRatio: string;
     size: number;
     isPublic: number;

@@ -78,12 +78,6 @@
             </div>
         </div>
 
-        <div class="detail-header">
-            <div>文件详情</div>
-        </div>
-
-        <el-divider />
-
         <div class="detail-content">
             <div class="detail-row">
                 <div class="detail-label">文件标题</div>
@@ -138,6 +132,10 @@
                         {{ localFile.description || '无描述' }}
                     </div>
                 </div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">分类</div>
+                <div class="detail-value">{{ file.cateName }}</div>
             </div>
             <div class="detail-row">
                 <div class="detail-label">文件名</div>
@@ -553,13 +551,13 @@ watch(() => props.file, (newVal: Resource) => {
 }
 
 .detail-content {
-    padding: 0 16px 10px 16px;
+    padding: 5px 16px 10px 16px;
 }
 
 .detail-row {
     display: flex;
     margin-bottom: 12px;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .detail-label {

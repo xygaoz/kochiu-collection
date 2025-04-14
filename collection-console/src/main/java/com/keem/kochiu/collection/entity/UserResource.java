@@ -1,6 +1,7 @@
 package com.keem.kochiu.collection.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -35,4 +36,6 @@ public class UserResource extends BaseEntity{
     private Integer star;
     private String md5;
     private LocalDateTime deleteTime;
+    @TableField(exist = false)
+    private String cateName;
 }

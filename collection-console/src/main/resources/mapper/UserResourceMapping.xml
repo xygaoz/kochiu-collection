@@ -7,7 +7,9 @@
     </select>
 
     <select id="selectTagResource" resultType="com.keem.kochiu.collection.entity.UserResource">
-        select * from user_resource r join user_resource_tag t on r.RESOURCE_ID=t.RESOURCE_ID and r.USER_ID=t.USER_ID
+        select DISTINCT r.*, c.CATE_NAME from user_resource r
+            join user_category c on r.CATE_ID=c.CATE_ID
+            join user_resource_tag t on r.RESOURCE_ID=t.RESOURCE_ID and r.USER_ID=t.USER_ID
             join user_tag g on t.TAG_ID=g.TAG_ID and t.USER_ID=g.USER_ID
         where r.USER_ID=#{userId} and g.TAG_ID=#{tagId} and r.DELETED=0
             <if test="keyword != null and keyword != ''">
@@ -24,7 +26,7 @@
     </select>
 
     <select id="selectCategoryResource" resultType="com.keem.kochiu.collection.entity.UserResource">
-        SELECT DISTINCT r.*
+        SELECT DISTINCT r.*, c.CATE_NAME
         FROM user_resource r
             join user_category c on r.CATE_ID=c.CATE_ID
             left JOIN user_resource_tag t ON r.RESOURCE_ID = t.RESOURCE_ID AND r.USER_ID = t.USER_ID
@@ -52,10 +54,11 @@
     </select>
 
     <select id="selectTypeResource" resultType="com.keem.kochiu.collection.entity.UserResource">
-        SELECT DISTINCT r.*
-        FROM user_resource r
-        left JOIN user_resource_tag t ON r.RESOURCE_ID = t.RESOURCE_ID AND r.USER_ID = t.USER_ID
-        left JOIN user_tag g ON t.TAG_ID = g.TAG_ID AND t.USER_ID = g.USER_ID
+        SELECT DISTINCT r.*, c.CATE_NAME
+            FROM user_resource r
+            join user_category c on r.CATE_ID=c.CATE_ID
+            left JOIN user_resource_tag t ON r.RESOURCE_ID = t.RESOURCE_ID AND r.USER_ID = t.USER_ID
+            left JOIN user_tag g ON t.TAG_ID = g.TAG_ID AND t.USER_ID = g.USER_ID
         WHERE r.USER_ID = #{userId}
         AND r.DELETED = 0
         <if test="keyword != null and keyword != ''">
@@ -78,10 +81,11 @@
     </select>
 
     <select id="selectRecycleResource" resultType="com.keem.kochiu.collection.entity.UserResource">
-        SELECT DISTINCT r.*
-        FROM user_resource r
-        left JOIN user_resource_tag t ON r.RESOURCE_ID = t.RESOURCE_ID AND r.USER_ID = t.USER_ID
-        left JOIN user_tag g ON t.TAG_ID = g.TAG_ID AND t.USER_ID = g.USER_ID
+        SELECT DISTINCT r.*, c.CATE_NAME
+            FROM user_resource r
+            join user_category c on r.CATE_ID=c.CATE_ID
+            left JOIN user_resource_tag t ON r.RESOURCE_ID = t.RESOURCE_ID AND r.USER_ID = t.USER_ID
+            left JOIN user_tag g ON t.TAG_ID = g.TAG_ID AND t.USER_ID = g.USER_ID
         WHERE r.USER_ID = #{userId}
         AND r.DELETED = 1
         <if test="keyword != null and keyword != ''">
