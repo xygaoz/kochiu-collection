@@ -280,8 +280,15 @@ const clearSelection = async () => {
     await nextTick();
 }
 
+const selectAll = async () => {
+    multipleSelected.value = [...props.files];
+    forceRender.value++;
+    await nextTick();
+    emit('multiple-selected', multipleSelected.value);
+}
+
 defineExpose({
-    clearSelection
+    clearSelection, selectAll
 })
 
 // 添加对 files 的监听

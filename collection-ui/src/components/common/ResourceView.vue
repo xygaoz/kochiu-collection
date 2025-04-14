@@ -37,6 +37,7 @@
                 :selected-files="selectedResources"
                 @clear-selection="handleClearSelection"
                 @update-success="handleUpdateSuccess"
+                @select-all="handleSelectAll"
             />
             <el-empty v-else description="请选择文件查看详情" />
         </el-aside>
@@ -81,7 +82,8 @@ const selectedResource = ref<Resource | null>(null);
 const pdfDialogVisible = ref(false);
 const pdfPreviewUrl = ref('');
 const layoutRef = ref<{
-    clearSelection: () => void
+    clearSelection: () => void,
+    selectAll: () => void
 } | null>(null);
 
 const emit = defineEmits(['update-file', 'filter-data']);
@@ -141,6 +143,11 @@ const handleUpdateSuccess = (resources: Resource[]) => {
     });
 };
 
+// 全选
+const handleSelectAll = () => {
+    layoutRef.value?.selectAll?.();
+    selectedResources.value = [...props.files];
+};
 </script>
 
 <style scoped>
