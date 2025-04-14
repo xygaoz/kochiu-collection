@@ -27,6 +27,8 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 
+import static com.keem.kochiu.collection.enums.ErrorCodeEnum.*;
+
 @Slf4j
 @Service("local")
 public class LocalStoreStrategy implements ResourceStoreStrategy {
@@ -55,12 +57,12 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
         //判断文件类型
         String extension = FilenameUtils.getExtension(uploadBo.getFile().getOriginalFilename());
         if(!pluServiceProperties.getUploadTypes().contains(extension)){
-            throw new CollectionException("不支持的文件类型");
+            throw new CollectionException(UNSUPPORTED_FILE_TYPES);
         }
 
         String userCode = userDto != null ? userDto.getUserCode() : null;
         if(userCode == null){
-            throw new CollectionException("非法请求。");
+            throw new CollectionException(ILLEGAL_REQUEST);
         }
 
         //读取文件到本地
@@ -82,7 +84,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
         }
         catch (IOException e){
             log.error("文件保存失败", e);
-            throw new CollectionException("文件保存失败");
+            throw new CollectionException(FILE_SAVING_FAILURE);
         }
 
         FileTypeEnum fileType = FileTypeEnum.getByValue(extension);

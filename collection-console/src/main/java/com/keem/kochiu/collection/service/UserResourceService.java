@@ -11,11 +11,13 @@ import com.keem.kochiu.collection.data.vo.ResourceVo;
 import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.entity.UserResource;
 import com.keem.kochiu.collection.entity.UserTag;
+import com.keem.kochiu.collection.enums.ErrorCodeEnum;
 import com.keem.kochiu.collection.enums.FileTypeEnum;
 import com.keem.kochiu.collection.enums.SaveTypeEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.properties.CollectionProperties;
 import com.keem.kochiu.collection.repository.SysUserRepository;
+import com.keem.kochiu.collection.repository.UserCategoryRepository;
 import com.keem.kochiu.collection.repository.UserResourceRepository;
 import com.keem.kochiu.collection.repository.UserTagRepository;
 import com.keem.kochiu.collection.service.store.ResourceStrategyFactory;
@@ -28,6 +30,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
+import static com.keem.kochiu.collection.enums.ErrorCodeEnum.*;
+
 @Slf4j
 @Service
 public class UserResourceService {
@@ -37,17 +41,20 @@ public class UserResourceService {
     private final UserResourceRepository resourceRepository;
     private final CollectionProperties properties;
     private final UserTagRepository tagRepository;
+    private final UserCategoryRepository categoryRepository;
 
     public UserResourceService(ResourceStrategyFactory resourceStrategyFactory,
                                SysUserRepository userRepository,
                                UserResourceRepository resourceRepository,
                                CollectionProperties properties,
-                               UserTagRepository tagRepository) {
+                               UserTagRepository tagRepository,
+                               UserCategoryRepository categoryRepository) {
         this.resourceStrategyFactory = resourceStrategyFactory;
         this.userRepository = userRepository;
         this.resourceRepository = resourceRepository;
         this.properties = properties;
         this.tagRepository = tagRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     /**
@@ -63,7 +70,7 @@ public class UserResourceService {
             String md5 = DigestUtil.md5Hex(DigestUtil.md5Hex(uploadBo.getFile().getBytes()));
             List<UserResource> resources =resourceRepository.countFileMd5(user.getUserId(), md5);
             if(!resources.isEmpty() && !uploadBo.isOverwrite()){
-                throw new CollectionException("文件已存在");
+                throw new CollectionException(FILE_IS_EXIST);
             }
 
             FileVo fileVo = resourceStrategyFactory.getStrategy(user.getStrategy())
@@ -75,7 +82,7 @@ public class UserResourceService {
             return fileVo;
         }catch (IOException e){
             log.error("文件保存失败", e);
-            throw new CollectionException("文件保存失败");
+            throw new CollectionException(FILE_SAVING_FAILURE);
         }
     }
 
@@ -143,7 +150,7 @@ public class UserResourceService {
 
         if(StringUtils.isBlank(resourceInfo.getTitle()) && StringUtils.isBlank(resourceInfo.getDescription())
             && resourceInfo.getStar() == null){
-            throw new CollectionException("更新内容不能为空");
+            throw new CollectionException(CONTENT_CANNOT_BE_EMPTY);
         }
 
         SysUser user = userRepository.getUser(userDto);
@@ -258,5 +265,19 @@ public class UserResourceService {
                     .build();
             resourceRepository.updateResourceInfo(user.getUserId(), resourceInfo);
         });
+    }
+
+    /**
+     * 批量移动到分类
+     * @param userDto
+     * @param moveToCategoryBo
+     * @throws CollectionException
+     */
+    public void moveToCategory(UserDto userDto, MoveToCategoryBo moveToCategoryBo) throws CollectionException {
+        SysUser user = userRepository.getUser(userDto);
+        if(categoryRepository.getById(moveToCategoryBo.getCateId()) == null){
+            throw new CollectionException(ErrorCodeEnum.CATEGORY_NOT_EXIST);
+        }
+        resourceRepository.moveToCategory(user.getUserId(), moveToCategoryBo);
     }
 }

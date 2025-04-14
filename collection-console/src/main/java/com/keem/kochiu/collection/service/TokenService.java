@@ -50,7 +50,7 @@ public class TokenService {
         }
         catch (Exception e) {
             log.error("生成token失败", e);
-            throw new CollectionException("生成token失败");
+            throw new CollectionException(FAILED_GEN_TOKEN);
         }
     }
 

@@ -7,18 +7,20 @@ import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.mapper.SysUserMapper;
 import org.springframework.stereotype.Service;
 
+import static com.keem.kochiu.collection.enums.ErrorCodeEnum.ILLEGAL_REQUEST;
+
 @Service
 public class SysUserRepository extends ServiceImpl<SysUserMapper, SysUser>{
 
     public SysUser getUser(UserDto userDto) throws CollectionException {
         Integer userId = userDto != null ? userDto.getUserId() : null;
         if(userId == null){
-            throw new CollectionException("非法请求。");
+            throw new CollectionException(ILLEGAL_REQUEST);
         }
 
         SysUser user = getById(userId);
         if (user == null) {
-            throw new CollectionException("非法请求。");
+            throw new CollectionException(ILLEGAL_REQUEST);
         }
 
         return user;

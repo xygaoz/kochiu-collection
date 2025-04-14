@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.keem.kochiu.collection.enums.ErrorCodeEnum.TAG_IS_EXIST;
+
 @Service
 public class UserResourceTagService {
 
@@ -65,7 +67,7 @@ public class UserResourceTagService {
                     .build();
         }
         else{
-            throw new CollectionException("标签已存在");
+            throw new CollectionException(TAG_IS_EXIST);
         }
     }
 

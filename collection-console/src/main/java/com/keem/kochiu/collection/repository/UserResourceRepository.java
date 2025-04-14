@@ -7,6 +7,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.keem.kochiu.collection.data.bo.FilterResourceBo;
+import com.keem.kochiu.collection.data.bo.MoveToCategoryBo;
 import com.keem.kochiu.collection.data.bo.PageBo;
 import com.keem.kochiu.collection.data.bo.ResInfoBo;
 import com.keem.kochiu.collection.data.dto.ResourceDto;
@@ -168,5 +169,19 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
                     filterResourceBo.getTags())
             );
         }
+    }
+
+    /**
+     * 移动资源到分类
+     * @param userId
+     * @param moveToCategoryBo
+     */
+    public void moveToCategory(Integer userId, MoveToCategoryBo moveToCategoryBo) {
+        baseMapper.update(null,
+                new LambdaUpdateWrapper<UserResource>()
+                        .set(UserResource::getCateId, moveToCategoryBo.getCateId())
+                        .in(UserResource::getResourceId, moveToCategoryBo.getResourceIds())
+                        .eq(UserResource::getUserId, userId)
+        );
     }
 }

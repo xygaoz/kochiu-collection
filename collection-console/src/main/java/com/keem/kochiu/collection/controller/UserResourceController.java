@@ -126,4 +126,10 @@ public class UserResourceController {
         return DefaultResult.ok();
     }
 
+    @CheckPermit
+    @PostMapping(RESOURCE_PATH + "/moveToCategory")
+    public DefaultResult<ResourceVo> moveToCategory(@Validated MoveToCategoryBo moveToCategoryBo) throws CollectionException {
+        resourceService.moveToCategory(CheckPermitAspect.USER_INFO.get(), moveToCategoryBo);
+        return DefaultResult.ok();
+    }
 }

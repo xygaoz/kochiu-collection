@@ -19,6 +19,8 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 import static com.keem.kochiu.collection.Constant.*;
+import static com.keem.kochiu.collection.enums.ErrorCodeEnum.INVALID_USERNAME_OR_PASSWORD;
+import static com.keem.kochiu.collection.enums.ErrorCodeEnum.SYS_ERROR;
 
 @Slf4j
 @Service
@@ -101,11 +103,11 @@ public class SysUserService {
                             .build();
                 }
                 else{
-                    throw new CollectionException("无效的用户名或密码");
+                    throw new CollectionException(INVALID_USERNAME_OR_PASSWORD);
                 }
             }
             else{
-                throw new CollectionException("无效的用户名或密码");
+                throw new CollectionException(INVALID_USERNAME_OR_PASSWORD);
             }
         }
         catch (CollectionException e) {
@@ -113,7 +115,7 @@ public class SysUserService {
         }
         catch (Exception e) {
             log.error("系统错误", e);
-            throw new CollectionException("系统错误");
+            throw new CollectionException(SYS_ERROR);
         }
     }
 

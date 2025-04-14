@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static com.keem.kochiu.collection.enums.ErrorCodeEnum.FAILED_GET_DEFAULT_CATEGORY;
+
 @Service
 public class UserCategoryRepository extends ServiceImpl<UserCategoryMapper, UserCategory>{
 
@@ -52,7 +54,7 @@ public class UserCategoryRepository extends ServiceImpl<UserCategoryMapper, User
                 .last("limit 1");
         UserCategory userCategory = this.getOne(lambdaQueryWrapper);
         if (userCategory == null) {
-            throw new CollectionException("获取默认分类失败");
+            throw new CollectionException(FAILED_GET_DEFAULT_CATEGORY);
         }
         return userCategory.getCateId();
     }

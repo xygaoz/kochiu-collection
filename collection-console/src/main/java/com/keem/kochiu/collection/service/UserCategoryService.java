@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static com.keem.kochiu.collection.enums.ErrorCodeEnum.CATEGORY_IS_EXIST;
+
 @Service
 public class UserCategoryService {
 
@@ -68,7 +70,7 @@ public class UserCategoryService {
         queryWrapper.eq(UserCategory::getUserId, user.getUserId())
                 .eq(UserCategory::getCateName, categoryBo.getCateName());
         if(userCategoryRepository.exists(queryWrapper)){
-            throw new CollectionException("分类已存在");
+            throw new CollectionException(CATEGORY_IS_EXIST);
         }
         return userCategoryRepository.addCategory(user.getUserId(), categoryBo.getCateName());
     }

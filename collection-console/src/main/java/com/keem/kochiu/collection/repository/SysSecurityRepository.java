@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
+import static com.keem.kochiu.collection.enums.ErrorCodeEnum.*;
+
 @Service
 public class SysSecurityRepository extends ServiceImpl<SysSecurityMapper, SysSecurity>{
 
@@ -22,12 +24,12 @@ public class SysSecurityRepository extends ServiceImpl<SysSecurityMapper, SysSec
         try {
             SysSecurity sysSecurity = getOne(null);
             if(sysSecurity == null){
-                throw new CollectionException("获取公钥失败");
+                throw new CollectionException(FAILED_GET_PUBLIC_KEY);
             }
             return RsaHexUtil.getPublicKey(sysSecurity.getPublicKey(), "10001");
         }
         catch (Exception e){
-            throw new CollectionException("获取公钥失败");
+            throw new CollectionException(FAILED_GET_PUBLIC_KEY);
         }
     }
 
@@ -40,13 +42,13 @@ public class SysSecurityRepository extends ServiceImpl<SysSecurityMapper, SysSec
         try {
             SysSecurity sysSecurity = getOne(null);
             if(sysSecurity == null){
-                throw new CollectionException("获取公钥失败");
+                throw new CollectionException(FAILED_GET_PUBLIC_KEY);
             }
             PublicKey pub = RsaHexUtil.getPublicKey(sysSecurity.getPublicKey(), "10001");
             return RsaHexUtil.publicKeyToPem(pub);
         }
         catch (Exception e){
-            throw new CollectionException("获取公钥失败");
+            throw new CollectionException(FAILED_GET_PUBLIC_KEY);
         }
     }
 
@@ -59,12 +61,12 @@ public class SysSecurityRepository extends ServiceImpl<SysSecurityMapper, SysSec
         try {
             SysSecurity sysSecurity = getOne(null);
             if(sysSecurity == null){
-                throw new CollectionException("获取私钥失败");
+                throw new CollectionException(FAILED_GET_PRIVATE_KEY);
             }
             return RsaHexUtil.getPrivateKey(sysSecurity.getPrivateKey());
         }
         catch (Exception e){
-            throw new CollectionException("获取私钥失败");
+            throw new CollectionException(FAILED_GET_PRIVATE_KEY);
         }
     }
 
@@ -77,12 +79,12 @@ public class SysSecurityRepository extends ServiceImpl<SysSecurityMapper, SysSec
         try {
             SysSecurity sysSecurity = getOne(null);
             if(sysSecurity == null){
-                throw new CollectionException("获取公用加密key失败");
+                throw new CollectionException(FAILED_GET_COMMON_KEY);
             }
             return sysSecurity.getCommonKey();
         }
         catch (Exception e){
-            throw new CollectionException("获取公用加密key失败");
+            throw new CollectionException(FAILED_GET_COMMON_KEY);
         }
     }
 }
