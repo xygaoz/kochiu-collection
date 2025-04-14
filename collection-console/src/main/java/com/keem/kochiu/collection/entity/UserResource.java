@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.time.LocalDateTime;
+
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("user_resource")
@@ -32,4 +34,5 @@ public class UserResource extends BaseEntity{
     private Integer isPublic;
     private Integer star;
     private String md5;
+    private LocalDateTime deleteTime;
 }

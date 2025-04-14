@@ -16,6 +16,7 @@
                     ref="layoutRef"
                     :is="currentComponent"
                     :files="props.files"
+                    :data-type="props.dataType"
                     :selectedResources="selectedResources"
                     :selectedResource="selectedResource"
                     @preview="handlePreview"
@@ -31,12 +32,14 @@
             <FileDetailView
                 v-if="selectedResource && selectedResources.length === 0"
                 :file="selectedResource"
+                :data-type="props.dataType"
                 @preview-doc="handleShowDoc"
                 @update-file="handleUpdateFile"
             />
             <BatchEditView
                 v-else-if="selectedResources.length > 0"
                 :selected-files="selectedResources"
+                :data-type="props.dataType"
                 @clear-selection="handleClearSelection"
                 @update-success="handleUpdateSuccess"
                 @select-all="handleSelectAll"
@@ -176,9 +179,9 @@ const handleMoveSuccess = () => {
     emit('filter-data', searchData);
 };
 
-const handleMoveToRecycle = (resources: Resource[]) => {
+const handleMoveToRecycle = (resources: Resource[], isDelete: boolean) => {
     ElMessageBox.confirm(
-        '您需要将资源删除吗？以后还能通过回收站恢复。',
+        isDelete ? '您将彻底删除选择的资源，还要继续吗？' : '您需要将选择资源删除吗？以后还能通过回收站恢复。',
         '警告',
         {
             confirmButtonText: '确认',
@@ -187,7 +190,9 @@ const handleMoveToRecycle = (resources: Resource[]) => {
         }
     ).then(async () => {
         const resourceIds = resources.map(r => r.resourceId);
-        let result = await moveToRecycle(resourceIds, {});
+        let result = await moveToRecycle(resourceIds, {
+            deleted: isDelete
+        });
         if (result) {
             ElMessage.success('删除成功');
             handleClearSelection();

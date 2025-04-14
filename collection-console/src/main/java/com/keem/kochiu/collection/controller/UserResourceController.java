@@ -48,7 +48,7 @@ public class UserResourceController {
     }
 
     @GetMapping("/resource/{resourceId}/**")
-    public void download(HttpServletRequest request, HttpServletResponse response, @PathVariable int resourceId){
+    public void download(HttpServletRequest request, HttpServletResponse response, @PathVariable Long resourceId){
 
         resourceService.download(request, response, resourceId);
     }
@@ -93,6 +93,7 @@ public class UserResourceController {
                                                                   FilterResourceBo filterResourceBo) throws CollectionException {
         return DefaultResult.ok(resourceService.getResourceListByTag(CheckPermitAspect.USER_INFO.get(), tagId, filterResourceBo));
     }
+
     /**
      * 根据文件类型获取资源列表
      * @param filterResourceBo
@@ -134,10 +135,28 @@ public class UserResourceController {
         return DefaultResult.ok(true);
     }
 
+    /**
+     * 移动到回收站/或直接删除
+     * @param moveToBo
+     * @return
+     * @throws CollectionException
+     */
     @CheckPermit
     @PostMapping(RESOURCE_PATH + "/moveToRecycle")
     public DefaultResult<Boolean> moveToRecycle(@Validated MoveToBo moveToBo) throws CollectionException {
         resourceService.moveToRecycle(CheckPermitAspect.USER_INFO.get(), moveToBo);
         return DefaultResult.ok(true);
+    }
+
+    /**
+     * 根据文件类型获取资源列表
+     * @param filterResourceBo
+     * @return
+     * @throws CollectionException
+     */
+    @CheckPermit
+    @PostMapping(RESOURCE_PATH + "/recycle")
+    public DefaultResult<PageVo<ResourceVo>> getResourceListByRecycle(FilterResourceBo filterResourceBo) throws CollectionException {
+        return DefaultResult.ok(resourceService.getResourceListByRecycle(CheckPermitAspect.USER_INFO.get(), filterResourceBo));
     }
 }

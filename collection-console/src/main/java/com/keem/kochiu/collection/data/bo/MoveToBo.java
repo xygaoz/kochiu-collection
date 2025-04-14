@@ -14,4 +14,6 @@ public class MoveToBo {
     @NotNull(message = "资源Id不能为空！！！")
     @Size(min = 1, message = "资源Id不能为空！！！")
     private List<Long> resourceIds;
+    //true时彻底删除
+    private boolean deleted;
 }

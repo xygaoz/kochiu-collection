@@ -174,7 +174,7 @@
                     <el-rate
                         v-model="localFile.star"
                         @change="handleRateChange"
-                        :disabled="saving"
+                        :disabled="saving || isRecycleBin"
                         show-score
                         text-color="#ff9900"
                         score-template="{value} 分"
@@ -194,7 +194,7 @@
                     <el-tag
                         v-for="tag in localFile.tags"
                         :key="tag.tagId"
-                        closable
+                        :closable="!isRecycleBin"
                         :disable-transitions="false"
                         @close="handleTagClose(tag)"
                         @click.stop
@@ -212,7 +212,7 @@
                         @click.stop
                     />
                     <el-button
-                        v-else
+                        v-else-if="!isRecycleBin"
                         class="button-new-tag"
                         size="small"
                         @click="showTagInput"
@@ -242,317 +242,258 @@
     </div>
 </template>
 
-<script lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick, PropType, watch } from "vue";
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
 import { Document, Download, Picture, Loading } from "@element-plus/icons-vue";
 import { ElMessage, ElInput } from "element-plus";
 import { addResourceTag, removeResourceTag, updateResource } from "@/apis/resource-api";
-import type { Resource, Tag } from '@/apis/interface'
+import type { Resource, Tag } from '@/apis/interface';
 
-export default {
-    name: 'FileDetail',
-    components: { Download, Document, Picture, Loading },
-    props: {
-        file: {
-            type: Object as PropType<Resource>,
-            required: true,
-            default: () => ({
-                resourceId: 0,
-                resourceUrl: '',
-                thumbnailUrl: '',
-                sourceFileName: '',
-                title: '',
-                description: '',
-                resolutionRatio: '',
-                size: 0,
-                isPublic: 0,
-                star: 0,
-                tags: [],
-                createTime: '',
-                updateTime: '',
-                width: 0,
-                height: 0,
-                fileType: '',
-                typeName: '',
-                mimeType: '',
-                previewUrl: ''
-            })
-        }
-    },
-    emits: {
-        'preview-doc': (file: Resource) => !!file,
-        'update-file': (file: Resource) => !!file
-    },
-    setup(props: { file: Resource }, { emit }: { emit: (event: string, ...args: any[]) => void }) {
-        type EditableField = 'title' | 'description' | 'tags'
+type EditableField = 'title' | 'description' | 'tags';
 
-        // 状态定义
-        const localCurrentVideoUrl = ref<string>('')
-        const localVideoDialogVisible = ref<boolean>(false)
-        const localFile = ref<Resource>({...props.file})
-        const editingField = ref<EditableField | ''>('')
-        const originalValue = ref<string | Tag[] | undefined>()
-        const saving = ref<boolean>(false)
-        const titleInput = ref<InstanceType<typeof ElInput> | null>(null)
-        const descInput = ref<InstanceType<typeof ElInput> | null>(null)
+const props = defineProps<{
+    file: Resource;
+    dataType?: string;
+}>();
 
-        const tagInputVisible = ref(false)
-        const tagInputValue = ref('')
-        const tagInputRef = ref<InstanceType<typeof ElInput> | null>(null)
+const emit = defineEmits<{
+    (e: 'preview-doc', file: Resource): void;
+    (e: 'update-file', file: Resource): void;
+}>();
 
-        // 计算属性
-        const isImageType = computed<boolean>(() => props.file.typeName === 'image')
-        const isVideoType = computed<boolean>(() => props.file.typeName === 'video')
-        const isAudioType = computed<boolean>(() => props.file.typeName === 'audio')
-        const isOfficeType = computed<boolean>(() => {
-            const officeTypes = [
-                'application/msword',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'application/vnd.ms-excel',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'application/vnd.ms-powerpoint',
-                'application/vnd.openxmlformats-officedocument.presentationml.presentation'
-            ]
-            return officeTypes.includes(props.file.mimeType) && !!props.file.previewUrl
-        })
-        const isPdfType = computed<boolean>(() => props.file.fileType === 'application/pdf' && !!props.file.previewUrl)
+// 状态定义
+const localCurrentVideoUrl = ref<string>('');
+const localVideoDialogVisible = ref<boolean>(false);
+const localFile = ref<Resource>({...props.file});
+const editingField = ref<EditableField | ''>('');
+const originalValue = ref<string | Tag[] | undefined>();
+const saving = ref<boolean>(false);
+const titleInput = ref<InstanceType<typeof ElInput> | null>(null);
+const descInput = ref<InstanceType<typeof ElInput> | null>(null);
+const tagInputVisible = ref(false);
+const tagInputValue = ref('');
+const tagInputRef = ref<InstanceType<typeof ElInput> | null>(null);
 
-        const imageStyle = computed(() => {
-            if (!props.file.width || !props.file.height) return {};
+// 计算属性
+const isImageType = computed<boolean>(() => props.file.typeName === 'image');
+const isVideoType = computed<boolean>(() => props.file.typeName === 'video');
+const isAudioType = computed<boolean>(() => props.file.typeName === 'audio');
+const isOfficeType = computed<boolean>(() => {
+    const officeTypes = [
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+    ];
+    return officeTypes.includes(props.file.mimeType) && !!props.file.previewUrl;
+});
+const isPdfType = computed<boolean>(() => props.file.fileType === 'application/pdf' && !!props.file.previewUrl);
+const isRecycleBin = computed(() => props.dataType === 'recycle');
 
-            const aspectRatio = props.file.width / props.file.height;
-            const isPortrait = aspectRatio < 1; // 竖构图
+const imageStyle = computed(() => {
+    if (!props.file.width || !props.file.height) return {};
 
-            return {
-                width: isPortrait ? 'auto' : '100%',
-                height: isPortrait ? '100%' : 'auto',
-                'object-fit': 'contain'
-            };
+    const aspectRatio = props.file.width / props.file.height;
+    const isPortrait = aspectRatio < 1;
+
+    return {
+        width: isPortrait ? 'auto' : '100%',
+        height: isPortrait ? '100%' : 'auto',
+        'object-fit': 'contain'
+    };
+});
+
+// 方法定义
+const handlePlayVideo = (): void => {
+    localCurrentVideoUrl.value = props.file.resourceUrl;
+    localVideoDialogVisible.value = true;
+};
+
+const formatSize = (bytes: number): string => {
+    if (!bytes) return '未知';
+    const units = ['B', 'KB', 'MB', 'GB'];
+    let size = bytes;
+    let unitIndex = 0;
+    while (size >= 1024 && unitIndex < units.length - 1) {
+        size /= 1024;
+        unitIndex++;
+    }
+    return `${size.toFixed(2)} ${units[unitIndex]}`;
+};
+
+const formatTime = (timeStr: string): string => {
+    return timeStr ? new Date(timeStr).toLocaleString() : '未知';
+};
+
+const startEditing = async (field: EditableField): Promise<void> => {
+    if(isRecycleBin.value){
+        return
+    }
+    editingField.value = field;
+    await nextTick();
+    const inputRef = field === 'title' ? titleInput.value : descInput.value;
+    if (inputRef) {
+        inputRef.focus();
+    }
+};
+
+const handleRateChange = async (value: number): Promise<void> => {
+    saving.value = true;
+    try {
+        await updateResource(localFile.value.resourceId, {
+            star: value
         });
 
-        // 方法定义
-        const handlePlayVideo = (): void => {
-            localCurrentVideoUrl.value = props.file.resourceUrl
-            localVideoDialogVisible.value = true
-        }
+        const updatedFile: Resource = {
+            ...props.file,
+            star: value
+        };
 
-        const formatSize = (bytes: number): string => {
-            if (!bytes) return '未知'
-            const units = ['B', 'KB', 'MB', 'GB']
-            let size = bytes
-            let unitIndex = 0
-            while (size >= 1024 && unitIndex < units.length - 1) {
-                size /= 1024
-                unitIndex++
-            }
-            return `${size.toFixed(2)} ${units[unitIndex]}`
-        }
-
-        const formatTime = (timeStr: string): string => {
-            return timeStr ? new Date(timeStr).toLocaleString() : '未知'
-        }
-
-        const startEditing = async (field: EditableField): Promise<void> => {
-            editingField.value = field
-
-            await nextTick()
-
-            const inputRef = field === 'title' ? titleInput.value : descInput.value
-            if (inputRef) {
-                inputRef.focus()
-            }
-        }
-
-        const handleRateChange = async (value: number): Promise<void> => {
-            saving.value = true
-            try {
-                await updateResource(localFile.value.resourceId, {
-                    star: value
-                })
-
-                const updatedFile: Resource = {
-                    ...props.file,
-                    star: value
-                }
-
-                localFile.value = updatedFile
-                emit('update-file', updatedFile)
-            } catch (error) {
-                localFile.value.star = props.file.star
-                ElMessage.error(`评分更新失败: ${error instanceof Error ? error.message : String(error)}`)
-            } finally {
-                saving.value = false
-            }
-        }
-
-        const saveField = async (field: EditableField): Promise<void> => {
-            if (!editingField.value) return
-
-            const currentValue = field === 'tags'
-                ? localFile.value.tags
-                : localFile.value[field]
-
-            if (JSON.stringify(currentValue) === JSON.stringify(originalValue.value)) {
-                editingField.value = ''
-                return
-            }
-
-            saving.value = true
-            try {
-                await updateResource(localFile.value.resourceId, {
-                    [field]: currentValue
-                })
-
-                const updatedFile: Resource = {
-                    ...props.file,
-                    [field]: currentValue
-                }
-
-                emit('update-file', updatedFile)
-                localFile.value = updatedFile
-            } catch (error) {
-                if (field === 'tags') {
-                    localFile.value.tags = originalValue.value as Tag[] || []
-                } else {
-                    localFile.value[field] = originalValue.value as string
-                }
-                ElMessage.error(`更新失败: ${error instanceof Error ? error.message : String(error)}`)
-            } finally {
-                saving.value = false
-                editingField.value = ''
-            }
-        }
-
-        const cancelEditing = (): void => {
-            if (editingField.value) {
-                if (editingField.value === 'tags') {
-                    localFile.value.tags = originalValue.value as Tag[] || []
-                } else {
-                    localFile.value[editingField.value] = originalValue.value as string
-                }
-                editingField.value = ''
-            }
-        }
-
-        const handleClickOutside = (event: MouseEvent): void => {
-            const target = event.target as HTMLElement
-            const isClickInsideEditor = target.closest('.el-input') || target.closest('.editable-field')
-
-            if (editingField.value && !isClickInsideEditor) {
-                saveField(editingField.value)
-            }
-        }
-
-        const showTagInput = () => {
-            tagInputVisible.value = true
-            nextTick(() => {
-                tagInputRef.value?.focus()
-            })
-        }
-
-        const handleTagInputConfirm = async () => {
-            if (tagInputValue.value) {
-                try {
-                    saving.value = true
-                    // Call API to add tag
-                    const newTag = await addResourceTag(localFile.value.resourceId, {
-                        tagName: tagInputValue.value
-                    })
-
-                    // Update local state
-                    const updatedTags = [...localFile.value.tags, newTag]
-                    localFile.value.tags = updatedTags
-
-                    // Emit update event
-                    const updatedFile = {
-                        ...props.file,
-                        tags: updatedTags
-                    }
-                    emit('update-file', updatedFile)
-
-                } catch (error) {
-                    ElMessage.error(`添加标签失败: ${error instanceof Error ? error.message : String(error)}`)
-                } finally {
-                    saving.value = false
-                    tagInputVisible.value = false
-                    tagInputValue.value = ''
-                }
-            } else {
-                tagInputVisible.value = false
-            }
-        }
-
-        const handleTagClose = async (tag: Tag) => {
-            try {
-                saving.value = true
-
-                await removeResourceTag(localFile.value.resourceId, {
-                    tagId: tag.tagId
-                })
-
-                const updatedTags = localFile.value.tags.filter(t => t.tagId !== tag.tagId)
-                localFile.value.tags = updatedTags
-
-                // Emit update event
-                const updatedFile = {
-                    ...props.file,
-                    tags: updatedTags
-                }
-                emit('update-file', updatedFile)
-            } catch (error) {
-                ElMessage.error(`移除标签失败: ${error instanceof Error ? error.message : String(error)}`)
-            } finally {
-                saving.value = false
-            }
-        }
-
-        // 生命周期
-        onMounted(() => {
-            document.addEventListener('click', handleClickOutside)
-        })
-
-        onUnmounted(() => {
-            document.removeEventListener('click', handleClickOutside)
-        })
-
-        // 监听props变化
-        watch(() => props.file, (newVal: Resource) => {
-            if (!editingField.value) {
-                localFile.value = {...newVal}
-            }
-        }, { deep: true })
-
-        return {
-            isImageType,
-            isVideoType,
-            isAudioType,
-            isOfficeType,
-            isPdfType,
-            localCurrentVideoUrl,
-            localVideoDialogVisible,
-            handlePlayVideo,
-            formatSize,
-            formatTime,
-            localFile,
-            editingField,
-            saving,
-            startEditing,
-            saveField,
-            cancelEditing,
-            emit,
-            titleInput,
-            descInput,
-            handleRateChange,
-            tagInputVisible,
-            tagInputValue,
-            tagInputRef,
-            showTagInput,
-            handleTagInputConfirm,
-            handleTagClose,
-            imageStyle,
-        }
+        localFile.value = updatedFile;
+        emit('update-file', updatedFile);
+    } catch (error) {
+        localFile.value.star = props.file.star;
+        ElMessage.error(`评分更新失败: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+        saving.value = false;
     }
-}
+};
+
+const saveField = async (field: EditableField): Promise<void> => {
+    if (!editingField.value) return;
+
+    const currentValue = field === 'tags'
+        ? localFile.value.tags
+        : localFile.value[field];
+
+    if (JSON.stringify(currentValue) === JSON.stringify(originalValue.value)) {
+        editingField.value = '';
+        return;
+    }
+
+    saving.value = true;
+    try {
+        await updateResource(localFile.value.resourceId, {
+            [field]: currentValue
+        });
+
+        const updatedFile: Resource = {
+            ...props.file,
+            [field]: currentValue
+        };
+
+        emit('update-file', updatedFile);
+        localFile.value = updatedFile;
+    } catch (error) {
+        if (field === 'tags') {
+            localFile.value.tags = originalValue.value as Tag[] || [];
+        } else {
+            localFile.value[field] = originalValue.value as string;
+        }
+        ElMessage.error(`更新失败: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+        saving.value = false;
+        editingField.value = '';
+    }
+};
+
+const cancelEditing = (): void => {
+    if (editingField.value) {
+        if (editingField.value === 'tags') {
+            localFile.value.tags = originalValue.value as Tag[] || [];
+        } else {
+            localFile.value[editingField.value] = originalValue.value as string;
+        }
+        editingField.value = '';
+    }
+};
+
+const handleClickOutside = (event: MouseEvent): void => {
+    const target = event.target as HTMLElement;
+    const isClickInsideEditor = target.closest('.el-input') || target.closest('.editable-field');
+
+    if (editingField.value && !isClickInsideEditor) {
+        saveField(editingField.value);
+    }
+};
+
+const showTagInput = () => {
+    tagInputVisible.value = true;
+    nextTick(() => {
+        tagInputRef.value?.focus();
+    });
+};
+
+const handleTagInputConfirm = async () => {
+    if (tagInputValue.value) {
+        try {
+            saving.value = true;
+            const newTag = await addResourceTag(localFile.value.resourceId, {
+                tagName: tagInputValue.value
+            });
+
+            const updatedTags = [...localFile.value.tags, newTag];
+            localFile.value.tags = updatedTags;
+
+            const updatedFile = {
+                ...props.file,
+                tags: updatedTags
+            };
+            emit('update-file', updatedFile);
+
+        } catch (error) {
+            ElMessage.error(`添加标签失败: ${error instanceof Error ? error.message : String(error)}`);
+        } finally {
+            saving.value = false;
+            tagInputVisible.value = false;
+            tagInputValue.value = '';
+        }
+    } else {
+        tagInputVisible.value = false;
+    }
+};
+
+const handleTagClose = async (tag: Tag) => {
+    if (isRecycleBin.value) return;
+
+    try {
+        saving.value = true;
+        await removeResourceTag(localFile.value.resourceId, {
+            tagId: tag.tagId
+        });
+
+        const updatedTags = localFile.value.tags.filter(t => t.tagId !== tag.tagId);
+        localFile.value.tags = updatedTags;
+
+        const updatedFile = {
+            ...props.file,
+            tags: updatedTags
+        };
+        emit('update-file', updatedFile);
+    } catch (error) {
+        ElMessage.error(`移除标签失败: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+        saving.value = false;
+    }
+};
+
+// 生命周期
+onMounted(() => {
+    document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside);
+});
+
+// 监听props变化
+watch(() => props.file, (newVal: Resource) => {
+    if (!editingField.value) {
+        localFile.value = {...newVal};
+    }
+}, { deep: true });
 </script>
 
 <style scoped>

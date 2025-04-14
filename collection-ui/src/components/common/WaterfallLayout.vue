@@ -63,7 +63,9 @@
                                 <el-icon class="action-icon" @click.stop="handleToRecycle(item.image)" title="删除">
                                     <Delete />
                                 </el-icon>
-                                <el-icon class="action-icon" @click.stop="handleMove(item.image)" title="移动">
+                                <el-icon class="action-icon"
+                                         v-if="props.dataType !== 'recycle'"
+                                         @click.stop="handleMove(item.image)" title="移动">
                                     <Connection />
                                 </el-icon>
                             </div>
@@ -93,6 +95,7 @@ import { Connection, Delete, Download } from "@element-plus/icons-vue";
 // 使用 TypeScript 类型定义 props
 const props = defineProps<{
     files: Resource[];
+    dataType: string;
 }>();
 
 // 定义并实际使用 emit
@@ -100,7 +103,7 @@ const emit = defineEmits<{
     (e: 'preview', image: Resource): void;
     (e: 'multiple-selected', images: Resource[]): void;
     (e: 'move-to-category', images: Resource[]): void;
-    (e: 'move-to-recycle', images: Resource[]): void;
+    (e: 'move-to-recycle', images: Resource[], deleted: boolean): void;
 }>();
 
 const waterfallContainer = ref<HTMLElement | null>(null);
@@ -308,7 +311,7 @@ const handleDownload = (image: Resource) => {
 };
 
 const handleToRecycle = (image: Resource) => {
-    emit('move-to-recycle', [image]);
+    emit('move-to-recycle', [image], props.dataType === 'recycle');
 };
 
 const handleMove = (image: Resource) => {

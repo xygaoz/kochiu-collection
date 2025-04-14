@@ -19,6 +19,7 @@ import com.keem.kochiu.collection.mapper.UserResourceMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -198,9 +199,47 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
             baseMapper.update(null,
                     new LambdaUpdateWrapper<UserResource>()
                             .set(UserResource::getDeleted, 1)
+                            .set(UserResource::getDeleteTime, LocalDateTime.now())
                             .in(UserResource::getResourceId, moveToBo.getResourceIds())
                             .eq(UserResource::getUserId, userId)
             );
         });
+    }
+
+    /**
+     * 删除资源
+     * @param userId
+     * @param resourceId
+     * @return
+     */
+    public boolean deleteResource(Integer userId, Long resourceId) {
+
+        return baseMapper.delete(new LambdaUpdateWrapper<UserResource>()
+                .eq(UserResource::getResourceId, resourceId)
+                .eq(UserResource::getUserId, userId)
+        ) > 0;
+    }
+
+    /**
+     * 获取文件类型下资源列表
+     * @param userId
+     * @return
+     */
+    public PageInfo<UserResource> getResourceListByRecycle(int userId, FilterResourceBo filterResourceBo) {
+
+        try(Page<UserResource> page = PageHelper.startPage(filterResourceBo.getPageNum(), filterResourceBo.getPageSize())) {
+
+            Set<String> fileExtList = new HashSet<>();
+            if(filterResourceBo.getTypes() != null) {
+                for (String type : filterResourceBo.getTypes()) {
+                    fileExtList.addAll(FileTypeEnum.getNames(ResourceTypeEnum.getByValue(type)));
+                }
+            }
+            return new PageInfo<>(baseMapper.selectRecycleResource(userId,
+                    filterResourceBo.getKeyword(),
+                    fileExtList.toArray(new String[0]),
+                    filterResourceBo.getTags())
+            );
+        }
     }
 }

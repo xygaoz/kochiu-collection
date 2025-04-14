@@ -24,11 +24,11 @@ public interface ResourceStoreStrategy {
      * @param response
      * @param resourceId
      */
-    void download(HttpServletRequest request, HttpServletResponse response, int resourceId);
+    void download(HttpServletRequest request, HttpServletResponse response, Long resourceId);
 
     /**
      * 删除文件
      * @param resourceId
      */
-    void deleteFile(int resourceId);
+    void deleteFile(int userId, Long resourceId);
 }

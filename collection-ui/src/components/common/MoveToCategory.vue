@@ -41,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, defineEmits, defineExpose } from 'vue';
 import { ElMessage } from 'element-plus';
 import { getAllCategory } from '@/apis/category-api';
 import { moveToCategory } from '@/apis/resource-api';

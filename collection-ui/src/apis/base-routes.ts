@@ -58,7 +58,7 @@ routes.push(
             {
                 path: '/Recycle',
                 name: 'recycle',
-                component: () => import('@/components/my/Recycle.vue'),
+                component: () => import('@/components/my/RecycleResource.vue'),
                 meta: { title: '回收站', icon: 'icon-col-huishouzhanx', iconType: 'iconfont', style: 'font-size: 22px; color: rgb(59,130,246); margin: 0 1px 0 0' },
             },
         ]

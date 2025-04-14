@@ -92,7 +92,7 @@ public class UserResourceService {
      * @param response
      * @param resourceId
      */
-    public void download(HttpServletRequest request, HttpServletResponse response, int resourceId) {
+    public void download(HttpServletRequest request, HttpServletResponse response, Long resourceId) {
 
         //查找资源
         UserResource resource = resourceRepository.getById(resourceId);
@@ -174,7 +174,7 @@ public class UserResourceService {
     }
 
     /**
-     * 获取w文件类型签资源列表
+     * 获取文件类型签资源列表
      * @param userDto
      * @return
      * @throws CollectionException
@@ -289,6 +289,29 @@ public class UserResourceService {
      */
     public void moveToRecycle(UserDto userDto, MoveToBo moveToBo) throws CollectionException {
         SysUser user = userRepository.getUser(userDto);
-        resourceRepository.moveToRecycle(user.getUserId(), moveToBo);
+        if(!moveToBo.isDeleted()) {
+            resourceRepository.moveToRecycle(user.getUserId(), moveToBo);
+        }
+        else{
+            moveToBo.getResourceIds().forEach(resourceId -> {
+                //先删除资源文件
+                resourceStrategyFactory.getStrategy(user.getStrategy()).deleteFile(user.getUserId(), resourceId);
+                resourceRepository.deleteResource(user.getUserId(), resourceId);
+            });
+        }
+    }
+
+    /**
+     * 获取文件类型签资源列表
+     * @param userDto
+     * @return
+     * @throws CollectionException
+     */
+    public PageVo<ResourceVo> getResourceListByRecycle(UserDto userDto,
+                                                    FilterResourceBo filterResourceBo) throws CollectionException {
+
+        SysUser user = userRepository.getUser(userDto);
+        PageInfo<UserResource> resourceList = resourceRepository.getResourceListByRecycle(user.getUserId(), filterResourceBo);
+        return buildResourceList(user, resourceList);
     }
 }

@@ -35,7 +35,7 @@
     </changeSet>
 
     <changeSet id="kcdb_2" author="kochiu" runOnChange="true">
-        <preConditions>
+        <preConditions onFail="MARK_RAN">
             <not>
                 <indexExists tableName="sys_role" indexName="IDX_ROLE_NAME"/>
             </not>
@@ -46,7 +46,7 @@
     </changeSet>
 
     <changeSet id="kcdb_3" author="kochiu" runOnChange="true">
-        <preConditions>
+        <preConditions onFail="MARK_RAN">
             <sqlCheck expectedResult="0">
                 SELECT COUNT(*) FROM sys_role
                 WHERE role_id = 1
@@ -104,7 +104,7 @@
     </changeSet>
 
     <changeSet id="kcdb_5" author="kochiu" runOnChange="true">
-        <preConditions>
+        <preConditions onFail="MARK_RAN">
             <not>
                 <indexExists tableName="sys_user" indexName="IDX_USER_CODE"/>
             </not>
@@ -115,7 +115,7 @@
     </changeSet>
 
     <changeSet id="kcdb_6" author="kochiu" runOnChange="true">
-        <preConditions>
+        <preConditions onFail="MARK_RAN">
             <sqlCheck expectedResult="0">
                 SELECT COUNT(*) FROM sys_user
                 WHERE user_id = 1
@@ -171,7 +171,7 @@
     </changeSet>
 
     <changeSet id="kcdb_8" author="kochiu" runOnChange="true">
-        <preConditions>
+        <preConditions onFail="MARK_RAN">
             <rowCount expectedRows="0" tableName="sys_security"/>
         </preConditions>
         <insert tableName="sys_security">
@@ -221,7 +221,7 @@
     </changeSet>
 
     <changeSet id="kcdb_10" author="kochiu" runOnChange="true">
-        <preConditions>
+        <preConditions onFail="MARK_RAN">
             <rowCount expectedRows="0" tableName="user_category"/>
         </preConditions>
         <insert tableName="user_category">
@@ -284,6 +284,7 @@
             </column>
             <column name="star" remarks="星级" type="INTEGER" defaultValue="0"/>
             <column name="md5" remarks="文件md5值" type="VARCHAR(32)"/>
+            <column name="DELETE_TIME" remarks="创建时间" type="date"/>
             <column name="CREATE_TIME" remarks="创建时间" type="date"/>
             <column name="CREATE_BY" remarks="创建人" type="VARCHAR(20)"/>
             <column name="UPDATE_TIME" remarks="更新时间" type="date"/>

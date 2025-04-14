@@ -14,7 +14,7 @@ import java.time.format.DateTimeFormatter;
 @MappedTypes(LocalDateTime.class)
 public class SQLiteLocalDateTimeTypeHandler extends BaseTypeHandler<LocalDateTime> {
 
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     
     @Override
     public void setNonNullParameter(PreparedStatement ps, int i,

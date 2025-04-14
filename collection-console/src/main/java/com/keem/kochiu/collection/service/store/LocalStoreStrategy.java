@@ -17,6 +17,7 @@ import com.keem.kochiu.collection.service.file.FileStrategy;
 import com.keem.kochiu.collection.service.file.FileStrategyFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -143,7 +144,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
      * @param request
      * @param resourceId
      */
-    public void download(HttpServletRequest request, HttpServletResponse response, int resourceId) {
+    public void download(HttpServletRequest request, HttpServletResponse response, Long resourceId) {
         //请求路径
         String url = request.getRequestURI();
         url = url.substring(request.getContextPath().length());
@@ -151,10 +152,6 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
         //查找资源
         UserResource resource = resourceRepository.getById(resourceId);
         if(resource == null){
-            response.setStatus(404);
-            return;
-        }
-        if(resource.getDeleted() == 1){
             response.setStatus(404);
             return;
         }
@@ -205,7 +202,31 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
     }
 
     @Override
-    public void deleteFile(int resourceId) {
+    public void deleteFile(int userId, Long resourceId) {
+        //查找资源
+        UserResource resource = resourceRepository.getById(resourceId);
+        if(resource == null){
+            return;
+        }
+        if(resource.getUserId() != userId){
+            return;
+        }
 
+        File file = new File(pluServiceProperties.getUploadPath() + resource.getResourceUrl());
+        if(file.exists()){
+            file.delete();
+        }
+        if(StringUtils.isNotBlank(resource.getThumbUrl())) {
+            file = new File(pluServiceProperties.getUploadPath() + resource.getThumbUrl());
+            if (file.exists()) {
+                file.delete();
+            }
+        }
+        if(StringUtils.isNotBlank(resource.getPreviewUrl())) {
+            file = new File(pluServiceProperties.getUploadPath() + resource.getPreviewUrl());
+            if (file.exists()) {
+                file.delete();
+            }
+        }
     }
 }

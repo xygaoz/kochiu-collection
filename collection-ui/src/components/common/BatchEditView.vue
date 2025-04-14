@@ -6,7 +6,7 @@
             </div>
             <div class="actions">
                 <el-tooltip
-                    v-for="action in actions"
+                    v-for="action in actions.filter(action => action.show())"
                     :key="action.name"
                     :content="action.tooltip"
                     placement="bottom"
@@ -21,7 +21,7 @@
             </div>
         </div>
 
-        <div class="detail-row">
+        <div class="detail-row" v-if="!isRecycleBin">
             <el-form
                 label-width="80px"
                 class="edit-form"
@@ -67,7 +67,7 @@
                 <el-tag
                     v-for="tag in tagState.commonTags"
                     :key="tag.tagId"
-                    closable
+                    :closable="!isRecycleBin"
                     @close="removeTag(tag)">
                     {{ tag.tagName }}
                 </el-tag>
@@ -75,7 +75,7 @@
                 <el-tag
                     v-for="tag in tagState.partialTags"
                     :key="tag.tagName"
-                    class="dashed-tag"
+                    :class="isRecycleBin ? 'dashed-tag-dis' : 'dashed-tag'"
                     @click="addTagToMissingFiles(tag)">
                     {{ tag.tagName }}
                 </el-tag>
@@ -91,7 +91,7 @@
                         @click.stop
                     />
                     <el-button
-                        v-else
+                        v-else-if="!isRecycleBin"
                         class="button-new-tag"
                         size="small"
                         @click="showTagInput"
@@ -114,6 +114,7 @@ import { batchAddTag, batchRemoveTag, bacthUpdateResource } from "@/apis/resourc
 
 interface Props {
     selectedFiles: Resource[];
+    dataType: string;
 }
 
 const props = defineProps<Props>();
@@ -125,31 +126,36 @@ const tagInputRef = ref();
 const saving = ref(false);
 
 const selectedCount = computed(() => props.selectedFiles.length);
+const isRecycleBin = computed(() => props.dataType === 'recycle');
 
 const actions = [
     {
         name: 'clear',
         icon: CloseBold,
         tooltip: '取消选择',
+        show: () => true,
         handler: () => emit('clear-selection'),
     },
     {
         name: 'select-all',
         icon: CircleCheck,
         tooltip: '全选',
+        show: () => true,
         handler: () => emit('select-all'),
     },
     {
         name: 'delete',
         icon: Delete,
         tooltip: '批量删除',
-        handler: () => emit('delete', props.selectedFiles),
+        show: () => true,
+        handler: () => emit('delete', props.selectedFiles, props.dataType === 'recycle'),
         size: 'default'
     },
     {
         name: 'move',
         icon: Connection,
         tooltip: '移动到',
+        show: () => !isRecycleBin.value,
         handler: () => emit('move', props.selectedFiles),
     }
 ]
@@ -268,6 +274,9 @@ const handleBatchUpdate = async () => {
 // 添加标签到缺失文件
 const addTagToMissingFiles = async (tag: Tag) => {
     try {
+        if(isRecycleBin.value){
+            return
+        }
         // 防御性检查
         if (!localSelectedFiles.value || !Array.isArray(localSelectedFiles.value)) {
             console.error("文件数据未正确初始化");
@@ -565,5 +574,11 @@ watch(() => props.selectedFiles, (newVal) => {
 .dashed-tag:hover {
     background-color: #f0f9eb; /* 悬停效果 */
     border-color: #c2e7b0;
+}
+
+.dashed-tag-dis{
+    border: dashed 1px rgb(198, 198, 198);
+    background-color: #f2f2f2;
+    color: #9e9e9e;
 }
 </style>
