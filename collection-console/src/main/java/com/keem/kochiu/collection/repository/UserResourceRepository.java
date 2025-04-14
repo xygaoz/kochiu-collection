@@ -7,8 +7,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.keem.kochiu.collection.data.bo.FilterResourceBo;
-import com.keem.kochiu.collection.data.bo.MoveToCategoryBo;
-import com.keem.kochiu.collection.data.bo.PageBo;
+import com.keem.kochiu.collection.data.bo.MoveToBo;
 import com.keem.kochiu.collection.data.bo.ResInfoBo;
 import com.keem.kochiu.collection.data.dto.ResourceDto;
 import com.keem.kochiu.collection.entity.UserResource;
@@ -20,7 +19,6 @@ import com.keem.kochiu.collection.mapper.UserResourceMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -175,15 +173,32 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
     /**
      * 移动资源到分类
      * @param userId
-     * @param moveToCategoryBo
+     * @param moveToBo
      */
-    public void moveToCategory(Integer userId, MoveToCategoryBo moveToCategoryBo) {
+    public void moveToCategory(Integer userId, MoveToBo moveToBo) {
 
-        moveToCategoryBo.getResourceIds().forEach(resourceId -> {
+        moveToBo.getResourceIds().forEach(resourceId -> {
             baseMapper.update(null,
                     new LambdaUpdateWrapper<UserResource>()
-                            .set(UserResource::getCateId, moveToCategoryBo.getCateId())
-                            .in(UserResource::getResourceId, moveToCategoryBo.getResourceIds())
+                            .set(UserResource::getCateId, moveToBo.getCateId())
+                            .in(UserResource::getResourceId, moveToBo.getResourceIds())
+                            .eq(UserResource::getUserId, userId)
+            );
+        });
+    }
+
+    /**
+     * 移动资源到回收站
+     * @param userId
+     * @param moveToBo
+     */
+    public void moveToRecycle(Integer userId, MoveToBo moveToBo){
+
+        moveToBo.getResourceIds().forEach(resourceId -> {
+            baseMapper.update(null,
+                    new LambdaUpdateWrapper<UserResource>()
+                            .set(UserResource::getDeleted, 1)
+                            .in(UserResource::getResourceId, moveToBo.getResourceIds())
                             .eq(UserResource::getUserId, userId)
             );
         });

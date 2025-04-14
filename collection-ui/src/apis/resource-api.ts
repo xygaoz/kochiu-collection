@@ -154,3 +154,14 @@ export const moveToCategory = (resourceIds: number[], params: any): Promise<bool
         ld.close();
     });
 }
+
+export const moveToRecycle = (resourceIds: number[], params: any): Promise<boolean> => {
+    const ld = loading("移动中")
+    params["resourceIds"] = resourceIds;
+    return httpInstance.post("/resource/moveToRecycle", params).then((model: any) => {
+        console.log("移动成功:", model);
+        return model;
+    }).finally(() => {
+        ld.close();
+    });
+}

@@ -2,6 +2,7 @@ package com.keem.kochiu.collection.controller;
 
 import com.keem.kochiu.collection.annotation.Add;
 import com.keem.kochiu.collection.annotation.CheckPermit;
+import com.keem.kochiu.collection.annotation.Edit;
 import com.keem.kochiu.collection.annotation.Remove;
 import com.keem.kochiu.collection.data.DefaultResult;
 import com.keem.kochiu.collection.data.bo.*;
@@ -128,8 +129,15 @@ public class UserResourceController {
 
     @CheckPermit
     @PostMapping(RESOURCE_PATH + "/moveToCategory")
-    public DefaultResult<Boolean> moveToCategory(@Validated MoveToCategoryBo moveToCategoryBo) throws CollectionException {
-        resourceService.moveToCategory(CheckPermitAspect.USER_INFO.get(), moveToCategoryBo);
+    public DefaultResult<Boolean> moveToCategory(@Validated({Edit.class}) MoveToBo moveToBo) throws CollectionException {
+        resourceService.moveToCategory(CheckPermitAspect.USER_INFO.get(), moveToBo);
+        return DefaultResult.ok(true);
+    }
+
+    @CheckPermit
+    @PostMapping(RESOURCE_PATH + "/moveToRecycle")
+    public DefaultResult<Boolean> moveToRecycle(@Validated MoveToBo moveToBo) throws CollectionException {
+        resourceService.moveToRecycle(CheckPermitAspect.USER_INFO.get(), moveToBo);
         return DefaultResult.ok(true);
     }
 }

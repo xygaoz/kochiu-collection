@@ -60,7 +60,7 @@
                                 <el-icon class="action-icon" @click.stop="handleDownload(item.image)" title="下载">
                                     <Download />
                                 </el-icon>
-                                <el-icon class="action-icon" @click.stop="handleDelete(item.image)" title="删除">
+                                <el-icon class="action-icon" @click.stop="handleToRecycle(item.image)" title="删除">
                                     <Delete />
                                 </el-icon>
                                 <el-icon class="action-icon" @click.stop="handleMove(item.image)" title="移动">
@@ -100,6 +100,7 @@ const emit = defineEmits<{
     (e: 'preview', image: Resource): void;
     (e: 'multiple-selected', images: Resource[]): void;
     (e: 'move-to-category', images: Resource[]): void;
+    (e: 'move-to-recycle', images: Resource[]): void;
 }>();
 
 const waterfallContainer = ref<HTMLElement | null>(null);
@@ -306,10 +307,8 @@ const handleDownload = (image: Resource) => {
     // 例如：window.open(image.downloadUrl);
 };
 
-const handleDelete = (image: Resource) => {
-    console.log('删除文件:', image);
-    // 这里添加实际的删除逻辑
-    // 例如：emit('delete', image);
+const handleToRecycle = (image: Resource) => {
+    emit('move-to-recycle', [image]);
 };
 
 const handleMove = (image: Resource) => {

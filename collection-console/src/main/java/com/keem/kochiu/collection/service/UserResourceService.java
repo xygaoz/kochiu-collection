@@ -270,14 +270,25 @@ public class UserResourceService {
     /**
      * 批量移动到分类
      * @param userDto
-     * @param moveToCategoryBo
+     * @param moveToBo
      * @throws CollectionException
      */
-    public void moveToCategory(UserDto userDto, MoveToCategoryBo moveToCategoryBo) throws CollectionException {
+    public void moveToCategory(UserDto userDto, MoveToBo moveToBo) throws CollectionException {
         SysUser user = userRepository.getUser(userDto);
-        if(categoryRepository.getById(moveToCategoryBo.getCateId()) == null){
+        if(categoryRepository.getById(moveToBo.getCateId()) == null){
             throw new CollectionException(ErrorCodeEnum.CATEGORY_NOT_EXIST);
         }
-        resourceRepository.moveToCategory(user.getUserId(), moveToCategoryBo);
+        resourceRepository.moveToCategory(user.getUserId(), moveToBo);
+    }
+
+    /**
+     * 批量移动到回收站
+     * @param userDto
+     * @param moveToBo
+     * @throws CollectionException
+     */
+    public void moveToRecycle(UserDto userDto, MoveToBo moveToBo) throws CollectionException {
+        SysUser user = userRepository.getUser(userDto);
+        resourceRepository.moveToRecycle(user.getUserId(), moveToBo);
     }
 }

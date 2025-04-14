@@ -21,6 +21,7 @@
                     @preview="handlePreview"
                     @multiple-selected="handleMultipleSelected"
                     @move-to-category="handleMoveToCate"
+                    @move-to-recycle="handleMoveToRecycle"
                 />
 
             </el-main>
@@ -40,6 +41,7 @@
                 @update-success="handleUpdateSuccess"
                 @select-all="handleSelectAll"
                 @move="handleMoveToCate"
+                @delete="handleMoveToRecycle"
             />
             <el-empty v-else description="请选择文件查看详情" />
         </el-aside>
@@ -61,9 +63,10 @@ import type { Resource } from "@/apis/interface";
 import WaterfallLayout from "@/components/common/WaterfallLayout.vue";
 import FileDetailView from "@/components/common/FileDetailView.vue";
 import BatchEditView from "@/components/common/BatchEditView.vue";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import PdfPreviewDialog from "@/components/common/PdfPreviewDialog.vue";
 import MoveToCategory from "@/components/common/MoveToCategory.vue";
+import { moveToRecycle } from "@/apis/resource-api";
 
 const formExpanded = ref(false);
 const headerHeight = ref('40px');
@@ -171,6 +174,26 @@ const handleMoveToCate = (resources: Resource[]) => {
 const handleMoveSuccess = () => {
     handleClearSelection();
     emit('filter-data', searchData);
+};
+
+const handleMoveToRecycle = (resources: Resource[]) => {
+    ElMessageBox.confirm(
+        '您需要将资源删除吗？以后还能通过回收站恢复。',
+        '警告',
+        {
+            confirmButtonText: '确认',
+            cancelButtonText: '取消',
+            type: 'warning',
+        }
+    ).then(async () => {
+        const resourceIds = resources.map(r => r.resourceId);
+        let result = await moveToRecycle(resourceIds, {});
+        if (result) {
+            ElMessage.success('删除成功');
+            handleClearSelection();
+            emit('filter-data', searchData);
+        }
+    });
 };
 </script>
 
