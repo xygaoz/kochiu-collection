@@ -112,10 +112,10 @@
                                 cursor: pointer;
                             "
                         >
-                            <div style="width: 22px; height: 22px;">
+                            <div style="width: 28px; height: 28px;">
                                 <img class="user-image" src="../assets/imgs/user.gif" alt="" />
                             </div>
-                            <div style="padding-left: 5px; padding-top: 3px">gaozhao</div>
+                            <div style="padding-left: 9px; padding-top: 6px">gaozhao</div>
                         </div>
                     </div>
                 </el-header>
@@ -367,8 +367,9 @@ const menuItemClick = (item: RouteRecordRaw) => {
 }
 
 .user-image {
-    width: 22px;
-    height: 22px;
+    width: 28px;
+    height: 28px;
+    border-radius: 15px;
 }
 
 .demo-tabs /deep/ .el-tabs__header {
