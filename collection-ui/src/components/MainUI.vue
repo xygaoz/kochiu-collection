@@ -1,94 +1,94 @@
 <template>
     <div style="height: calc(100vh); overflow: hidden; background-color: rgb(243 244 246);">
         <el-container style="height: 100%; overflow: hidden">
-            <el-aside style="width: 250px;">
-                <el-menu
-                    class="el-menu-vertical-demo"
-                    :default-active="activeMenu"
-                    background-color="#fff"
-                    text-color="#525252"
-                    active-text-color="rgb(59,130,246)"
-                    style="height: 100%"
-                    :default-openeds="defaultOpeneds"
-                >
-                    <div class="el-menu-box">
-                        <div
-                            class="logo-image"
-                        ></div>
-                        <div style="padding-left: 5px; padding-top: 3px">
-                            KoChiu Collection
-                        </div>
+            <el-aside style="width: 250px; display: flex; flex-direction: column;">
+                <div class="el-menu-box">
+                    <div class="logo-image"></div>
+                    <div style="padding-left: 5px; padding-top: 3px">
+                        KoChiu Collection
                     </div>
-                    <div v-for="menuItem in menu" :key="menuItem.name">
-                        <el-sub-menu
-                            v-if="menuItem.children && menuItem.children.length"
-                            :index="menuItem.path"
-                            :key="menuItem.name"
-                        >
-                            <template #title>
-                                <div class="menu-icon">
-                                    <el-icon v-if="menuItem.meta?.iconType === 'icons-vue' " :style="String(menuItem.meta?.style)">
-                                        <component :is="menuItem.meta.icon" />
-                                    </el-icon>
-                                    <i v-else class="iconfont" :class="menuItem.meta?.icon"
-                                       :style="String(menuItem.meta?.style)"></i>
-                                </div>
-                                <div class="menu-label">
-                                    {{ menuItem.meta?.title || menuItem.name }}
-                                </div>
-                                <!-- 添加按钮 -->
-                                <el-icon v-if="menuItem.path === '/Category'" @click="addCategory" class="add_category" title="新分类">
-                                    <Plus />
-                                </el-icon>
-                            </template>
-                            <el-menu-item
-                                v-for="subMenuItem in menuItem.children"
-                                :index="subMenuItem.path"
-                                :route="{ name: subMenuItem.name }"
-                                :key="subMenuItem.name"
-                                @click="menuItemClick(subMenuItem)"
-                                style="cursor: pointer"
-                                :disabled="subMenuItem.meta?.disabled"
+                </div>
+                <div style="flex: 1; overflow-y: auto;">
+                    <el-menu
+                        class="el-menu-vertical-demo"
+                        :default-active="activeMenu"
+                        background-color="#fff"
+                        text-color="#525252"
+                        active-text-color="rgb(59,130,246)"
+                        style="height: 100%"
+                        :default-openeds="defaultOpeneds"
+                    >
+                        <div v-for="menuItem in menu" :key="menuItem.name">
+                            <el-sub-menu
+                                v-if="menuItem.children && menuItem.children.length"
+                                :index="menuItem.path"
+                                :key="menuItem.name"
                             >
                                 <template #title>
                                     <div class="menu-icon">
-                                        <el-icon v-if="subMenuItem.meta?.iconType === 'icons-vue' " :style="String(subMenuItem.meta?.style)">
-                                            <component :is="subMenuItem.meta.icon" />
+                                        <el-icon v-if="menuItem.meta?.iconType === 'icons-vue' " :style="String(menuItem.meta?.style)">
+                                            <component :is="menuItem.meta.icon" />
                                         </el-icon>
-                                        <i v-else class="iconfont" :class="subMenuItem.meta?.icon"
-                                           :style="String(subMenuItem.meta?.style)"></i>
+                                        <i v-else class="iconfont" :class="menuItem.meta?.icon"
+                                           :style="String(menuItem.meta?.style)"></i>
                                     </div>
                                     <div class="menu-label">
-                                        {{ subMenuItem.meta?.title || subMenuItem.name }}
+                                        {{ menuItem.meta?.title || menuItem.name }}
+                                    </div>
+                                    <!-- 添加按钮 -->
+                                    <el-icon v-if="menuItem.path === '/Category'" @click="addCategory" class="add_category" title="新分类">
+                                        <Plus />
+                                    </el-icon>
+                                </template>
+                                <el-menu-item
+                                    v-for="subMenuItem in menuItem.children"
+                                    :index="subMenuItem.path"
+                                    :route="{ name: subMenuItem.name }"
+                                    :key="subMenuItem.name"
+                                    @click="menuItemClick(subMenuItem)"
+                                    style="cursor: pointer"
+                                    :disabled="subMenuItem.meta?.disabled"
+                                >
+                                    <template #title>
+                                        <div class="menu-icon">
+                                            <el-icon v-if="subMenuItem.meta?.iconType === 'icons-vue' " :style="String(subMenuItem.meta?.style)">
+                                                <component :is="subMenuItem.meta.icon" />
+                                            </el-icon>
+                                            <i v-else class="iconfont" :class="subMenuItem.meta?.icon"
+                                               :style="String(subMenuItem.meta?.style)"></i>
+                                        </div>
+                                        <div class="menu-label">
+                                            {{ subMenuItem.meta?.title || subMenuItem.name }}
+                                        </div>
+                                    </template>
+                                </el-menu-item>
+                            </el-sub-menu>
+
+                            <el-menu-item
+                                v-else
+                                :index="menuItem.path"
+                                :key="menuItem.path"
+                                :route="{ name: menuItem.name }"
+                                @click="menuItemClick(menuItem)"
+                                style="cursor: pointer"
+                                :disabled="menuItem.meta?.disabled"
+                            >
+                                <template #title>
+                                    <div class="menu-icon">
+                                        <el-icon v-if="menuItem.meta?.iconType === 'icons-vue' " :style="String(menuItem.meta?.style)">
+                                            <component :is="menuItem.meta.icon" />
+                                        </el-icon>
+                                        <i v-else class="iconfont" :class="menuItem.meta?.icon"
+                                           :style="String(menuItem.meta?.style)"></i>
+                                    </div>
+                                    <div class="menu-label">
+                                        {{ menuItem.meta?.title || menuItem.name }}
                                     </div>
                                 </template>
                             </el-menu-item>
-                        </el-sub-menu>
-
-                        <el-menu-item
-                            v-else
-                            :index="menuItem.path"
-                            :key="menuItem.path"
-                            :route="{ name: menuItem.name }"
-                            @click="menuItemClick(menuItem)"
-                            style="cursor: pointer"
-                            :disabled="menuItem.meta?.disabled"
-                        >
-                            <template #title>
-                                <div class="menu-icon">
-                                    <el-icon v-if="menuItem.meta?.iconType === 'icons-vue' " :style="String(menuItem.meta?.style)">
-                                        <component :is="menuItem.meta.icon" />
-                                    </el-icon>
-                                    <i v-else class="iconfont" :class="menuItem.meta?.icon"
-                                       :style="String(menuItem.meta?.style)"></i>
-                                </div>
-                                <div class="menu-label">
-                                    {{ menuItem.meta?.title || menuItem.name }}
-                                </div>
-                            </template>
-                        </el-menu-item>
-                    </div>
-                </el-menu>
+                        </div>
+                    </el-menu>
+                </div>
             </el-aside>
 
             <el-container>
@@ -96,21 +96,21 @@
                     <div style="display: flex; height: 100%; align-items: center">
                         <div
                             style="
-                text-align: left;
-                width: 33%;
-                font-size: 18px;
-                display: flex;
-              "
+                                text-align: left;
+                                width: 33%;
+                                font-size: 18px;
+                                display: flex;
+                            "
                         >
                         </div>
                         <div
                             style="
-                text-align: right;
-                width: 67%;
-                display: flex;
-                justify-content: right;
-                cursor: pointer;
-              "
+                                text-align: right;
+                                width: 67%;
+                                display: flex;
+                                justify-content: right;
+                                cursor: pointer;
+                            "
                         >
                             <div style="width: 22px; height: 22px;">
                                 <img class="user-image" src="../assets/imgs/user.gif" alt="" />
@@ -293,7 +293,7 @@ const loadTypes = async () => {
                         typeName: type.value,
                         icon: `icon-col-${type.value}`,  // 添加图标
                         iconType: 'iconfont',
-                        style: 'font-size: 18px; color: rgb(59,130,246)'
+                        style: 'font-size: 21px; color: rgb(59,130,246)'
                     }
                 }));
             }
@@ -337,6 +337,7 @@ const menuItemClick = (item: RouteRecordRaw) => {
     border: 1px solid #00152914;
     color: white;
     background-color: rgb(75 85 99);
+    flex-shrink: 0; /* Prevent the header from shrinking */
 }
 
 .el-main {
@@ -355,7 +356,6 @@ const menuItemClick = (item: RouteRecordRaw) => {
     height: 60px;
     color: white;
     background-color: rgb(55 65 81);
-    /* display: flex; */
 }
 
 .logo-image {
@@ -372,7 +372,7 @@ const menuItemClick = (item: RouteRecordRaw) => {
 }
 
 .demo-tabs /deep/ .el-tabs__header {
-    color: #333; /* 标签页头部字体颜色 */
+    color: #333;
     margin: 0 0 5px !important;
 }
 

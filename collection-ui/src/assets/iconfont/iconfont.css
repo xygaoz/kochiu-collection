@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4879248 */
-  src: url('iconfont.woff2?t=1744555288639') format('woff2'),
-       url('iconfont.woff?t=1744555288639') format('woff'),
-       url('iconfont.ttf?t=1744555288639') format('truetype');
+  src: url('iconfont.woff2?t=1744594247509') format('woff2'),
+       url('iconfont.woff?t=1744594247509') format('woff'),
+       url('iconfont.ttf?t=1744594247509') format('truetype');
 }
 
 .iconfont {
@@ -13,32 +13,32 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.icon-col-duomeitiicon-:before {
-  content: "\e61c";
-}
-
 .icon-col-document:before {
-  content: "\e62e";
-}
-
-.icon-col-video:before {
-  content: "\e662";
-}
-
-.icon-col-unknown:before {
-  content: "\e663";
-}
-
-.icon-col-other:before {
-  content: "\e6ac";
+  content: "\e67c";
 }
 
 .icon-col-image:before {
-  content: "\e78e";
+  content: "\e6f0";
+}
+
+.icon-col-unknown:before {
+  content: "\e760";
+}
+
+.icon-col-video:before {
+  content: "\13e26";
 }
 
 .icon-col-audio:before {
-  content: "\e78f";
+  content: "\13e27";
+}
+
+.icon-col-other:before {
+  content: "\e6bc";
+}
+
+.icon-col-duomeitiicon-:before {
+  content: "\e61c";
 }
 
 .icon-col-fenlei3:before {
@@ -63,10 +63,6 @@
 
 .icon-col-24gl-tags4:before {
   content: "\e87d";
-}
-
-.icon-col-quanbufenlei:before {
-  content: "\e63d";
 }
 
 .icon-col-quanbu:before {
