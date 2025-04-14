@@ -133,7 +133,40 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
 
         try(Page<UserResource> page = PageHelper.startPage(filterResourceBo.getPageNum(), filterResourceBo.getPageSize())) {
 
-            return new PageInfo<>(baseMapper.selectTagResource(userId, tagId, filterResourceBo.getKeyword(), filterResourceBo.getTypes()));
+            Set<String> fileExtList = new HashSet<>();
+            if(filterResourceBo.getTypes() != null) {
+                for (String type : filterResourceBo.getTypes()) {
+                    fileExtList.addAll(FileTypeEnum.getNames(ResourceTypeEnum.getByValue(type)));
+                }
+            }
+            return new PageInfo<>(baseMapper.selectTagResource(userId,
+                    tagId,
+                    filterResourceBo.getKeyword(),
+                    fileExtList.toArray(new String[0]))
+            );
+        }
+    }
+
+    /**
+     * 获取文件类型下资源列表
+     * @param userId
+     * @return
+     */
+    public PageInfo<UserResource> getResourceListByType(int userId, FilterResourceBo filterResourceBo) {
+
+        try(Page<UserResource> page = PageHelper.startPage(filterResourceBo.getPageNum(), filterResourceBo.getPageSize())) {
+
+            Set<String> fileExtList = new HashSet<>();
+            if(filterResourceBo.getTypes() != null) {
+                for (String type : filterResourceBo.getTypes()) {
+                    fileExtList.addAll(FileTypeEnum.getNames(ResourceTypeEnum.getByValue(type)));
+                }
+            }
+            return new PageInfo<>(baseMapper.selectTypeResource(userId,
+                    filterResourceBo.getKeyword(),
+                    fileExtList.toArray(new String[0]),
+                    filterResourceBo.getTags())
+            );
         }
     }
 }

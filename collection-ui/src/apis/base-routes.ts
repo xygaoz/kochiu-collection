@@ -32,9 +32,16 @@ routes.push(
         ]
     },
     {
+        path: '/Type',
+        name: 'type',
+        meta: { title: '文件类型', icon: 'icon-col-duomeitiicon-', iconType: 'iconfont', style: 'font-size: 20px; color: rgb(59,130,246); margin: 0 1px 0 0;' },
+        children: [
+        ]
+    },
+    {
         path: '/My',
         name: "my",
-        meta: { title: '我的', icon: 'Avatar', iconType: 'icons-vue', style: 'color: rgb(59,130,246)' },
+        meta: { title: '我的', icon: 'Avatar', iconType: 'icons-vue', style: 'color: rgb(59,130,246); margin: 0 -1px 0 0;' },
         children: [
             {
                 path: '/Upload',
@@ -73,17 +80,24 @@ routes.push(
     {
         path: '/Category/:cateId',  // 动态参数（注意大小写统一）
         name: 'category-detail',    // 固定名称
-        component: () => import('@/components/category/CategoryFile.vue'),
+        component: () => import('@/components/category/CategoryResource.vue'),
         meta: { showInMenu: false },
         props: true  // 将路由参数自动作为props传递
     },
     {
         path: '/Tag/:tagId',  // 动态参数（注意大小写统一）
         name: 'tag-detail',    // 固定名称
-        component: () => import('@/components/tag/TagFile.vue'),
+        component: () => import('@/components/tag/TagResource.vue'),
         meta: { showInMenu: false },
         props: true  // 将路由参数自动作为props传递
-    }
+    },
+    {
+        path: '/Type/:typeName',  // 动态参数（注意大小写统一）
+        name: 'type-detail',    // 固定名称
+        component: () => import('@/components/type/TypeResource.vue'),
+        meta: { showInMenu: false },
+        props: true  // 将路由参数自动作为props传递
+    },
 )
 
 //创建路由，并且暴露出去

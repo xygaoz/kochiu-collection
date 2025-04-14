@@ -140,14 +140,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from "vue";
+import { nextTick, onMounted, ref } from "vue";
 import router, { routes } from "@/apis/base-routes";
 import { RouteRecordRaw } from "vue-router";
 import { Plus } from "@element-plus/icons-vue"; // 导入listCategory方法
-import { Category, Tag } from "@/apis/interface";
+import { Category, ResourceType, Tag } from "@/apis/interface";
 import CategoryDialog from "@/components/category/CategoryDialog.vue";
 import { listCategory } from "@/apis/category-api";
-import { listTag } from "@/apis/tag-api"; // 导入Category接口
+import { listTag } from "@/apis/tag-api";
+import { getResourceTypes } from "@/apis/system-api"; // 导入Category接口
 
 const activeMenu = ref(''); // 当前激活的菜单项
 const menu = ref(routes.filter(route => route.meta?.showInMenu !== false));
@@ -165,6 +166,7 @@ onMounted(() => {
     router.push(routes[0]);
     loadCategories(); // 调用加载分类的方法
     loadTags(); // 调用加载标签的方法
+    loadTypes(); // 调用加载资源类型的方法
 });
 
 // 加载分类并更新菜单
@@ -181,9 +183,6 @@ const loadCategories = async () => {
 const updateCategoryMenu = (categories: Category[]) => {
     // 保存当前路由路径
     const currentPath = router.currentRoute.value.path
-
-    // 重新初始化菜单
-    initMenu();
 
     // 找到/category路由
     const categoryRoute = menu.value.find(route => route.path === '/Category');
@@ -276,6 +275,34 @@ const loadTags = async () => {
         console.error('加载标签失败:', error);
     }
 };
+
+// 加载文件类型的方法
+const loadTypes = async () => {
+    try {
+        const types: ResourceType[] = await getResourceTypes();
+        if (types && types.length > 0) {
+            // 找到/type路由
+            const typeRoute = menu.value.find(route => route.path === '/Type');
+            if (typeRoute && typeRoute.children) {
+
+                // 重新设置children数组
+                typeRoute.children = types.map(type => ({
+                    path: `/Type/${type.value}`,
+                    meta: {
+                        title: type.label,
+                        typeName: type.value,
+                        icon: `icon-col-${type.value}`,  // 添加图标
+                        iconType: 'iconfont',
+                        style: 'font-size: 18px; color: rgb(59,130,246)'
+                    }
+                }));
+            }
+        }
+    } catch (error) {
+        console.error('加载标签失败:', error);
+    }
+};
+
 // 菜单项点击事件
 const menuItemClick = (item: RouteRecordRaw) => {
     // 统一使用path跳转

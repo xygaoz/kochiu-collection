@@ -92,6 +92,19 @@ public class UserResourceController {
                                                                   FilterResourceBo filterResourceBo) throws CollectionException {
         return DefaultResult.ok(resourceService.getResourceListByTag(CheckPermitAspect.USER_INFO.get(), tagId, filterResourceBo));
     }
+    /**
+     * 根据文件类型获取资源列表
+     * @param filterResourceBo
+     * @return
+     * @throws CollectionException
+     */
+    @CheckPermit
+    @PostMapping(RESOURCE_PATH + "/type/{type}")
+    public DefaultResult<PageVo<ResourceVo>> getResourceListByType(@PathVariable String type,
+                                                                  FilterResourceBo filterResourceBo) throws CollectionException {
+        filterResourceBo.setTypes(new String[]{type});
+        return DefaultResult.ok(resourceService.getResourceListByType(CheckPermitAspect.USER_INFO.get(), filterResourceBo));
+    }
 
     @CheckPermit
     @PostMapping(RESOURCE_PATH + "/batchUpdate")

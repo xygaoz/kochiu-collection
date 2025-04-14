@@ -24,7 +24,7 @@ public class SystemController {
 
         List<ResourceTypeVo> resourceTypeVos = new ArrayList<>();
         Arrays.stream(ResourceTypeEnum.values()).forEach(resourceTypeEnum -> {
-            resourceTypeVos.add(new ResourceTypeVo(resourceTypeEnum.getLabel(), resourceTypeEnum.name()));
+            resourceTypeVos.add(new ResourceTypeVo(resourceTypeEnum.getLabel(), resourceTypeEnum.name().toLowerCase()));
         });
 
         return new DefaultResult<>(resourceTypeVos);

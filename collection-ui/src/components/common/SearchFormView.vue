@@ -26,7 +26,9 @@
                     />
                 </el-form-item>
 
-                <el-form-item label="类别" prop="types" class="form-item">
+                <el-form-item label="类别" prop="types" class="form-item"
+                              v-if="props.dataType != 'type'"
+                >
                     <el-checkbox-group v-model="searchForm.types" size="small" class="checkbox-group"
                         @change="handleSearch">
                         <el-checkbox-button
