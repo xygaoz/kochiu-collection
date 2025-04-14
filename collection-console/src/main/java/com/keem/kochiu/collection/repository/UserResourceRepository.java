@@ -20,6 +20,7 @@ import com.keem.kochiu.collection.mapper.UserResourceMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -177,11 +178,14 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
      * @param moveToCategoryBo
      */
     public void moveToCategory(Integer userId, MoveToCategoryBo moveToCategoryBo) {
-        baseMapper.update(null,
-                new LambdaUpdateWrapper<UserResource>()
-                        .set(UserResource::getCateId, moveToCategoryBo.getCateId())
-                        .in(UserResource::getResourceId, moveToCategoryBo.getResourceIds())
-                        .eq(UserResource::getUserId, userId)
-        );
+
+        moveToCategoryBo.getResourceIds().forEach(resourceId -> {
+            baseMapper.update(null,
+                    new LambdaUpdateWrapper<UserResource>()
+                            .set(UserResource::getCateId, moveToCategoryBo.getCateId())
+                            .in(UserResource::getResourceId, moveToCategoryBo.getResourceIds())
+                            .eq(UserResource::getUserId, userId)
+            );
+        });
     }
 }

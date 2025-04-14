@@ -1,6 +1,7 @@
 export interface Category {
-    sno: string;
+    sno: number;
     cateName: string;
+    cateId: number
 }
 
 export interface PageInfo<T> {

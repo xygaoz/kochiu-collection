@@ -52,6 +52,7 @@ public class UserCategoryService {
         SysUser user = userRepository.getUser(userDto);
         List<UserCategory> categoryList = userCategoryRepository.getAllCategory(user.getUserId());
         return categoryList.stream().map(category -> CategoryVo.builder()
+                .cateId(category.getCateId())
                 .cateName(category.getCateName())
                 .sno(category.getSno())
                 .build()).toList();

@@ -56,6 +56,17 @@
                         </div>
                         <div class="image-info">
                             <div class="image-title">{{ item.image.title || item.image.sourceFileName }}</div>
+                            <div class="image-actions">
+                                <el-icon class="action-icon" @click.stop="handleDownload(item.image)" title="下载">
+                                    <Download />
+                                </el-icon>
+                                <el-icon class="action-icon" @click.stop="handleDelete(item.image)" title="删除">
+                                    <Delete />
+                                </el-icon>
+                                <el-icon class="action-icon" @click.stop="handleMove(item.image)" title="移动">
+                                    <Connection />
+                                </el-icon>
+                            </div>
                         </div>
                     </div>
                 </el-card>
@@ -77,6 +88,7 @@ import {
     watch
 } from "vue";
 import type { Resource } from "@/apis/interface";
+import { Connection, Delete, Download } from "@element-plus/icons-vue";
 
 // 使用 TypeScript 类型定义 props
 const props = defineProps<{
@@ -87,6 +99,7 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'preview', image: Resource): void;
     (e: 'multiple-selected', images: Resource[]): void;
+    (e: 'move-to-category', images: Resource[]): void;
 }>();
 
 const waterfallContainer = ref<HTMLElement | null>(null);
@@ -287,6 +300,22 @@ const selectAll = async () => {
     emit('multiple-selected', multipleSelected.value);
 }
 
+const handleDownload = (image: Resource) => {
+    console.log('下载文件:', image);
+    // 这里添加实际的下载逻辑
+    // 例如：window.open(image.downloadUrl);
+};
+
+const handleDelete = (image: Resource) => {
+    console.log('删除文件:', image);
+    // 这里添加实际的删除逻辑
+    // 例如：emit('delete', image);
+};
+
+const handleMove = (image: Resource) => {
+    emit('move-to-category', [image]);
+};
+
 defineExpose({
     clearSelection, selectAll
 })
@@ -347,27 +376,6 @@ onBeforeUnmount(() => {
     background-color: #f5f5f5;
 }
 
-.image-info {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    font-size: 14px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding: 10px;
-    margin-bottom: 0;
-    border-radius: 0 0 5px 5px;
-    max-width: 140px;
-}
-
-.image-title{
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    color: #ddd;
-}
-
 .el-card {
     width: 100%;
     height: 100%;
@@ -423,6 +431,44 @@ onBeforeUnmount(() => {
     opacity: 1;
 }
 
+.image-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+    color: #fff;
+}
+
+.image-title {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 12px;
+}
+
+.image-actions {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.action-icon {
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    opacity: 0.7;
+}
+
+.action-icon:hover {
+    opacity: 1;
+    color: var(--el-color-primary);
+}
 /* 响应式调整 */
 @media (max-width: 768px) {
     .waterfall-row {

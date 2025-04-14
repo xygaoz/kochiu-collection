@@ -143,14 +143,14 @@ const actions = [
         name: 'delete',
         icon: Delete,
         tooltip: '批量删除',
-        handler: () => emit('delete'),
+        handler: () => emit('delete', props.selectedFiles),
         size: 'default'
     },
     {
         name: 'move',
         icon: Connection,
         tooltip: '移动到',
-        handler: () => emit('move'),
+        handler: () => emit('move', props.selectedFiles),
     }
 ]
 
@@ -459,10 +459,6 @@ watch(() => props.selectedFiles, (newVal) => {
     width: 100%;
 }
 
-.tag-section {
-    width: 100%;
-}
-
 .tags {
     display: flex;
     flex-wrap: wrap;
@@ -481,21 +477,6 @@ watch(() => props.selectedFiles, (newVal) => {
     transition:
         border 0.3s ease,
         background-color 0.3s ease;
-}
-
-/* 标签入场动画 */
-.tag-enter-active {
-    transition: all 0.3s ease;
-}
-
-.tag-enter-from {
-    opacity: 0;
-    transform: scale(0.8) translateY(5px);
-}
-
-/* 标签状态变化动画 */
-.tag-state-change {
-    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
 .tag-input {

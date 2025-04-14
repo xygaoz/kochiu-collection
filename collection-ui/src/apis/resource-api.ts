@@ -53,7 +53,7 @@ export const updateResource = (resourceId: number, params: any): Promise<boolean
     params["resourceId"] = resourceId;
     return httpInstance.post("/resource/updateInfo", params).then((model: any) => {
         console.log("修改成功:", model);
-        return true;
+        return model;
     }).finally(() => {
         ld.close();
     });
@@ -63,25 +63,21 @@ export const bacthUpdateResource = (resourceIds: number[], params: any): Promise
     params["resourceIds"] = resourceIds;
     return httpInstance.post("/resource/batchUpdate", params).then((model: any) => {
         console.log("修改成功:", model);
-        return true;
+        return model;
     })
 }
 
 export const addResourceTag = (resourceId: number, params: any): Promise<Tag> => {
     params["resourceId"] = resourceId;
     return httpInstance.post("/resource/addTag", params).then((model: any) => {
-        if (model) {
-            return model;
-        }
+        return model;
     });
 }
 
 export const removeResourceTag = (resourceId: number, params: any): Promise<any> => {
     params["resourceId"] = resourceId;
     return httpInstance.post("/resource/removeTag", params).then((model: any) => {
-        if (model) {
-            return model;
-        }
+        return model;
     });
 }
 
@@ -89,18 +85,14 @@ export const removeResourceTag = (resourceId: number, params: any): Promise<any>
 export const batchAddTag = (resourceIds: number[], params: any): Promise<any> => {
     params["resourceIds"] = resourceIds;
     return httpInstance.post("/resource/batchAddTag", params).then((model: any) => {
-        if (model) {
-            return model;
-        }
+        return model;
     });
 }
 
 export const batchRemoveTag = (resourceIds: number[], params: any): Promise<any> => {
     params["resourceIds"] = resourceIds;
     return httpInstance.post("/resource/batchRemoveTag", params).then((model: any) => {
-        if (model) {
-            return model;
-        }
+        return model;
     });
 }
 
@@ -147,6 +139,17 @@ export const listTypeFiles = (typeName: string, page: number, size: number, para
     }).catch((error) => {
         console.error("获取文件列表失败:", error);
         return { pageNum: 0, pageSize: 0, total: 0, pages: 0, list: [] };
+    }).finally(() => {
+        ld.close();
+    });
+}
+
+export const moveToCategory = (resourceIds: number[], params: any): Promise<boolean> => {
+    const ld = loading("修改中")
+    params["resourceIds"] = resourceIds;
+    return httpInstance.post("/resource/moveToCategory", params).then((model: any) => {
+        console.log("修改成功:", model);
+        return model;
     }).finally(() => {
         ld.close();
     });

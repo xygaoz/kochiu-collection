@@ -20,6 +20,7 @@
                     :selectedResource="selectedResource"
                     @preview="handlePreview"
                     @multiple-selected="handleMultipleSelected"
+                    @move-to-category="handleMoveToCate"
                 />
 
             </el-main>
@@ -38,6 +39,7 @@
                 @clear-selection="handleClearSelection"
                 @update-success="handleUpdateSuccess"
                 @select-all="handleSelectAll"
+                @move="handleMoveToCate"
             />
             <el-empty v-else description="请选择文件查看详情" />
         </el-aside>
@@ -47,6 +49,8 @@
         v-model="pdfDialogVisible"
         :url="pdfPreviewUrl"
     />
+
+    <MoveToCategory ref="moveToCategoryDialog" @success="handleMoveSuccess" />
 </template>
 
 <script lang="ts" setup>
@@ -59,6 +63,7 @@ import FileDetailView from "@/components/common/FileDetailView.vue";
 import BatchEditView from "@/components/common/BatchEditView.vue";
 import { ElMessage } from "element-plus";
 import PdfPreviewDialog from "@/components/common/PdfPreviewDialog.vue";
+import MoveToCategory from "@/components/common/MoveToCategory.vue";
 
 const formExpanded = ref(false);
 const headerHeight = ref('40px');
@@ -81,10 +86,16 @@ const selectedResources = ref<Resource[]>([]);
 const selectedResource = ref<Resource | null>(null);
 const pdfDialogVisible = ref(false);
 const pdfPreviewUrl = ref('');
+const moveToCategoryDialog = ref();
 const layoutRef = ref<{
     clearSelection: () => void,
     selectAll: () => void
 } | null>(null);
+const searchData = ref<SearchForm>({
+    keyword: '',
+    types: [],
+    tags: []
+});
 
 const emit = defineEmits(['update-file', 'filter-data']);
 
@@ -105,6 +116,7 @@ const handleExpandChange = (expanded: boolean) => {
 const handleSearch = (searchForm: SearchForm) => {
     selectedResource.value = null;
     selectedResources.value = []
+    searchData.value = searchForm;
     emit('filter-data', searchForm);
 };
 
@@ -147,6 +159,18 @@ const handleUpdateSuccess = (resources: Resource[]) => {
 const handleSelectAll = () => {
     layoutRef.value?.selectAll?.();
     selectedResources.value = [...props.files];
+};
+
+const handleMoveToCate = (resources: Resource[]) => {
+    //打开移动到分类弹窗
+    const resourceIds = resources.map(r => r.resourceId);
+    moveToCategoryDialog.value?.open(resourceIds);
+};
+
+// 移动到分类
+const handleMoveSuccess = () => {
+    handleClearSelection();
+    emit('filter-data', searchData);
 };
 </script>
 

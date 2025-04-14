@@ -61,9 +61,9 @@ public class UserResourceController {
 
     @CheckPermit
     @PostMapping(RESOURCE_PATH + "/updateInfo")
-    public DefaultResult<ResourceVo> updateResourceInfo(@Valid ResInfoBo resourceInfo) throws CollectionException {
+    public DefaultResult<Boolean> updateResourceInfo(@Valid ResInfoBo resourceInfo) throws CollectionException {
         resourceService.updateResourceInfo(CheckPermitAspect.USER_INFO.get(), resourceInfo);
-        return DefaultResult.ok();
+        return DefaultResult.ok(true);
     }
 
     @CheckPermit
@@ -74,9 +74,9 @@ public class UserResourceController {
 
     @CheckPermit
     @PostMapping(RESOURCE_PATH + "/removeTag")
-    public DefaultResult<TagDto> removeResourceTag(@Validated({Remove.class}) TagDto tagDto) throws CollectionException {
+    public DefaultResult<Boolean> removeResourceTag(@Validated({Remove.class}) TagDto tagDto) throws CollectionException {
         tagService.removeResourceTag(CheckPermitAspect.USER_INFO.get(), tagDto);
-        return DefaultResult.ok();
+        return DefaultResult.ok(true);
     }
 
     /**
@@ -108,9 +108,9 @@ public class UserResourceController {
 
     @CheckPermit
     @PostMapping(RESOURCE_PATH + "/batchUpdate")
-    public DefaultResult<ResourceVo> batchUpdate(@Validated BatchUpdateBo batchUpdateBo) throws CollectionException {
+    public DefaultResult<Boolean> batchUpdate(@Validated BatchUpdateBo batchUpdateBo) throws CollectionException {
         resourceService.batchUpdate(CheckPermitAspect.USER_INFO.get(), batchUpdateBo);
-        return DefaultResult.ok();
+        return DefaultResult.ok(true);
     }
 
     @CheckPermit
@@ -121,15 +121,15 @@ public class UserResourceController {
 
     @CheckPermit
     @PostMapping(RESOURCE_PATH + "/batchRemoveTag")
-    public DefaultResult<TagDto> batchRemoveTag(@Validated({Remove.class}) BatchTagBo tagDto) throws CollectionException {
+    public DefaultResult<Boolean> batchRemoveTag(@Validated({Remove.class}) BatchTagBo tagDto) throws CollectionException {
         tagService.batchRemoveTag(CheckPermitAspect.USER_INFO.get(), tagDto);
-        return DefaultResult.ok();
+        return DefaultResult.ok(true);
     }
 
     @CheckPermit
     @PostMapping(RESOURCE_PATH + "/moveToCategory")
-    public DefaultResult<ResourceVo> moveToCategory(@Validated MoveToCategoryBo moveToCategoryBo) throws CollectionException {
+    public DefaultResult<Boolean> moveToCategory(@Validated MoveToCategoryBo moveToCategoryBo) throws CollectionException {
         resourceService.moveToCategory(CheckPermitAspect.USER_INFO.get(), moveToCategoryBo);
-        return DefaultResult.ok();
+        return DefaultResult.ok(true);
     }
 }

@@ -9,8 +9,8 @@ import java.util.List;
 @Data
 public class BatchUpdateBo {
 
-    @NotNull
-    @Size(min = 1)
+    @NotNull(message = "资源Id不能为空！！！")
+    @Size(min = 1, message = "资源Id不能为空！！！")
     private List<Long> resourceIds;
     private String title;
     private String description;

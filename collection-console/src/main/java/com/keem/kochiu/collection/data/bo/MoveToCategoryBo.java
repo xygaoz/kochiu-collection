@@ -4,6 +4,7 @@ import lombok.Data;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.List;
 
 @Data
 public class MoveToCategoryBo {
@@ -11,5 +12,5 @@ public class MoveToCategoryBo {
     private Long cateId;
     @NotNull(message = "资源Id不能为空！！！")
     @Size(min = 1, message = "资源Id不能为空！！！")
-    private Long resourceIds;
+    private List<Long> resourceIds;
 }
