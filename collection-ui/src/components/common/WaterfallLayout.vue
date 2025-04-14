@@ -68,6 +68,11 @@
                                          @click.stop="handleMove(item.image)" title="移动">
                                     <Connection />
                                 </el-icon>
+                                <i v-if="props.dataType === 'recycle'"
+                                   class="action-icon iconfont icon-col-huanyuan"
+                                   title="还原"
+                                   @click.stop="handleRestore(item.image)"
+                                />
                             </div>
                         </div>
                     </div>
@@ -91,6 +96,7 @@ import {
 } from "vue";
 import type { Resource } from "@/apis/interface";
 import { Connection, Delete, Download } from "@element-plus/icons-vue";
+import { downloadFile } from "@/apis/utils";
 
 // 使用 TypeScript 类型定义 props
 const props = defineProps<{
@@ -104,6 +110,7 @@ const emit = defineEmits<{
     (e: 'multiple-selected', images: Resource[]): void;
     (e: 'move-to-category', images: Resource[]): void;
     (e: 'move-to-recycle', images: Resource[], deleted: boolean): void;
+    (e: 'restore', images: Resource[]): void;
 }>();
 
 const waterfallContainer = ref<HTMLElement | null>(null);
@@ -305,9 +312,7 @@ const selectAll = async () => {
 }
 
 const handleDownload = (image: Resource) => {
-    console.log('下载文件:', image);
-    // 这里添加实际的下载逻辑
-    // 例如：window.open(image.downloadUrl);
+    downloadFile(image.resourceUrl, {})
 };
 
 const handleToRecycle = (image: Resource) => {
@@ -316,6 +321,10 @@ const handleToRecycle = (image: Resource) => {
 
 const handleMove = (image: Resource) => {
     emit('move-to-category', [image]);
+};
+
+const handleRestore = (image: Resource) => {
+    emit('restore', [image])
 };
 
 defineExpose({

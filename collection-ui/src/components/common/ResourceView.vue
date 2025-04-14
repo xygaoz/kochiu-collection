@@ -23,6 +23,7 @@
                     @multiple-selected="handleMultipleSelected"
                     @move-to-category="handleMoveToCate"
                     @move-to-recycle="handleMoveToRecycle"
+                    @restore="handleRestore"
                 />
 
             </el-main>
@@ -45,6 +46,7 @@
                 @select-all="handleSelectAll"
                 @move="handleMoveToCate"
                 @delete="handleMoveToRecycle"
+                @restore="handleRestore"
             />
             <el-empty v-else description="请选择文件查看详情" />
         </el-aside>
@@ -69,7 +71,7 @@ import BatchEditView from "@/components/common/BatchEditView.vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import PdfPreviewDialog from "@/components/common/PdfPreviewDialog.vue";
 import MoveToCategory from "@/components/common/MoveToCategory.vue";
-import { moveToRecycle } from "@/apis/resource-api";
+import { moveToRecycle, restoreFormRecycle } from "@/apis/resource-api";
 
 const formExpanded = ref(false);
 const headerHeight = ref('40px');
@@ -200,6 +202,27 @@ const handleMoveToRecycle = (resources: Resource[], isDelete: boolean) => {
         }
     });
 };
+
+const handleRestore = (resources: Resource[]) => {
+    ElMessageBox.confirm(
+        '您需要恢复选择的资源吗？',
+        '警告',
+        {
+            confirmButtonText: '确认',
+            cancelButtonText: '取消',
+            type: 'warning',
+        }
+    ).then(async () => {
+        const resourceIds = resources.map(r => r.resourceId);
+        let result = await restoreFormRecycle(resourceIds, {});
+        if (result) {
+            ElMessage.success('恢复成功');
+            handleClearSelection();
+            emit('filter-data', searchData);
+        }
+    });
+
+}
 </script>
 
 <style scoped>

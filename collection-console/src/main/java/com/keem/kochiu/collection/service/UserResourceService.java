@@ -302,6 +302,17 @@ public class UserResourceService {
     }
 
     /**
+     * 批量从回收站恢复
+     * @param userDto
+     * @param moveToBo
+     * @throws CollectionException
+     */
+    public void restoreFormRecycle(UserDto userDto, MoveToBo moveToBo) throws CollectionException {
+        SysUser user = userRepository.getUser(userDto);
+        resourceRepository.restoreFormRecycle(user.getUserId(), moveToBo);
+    }
+
+    /**
      * 获取文件类型签资源列表
      * @param userDto
      * @return

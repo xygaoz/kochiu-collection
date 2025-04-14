@@ -207,6 +207,24 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
     }
 
     /**
+     * 恢复资源
+     * @param userId
+     * @param moveToBo
+     */
+    public void restoreFormRecycle(Integer userId, MoveToBo moveToBo) {
+
+        moveToBo.getResourceIds().forEach(resourceId -> {
+            baseMapper.update(null,
+                    new LambdaUpdateWrapper<UserResource>()
+                            .set(UserResource::getDeleted, 0)
+                            .set(UserResource::getDeleteTime, LocalDateTime.now())
+                            .in(UserResource::getResourceId, moveToBo.getResourceIds())
+                            .eq(UserResource::getUserId, userId)
+            );
+        });
+    }
+
+    /**
      * 删除资源
      * @param userId
      * @param resourceId

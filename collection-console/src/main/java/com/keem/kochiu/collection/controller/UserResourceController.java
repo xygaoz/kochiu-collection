@@ -16,10 +16,7 @@ import com.keem.kochiu.collection.service.CheckPermitAspect;
 import com.keem.kochiu.collection.service.UserResourceService;
 import com.keem.kochiu.collection.service.UserResourceTagService;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -47,7 +44,7 @@ public class UserResourceController {
         return DefaultResult.ok(resourceService.saveFile(uploadBo, CheckPermitAspect.USER_INFO.get()));
     }
 
-    @GetMapping("/resource/{resourceId}/**")
+    @RequestMapping("/resource/{resourceId}/**")
     public void download(HttpServletRequest request, HttpServletResponse response, @PathVariable Long resourceId){
 
         resourceService.download(request, response, resourceId);
@@ -145,6 +142,19 @@ public class UserResourceController {
     @PostMapping(RESOURCE_PATH + "/moveToRecycle")
     public DefaultResult<Boolean> moveToRecycle(@Validated MoveToBo moveToBo) throws CollectionException {
         resourceService.moveToRecycle(CheckPermitAspect.USER_INFO.get(), moveToBo);
+        return DefaultResult.ok(true);
+    }
+
+    /**
+     * 从回收站恢复
+     * @param moveToBo
+     * @return
+     * @throws CollectionException
+     */
+    @CheckPermit
+    @PostMapping(RESOURCE_PATH + "/restore")
+    public DefaultResult<Boolean> restoreFormRecycle(@Validated MoveToBo moveToBo) throws CollectionException {
+        resourceService.restoreFormRecycle(CheckPermitAspect.USER_INFO.get(), moveToBo);
         return DefaultResult.ok(true);
     }
 

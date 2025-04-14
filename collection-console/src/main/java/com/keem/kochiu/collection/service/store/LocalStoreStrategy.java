@@ -18,6 +18,7 @@ import com.keem.kochiu.collection.service.file.FileStrategyFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -183,9 +184,9 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
         response.setContentType(FileTypeEnum.getByValue(resource.getResourceType()).getMimeType());
         String ext = FilenameUtils.getExtension(file.getName());
         if(url.equals(resource.getResourceUrl())){
-            if(!FileTypeEnum.getByValue(ext).getMimeType().startsWith("images/")){
+            if(HttpMethod.POST.name().equalsIgnoreCase(request.getMethod())){
                 response.setHeader("Content-Disposition", "attachment;filename=" +
-                    URLEncoder.encode(resource.getSourceFileName(), StandardCharsets.UTF_8));
+                        URLEncoder.encode(resource.getSourceFileName(), StandardCharsets.UTF_8));
             }
             else{
                 response.setHeader("Content-Disposition", "inline;filename=" +
@@ -201,6 +202,11 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
         }
     }
 
+    /**
+     * 删除文件
+     * @param userId
+     * @param resourceId
+     */
     @Override
     public void deleteFile(int userId, Long resourceId) {
         //查找资源

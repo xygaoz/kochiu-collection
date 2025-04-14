@@ -13,9 +13,12 @@
                     :show-after="300"
                 >
                     <div class="action-item" @click="action.handler">
-                        <el-icon :size="action.size || 'medium'">
+                        <el-icon v-if="action.icon" :size="action.size || 'medium'">
                             <component :is="action.icon" />
                         </el-icon>
+                        <i v-else
+                           :class="action.class"
+                        />
                     </div>
                 </el-tooltip>
             </div>
@@ -118,7 +121,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const emit = defineEmits(['update-success', 'clear-selection', 'select-all', 'delete', 'move']);
+const emit = defineEmits(['update-success', 'clear-selection', 'select-all', 'delete', 'move', 'restore']);
 
 const tagInputVisible = ref(false);
 const tagInputValue = ref('');
@@ -157,6 +160,13 @@ const actions = [
         tooltip: '移动到',
         show: () => !isRecycleBin.value,
         handler: () => emit('move', props.selectedFiles),
+    },
+    {
+        name: 'restore',
+        class: 'iconfont icon-col-huanyuan',
+        tooltip: '恢复',
+        show: () => isRecycleBin.value,
+        handler: () => emit('restore', props.selectedFiles),
     }
 ]
 

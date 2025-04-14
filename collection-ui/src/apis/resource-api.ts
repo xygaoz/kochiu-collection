@@ -166,6 +166,17 @@ export const moveToRecycle = (resourceIds: number[], params: any): Promise<boole
     });
 }
 
+export const restoreFormRecycle = (resourceIds: number[], params: any): Promise<boolean> => {
+    const ld = loading("恢复中")
+    params["resourceIds"] = resourceIds;
+    return httpInstance.post("/resource/restore", params).then((model: any) => {
+        console.log("恢复成功:", model);
+        return model;
+    }).finally(() => {
+        ld.close();
+    });
+}
+
 export const listRecycleFiles = (page: number, size: number, params: any): Promise<PageInfo<Resource>> => {
     const ld = loading("加载中")
     // 合并分页参数和其他参数

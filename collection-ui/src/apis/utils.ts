@@ -195,14 +195,15 @@ export function loading(msg:string) {
 }
 
 export const downloadFile = (url: string, data: any) => {
+    const token = tokenStore.getToken();
     return axios({
-        baseURL: process.env.VUE_APP_BASE_API,
+        baseURL: process.env.VUE_RESOURCE_BASE_API,
         url,
         method:'POST',
         data,
         responseType: 'blob',
         headers: {
-            'X-Token': localStorage.getItem('token') || '',
+            'Authorization': token || '',
         },
     })
         .then(res => {

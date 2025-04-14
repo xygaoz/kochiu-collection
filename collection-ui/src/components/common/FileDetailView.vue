@@ -80,11 +80,6 @@
 
         <div class="detail-header">
             <div>文件详情</div>
-            <el-tooltip content="下载原文件" placement="bottom">
-                <el-icon class="download-file">
-                    <Download/>
-                </el-icon>
-            </el-tooltip>
         </div>
 
         <el-divider />
@@ -243,7 +238,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
+import { ref, computed, onMounted, onUnmounted, nextTick, watch, defineProps, defineEmits } from "vue";
 import { Document, Download, Picture, Loading } from "@element-plus/icons-vue";
 import { ElMessage, ElInput } from "element-plus";
 import { addResourceTag, removeResourceTag, updateResource } from "@/apis/resource-api";
@@ -610,10 +605,6 @@ watch(() => props.file, (newVal: Resource) => {
 
 .el-tag {
     cursor: default;
-}
-
-.download-file{
-    cursor: pointer;
 }
 
 .empty-value {
