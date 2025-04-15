@@ -43,7 +43,7 @@
                               v-if="props.dataType != 'type'"
                 >
                     <el-checkbox-group v-model="searchForm.types" size="small" class="checkbox-group"
-                        @change="handleSearch">
+                                       >
                         <el-checkbox-button
                             v-for="type in typeOptions"
                             :key="type.value"
@@ -58,7 +58,8 @@
                 <TagSelector
                     v-model="searchForm.tags"
                     v-if="props.dataType != 'tag' && showTagSelector"
-                    @change="handleSearch"
+                    :force-close="shouldCloseTagSelector || isCollapsing"
+                    ref="tagSelectorRef"
                 />
             </div>
 
@@ -93,9 +94,6 @@ import { getAllCategory } from "@/apis/category-api";
 import TagSelector from "@/components/common/TagSelector.vue";
 
 const searchFormRef = ref();
-const inputValue = ref('');
-const inputVisible = ref(false);
-const tagInputRef = ref<InstanceType<typeof ElInput>>();
 const typeOptions = ref<ResourceType[]>([]);
 const isExpanded = ref(false);
 const isExpanding = ref(false);
@@ -103,7 +101,9 @@ const isCollapsing = ref(false);
 const showCollapseButton = ref(false);
 const wrapperRef = ref<HTMLElement>();
 const categories = ref<Category[]>([])
-const showTagSelector = ref(true); // 控制TagSelector显示
+const showTagSelector = ref(true);
+const shouldCloseTagSelector = ref(false);
+const tagSelectorRef = ref();
 
 const emit = defineEmits(['expand-change', 'search']);
 
@@ -129,10 +129,13 @@ const checkCollapseNeed = () => {
 
             showCollapseButton.value = needsCollapse;
 
-            // 仅自动展开，不自动折叠
-            // if (needsCollapse && !isExpanded.value) {
-            //     toggleExpand();
-            // }
+            // 检查TagSelector是否换行到第二行
+            const formItems = wrapperRef.value.querySelectorAll('.form-item');
+            if (formItems.length > 1) {
+                const firstItem = formItems[0].getBoundingClientRect();
+                const tagSelectorItem = formItems[formItems.length - 1].getBoundingClientRect();
+                shouldCloseTagSelector.value = tagSelectorItem.top > firstItem.bottom + 5;
+            }
         }
     });
 };
@@ -140,19 +143,18 @@ const checkCollapseNeed = () => {
 const toggleExpand = () => {
     if (isExpanding.value || isCollapsing.value) return;
 
-    // 先隐藏TagSelector
-    showTagSelector.value = false;
-
     if (isExpanded.value) {
         // 折叠操作
         isCollapsing.value = true;
+        // 强制关闭TagSelector的popover
+        if (tagSelectorRef.value) {
+            tagSelectorRef.value.closePopover();
+        }
         setTimeout(() => {
             isExpanded.value = false;
             emit('expand-change', false);
             setTimeout(() => {
                 isCollapsing.value = false;
-                // 折叠完成后恢复显示
-                showTagSelector.value = true;
             }, 150);
         }, 150);
     } else {
@@ -162,15 +164,16 @@ const toggleExpand = () => {
         emit('expand-change', true);
         setTimeout(() => {
             isExpanding.value = false;
-            // 展开完成后恢复显示
-            showTagSelector.value = true;
         }, 300);
     }
 };
 
 const handleSearch = () => {
     emit('search', searchForm);
-    isExpanded.value = false;
+    // 搜索后自动折叠
+    if (isExpanded.value) {
+        toggleExpand();
+    }
 };
 
 const resetForm = () => {
@@ -333,5 +336,4 @@ watch(isExpanded, (newVal) => {
     transform: rotate(180deg);
     transition: transform 0.3s;
 }
-
 </style>

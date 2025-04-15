@@ -5,6 +5,7 @@
             trigger="click"
             :width="popoverWidth"
             popper-class="tag-selector-popper"
+            ref="popoverRef"
         >
             <template #reference>
                 <el-button size="small" class="tag-selector-trigger">
@@ -49,21 +50,24 @@ const props = defineProps({
         type: Array as () => string[],
         default: () => []
     },
-    forceClose: { // 新增forceClose属性
+    forceClose: {
         type: Boolean,
         default: false
     }
 });
-const popoverRef = ref();
 
-const emit = defineEmits(['update:modelValue']);
+const popoverRef = ref();
+const emit = defineEmits(['update:modelValue', 'change']);
 
 const allTags = ref<Tag[]>([]);
 const popoverWidth = ref(200);
 
 const selectedTags = computed({
     get: () => props.modelValue,
-    set: (value) => emit('update:modelValue', value)
+    set: (value) => {
+        emit('update:modelValue', value);
+        emit('change', value);
+    }
 });
 
 const isTagSelected = (tagName: string) => {
@@ -91,9 +95,15 @@ const loadTags = async () => {
     try {
         allTags.value = await getAllTag();
         // 根据标签数量调整下拉框宽度
-        popoverWidth.value = Math.min(600, Math.max(300, allTags.value.length * 100));
+        popoverWidth.value = Math.min(400, Math.max(300, allTags.value.length * 100));
     } catch (error) {
         console.error('加载标签失败:', error);
+    }
+};
+
+const closePopover = () => {
+    if (popoverRef.value) {
+        popoverRef.value.hide();
     }
 };
 
@@ -102,9 +112,13 @@ onMounted(() => {
 });
 
 watch(() => props.forceClose, (newVal) => {
-    if (newVal && popoverRef.value) {
-        popoverRef.value.hide(); // 强制关闭popover
+    if (newVal) {
+        closePopover();
     }
+});
+
+defineExpose({
+    closePopover
 });
 </script>
 
@@ -131,6 +145,7 @@ watch(() => props.forceClose, (newVal) => {
 .tag-selector-content {
     max-height: 300px;
     overflow-y: auto;
+    min-height: 100px;
 }
 
 .tag-list {
@@ -163,7 +178,6 @@ watch(() => props.forceClose, (newVal) => {
 }
 
 .tag-select-label{
-    //margin: 0 0 0 8px;
     border: 1px solid #e0e0e0;
     padding: 0 6px;
     border-radius: 5px;
