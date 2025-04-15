@@ -91,6 +91,30 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
     }
 
     /**
+     * 获取分类下资源列表
+     * @param userId
+     * @return
+     * @throws CollectionException
+     */
+    public PageInfo<UserResource> getAllResourceList(int userId, FilterResourceBo filterResourceBo) throws CollectionException {
+
+        try(Page<UserResource> page = PageHelper.startPage(filterResourceBo.getPageNum(), filterResourceBo.getPageSize())) {
+
+            Set<String> fileExtList = new HashSet<>();
+            if(filterResourceBo.getTypes() != null) {
+                for (String type : filterResourceBo.getTypes()) {
+                    fileExtList.addAll(FileTypeEnum.getNames(ResourceTypeEnum.getByValue(type)));
+                }
+            }
+            return new PageInfo<>(baseMapper.selectAllResource(userId,
+                    filterResourceBo.getCateId(),
+                    filterResourceBo.getKeyword(),
+                    fileExtList.toArray(new String[0]),
+                    filterResourceBo.getTags()));
+        }
+    }
+
+    /**
      * 根据md5查询文件是否存在
      * @param userId
      * @param md5

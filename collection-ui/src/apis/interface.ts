@@ -46,6 +46,7 @@ export interface ResourceType {
 }
 
 export interface SearchForm {
+    cateId: string;
     keyword: string;
     types: string[];
     tags: string[];

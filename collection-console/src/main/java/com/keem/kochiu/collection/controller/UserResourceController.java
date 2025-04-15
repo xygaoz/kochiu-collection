@@ -169,4 +169,10 @@ public class UserResourceController {
     public DefaultResult<PageVo<ResourceVo>> getResourceListByRecycle(FilterResourceBo filterResourceBo) throws CollectionException {
         return DefaultResult.ok(resourceService.getResourceListByRecycle(CheckPermitAspect.USER_INFO.get(), filterResourceBo));
     }
+
+    @CheckPermit
+    @PostMapping(RESOURCE_PATH + "/all")
+    public DefaultResult<PageVo<ResourceVo>> getAllResourceList(FilterResourceBo filterResourceBo) throws CollectionException {
+        return DefaultResult.ok(resourceService.getAllResourceList(CheckPermitAspect.USER_INFO.get(), filterResourceBo));
+    }
 }

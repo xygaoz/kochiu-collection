@@ -16,6 +16,19 @@
         >
             <!-- 左侧表单内容 -->
             <div class="form-content">
+                <el-form-item label="分类" prop="cateId" class="form-item"
+                              v-if="props.dataType == 'all-category'"
+                >
+                    <el-select class="category-select" v-model="searchForm.cateId" placeholder="请选择分类" size="small">
+                        <el-option
+                            v-for="category in categories"
+                            :key="category.cateId"
+                            :label="category.cateName"
+                            :value="category.cateId"
+                        />
+                    </el-select>
+                </el-form-item>
+
                 <el-form-item label="关键词" prop="keyword" class="form-item">
                     <el-input
                         v-model="searchForm.keyword"
@@ -43,7 +56,7 @@
                 </el-form-item>
 
                 <el-form-item label="标签" prop="tags" class="form-item tag-item"
-                              v-if="props.dataType != 'tag'"
+                              v-if="props.dataType != 'tag' && props.dataType != 'all-tag'"
                 >
                     <div class="tag-container">
                         <el-tag
@@ -103,7 +116,8 @@ import { ref, reactive, nextTick, onMounted, onUnmounted, watch, defineEmits, de
 import { ElInput, ElMessage } from "element-plus";
 import { ArrowDown } from '@element-plus/icons-vue';
 import { getResourceTypes } from "@/apis/system-api";
-import type { Resource, ResourceType, SearchForm } from "@/apis/interface";
+import { Category, ResourceType, SearchForm } from "@/apis/interface";
+import { getAllCategory } from "@/apis/category-api";
 
 const searchFormRef = ref();
 const inputValue = ref('');
@@ -115,6 +129,8 @@ const isExpanding = ref(false);
 const isCollapsing = ref(false);
 const showCollapseButton = ref(false);
 const wrapperRef = ref<HTMLElement>();
+const categories = ref<Category[]>([])
+
 const emit = defineEmits(['expand-change', 'search']);
 
 const props = defineProps({
@@ -125,6 +141,7 @@ const props = defineProps({
 });
 
 const searchForm = reactive<SearchForm>({
+    cateId: '',
     keyword: '',
     types: [],
     tags: []
@@ -210,11 +227,35 @@ const handleClose = (tag: string) => {
     checkCollapseNeed();
 };
 
+const getCategories = async () => {
+    try {
+        const res = await getAllCategory();
+        // 在获取的分类数组开头插入"全部"选项
+        categories.value = [
+            {
+                sno: 0,          // 使用0或其他唯一标识
+                cateName: "全部",
+                cateId: 0        // 同样保持唯一
+            },
+            ...(res || [])       // 展开原始数据
+        ];
+    } catch (error) {
+        console.error("加载失败:", error);
+        // 即使出错也保证有"全部"选项
+        categories.value = [{
+            sno: 0,
+            cateName: "全部",
+            cateId: 0
+        }];
+    }
+};
+
 onMounted(async () => {
     try {
         const res = await getResourceTypes();
         typeOptions.value = res || [];
         checkCollapseNeed();
+        getCategories();
         window.addEventListener('resize', checkCollapseNeed);
     } catch (error) {
         console.error("加载失败:", error);
@@ -304,6 +345,10 @@ watch(() => [...searchForm.tags, searchForm.types, searchForm.keyword], () => {
 
 .keyword-input {
     width: 180px;
+}
+
+.category-select{
+    width: 120px;
 }
 
 :deep(.el-form-item__content) {

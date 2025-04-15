@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 @Data
 public class FilterResourceBo extends PageBo{
 
+    private Long cateId;
     private String keyword;
     private String[] types;
     private String[] tags;

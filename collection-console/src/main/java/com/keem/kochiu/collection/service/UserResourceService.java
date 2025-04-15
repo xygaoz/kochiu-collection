@@ -131,6 +131,19 @@ public class UserResourceService {
     }
 
     /**
+     * 获取用户所有分类资源列表
+     * @param userDto
+     * @return
+     * @throws CollectionException
+     */
+    public PageVo<ResourceVo> getAllResourceList(UserDto userDto, FilterResourceBo filterResourceBo) throws CollectionException {
+
+        SysUser user = userRepository.getUser(userDto);
+        PageInfo<UserResource> resourceList = resourceRepository.getAllResourceList(user.getUserId(), filterResourceBo);
+        return buildResourceList(user, resourceList);
+    }
+
+    /**
      * 构建url
      * @param user
      * @param resource

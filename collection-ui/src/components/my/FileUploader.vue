@@ -85,7 +85,7 @@
 </template>
 
 <script setup lang="ts">
-import { UploadFilled, Picture, Document, VideoCamera, Headset, Folder } from '@element-plus/icons-vue'
+import { UploadFilled } from '@element-plus/icons-vue'
 import { ElMessage } from "element-plus";
 import { ref, onMounted, reactive } from "vue";
 import { uploadFile } from "@/apis/resource-api";
