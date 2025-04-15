@@ -138,4 +138,21 @@ public class UserResourceTagService {
                 .tagName(tag.getTagName())
                 .build()).toList();
     }
+
+    /**
+     * 获取所有标签
+     * @param userDto
+     * @return
+     * @throws CollectionException
+     */
+    public List<TagDto> getAllTag(UserDto userDto) throws CollectionException {
+
+        SysUser user = userRepository.getUser(userDto);
+        List<UserTag> tagList = userTagRepository.getTagList(user.getUserId(), null);
+
+        return tagList.stream().map(tag -> TagDto.builder()
+                .tagId(tag.getTagId())
+                .tagName(tag.getTagName())
+                .build()).toList();
+   }
 }

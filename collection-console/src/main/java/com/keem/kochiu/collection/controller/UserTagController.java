@@ -31,4 +31,11 @@ public class UserTagController {
         return DefaultResult.ok(tagService.getTagList(CheckPermitAspect.USER_INFO.get()));
     }
 
+    @CheckPermit
+    @GetMapping("/all")
+    public DefaultResult<List<TagDto>> getAllTag() throws CollectionException {
+
+        return DefaultResult.ok(tagService.getAllTag(CheckPermitAspect.USER_INFO.get()));
+    }
+
 }

@@ -22,7 +22,11 @@
         from user_resource_tag c
                  join user_resource r on c.RESOURCE_ID=r.RESOURCE_ID
                  join user_tag t on c.TAG_ID=t.TAG_ID and t.USER_ID=c.USER_ID
-        where c.USER_ID = #{userId} and c.RESOURCE_ID=#{resourceId}
+        where c.USER_ID = #{userId}
+          <if test="resourceId != null">
+            and c.RESOURCE_ID=#{resourceId}
+          </if>
+        group by t.TAG_ID,t.Tag_NAME
     </select>
 
 </mapper>

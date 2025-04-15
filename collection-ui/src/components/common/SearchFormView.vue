@@ -56,7 +56,7 @@
                 </el-form-item>
 
                 <el-form-item label="标签" prop="tags" class="form-item tag-item"
-                              v-if="props.dataType != 'tag' && props.dataType != 'all-tag'"
+                              v-if="props.dataType != 'tag'"
                 >
                     <div class="tag-container">
                         <el-tag
@@ -225,6 +225,7 @@ const handleInputConfirm = () => {
 const handleClose = (tag: string) => {
     searchForm.tags = searchForm.tags.filter(t => t !== tag);
     checkCollapseNeed();
+    handleSearch();
 };
 
 const getCategories = async () => {
@@ -255,7 +256,7 @@ onMounted(async () => {
         const res = await getResourceTypes();
         typeOptions.value = res || [];
         checkCollapseNeed();
-        getCategories();
+        await getCategories();
         window.addEventListener('resize', checkCollapseNeed);
     } catch (error) {
         console.error("加载失败:", error);

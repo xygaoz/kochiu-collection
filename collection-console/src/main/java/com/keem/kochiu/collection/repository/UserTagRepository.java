@@ -72,7 +72,7 @@ public class UserTagRepository extends ServiceImpl<UserTagMapper, UserTag> {
      * @param resourceId
      * @return
      */
-    public List<UserTag> getTagList(int userId, long resourceId) {
+    public List<UserTag> getTagList(int userId, Long resourceId) {
 
         return baseMapper.listTag(userId, resourceId);
     }

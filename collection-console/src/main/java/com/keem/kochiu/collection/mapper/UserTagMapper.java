@@ -14,7 +14,7 @@ public interface UserTagMapper extends BaseMapper<UserTag> {
     List<UserTag> listTagByResourceNum(@Param("userId") int userId,
                                        @Param("limit") int limit);
 
-    List<UserTag> listTag(@Param("userId") int userId, @Param("resourceId") long resourceId);
+    List<UserTag> listTag(@Param("userId") int userId, @Param("resourceId") Long resourceId);
 }
 
 
