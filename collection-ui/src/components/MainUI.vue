@@ -181,20 +181,16 @@ const loadCategories = async () => {
 
 // 更新分类菜单项
 const updateCategoryMenu = (categories: Category[]) => {
-    // 保存当前路由路径
-    const currentPath = router.currentRoute.value.path
-
-    // 找到/category路由
+    const currentPath = router.currentRoute.value.path;
     const categoryRoute = menu.value.find(route => route.path === '/Category');
-    if (!categoryRoute || !categoryRoute.children) return;
 
-    // 获取现有的"所有分类"菜单项
-    const allCategoryItem = categoryRoute.children.find(child => child.name === 'allCategory');
+    if (!categoryRoute) return;
 
-    // 创建动态分类菜单项数组
-    const dynamicItems = categories.map(category => ({
+    // 1. 创建动态路由项（明确类型）
+    const dynamicItems: RouteRecordRaw[] = categories.map(category => ({
         path: `/Category/${category.sno}`,
         name: `category-${category.sno}`,
+        component: () => import('@/components/category/CategoryResource.vue'),
         meta: {
             title: category.cateName,
             cateId: category.sno,
@@ -204,28 +200,30 @@ const updateCategoryMenu = (categories: Category[]) => {
         }
     }));
 
-    // 更新children数组
+    // 2. 获取现有"所有分类"项（明确类型）
+    const allCategoryItem: RouteRecordRaw | undefined = categoryRoute.children?.find(
+        child => child.name === 'allCategory'
+    );
+
+    // 3. 更新children数组
     categoryRoute.children = [
         ...dynamicItems,
         ...(allCategoryItem ? [allCategoryItem] : [])
     ];
 
-    // 如果当前路由是分类页面，保持当前路由不变
+    // 保持当前路由激活状态
     if (currentPath.startsWith('/Category')) {
-        const currentSno = currentPath.split('/').pop()
-        const exists = categories.some(c => c.sno.toString() === currentSno)
+        const currentSno = currentPath.split('/').pop();
+        const exists = categories.some(c => c.sno.toString() === currentSno);
 
-        // 如果当前分类仍然存在，保持选中状态
         if (exists) {
             nextTick(() => {
-                /// 设置激活菜单项
                 activeMenu.value = currentPath;
-                // 如果需要，也可以手动滚动到可见区域
                 setTimeout(() => {
                     const activeItem = document.querySelector(`.el-menu-item[index="${currentPath}"]`);
                     activeItem?.scrollIntoView({ block: 'nearest' });
                 }, 100);
-            })
+            });
         }
     }
 };
@@ -245,32 +243,37 @@ const handleCategoryConfirm = async () => {
 const loadTags = async () => {
     try {
         const tags: Tag[] = await listTag();
-        if (tags && tags.length > 0) {
-            // 找到/tag路由
-            const tagRoute = menu.value.find(route => route.path === '/Tag');
-            if (tagRoute && tagRoute.children) {
-                // 获取现有的"所有分类"菜单项
-                const allTagItem = tagRoute.children.find(child => child.name === 'allTag');
+        if (!tags || tags.length === 0) return;
 
-                // 创建动态分类菜单项数组
-                const dynamicItems = tags.map(tag => ({
-                    path: `/Tag/${tag.tagId}`,
-                    meta: {
-                        title: tag.tagName,
-                        tagId: tag.tagId,
-                        icon: 'icon-col-biaoqian',  // 添加图标
-                        iconType: 'iconfont',
-                        style: 'font-size: 18px; color: rgb(59,130,246)'
-                    }
-                }));
+        // 找到/tag路由并确保类型安全
+        const tagRoute = menu.value.find(route => route.path === '/Tag') as RouteRecordRaw | undefined;
+        if (!tagRoute || !tagRoute.children) return;
 
-                // 重新设置children数组，动态项在前，"所有分类"在后
-                tagRoute.children = [
-                    ...dynamicItems,
-                    ...(allTagItem ? [allTagItem] : [])
-                ];
+        // 获取现有的"所有标签"菜单项（明确类型）
+        const allTagItem: RouteRecordRaw | undefined = tagRoute.children.find(
+            child => child.name === 'allTag'
+        );
+
+        // 创建动态标签菜单项（明确RouteRecordRaw类型）
+        const dynamicItems: RouteRecordRaw[] = tags.map(tag => ({
+            path: `/Tag/${tag.tagId}`,
+            name: `tag-${tag.tagId}`,
+            component: () => import('@/components/tag/TagResource.vue'),
+            meta: {
+                title: tag.tagName,
+                tagId: tag.tagId,
+                icon: 'icon-col-biaoqian',
+                iconType: 'iconfont',
+                style: 'font-size: 18px; color: rgb(59,130,246)'
             }
-        }
+        }));
+
+        // 更新children数组（类型安全）
+        tagRoute.children = [
+            ...dynamicItems,
+            ...(allTagItem ? [allTagItem] : [])
+        ];
+
     } catch (error) {
         console.error('加载标签失败:', error);
     }
@@ -280,26 +283,28 @@ const loadTags = async () => {
 const loadTypes = async () => {
     try {
         const types: ResourceType[] = await getResourceTypes();
-        if (types && types.length > 0) {
-            // 找到/type路由
-            const typeRoute = menu.value.find(route => route.path === '/Type');
-            if (typeRoute && typeRoute.children) {
+        if (!types || types.length === 0) return;
 
-                // 重新设置children数组
-                typeRoute.children = types.map(type => ({
-                    path: `/Type/${type.value}`,
-                    meta: {
-                        title: type.label,
-                        typeName: type.value,
-                        icon: `icon-col-${type.value}`,  // 添加图标
-                        iconType: 'iconfont',
-                        style: 'font-size: 21px; color: rgb(59,130,246)'
-                    }
-                }));
+        // 找到/type路由并确保类型安全
+        const typeRoute = menu.value.find(route => route.path === '/Type') as RouteRecordRaw | undefined;
+        if (!typeRoute) return;
+
+        // 创建动态类型菜单项（明确RouteRecordRaw类型）
+        typeRoute.children = types.map(type => ({
+            path: `/Type/${type.value}`,
+            name: `type-${type.value}`,
+            component: () => import('@/components/type/TypeResource.vue'),
+            meta: {
+                title: type.label,
+                typeName: type.value,
+                icon: `icon-col-${type.value}`,
+                iconType: 'iconfont',
+                style: 'font-size: 21px; color: rgb(59,130,246)'
             }
-        }
+        })) as RouteRecordRaw[];
+
     } catch (error) {
-        console.error('加载标签失败:', error);
+        console.error('加载资源类型失败:', error);
     }
 };
 
