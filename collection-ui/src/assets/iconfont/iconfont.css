@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4879248 */
-  src: url('iconfont.woff2?t=1744633716381') format('woff2'),
-       url('iconfont.woff?t=1744633716381') format('woff'),
-       url('iconfont.ttf?t=1744633716381') format('truetype');
+  src: url('iconfont.woff2?t=1744683723661') format('woff2'),
+       url('iconfont.woff?t=1744683723661') format('woff'),
+       url('iconfont.ttf?t=1744683723661') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,42 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-col-Word:before {
+  content: "\edd5";
+}
+
+.icon-col-wendang:before {
+  content: "\e663";
+}
+
+.icon-col-picture:before {
+  content: "\e60d";
+}
+
+.icon-col-PDF:before {
+  content: "\e602";
+}
+
+.icon-col-txt-full:before {
+  content: "\ea44";
+}
+
+.icon-col-audio1:before {
+  content: "\ea48";
+}
+
+.icon-col-video-camera:before {
+  content: "\e68a";
+}
+
+.icon-col-Excel:before {
+  content: "\edde";
+}
+
+.icon-col-ppt-full:before {
+  content: "\ea46";
 }
 
 .icon-col-huanyuan:before {

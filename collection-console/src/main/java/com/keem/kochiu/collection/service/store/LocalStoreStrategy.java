@@ -182,7 +182,6 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
 
         response.setHeader("Content-Length", String.valueOf(file.length()));
         response.setContentType(FileTypeEnum.getByValue(resource.getResourceType()).getMimeType());
-        String ext = FilenameUtils.getExtension(file.getName());
         if(url.equals(resource.getResourceUrl())){
             if(HttpMethod.POST.name().equalsIgnoreCase(request.getMethod())){
                 response.setHeader("Content-Disposition", "attachment;filename=" +

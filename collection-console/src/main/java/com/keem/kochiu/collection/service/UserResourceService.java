@@ -72,6 +72,9 @@ public class UserResourceService {
             if(!resources.isEmpty() && !uploadBo.isOverwrite()){
                 throw new CollectionException(FILE_IS_EXIST);
             }
+            if(categoryRepository.getById(uploadBo.getCategoryId()) == null){
+                throw new CollectionException(ErrorCodeEnum.CATEGORY_NOT_EXIST);
+            }
 
             FileVo fileVo = resourceStrategyFactory.getStrategy(user.getStrategy())
                     .saveFile(uploadBo, userDto, md5);

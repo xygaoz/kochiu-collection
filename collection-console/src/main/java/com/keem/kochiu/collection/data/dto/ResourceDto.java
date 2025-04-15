@@ -8,7 +8,7 @@ import lombok.Data;
 public class ResourceDto {
 
     private int userId;
-    private int cateId;
+    private long cateId;
     private String sourceFileName;
     private String resourceUrl;
     private String fileExt;

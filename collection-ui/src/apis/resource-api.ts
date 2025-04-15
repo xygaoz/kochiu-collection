@@ -2,15 +2,27 @@
 // 新增上传文件的方法
 import httpInstance, { loading } from "@/apis/utils";
 import { PageInfo, Resource, Tag } from "@/apis/interface";
+import type { AxiosProgressEvent } from 'axios'
 
-export const uploadFile = (file: File, categorySno: string, overwrite: string): Promise<any> => {
+export const uploadFile = (
+    file: File,
+    categoryId: number,
+    overwrite: string,
+    onProgress?: (progressEvent: AxiosProgressEvent) => void // 使用 AxiosProgressEvent
+): Promise<any> => {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('categoryId', categorySno);
+    formData.append('categoryId', categoryId+"");
     formData.append('overwrite', overwrite);
 
-    const ld = loading("上传中")
-    return httpInstance.post("/resource/upload", formData).then((model: any) => {
+    const ld = loading("上传中");
+    return httpInstance.post("/resource/upload", formData, {
+        onUploadProgress: (progressEvent: AxiosProgressEvent) => { // 使用 AxiosProgressEvent
+            if (onProgress) {
+                onProgress(progressEvent); // 触发回调
+            }
+        }
+    }).then((model: any) => {
         if (model) {
             console.log("文件上传成功:", model);
             return model;
@@ -18,11 +30,11 @@ export const uploadFile = (file: File, categorySno: string, overwrite: string): 
         return null;
     }).catch((error) => {
         console.error("文件上传失败:", error);
-        throw error; // 抛出错误以便调用者处理
+        throw error;
     }).finally(() => {
         ld.close();
     });
-}
+};
 
 export const listCategoryFiles = (cateId: string, page: number, size: number, params: any): Promise<PageInfo<Resource>> => {
     const ld = loading("加载中")
