@@ -12,3 +12,15 @@ export const listTag = (): Promise<Tag[]> => {
         return [];
     });
 }
+
+export const getAllTag = (): Promise<Tag[]> => {
+    return httpInstance.get("/tag/all").then((model: any) => {
+        if (model) {
+            return model as Tag[];
+        }
+        return [];
+    }).catch((error) => {
+        console.error("获取分类失败:", error);
+        return [];
+    });
+}

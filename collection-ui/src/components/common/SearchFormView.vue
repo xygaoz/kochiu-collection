@@ -55,39 +55,11 @@
                     </el-checkbox-group>
                 </el-form-item>
 
-                <el-form-item label="标签" prop="tags" class="form-item tag-item"
-                              v-if="props.dataType != 'tag'"
-                >
-                    <div class="tag-container">
-                        <el-tag
-                            v-for="tag in searchForm.tags"
-                            :key="tag"
-                            closable
-                            size="small"
-                            @close="handleClose(tag)"
-                            class="custom-tag"
-                        >
-                            {{ tag }}
-                        </el-tag>
-                        <el-input
-                            v-if="inputVisible"
-                            ref="tagInputRef"
-                            v-model="inputValue"
-                            class="tag-input"
-                            size="small"
-                            @keyup.enter="handleInputConfirm"
-                            @blur="handleInputConfirm"
-                        />
-                        <el-button
-                            v-else
-                            class="add-tag-btn"
-                            size="small"
-                            @click="showInput"
-                        >
-                            + 加标签
-                        </el-button>
-                    </div>
-                </el-form-item>
+                <TagSelector
+                    v-model="searchForm.tags"
+                    v-if="props.dataType != 'tag' && showTagSelector"
+                    @change="handleSearch"
+                />
             </div>
 
             <!-- 右侧操作按钮 -->
@@ -118,6 +90,7 @@ import { ArrowDown } from '@element-plus/icons-vue';
 import { getResourceTypes } from "@/apis/system-api";
 import { Category, ResourceType, SearchForm } from "@/apis/interface";
 import { getAllCategory } from "@/apis/category-api";
+import TagSelector from "@/components/common/TagSelector.vue";
 
 const searchFormRef = ref();
 const inputValue = ref('');
@@ -130,6 +103,7 @@ const isCollapsing = ref(false);
 const showCollapseButton = ref(false);
 const wrapperRef = ref<HTMLElement>();
 const categories = ref<Category[]>([])
+const showTagSelector = ref(true); // 控制TagSelector显示
 
 const emit = defineEmits(['expand-change', 'search']);
 
@@ -166,16 +140,19 @@ const checkCollapseNeed = () => {
 const toggleExpand = () => {
     if (isExpanding.value || isCollapsing.value) return;
 
+    // 先隐藏TagSelector
+    showTagSelector.value = false;
+
     if (isExpanded.value) {
         // 折叠操作
         isCollapsing.value = true;
-
         setTimeout(() => {
             isExpanded.value = false;
             emit('expand-change', false);
-
             setTimeout(() => {
                 isCollapsing.value = false;
+                // 折叠完成后恢复显示
+                showTagSelector.value = true;
             }, 150);
         }, 150);
     } else {
@@ -183,9 +160,10 @@ const toggleExpand = () => {
         isExpanding.value = true;
         isExpanded.value = true;
         emit('expand-change', true);
-
         setTimeout(() => {
             isExpanding.value = false;
+            // 展开完成后恢复显示
+            showTagSelector.value = true;
         }, 300);
     }
 };
@@ -200,32 +178,6 @@ const resetForm = () => {
     searchForm.tags = [];
     checkCollapseNeed();
     emit('search', searchForm);
-};
-
-const showInput = () => {
-    inputVisible.value = true;
-    nextTick(() => {
-        tagInputRef.value?.focus();
-    });
-};
-
-const handleInputConfirm = () => {
-    const val = inputValue.value.trim();
-    if (val) {
-        if (!searchForm.tags.includes(val)) {
-            searchForm.tags.push(val);
-        }
-    }
-    inputVisible.value = false;
-    inputValue.value = '';
-    checkCollapseNeed();
-    handleSearch();
-};
-
-const handleClose = (tag: string) => {
-    searchForm.tags = searchForm.tags.filter(t => t !== tag);
-    checkCollapseNeed();
-    handleSearch();
 };
 
 const getCategories = async () => {
@@ -271,6 +223,13 @@ onUnmounted(() => {
 watch(() => [...searchForm.tags, searchForm.types, searchForm.keyword], () => {
     checkCollapseNeed();
 }, { deep: true });
+
+watch(isExpanded, (newVal) => {
+    if (!newVal) {
+        // 折叠完成后确保TagSelector显示
+        showTagSelector.value = true;
+    }
+});
 </script>
 
 <style scoped>
@@ -296,7 +255,7 @@ watch(() => [...searchForm.tags, searchForm.types, searchForm.keyword], () => {
     padding: 5px 18px 3px 18px;
     width: 100%;
     border-bottom: 1px solid #e9e9e9;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
 }
 
 .search-form-container {
@@ -328,20 +287,6 @@ watch(() => [...searchForm.tags, searchForm.types, searchForm.keyword], () => {
     margin-bottom: 0;
     height: 32px;
     flex-shrink: 0;
-}
-
-.tag-container {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    max-width: 100%;
-    overflow-x: auto;
-    scrollbar-width: none;
-    padding-bottom: 2px;
-}
-
-.tag-container::-webkit-scrollbar {
-    display: none;
 }
 
 .keyword-input {
@@ -389,7 +334,4 @@ watch(() => [...searchForm.tags, searchForm.types, searchForm.keyword], () => {
     transition: transform 0.3s;
 }
 
-.tag-input {
-    width: 60px;
-}
 </style>
