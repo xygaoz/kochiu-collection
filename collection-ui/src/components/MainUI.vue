@@ -113,7 +113,7 @@
                             "
                         >
                             <div style="width: 28px; height: 28px;">
-                                <img class="user-image" src="../assets/imgs/user.gif" alt="" />
+                                <el-avatar :size="32" src="/images/user.gif" />
                             </div>
                             <div style="padding-left: 9px; padding-top: 6px">gaozhao</div>
                         </div>
@@ -364,25 +364,6 @@ const menuItemClick = (item: RouteRecordRaw) => {
     height: 28px;
     background-size: 28px 28px;
     border-radius: 15px;
-}
-
-.user-image {
-    width: 28px;
-    height: 28px;
-    border-radius: 15px;
-}
-
-.demo-tabs /deep/ .el-tabs__header {
-    color: #333;
-    margin: 0 0 5px !important;
-}
-
-.demo-tabs /deep/ .el-tabs__nav-wrap {
-    padding-left: 10px;
-}
-
-.demo-tabs /deep/ .el-tabs__content {
-    padding: 5px;
 }
 
 .el-header {
