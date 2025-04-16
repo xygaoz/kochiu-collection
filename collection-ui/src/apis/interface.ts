@@ -55,5 +55,6 @@ export interface SearchForm {
 export interface Catalog {
     id: number;
     label: string;
+    level: number;
     children: Catalog[];
 }

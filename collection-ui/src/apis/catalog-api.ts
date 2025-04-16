@@ -12,3 +12,7 @@ export const getCatalogTree = (): Promise<Catalog[]> => {
         return [];
     });
 }
+
+export const addCatalog = (data: { folderName: string, parentId?: number }) => {
+    return httpInstance.post("/catalog", data);
+}

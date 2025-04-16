@@ -98,6 +98,13 @@ routes.push(
         meta: { showInMenu: false },
         props: true  // 将路由参数自动作为props传递
     },
+    {
+        path: '/catalog/:id',  // 动态参数
+        name: 'catalog-detail',
+        component: () => import('@/components/catalog/CatalogResource.vue'),
+        meta: { showInMenu: false },
+        props: true
+    }
 )
 
 //创建路由，并且暴露出去

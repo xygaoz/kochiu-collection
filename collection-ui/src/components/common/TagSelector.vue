@@ -41,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, defineProps, defineEmits, watch } from "vue";
+import { ref, computed, onMounted, defineProps, defineEmits, watch, defineExpose } from "vue";
 import { getAllTag } from '@/apis/tag-api';
 import type { Tag } from '@/apis/interface';
 

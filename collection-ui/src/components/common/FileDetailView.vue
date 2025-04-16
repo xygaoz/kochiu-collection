@@ -237,7 +237,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick, watch, defineProps, defineEmits } from "vue";
-import { Document, Download, Picture, Loading } from "@element-plus/icons-vue";
+import { Document, Picture, Loading } from "@element-plus/icons-vue";
 import { ElMessage, ElInput } from "element-plus";
 import { addResourceTag, removeResourceTag, updateResource } from "@/apis/resource-api";
 import type { Resource, Tag } from '@/apis/interface';

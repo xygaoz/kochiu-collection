@@ -8,88 +8,182 @@
                         KoChiu Collection
                     </div>
                 </div>
-                <div style="flex: 1; overflow-y: auto;">
-                    <el-menu
-                        class="el-menu-vertical-demo"
-                        :default-active="activeMenu"
-                        background-color="#fff"
-                        text-color="#525252"
-                        active-text-color="rgb(59,130,246)"
-                        style="height: 100%"
-                        :default-openeds="defaultOpeneds"
-                    >
-                        <div v-for="menuItem in menu" :key="menuItem.name">
-                            <el-sub-menu
-                                v-if="menuItem.children && menuItem.children.length"
-                                :index="menuItem.path"
-                                :key="menuItem.name"
-                            >
+                <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column;">
+                    <!-- 顶部切换区域：分类/目录 -->
+                    <div style="flex-shrink: 0;">
+                        <!-- 目录菜单 -->
+                        <el-menu
+                            v-if="showCatalogMenu"
+                            class="catalog-menu"
+                            :default-active="activeMenu"
+                            background-color="#fff"
+                            text-color="#525252"
+                            active-text-color="rgb(59,130,246)"
+                            :default-openeds="['catalog-group']"
+                        >
+                            <catalog-menu-item
+                                index="catalog-group"
+                                v-for="item in catalogTreeData"
+                                :key="item.id"
+                                :item="item"
+                                @node-click="handleNodeClick"
+                                @toggle="toggleCatalogMenu"
+                                @new-catalog="addCatalog"
+                            />
+                        </el-menu>
+
+                        <!-- 分类菜单 -->
+                        <el-menu
+                            v-else
+                            class="category-menu"
+                            :default-active="activeMenu"
+                            background-color="#fff"
+                            text-color="#525252"
+                            active-text-color="rgb(59,130,246)"
+                            :default-openeds="['category-group']"
+                        >
+                            <el-sub-menu index="category-group">
                                 <template #title>
                                     <div class="menu-icon">
-                                        <el-icon v-if="menuItem.meta?.iconType === 'icons-vue' " :style="String(menuItem.meta?.style)">
-                                            <component :is="menuItem.meta.icon" />
+                                        <i class="iconfont icon-col-fenlei" style="font-size: 21px; color: rgb(59,130,246)"></i>
+                                    </div>
+                                    <div class="menu-label">分类</div>
+                                    <div class="action-button">
+                                        <el-icon @click.stop="toggleCatalogMenu" class="new-level" title="切换到目录">
+                                            <Switch />
                                         </el-icon>
-                                        <i v-else class="iconfont" :class="menuItem.meta?.icon"
-                                           :style="String(menuItem.meta?.style)"></i>
-                                    </div>
-                                    <div class="menu-label">
-                                        {{ menuItem.meta?.title || menuItem.name }}
-                                    </div>
-                                    <!-- 添加按钮 -->
-                                    <div class="action-button" v-if="menuItem.path === '/Category'">
-                                        <i class="iconfont icon-col-shujiegou add_category menu-tree" title="目录结构"/>
-                                        <el-icon @click="addCategory" class="add_category" title="新分类">
+                                        <el-icon @click.stop="addCategory" class="new-level" title="新分类">
                                             <Plus />
                                         </el-icon>
                                     </div>
                                 </template>
                                 <el-menu-item
-                                    v-for="subMenuItem in menuItem.children"
-                                    :index="subMenuItem.path"
-                                    :route="{ name: subMenuItem.name }"
-                                    :key="subMenuItem.name"
-                                    @click="menuItemClick(subMenuItem)"
-                                    style="cursor: pointer"
-                                    :disabled="subMenuItem.meta?.disabled"
+                                    v-for="category in categories"
+                                    :key="category.sno"
+                                    :index="`/Category/${category.sno}`"
+                                    @click="menuItemClick({path: `/Category/${category.sno}`})"
                                 >
                                     <template #title>
                                         <div class="menu-icon">
-                                            <el-icon v-if="subMenuItem.meta?.iconType === 'icons-vue' " :style="String(subMenuItem.meta?.style)">
-                                                <component :is="subMenuItem.meta.icon" />
-                                            </el-icon>
-                                            <i v-else class="iconfont" :class="subMenuItem.meta?.icon"
-                                               :style="String(subMenuItem.meta?.style)"></i>
+                                            <i class="iconfont icon-col-fenlei3" style="font-size: 18px; color: rgb(59,130,246)"></i>
                                         </div>
                                         <div class="menu-label">
-                                            {{ subMenuItem.meta?.title || subMenuItem.name }}
+                                            {{ category.cateName }}
                                         </div>
                                     </template>
                                 </el-menu-item>
+                                <el-menu-item index="/AllCategory" @click="menuItemClick({path: '/AllCategory'})">
+                                    <template #title>
+                                        <div class="menu-icon">
+                                            <i class="iconfont icon-col-fenlei2" style="font-size: 21px; color: rgb(59,130,246)"></i>
+                                        </div>
+                                        <div class="menu-label">所有分类</div>
+                                    </template>
+                                </el-menu-item>
                             </el-sub-menu>
+                        </el-menu>
+                    </div>
 
+                    <!-- 固定菜单区域 -->
+                    <el-menu
+                        class="fixed-menu"
+                        :default-active="activeMenu"
+                        background-color="#fff"
+                        text-color="#525252"
+                        active-text-color="rgb(59,130,246)"
+                        :default-openeds="defaultOpeneds"
+                    >
+                        <!-- 标签菜单 -->
+                        <el-sub-menu index="tag-group">
+                            <template #title>
+                                <div class="menu-icon">
+                                    <i class="iconfont icon-col-biaoqian1" style="font-size: 20px; color: rgb(59,130,246); margin: 0 1px 0 0;"></i>
+                                </div>
+                                <div class="menu-label">标签</div>
+                            </template>
                             <el-menu-item
-                                v-else
-                                :index="menuItem.path"
-                                :key="menuItem.path"
-                                :route="{ name: menuItem.name }"
-                                @click="menuItemClick(menuItem)"
-                                style="cursor: pointer"
-                                :disabled="menuItem.meta?.disabled"
+                                v-for="tag in tags"
+                                :key="tag.tagId"
+                                :index="`/Tag/${tag.tagId}`"
+                                @click="menuItemClick({path: `/Tag/${tag.tagId}`})"
                             >
                                 <template #title>
                                     <div class="menu-icon">
-                                        <el-icon v-if="menuItem.meta?.iconType === 'icons-vue' " :style="String(menuItem.meta?.style)">
-                                            <component :is="menuItem.meta.icon" />
-                                        </el-icon>
-                                        <i v-else class="iconfont" :class="menuItem.meta?.icon"
-                                           :style="String(menuItem.meta?.style)"></i>
+                                        <i class="iconfont icon-col-biaoqian" style="font-size: 18px; color: rgb(59,130,246)"></i>
                                     </div>
-                                    <div class="menu-label">
-                                        {{ menuItem.meta?.title || menuItem.name }}
-                                    </div>
+                                    <div class="menu-label">{{ tag.tagName }}</div>
                                 </template>
                             </el-menu-item>
-                        </div>
+                            <el-menu-item index="/AllTag" @click="menuItemClick({path: '/AllTag'})">
+                                <template #title>
+                                    <div class="menu-icon">
+                                        <i class="iconfont icon-col-24gl-tags4" style="font-size: 17px; color: rgb(59,130,246)"></i>
+                                    </div>
+                                    <div class="menu-label">所有标签</div>
+                                </template>
+                            </el-menu-item>
+                        </el-sub-menu>
+
+                        <!-- 文件类型菜单 -->
+                        <el-sub-menu index="type-group">
+                            <template #title>
+                                <div class="menu-icon">
+                                    <i class="iconfont icon-col-duomeitiicon-" style="font-size: 20px; color: rgb(59,130,246); margin: 0 1px 0 0;"></i>
+                                </div>
+                                <div class="menu-label">文件类型</div>
+                            </template>
+                            <el-menu-item
+                                v-for="type in resourceTypes"
+                                :key="type.value"
+                                :index="`/Type/${type.value}`"
+                                @click="menuItemClick({path: `/Type/${type.value}`})"
+                            >
+                                <template #title>
+                                    <div class="menu-icon">
+                                        <i :class="`iconfont icon-col-${type.value}`" style="font-size: 21px; color: rgb(59,130,246)"></i>
+                                    </div>
+                                    <div class="menu-label">{{ type.label }}</div>
+                                </template>
+                            </el-menu-item>
+                        </el-sub-menu>
+
+                        <!-- 我的菜单 -->
+                        <el-sub-menu index="my-group">
+                            <template #title>
+                                <div class="menu-icon">
+                                    <el-icon style="color: rgb(59,130,246); margin: 0 -1px 0 0;">
+                                        <Avatar />
+                                    </el-icon>
+                                </div>
+                                <div class="menu-label">我的</div>
+                            </template>
+                            <el-menu-item index="/Upload" @click="menuItemClick({path: '/Upload'})">
+                                <template #title>
+                                    <div class="menu-icon">
+                                        <el-icon style="color: rgb(59,130,246)">
+                                            <UploadFilled />
+                                        </el-icon>
+                                    </div>
+                                    <div class="menu-label">上传文件</div>
+                                </template>
+                            </el-menu-item>
+                            <el-menu-item index="/BatchImport" @click="menuItemClick({path: '/BatchImport'})">
+                                <template #title>
+                                    <div class="menu-icon">
+                                        <i class="iconfont icon-col-piliangdaoru1" style="font-size: 18px; color: rgb(59,130,246); margin: 0 3px 0 0"></i>
+                                    </div>
+                                    <div class="menu-label">批量导入</div>
+                                </template>
+                            </el-menu-item>
+                            <el-menu-item index="/Recycle" @click="menuItemClick({path: '/Recycle'})">
+                                <template #title>
+                                    <div class="menu-icon">
+                                        <i class="iconfont icon-col-huishouzhanx" style="font-size: 22px; color: rgb(59,130,246); margin: 0 1px 0 0"></i>
+                                    </div>
+                                    <div class="menu-label">回收站</div>
+                                </template>
+                            </el-menu-item>
+                        </el-sub-menu>
                     </el-menu>
                 </div>
             </el-aside>
@@ -97,24 +191,8 @@
             <el-container>
                 <el-header class="headerCss">
                     <div style="display: flex; height: 100%; align-items: center">
-                        <div
-                            style="
-                                text-align: left;
-                                width: 33%;
-                                font-size: 18px;
-                                display: flex;
-                            "
-                        >
-                        </div>
-                        <div
-                            style="
-                                text-align: right;
-                                width: 67%;
-                                display: flex;
-                                justify-content: right;
-                                cursor: pointer;
-                            "
-                        >
+                        <div style="text-align: left; width: 33%; font-size: 18px; display: flex;"></div>
+                        <div style="text-align: right; width: 67%; display: flex; justify-content: right; cursor: pointer;">
                             <div style="width: 28px; height: 28px;">
                                 <el-avatar :size="32" src="/images/user.gif" />
                             </div>
@@ -125,111 +203,105 @@
 
                 <el-main class="el-main">
                     <RouterView v-slot="{ Component, route }">
-                        <component
-                            :is="Component"
-                            :key="route.fullPath"
-                            @menuItemClick="menuItemClick"
-                        />
+                        <component :is="Component" :key="route.fullPath" />
                     </RouterView>
                 </el-main>
             </el-container>
         </el-container>
     </div>
+
     <!-- 对话框组件 -->
-    <CategoryDialog
-        ref="categoryDialog"
-        @confirm="handleCategoryConfirm"
-    />
+    <CategoryDialog ref="categoryDialog" @confirm="handleCategoryConfirm" />
+    <CatalogDialog ref="catalogDialog" @confirm="handleCatalogConfirm" />
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, ref } from "vue";
-import router, { routes } from "@/apis/base-routes";
-import { RouteRecordRaw } from "vue-router";
-import { Plus } from "@element-plus/icons-vue"; // 导入listCategory方法
-import { Category, ResourceType, Tag } from "@/apis/interface";
-import CategoryDialog from "@/components/category/CategoryDialog.vue";
-import { listCategory } from "@/apis/category-api";
-import { listTag } from "@/apis/tag-api";
-import { getResourceTypes } from "@/apis/system-api"; // 导入Category接口
+import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { Plus, Switch, Avatar, UploadFilled } from '@element-plus/icons-vue'
+import { listCategory } from '@/apis/category-api'
+import { listTag} from '@/apis/tag-api'
+import { getResourceTypes } from '@/apis/system-api'
+import { getCatalogTree } from '@/apis/catalog-api'
+import CatalogMenuItem from '@/components/catalog/CatalogMenuItem.vue'
+import { Catalog, Category, ResourceType, Tag } from "@/apis/interface";
 
-const activeMenu = ref(''); // 当前激活的菜单项
-const menu = ref(routes.filter(route => route.meta?.showInMenu !== false));
-const defaultOpeneds = ref(['/My', '/Category']); // 添加默认展开的子菜单路径
+const router = useRouter()
+
+// 状态管理
+const showCatalogMenu = ref(false)
+const activeMenu = ref('')
+const defaultOpeneds = ref(['tag-group'])
+const catalogTreeData = ref<Catalog[]>([])
+const categories = ref<Category[]>([])
+const tags = ref<Tag[]>([])
+const resourceTypes = ref<ResourceType[]>([])
 const categoryDialog = ref()
+const catalogDialog = ref()
 
-// 初始化菜单
-const initMenu = () => {
-    menu.value = JSON.parse(JSON.stringify(routes.filter(route => route.meta?.showInMenu !== false)));
-};
+// 初始化数据
+onMounted(async () => {
+    await loadCategories()
+    await loadTags()
+    await loadResourceTypes()
+    updateActiveMenu()
+})
 
-// 初始加载dom
-onMounted(() => {
-    initMenu();
-    router.push(routes[0]);
-    loadCategories(); // 调用加载分类的方法
-    loadTags(); // 调用加载标签的方法
-    loadTypes(); // 调用加载资源类型的方法
-});
-
-// 加载分类并更新菜单
+// 加载数据
 const loadCategories = async () => {
     try {
-        const categories: Category[] = await listCategory();
-        updateCategoryMenu(categories);
+        categories.value = await listCategory()
     } catch (error) {
-        console.error('加载分类失败:', error);
+        console.error('加载分类失败:', error)
     }
-};
+}
 
-// 更新分类菜单项
-const updateCategoryMenu = (categories: Category[]) => {
-    const currentPath = router.currentRoute.value.path;
-    const categoryRoute = menu.value.find(route => route.path === '/Category');
-
-    if (!categoryRoute) return;
-
-    // 1. 创建动态路由项（明确类型）
-    const dynamicItems: RouteRecordRaw[] = categories.map(category => ({
-        path: `/Category/${category.sno}`,
-        name: `category-${category.sno}`,
-        component: () => import('@/components/category/CategoryResource.vue'),
-        meta: {
-            title: category.cateName,
-            cateId: category.sno,
-            icon: 'icon-col-fenlei3',
-            iconType: 'iconfont',
-            style: 'font-size: 18px; color: rgb(59,130,246)'
-        }
-    }));
-
-    // 2. 获取现有"所有分类"项（明确类型）
-    const allCategoryItem: RouteRecordRaw | undefined = categoryRoute.children?.find(
-        child => child.name === 'allCategory'
-    );
-
-    // 3. 更新children数组
-    categoryRoute.children = [
-        ...dynamicItems,
-        ...(allCategoryItem ? [allCategoryItem] : [])
-    ];
-
-    // 保持当前路由激活状态
-    if (currentPath.startsWith('/Category')) {
-        const currentSno = currentPath.split('/').pop();
-        const exists = categories.some(c => c.sno.toString() === currentSno);
-
-        if (exists) {
-            nextTick(() => {
-                activeMenu.value = currentPath;
-                setTimeout(() => {
-                    const activeItem = document.querySelector(`.el-menu-item[index="${currentPath}"]`);
-                    activeItem?.scrollIntoView({ block: 'nearest' });
-                }, 100);
-            });
-        }
+const loadTags = async () => {
+    try {
+        tags.value = await listTag()
+    } catch (error) {
+        console.error('加载标签失败:', error)
     }
-};
+}
+
+const loadResourceTypes = async () => {
+    try {
+        resourceTypes.value = await getResourceTypes()
+    } catch (error) {
+        console.error('加载资源类型失败:', error)
+    }
+}
+
+const loadCatalogTree = async () => {
+    try {
+        catalogTreeData.value = await getCatalogTree()
+    } catch (error) {
+        console.error('加载目录树失败:', error)
+    }
+}
+
+// 切换目录菜单显示
+const toggleCatalogMenu = async (e: Event) => {
+    e.stopPropagation()
+    showCatalogMenu.value = !showCatalogMenu.value
+    if (showCatalogMenu.value) {
+        await loadCatalogTree()
+    }
+}
+
+// 处理菜单点击
+const menuItemClick = (item: { path: string }) => {
+    router.push(item.path).catch(err => {
+        console.error('路由跳转失败:', err)
+    })
+}
+
+// 处理目录节点点击
+const handleNodeClick = (data: Catalog) => {
+    router.push(`/catalog/${data.id}`).catch(err => {
+        console.error('路由跳转失败:', err)
+    })
+}
 
 // 添加分类
 const addCategory = (e: Event) => {
@@ -237,98 +309,60 @@ const addCategory = (e: Event) => {
     categoryDialog.value.open()
 }
 
+// 添加目录
+const addCatalog = (e: Event) => {
+    e.stopPropagation()
+    catalogDialog.value.open()
+}
+
 // 处理分类确认
 const handleCategoryConfirm = async () => {
     await loadCategories()
 }
 
-// 加载标签的方法
-const loadTags = async () => {
-    try {
-        const tags: Tag[] = await listTag();
-        if (!tags || tags.length === 0) return;
-
-        // 找到/tag路由并确保类型安全
-        const tagRoute = menu.value.find(route => route.path === '/Tag') as RouteRecordRaw | undefined;
-        if (!tagRoute || !tagRoute.children) return;
-
-        // 获取现有的"所有标签"菜单项（明确类型）
-        const allTagItem: RouteRecordRaw | undefined = tagRoute.children.find(
-            child => child.name === 'allTag'
-        );
-
-        // 创建动态标签菜单项（明确RouteRecordRaw类型）
-        const dynamicItems: RouteRecordRaw[] = tags.map(tag => ({
-            path: `/Tag/${tag.tagId}`,
-            name: `tag-${tag.tagId}`,
-            component: () => import('@/components/tag/TagResource.vue'),
-            meta: {
-                title: tag.tagName,
-                tagId: tag.tagId,
-                icon: 'icon-col-biaoqian',
-                iconType: 'iconfont',
-                style: 'font-size: 18px; color: rgb(59,130,246)'
-            }
-        }));
-
-        // 更新children数组（类型安全）
-        tagRoute.children = [
-            ...dynamicItems,
-            ...(allTagItem ? [allTagItem] : [])
-        ];
-
-    } catch (error) {
-        console.error('加载标签失败:', error);
-    }
-};
-
-// 加载文件类型的方法
-const loadTypes = async () => {
-    try {
-        const types: ResourceType[] = await getResourceTypes();
-        if (!types || types.length === 0) return;
-
-        // 找到/type路由并确保类型安全
-        const typeRoute = menu.value.find(route => route.path === '/Type') as RouteRecordRaw | undefined;
-        if (!typeRoute) return;
-
-        // 创建动态类型菜单项（明确RouteRecordRaw类型）
-        typeRoute.children = types.map(type => ({
-            path: `/Type/${type.value}`,
-            name: `type-${type.value}`,
-            component: () => import('@/components/type/TypeResource.vue'),
-            meta: {
-                title: type.label,
-                typeName: type.value,
-                icon: `icon-col-${type.value}`,
-                iconType: 'iconfont',
-                style: 'font-size: 21px; color: rgb(59,130,246)'
-            }
-        })) as RouteRecordRaw[];
-
-    } catch (error) {
-        console.error('加载资源类型失败:', error);
-    }
-};
-
-// 菜单项点击事件
-const menuItemClick = (item: RouteRecordRaw) => {
-    // 统一使用path跳转
-    router.push(item.path).catch(err => {
-        console.error('路由跳转失败:', err)
-        // 失败时降级处理
-        if (item.path.includes('/Category/')) {
-            router.push('/AllCategory')
-        }
-        else if (item.path.includes('/Tag/')) {
-            router.push('/AllTag')
-        }
-    })
+// 处理目录确认
+const handleCatalogConfirm = async () => {
+    await loadCatalogTree()
 }
 
+// 更新当前激活菜单
+const updateActiveMenu = () => {
+    activeMenu.value = router.currentRoute.value.path
+}
 </script>
 
 <style scoped>
+/* 菜单头部样式 */
+.menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid #ebeef5;
+    font-weight: bold;
+}
+
+.menu-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.menu-actions .el-icon {
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.menu-actions .el-icon:hover {
+    color: #409EFF;
+}
+
+/* 固定菜单区域 */
+.fixed-menu {
+    flex: 1;
+    border-top: 1px solid #ebeef5;
+}
+
+/* 菜单通用样式 */
 .el-menu-vertical-demo:not(.el-menu--collapse) {
     width: 250px;
     min-height: 400px;
@@ -345,7 +379,7 @@ const menuItemClick = (item: RouteRecordRaw) => {
     border: 1px solid #00152914;
     color: white;
     background-color: rgb(75 85 99);
-    flex-shrink: 0; /* Prevent the header from shrinking */
+    flex-shrink: 0;
 }
 
 .el-main {
@@ -378,11 +412,6 @@ const menuItemClick = (item: RouteRecordRaw) => {
     --el-header-height: 45px
 }
 
-.el-main{
-    margin: 0;
-    padding: 0;
-}
-
 .menu-icon{
     width: 32px;
     float: left;
@@ -395,24 +424,18 @@ const menuItemClick = (item: RouteRecordRaw) => {
     margin: 0 0 0 5px;
 }
 
-.add_category{
+.new-level{
     cursor: pointer;
     margin-left: auto;
     font-size: 15px!important;
 }
 
-.add_category:hover{
+.new-level:hover{
     color: #409EFF;
 }
 
 .action-button{
     float: right;
-    margin: 0 10px 0 0;
 }
 
-.menu-tree{
-    float: left;
-    font-size: 17px!important;
-    margin: 2px 5px 0 0;
-}
 </style>
