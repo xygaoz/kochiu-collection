@@ -1,6 +1,6 @@
 <template>
     <el-sub-menu
-        :index="`catalog-${item.id}`"
+        :index="`/Catalog/${item.id}`"
         v-if="item.children && item.children.length > 0 && item.level < 4"
         @click="handleSubMenuClick"
     >
@@ -39,7 +39,7 @@
     </el-sub-menu>
     <el-menu-item
         v-else
-        :index="`catalog-${item.id}`"
+        :index="`/Catalog/${item.id}`"
         @click="handleItemClick(item)"
     >
         <el-icon><Folder /></el-icon>

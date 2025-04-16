@@ -216,7 +216,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Plus, Switch, Avatar, UploadFilled } from '@element-plus/icons-vue'
 import { listCategory } from '@/apis/category-api'
@@ -300,7 +300,7 @@ const menuItemClick = (item: { path: string }) => {
 
 // 处理目录节点点击
 const handleNodeClick = (data: Catalog) => {
-    router.push(`/catalog/${data.id}`).catch(err => {
+    router.push(`/Catalog/${data.id}`).catch(err => {
         console.error('路由跳转失败:', err)
     })
 }
@@ -334,30 +334,6 @@ const updateActiveMenu = () => {
 </script>
 
 <style scoped>
-/* 菜单头部样式 */
-.menu-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 20px;
-    border-bottom: 1px solid #ebeef5;
-    font-weight: bold;
-}
-
-.menu-actions {
-    display: flex;
-    gap: 10px;
-}
-
-.menu-actions .el-icon {
-    cursor: pointer;
-    font-size: 16px;
-}
-
-.menu-actions .el-icon:hover {
-    color: #409EFF;
-}
-
 /* 固定菜单区域 */
 .fixed-menu {
     flex: 1;
