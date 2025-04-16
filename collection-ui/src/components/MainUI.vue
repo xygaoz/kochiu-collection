@@ -225,6 +225,8 @@ import { getResourceTypes } from '@/apis/system-api'
 import { getCatalogTree } from '@/apis/catalog-api'
 import CatalogMenuItem from '@/components/catalog/CatalogMenuItem.vue'
 import { Catalog, Category, ResourceType, Tag } from "@/apis/interface";
+import CategoryDialog from "@/components/category/CategoryDialog.vue";
+import CatalogDialog from "@/components/catalog/CatalogDialog.vue";
 
 const router = useRouter()
 
@@ -236,8 +238,8 @@ const catalogTreeData = ref<Catalog[]>([])
 const categories = ref<Category[]>([])
 const tags = ref<Tag[]>([])
 const resourceTypes = ref<ResourceType[]>([])
-const categoryDialog = ref()
-const catalogDialog = ref()
+const categoryDialog = ref<InstanceType<typeof CategoryDialog>>()
+const catalogDialog = ref<InstanceType<typeof CatalogDialog>>()
 
 // 初始化数据
 onMounted(async () => {
@@ -306,13 +308,13 @@ const handleNodeClick = (data: Catalog) => {
 // 添加分类
 const addCategory = (e: Event) => {
     e.stopPropagation()
-    categoryDialog.value.open()
+    categoryDialog.value?.open()
 }
 
 // 添加目录
 const addCatalog = (e: Event) => {
     e.stopPropagation()
-    catalogDialog.value.open()
+    catalogDialog.value?.open()
 }
 
 // 处理分类确认
