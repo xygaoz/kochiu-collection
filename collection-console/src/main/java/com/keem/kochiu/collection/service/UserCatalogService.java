@@ -44,7 +44,7 @@ public class UserCatalogService {
         rootCatalogVo.setId(catalogList.get(0).getFolderSno());
 
         // 递归构建子目录
-        buildCatalogTree(rootCatalogVo, catalogList.get(0).getFolderId());
+        buildCatalogTree(user.getUserId(), rootCatalogVo, catalogList.get(0).getFolderId());
 
         return rootCatalogVo;
     }
@@ -54,22 +54,28 @@ public class UserCatalogService {
      * @param parentCatalogVo 父目录
      * @param parentId 父目录ID
      */
-    private void buildCatalogTree(CatalogVo parentCatalogVo, Long parentId) {
-        List<UserCatalog> children = getCatalogList(parentCatalogVo.getId(), parentId);
+    private void buildCatalogTree(int userId, CatalogVo parentCatalogVo, Long parentId) {
+        List<UserCatalog> children = getCatalogList(userId, parentId);
         for (UserCatalog child : children) {
             CatalogVo childCatalogVo = new CatalogVo();
             childCatalogVo.setLabel(child.getFolderName());
             childCatalogVo.setId(child.getFolderSno());
+            childCatalogVo.setLevel(child.getFolderLevel());
             parentCatalogVo.getChildren().add(childCatalogVo);
             // 递归处理子目录
-            buildCatalogTree(childCatalogVo, child.getFolderId());
+            buildCatalogTree(userId, childCatalogVo, child.getFolderId());
         }
     }
 
     private List<UserCatalog> getCatalogList(int userId, Long parentId) {
         LambdaQueryWrapper<UserCatalog> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(UserCatalog::getUserId, userId);
-        lambdaQueryWrapper.eq(UserCatalog::getParentId, parentId);
+        if(parentId == null){
+            lambdaQueryWrapper.isNull(UserCatalog::getParentId);
+        }
+        else {
+            lambdaQueryWrapper.eq(UserCatalog::getParentId, parentId);
+        }
         lambdaQueryWrapper.orderByAsc(UserCatalog::getFolderName);
         return catalogRepository.list(lambdaQueryWrapper);
     }
