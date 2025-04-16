@@ -40,8 +40,8 @@ const catalogTree = ref<Catalog[]>([]);
 const emit = defineEmits(['confirm']);
 
 const treeProps = {
-    value: 'folderId',
-    label: 'folderName',
+    value: 'id',
+    label: 'label',
     children: 'children'
 };
 
