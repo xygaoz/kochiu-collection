@@ -268,6 +268,9 @@
             <column name="CATE_ID" remarks="分类ID" type="INTEGER" defaultValue="1">
                 <constraints nullable="false"/>
             </column>
+            <column name="folder_sno" remarks="文件夹序号" type="INTEGER" defaultValue="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="resource_type" remarks="资源类型" type="INTEGER" defaultValue="0">
                 <constraints nullable="false"/>
             </column>
@@ -459,6 +462,94 @@
                 columnName="config_id"
                 columnDataType="INTEGER"
         />
+    </changeSet>
+
+    <changeSet id="kcdb_19" author="kochiu" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="user_catalog"/>
+            </not>
+        </preConditions>
+        <createTable remarks="用户目录表" tableName="user_catalog">
+            <column name="folder_id" type="INTEGER" remarks="目录id">
+                <constraints nullable="false"/>
+            </column>
+            <column name="USER_ID" remarks="用户ID" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="parent_id" remarks="上级目录" type="INTEGER"/>
+            <column name="folder_name" remarks="目录名" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="folder_path" remarks="目录路径" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="folder_level" remarks="目录层次" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="folder_sno" remarks="目录序号" type="INTEGER" defaultValue="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATE_TIME" remarks="创建时间" type="date"/>
+            <column name="CREATE_BY" remarks="创建人" type="VARCHAR(20)"/>
+            <column name="UPDATE_TIME" remarks="更新时间" type="date"/>
+            <column name="UPDATE_BY" remarks="更新人" type="VARCHAR(20)"/>
+            <column name="DB_VERSION" remarks="数据版本" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- 添加主键自增元数据 -->
+        <addAutoIncrement
+                tableName="user_catalog"
+                columnName="folder_id"
+                columnDataType="INTEGER"
+        />
+    </changeSet>
+
+    <changeSet id="kcdb_20" author="kochiu" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="user_catalog_idx1" tableName="user_catalog"/>
+            </not>
+        </preConditions>
+        <createIndex
+                indexName="user_catalog_idx1"
+                tableName="user_catalog" unique="true">
+            <column name="USER_ID"/>
+            <column name="folder_path"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="kcdb_21" author="kochiu" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="user_catalog_idx2" tableName="user_catalog"/>
+            </not>
+        </preConditions>
+        <createIndex
+                indexName="user_catalog_idx2"
+                tableName="user_catalog" unique="true">
+            <column name="USER_ID"/>
+            <column name="folder_sno"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="kcdb_22" author="kochiu" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <rowCount expectedRows="0" tableName="user_catalog"/>
+        </preConditions>
+        <insert tableName="user_catalog">
+            <column name="folder_id" value="1"/>
+            <column name="USER_ID" value="1"/>
+            <column name="folder_name" value="我的资源"/>
+            <column name="folder_path" value="/"/>
+            <column name="folder_level" value="0"/>
+            <column name="folder_sno" value="0"/>
+            <column name="CREATE_TIME" valueComputed="datetime('now')"/>
+            <column name="CREATE_BY" value="sys"/>
+            <column name="DB_VERSION" value="1"/>
+        </insert>
     </changeSet>
 
 </databaseChangeLog>

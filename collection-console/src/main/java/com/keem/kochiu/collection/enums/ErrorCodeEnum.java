@@ -26,6 +26,7 @@ public enum ErrorCodeEnum {
     CATEGORY_IS_EXIST("1016", "分类已存在"),
     TAG_IS_EXIST("1017", "标签已存在"),
     FAILED_GEN_TOKEN("1018", "生成token失败"),
+    ROOT_FOLDER_IS_INVALID("1019", "根目录无效"),
     ;
 
     private final String code;
