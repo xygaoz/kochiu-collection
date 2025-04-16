@@ -51,3 +51,9 @@ export interface SearchForm {
     types: string[];
     tags: string[];
 }
+
+export interface Catalog {
+    id: number;
+    label: string;
+    children: Catalog[];
+}

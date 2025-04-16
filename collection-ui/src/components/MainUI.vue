@@ -36,9 +36,12 @@
                                         {{ menuItem.meta?.title || menuItem.name }}
                                     </div>
                                     <!-- 添加按钮 -->
-                                    <el-icon v-if="menuItem.path === '/Category'" @click="addCategory" class="add_category" title="新分类">
-                                        <Plus />
-                                    </el-icon>
+                                    <div class="action-button" v-if="menuItem.path === '/Category'">
+                                        <i class="iconfont icon-col-shujiegou add_category menu-tree" title="目录结构"/>
+                                        <el-icon @click="addCategory" class="add_category" title="新分类">
+                                            <Plus />
+                                        </el-icon>
+                                    </div>
                                 </template>
                                 <el-menu-item
                                     v-for="subMenuItem in menuItem.children"
@@ -388,14 +391,28 @@ const menuItemClick = (item: RouteRecordRaw) => {
 
 .menu-label{
     float: left;
+    width: 100%;
+    margin: 0 0 0 5px;
 }
 
 .add_category{
     cursor: pointer;
     margin-left: auto;
+    font-size: 15px!important;
 }
 
 .add_category:hover{
     color: #409EFF;
+}
+
+.action-button{
+    float: right;
+    margin: 0 10px 0 0;
+}
+
+.menu-tree{
+    float: left;
+    font-size: 17px!important;
+    margin: 2px 5px 0 0;
 }
 </style>
