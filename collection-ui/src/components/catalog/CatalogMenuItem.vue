@@ -3,10 +3,14 @@
         :index="`/Catalog/${item.sno}`"
         :key="item.id"
         v-if="item.children && item.children.length > 0 && item.level < 4"
-        @click="handleSubMenuClick"
     >
         <template #title>
-            <div class="menu-item-content" @mouseenter="showActions = item.level > 0" @mouseleave="showActions = false">
+            <div
+                class="menu-item-content"
+                @mouseenter="showActions = item.level > 0"
+                @mouseleave="showActions = false"
+                @click.stop="handleTitleClick(item)"
+            >
                 <div class="menu-icon">
                     <el-icon><Folder /></el-icon>
                 </div>
@@ -106,10 +110,6 @@ const handleTitleClick = (item: Catalog) => {
 
 const handleItemClick = (item: Catalog) => {
     emit('node-click', item);
-};
-
-const handleSubMenuClick = (e: Event) => {
-    e.preventDefault();
 };
 </script>
 
