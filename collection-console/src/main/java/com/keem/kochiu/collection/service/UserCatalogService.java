@@ -3,6 +3,7 @@ package com.keem.kochiu.collection.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.data.vo.CatalogVo;
+import com.keem.kochiu.collection.data.vo.PathVo;
 import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.entity.UserCatalog;
 import com.keem.kochiu.collection.enums.ErrorCodeEnum;
@@ -40,13 +41,13 @@ public class UserCatalogService {
 
         // 构建根目录
         CatalogVo rootCatalogVo = new CatalogVo();
-        rootCatalogVo.setLabel(catalogList.get(0).getFolderName());
-        rootCatalogVo.setId(catalogList.get(0).getFolderSno());
-        rootCatalogVo.setLevel(catalogList.get(0).getFolderLevel());
-        rootCatalogVo.setSno(catalogList.get(0).getFolderSno());
+        rootCatalogVo.setLabel(catalogList.get(0).getCataName());
+        rootCatalogVo.setId(catalogList.get(0).getCataSno());
+        rootCatalogVo.setLevel(catalogList.get(0).getCataLevel());
+        rootCatalogVo.setSno(catalogList.get(0).getCataSno());
 
         // 递归构建子目录
-        buildCatalogTree(user.getUserId(), rootCatalogVo, catalogList.get(0).getFolderId());
+        buildCatalogTree(user.getUserId(), rootCatalogVo, catalogList.get(0).getCataId());
 
         return rootCatalogVo;
     }
@@ -60,13 +61,13 @@ public class UserCatalogService {
         List<UserCatalog> children = getCatalogList(userId, parentId);
         for (UserCatalog child : children) {
             CatalogVo childCatalogVo = new CatalogVo();
-            childCatalogVo.setLabel(child.getFolderName());
-            childCatalogVo.setId(child.getFolderSno());
-            childCatalogVo.setLevel(child.getFolderLevel());
-            childCatalogVo.setSno(child.getFolderSno());
+            childCatalogVo.setLabel(child.getCataName());
+            childCatalogVo.setId(child.getCataSno());
+            childCatalogVo.setLevel(child.getCataLevel());
+            childCatalogVo.setSno(child.getCataSno());
             parentCatalogVo.getChildren().add(childCatalogVo);
             // 递归处理子目录
-            buildCatalogTree(userId, childCatalogVo, child.getFolderId());
+            buildCatalogTree(userId, childCatalogVo, child.getCataId());
         }
     }
 
@@ -79,7 +80,7 @@ public class UserCatalogService {
         else {
             lambdaQueryWrapper.eq(UserCatalog::getParentId, parentId);
         }
-        lambdaQueryWrapper.orderByAsc(UserCatalog::getFolderName);
+        lambdaQueryWrapper.orderByAsc(UserCatalog::getCataName);
         return catalogRepository.list(lambdaQueryWrapper);
     }
 
@@ -90,17 +91,24 @@ public class UserCatalogService {
      * @return
      * @throws CollectionException
      */
-    public String getCatalogPath(UserDto userDto, int sno) throws CollectionException {
+    public PathVo getCatalogPath(UserDto userDto, int sno) throws CollectionException {
 
         SysUser user = userRepository.getUser(userDto);
-        String path = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
+        UserCatalog userCatalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
                 .eq(UserCatalog::getUserId, user.getUserId())
-                .eq(UserCatalog::getFolderSno, sno)).getFolderPath();
-        if("/".equals(path)){
-            return "/我的资源";
+                .eq(UserCatalog::getCataSno, sno));
+        PathVo pathVo = new PathVo();
+        if("/".equals(userCatalog.getCataPath())){
+            pathVo.setPath("/我的资源");
         }
         else{
-            return "/我的资源" + path;
+            pathVo.setPath("/我的资源" + userCatalog.getCataPath());
         }
+        List<UserCatalog> catalogList = catalogRepository.selectParentCata(user.getUserId(), userCatalog.getCataId());
+        catalogList.forEach(catalog ->
+                pathVo.getPathInfo().add(new PathVo.PathInfo(catalog.getCataSno(), catalog.getCataName()))
+        );
+
+        return pathVo;
     }
 }

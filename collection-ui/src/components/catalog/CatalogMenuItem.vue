@@ -109,13 +109,4 @@ const handleSubMenuClick = (e: Event) => {
     color: #409EFF;
 }
 
-.expand-icon {
-    cursor: pointer;
-    font-size: 14px;
-    transition: transform 0.3s;
-}
-
-.expand-icon.is-expanded {
-    transform: rotate(180deg);
-}
 </style>

@@ -59,3 +59,13 @@ export interface Catalog {
     sno: number;
     children: Catalog[];
 }
+
+export interface PathVo {
+    path: string;
+    pathInfo: PathInfo[];
+}
+
+export interface PathInfo{
+    sno: number;
+    cataName: string;
+}

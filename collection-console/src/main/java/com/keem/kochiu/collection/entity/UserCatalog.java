@@ -10,11 +10,11 @@ import lombok.EqualsAndHashCode;
 public class UserCatalog extends BaseEntity{
 
     @TableId(type = IdType.INPUT)
-    private Long folderId;
+    private Long cataId;
     private Long parentId;
-    private String folderName;
+    private String cataName;
     private Integer userId;
-    private Integer folderSno;
-    private Integer folderLevel;
-    private String folderPath;
+    private Integer cataSno;
+    private Integer cataLevel;
+    private String cataPath;
 }

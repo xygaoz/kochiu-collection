@@ -3,6 +3,7 @@ package com.keem.kochiu.collection.controller;
 import com.keem.kochiu.collection.annotation.CheckPermit;
 import com.keem.kochiu.collection.data.DefaultResult;
 import com.keem.kochiu.collection.data.vo.CatalogVo;
+import com.keem.kochiu.collection.data.vo.PathVo;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.service.CheckPermitAspect;
 import com.keem.kochiu.collection.service.UserCatalogService;
@@ -34,7 +35,7 @@ public class UserCatalogController {
 
     @CheckPermit
     @GetMapping("/path/{sno}")
-    public DefaultResult<String> getCatalogPath(@PathVariable int sno) throws CollectionException {
+    public DefaultResult<PathVo> getCatalogPath(@PathVariable int sno) throws CollectionException {
         return DefaultResult.ok(userCatalogService.getCatalogPath(CheckPermitAspect.USER_INFO.get(), sno));
     }
 }

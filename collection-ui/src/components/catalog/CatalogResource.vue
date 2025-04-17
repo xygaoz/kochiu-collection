@@ -1,8 +1,8 @@
 <template>
     <el-container>
         <el-header class="cata-header">
-            路径: <span class="path-segment" v-for="(segment, index) in path.split('/')" :key="index">
-                {{ segment }}<span class="slash" v-if="index < path.split('/').length - 1"> / </span>
+            路径: <span class="path-segment" v-for="(segment, index) in pathVo.path.split('/')" :key="index">
+                {{ segment }}<span class="slash" v-if="index < pathVo.path.split('/').length - 1"> / </span>
               </span>
         </el-header>
         <el-main style="margin: 0; padding: 0">
@@ -21,7 +21,7 @@
 import { onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { listCatalogFiles } from "@/apis/resource-api";
-import { Resource, SearchForm } from "@/apis/interface";
+import { PathVo, Resource, SearchForm } from "@/apis/interface";
 import ResourceView from "@/components/common/ResourceView.vue";
 import { getCatalogPath } from "@/apis/catalog-api";
 
@@ -33,7 +33,10 @@ const pageSize = ref(500);
 const total = ref(0);
 const cataSno = ref("")
 const dataType = ref("category")
-const path = ref("")
+const pathVo = ref<PathVo>({
+    path: "/",
+    pathInfo: []
+})
 
 watch(
     () => route.params.sno,
@@ -59,7 +62,7 @@ watch(
 
 onMounted(async () => {
     if (cataSno.value) {
-        path.value = await getCatalogPath(cataSno.value);
+        pathVo.value = await getCatalogPath(cataSno.value);
     } else {
         console.warn("cataSno为空，无法获取路径");
     }
