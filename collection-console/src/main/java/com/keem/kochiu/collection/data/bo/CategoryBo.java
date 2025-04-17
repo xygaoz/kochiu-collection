@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 public class CategoryBo {
 
     @NotNull(groups = {Edit.class}, message = "分类ID不能为空！！！")
-    private Integer cateId;
+    private Long cateId;
     @NotNull(groups = {Add.class, Edit.class}, message = "分类名称不能为空！！！")
     private String cateName;
 }

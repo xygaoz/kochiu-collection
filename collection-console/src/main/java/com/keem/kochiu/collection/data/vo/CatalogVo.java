@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 public class CatalogVo {
-    private Integer id;
+    private Long id;
     private String label;
     private int level;
     private int sno;

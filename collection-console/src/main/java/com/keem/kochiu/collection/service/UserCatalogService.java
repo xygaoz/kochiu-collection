@@ -1,6 +1,7 @@
 package com.keem.kochiu.collection.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.keem.kochiu.collection.data.bo.CatalogBo;
 import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.data.vo.CatalogVo;
 import com.keem.kochiu.collection.data.vo.PathVo;
@@ -8,10 +9,12 @@ import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.entity.UserCatalog;
 import com.keem.kochiu.collection.enums.ErrorCodeEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
+import com.keem.kochiu.collection.properties.CollectionProperties;
 import com.keem.kochiu.collection.repository.SysUserRepository;
 import com.keem.kochiu.collection.repository.UserCatalogRepository;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.util.List;
 
 @Service
@@ -19,11 +22,14 @@ public class UserCatalogService {
 
     private final UserCatalogRepository catalogRepository;
     private final SysUserRepository userRepository;
+    private final CollectionProperties collectionProperties;
 
     public UserCatalogService(UserCatalogRepository catalogRepository,
-                              SysUserRepository userRepository) {
+                              SysUserRepository userRepository,
+                              CollectionProperties collectionProperties) {
         this.catalogRepository = catalogRepository;
         this.userRepository = userRepository;
+        this.collectionProperties = collectionProperties;
     }
 
     /**
@@ -42,7 +48,7 @@ public class UserCatalogService {
         // 构建根目录
         CatalogVo rootCatalogVo = new CatalogVo();
         rootCatalogVo.setLabel(catalogList.get(0).getCataName());
-        rootCatalogVo.setId(catalogList.get(0).getCataSno());
+        rootCatalogVo.setId(catalogList.get(0).getCataId());
         rootCatalogVo.setLevel(catalogList.get(0).getCataLevel());
         rootCatalogVo.setSno(catalogList.get(0).getCataSno());
 
@@ -62,7 +68,7 @@ public class UserCatalogService {
         for (UserCatalog child : children) {
             CatalogVo childCatalogVo = new CatalogVo();
             childCatalogVo.setLabel(child.getCataName());
-            childCatalogVo.setId(child.getCataSno());
+            childCatalogVo.setId(child.getCataId());
             childCatalogVo.setLevel(child.getCataLevel());
             childCatalogVo.setSno(child.getCataSno());
             parentCatalogVo.getChildren().add(childCatalogVo);
@@ -110,5 +116,42 @@ public class UserCatalogService {
         );
 
         return pathVo;
+    }
+
+    public void addCatalog(UserDto userDto, CatalogBo catalogBo) throws CollectionException {
+        SysUser user = userRepository.getUser(userDto);
+
+        UserCatalog parentCatalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
+                .eq(UserCatalog::getUserId, user.getUserId())
+                .eq(UserCatalog::getCataId, catalogBo.getParentId()));
+        if(parentCatalog == null){
+            throw new CollectionException(ErrorCodeEnum.PARENT_CATALOG_IS_INVALID);
+        }
+        //取最大序号
+        Integer maxSno = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
+                .eq(UserCatalog::getUserId, user.getUserId())
+                .orderByDesc(UserCatalog::getCataSno)
+                .last("limit 1")).getCataSno();
+
+        UserCatalog userCatalog = UserCatalog.builder()
+                .userId(user.getUserId())
+                .parentId(catalogBo.getParentId())
+                .cataName(catalogBo.getCataName())
+                .cataLevel(parentCatalog.getCataLevel() + 1)
+                .cataPath((parentCatalog.getCataPath() + "/" + catalogBo.getCataName()).replaceAll("//", "/"))
+                .cataSno(maxSno + 1)
+                .build();
+        if(catalogRepository.save(userCatalog)){
+            //建物理文件夹
+            File file = new File(collectionProperties.getUploadPath() + "/" + user.getUserCode() + userCatalog.getCataPath());
+            if(!file.exists()){
+                if(!file.mkdirs()){
+                    throw new CollectionException(ErrorCodeEnum.ADD_CATALOG_FAIL);
+                }
+            }
+        }
+        else{
+            throw new CollectionException(ErrorCodeEnum.ADD_CATALOG_FAIL);
+        }
     }
 }

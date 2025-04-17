@@ -8,13 +8,19 @@ export const getCatalogTree = (): Promise<Catalog[]> => {
         }
         return [];
     }).catch((error) => {
-        console.error("获取分类失败:", error);
+        console.error("获取目录失败:", error);
         return [];
     });
 }
 
-export const addCatalog = (data: { folderName: string, parentId?: number }) => {
-    return httpInstance.post("/catalog", data);
+export const addCatalog = (data: { cataName: string, parentId?: number }): Promise<boolean> => {
+
+    return httpInstance.post("/catalog/add", data).then((model: any) => {
+        return !!model;
+    }).catch((error) => {
+        console.error("新建目录失败:", error);
+        return false;
+    })
 }
 
 export const getCatalogPath = async (sno: string): Promise<PathVo> => {
@@ -24,7 +30,7 @@ export const getCatalogPath = async (sno: string): Promise<PathVo> => {
         }
         return { path: "/", pathInfo: [] }; // 返回默认对象而不是空字符串
     }).catch((error) => {
-        console.error("获取分类失败:", error);
+        console.error("获取目录失败:", error);
         return { path: "/", pathInfo: [] }; // 返回默认对象而不是空字符串
     });
 }

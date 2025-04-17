@@ -240,6 +240,7 @@ const tags = ref<Tag[]>([])
 const resourceTypes = ref<ResourceType[]>([])
 const categoryDialog = ref<InstanceType<typeof CategoryDialog>>()
 const catalogDialog = ref<InstanceType<typeof CatalogDialog>>()
+const currentCatalog = ref<Catalog | null>(null);
 
 // 初始化数据
 onMounted(async () => {
@@ -300,10 +301,11 @@ const menuItemClick = (item: { path: string }) => {
 
 // 处理目录节点点击
 const handleNodeClick = (data: Catalog) => {
+    currentCatalog.value = data; // 保存当前选中的目录
     router.push(`/Catalog/${data.sno}`).catch(err => {
-        console.error('路由跳转失败:', err)
-    })
-}
+        console.error('路由跳转失败:', err);
+    });
+};
 
 // 添加分类
 const addCategory = (e: Event) => {
@@ -313,9 +315,9 @@ const addCategory = (e: Event) => {
 
 // 添加目录
 const addCatalog = (e: Event) => {
-    e.stopPropagation()
-    catalogDialog.value?.open()
-}
+    e.stopPropagation();
+    catalogDialog.value?.open(currentCatalog.value?.id); // 传递当前目录ID
+};
 
 // 处理分类确认
 const handleCategoryConfirm = async () => {

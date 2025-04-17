@@ -27,7 +27,8 @@ public enum ErrorCodeEnum {
     TAG_IS_EXIST("1017", "标签已存在"),
     FAILED_GEN_TOKEN("1018", "生成token失败"),
     ROOT_FOLDER_IS_INVALID("1019", "根目录无效"),
-    ;
+    PARENT_CATALOG_IS_INVALID("1020", "父目录无效"),
+    ADD_CATALOG_FAIL("1029", "新建目录失败");
 
     private final String code;
     private final String message;

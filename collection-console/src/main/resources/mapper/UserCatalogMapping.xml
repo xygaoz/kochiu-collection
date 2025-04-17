@@ -7,19 +7,19 @@
     </select>
 
     <select id="selectParentCata" resultType="com.keem.kochiu.collection.entity.UserCatalog">
-        WITH RECURSIVE tree AS (
-            -- 基础查询：选择起始节点
-            SELECT cata_id, parent_id, cata_name, cata_path, cata_level, cata_sno
+        WITH RECURSIVE catalog_tree AS (
+            SELECT cata_id, parent_id, cata_name, cata_path, cata_level, cata_sno, user_id
             FROM user_catalog
-            WHERE cata_id = #{cataId} and USER_ID=#{userId}
+            WHERE cata_id = #{cataId} AND user_id = #{userId}
 
             UNION ALL
 
-            -- 递归部分：向上查找父节点
-            SELECT c.cata_id, c.parent_id, c.cata_name, c.cata_path, c.cata_level, c.cata_sno
+            SELECT c.cata_id, c.parent_id, c.cata_name, c.cata_path, c.cata_level, c.cata_sno, c.user_id
             FROM user_catalog c
-                     JOIN tree t ON c.cata_id = t.parent_id
+                     JOIN catalog_tree ct ON c.cata_id = ct.parent_id
+            WHERE c.user_id = #{userId}
         )
-        SELECT * FROM tree;
+        SELECT * FROM catalog_tree
+        ORDER BY cata_sno
     </select>
 </mapper>

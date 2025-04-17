@@ -54,13 +54,10 @@ const processedPath = computed(() => {
 
     // 处理API返回的pathInfo
     if (pathInfo.length > 0) {
-        // 深拷贝并反转数组
-        return [...pathInfo]
-            .reverse()
-            .map(item => ({
-                name: item.cataName || `目录${item.sno}`,
-                sno: item.sno
-            }));
+        return pathInfo.map(info => ({
+            name: info.cataName,
+            sno: info.sno
+        }));
     }
 
     // 备用方案：处理path字符串

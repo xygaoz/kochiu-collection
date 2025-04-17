@@ -85,9 +85,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, nextTick, onMounted, onUnmounted, watch, defineEmits, defineProps } from "vue";
+import { defineEmits, defineProps, nextTick, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { ElInput, ElMessage } from "element-plus";
-import { ArrowDown } from '@element-plus/icons-vue';
+import { ArrowDown } from "@element-plus/icons-vue";
 import { getResourceTypes } from "@/apis/system-api";
 import { Category, ResourceType, SearchForm } from "@/apis/interface";
 import { getAllCategory } from "@/apis/category-api";
@@ -125,9 +125,7 @@ const checkCollapseNeed = () => {
     nextTick(() => {
         if (wrapperRef.value) {
             const contentHeight = wrapperRef.value.scrollHeight;
-            const needsCollapse = contentHeight > 40;
-
-            showCollapseButton.value = needsCollapse;
+            showCollapseButton.value = contentHeight > 40;
 
             // 检查TagSelector是否换行到第二行
             const formItems = wrapperRef.value.querySelectorAll('.form-item');
