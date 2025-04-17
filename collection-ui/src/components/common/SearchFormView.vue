@@ -17,7 +17,7 @@
             <!-- 左侧表单内容 -->
             <div class="form-content">
                 <el-form-item label="分类" prop="cateId" class="form-item"
-                              v-if="props.dataType == 'all-category'"
+                              v-if="props.dataType == 'all-category' || props.dataType == 'catalog'"
                 >
                     <el-select class="category-select" v-model="searchForm.cateId" placeholder="请选择分类" size="small">
                         <el-option

@@ -17,6 +17,6 @@ public class PathVo {
     @Data
     public static class PathInfo{
         private int sno;
-        private String cateName;
+        private String cataName;
     }
 }

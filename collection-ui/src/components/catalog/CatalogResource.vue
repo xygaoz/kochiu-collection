@@ -1,9 +1,18 @@
 <template>
     <el-container>
         <el-header class="cata-header">
-            路径: <span class="path-segment" v-for="(segment, index) in pathVo.path.split('/')" :key="index">
-                {{ segment }}<span class="slash" v-if="index < pathVo.path.split('/').length - 1"> / </span>
-              </span>
+            路径:
+            <span class="path-segment" v-for="(segment, index) in processedPath" :key="index">
+                <router-link
+                    v-if="segment.sno !== undefined"
+                    :to="`/Catalog/${segment.sno}`"
+                    class="path-link"
+                >
+                    {{ segment.name }}
+                </router-link>
+                <span v-else>{{ segment.name }}</span>
+                <span class="slash" v-if="index < processedPath.length - 1"> / </span>
+            </span>
         </el-header>
         <el-main style="margin: 0; padding: 0">
             <ResourceView
@@ -18,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import { useRoute } from "vue-router";
 import { listCatalogFiles } from "@/apis/resource-api";
 import { PathVo, Resource, SearchForm } from "@/apis/interface";
@@ -32,26 +41,69 @@ const currentPage = ref(1);
 const pageSize = ref(500);
 const total = ref(0);
 const cataSno = ref("")
-const dataType = ref("category")
+const dataType = ref("catalog")
 const pathVo = ref<PathVo>({
     path: "/",
     pathInfo: []
 })
 
+// 计算属性，将 pathInfo 转换为可用的路径段数组
+const processedPath = computed(() => {
+    // 确保pathInfo存在且是数组
+    const pathInfo = Array.isArray(pathVo.value.pathInfo) ? pathVo.value.pathInfo : [];
+
+    // 处理API返回的pathInfo
+    if (pathInfo.length > 0) {
+        // 深拷贝并反转数组
+        return [...pathInfo]
+            .reverse()
+            .map(item => ({
+                name: item.cataName || `目录${item.sno}`,
+                sno: item.sno
+            }));
+    }
+
+    // 备用方案：处理path字符串
+    const segments = (pathVo.value.path || '').split('/').filter(Boolean);
+    if (segments.length > 0) {
+        return segments.map(segment => ({
+            name: segment,
+            sno: undefined
+        }));
+    }
+
+    // 默认返回当前目录
+    return [{ name: '当前目录', sno: cataSno.value }];
+});
+
+
 watch(
     () => route.params.sno,
     async (newId) => {
         if (newId) {
-            // 重新加载数据
             try {
                 loading.value = true;
-                cataSno.value = newId
-                const data = await listCatalogFiles(newId, currentPage.value, pageSize.value, {});
+                cataSno.value = newId as string;
+
+                // 加载路径信息
+                const pathData = await getCatalogPath(newId as string);
+                console.log('API返回的路径数据:', pathData); // 调试日志
+
+                pathVo.value = {
+                    path: pathData.path || `/${newId}`,
+                    pathInfo: Array.isArray(pathData.pathInfo) ? pathData.pathInfo : []
+                };
+
+                // 加载文件列表
+                const data = await listCatalogFiles(newId as string, currentPage.value, pageSize.value, {});
                 files.value = data.list;
                 total.value = data.total;
-                currentPage.value = data.pageNum;
             } catch (error) {
                 console.error("加载失败:", error);
+                pathVo.value = {
+                    path: `/${newId}`,
+                    pathInfo: [{ sno: newId, cataName: '当前目录' }]
+                };
             } finally {
                 loading.value = false;
             }
@@ -60,19 +112,10 @@ watch(
     { immediate: true }
 );
 
-onMounted(async () => {
-    if (cataSno.value) {
-        pathVo.value = await getCatalogPath(cataSno.value);
-    } else {
-        console.warn("cataSno为空，无法获取路径");
-    }
-});
-
 // 处理文件更新
 const handleFileUpdate = (params: Resource): void => {
     const index = files.value.findIndex(file => file.resourceId === params.resourceId);
     if (index !== -1) {
-        // 更新文件对象
         files.value[index] = { ...files.value[index], ...params };
         console.log('文件已更新:', params);
     } else {
@@ -97,7 +140,7 @@ const handleSearch = async (searchForm: SearchForm) => {
 </script>
 
 <style scoped>
-.cata-header{
+.cata-header {
     height: 18px;
     font-size: 13px;
     display: flex;
@@ -113,7 +156,19 @@ const handleSearch = async (searchForm: SearchForm) => {
 }
 
 .slash {
-    margin: 0 2px; /* 控制斜杠前后的间距 */
-    color: #666; /* 可选：改变斜杠颜色 */
+    margin: 0 2px;
+    color: #666;
+}
+
+.path-link {
+    color: #409EFF;
+    padding: 0 3px;
+    border-radius: 3px;
+    transition: all 0.3s;
+    text-decoration: none;
+}
+.path-link:hover {
+    background: #ecf5ff;
+    text-decoration: none;
 }
 </style>
