@@ -31,6 +31,9 @@
 import { ref, defineEmits, defineExpose } from 'vue';
 import { Catalog } from "@/apis/interface";
 import { addCatalog, getCatalogTree } from "@/apis/catalog-api";
+import { ElMessage } from "element-plus";
+import { loginService, tokenStore } from "@/apis/system-api";
+import Cookies from "js-cookie";
 
 const visible = ref(false);
 const form = ref({
@@ -77,11 +80,15 @@ const open = async (parentId?: number) => {
 };
 
 const handleConfirm = async () => {
-    if(await addCatalog(form.value)) {
-        form.value = { cataName: '', parentId: null };
-        visible.value = false;
-        emit('confirm', form.value);
-    }
+    form.value.validate(async (valid) => {
+        if (valid) {
+            if(await addCatalog(form.value)) {
+                form.value = { cataName: '', parentId: null };
+                visible.value = false;
+                emit('confirm', form.value);
+            }
+        }
+    });
 };
 
 defineExpose({ open });
