@@ -103,11 +103,16 @@ public class UserCatalogService {
      */
     public PathVo getCatalogPath(UserDto userDto, int sno) throws CollectionException {
 
+        PathVo pathVo = new PathVo();
         SysUser user = userRepository.getUser(userDto);
         UserCatalog userCatalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
                 .eq(UserCatalog::getUserId, user.getUserId())
                 .eq(UserCatalog::getCataSno, sno));
-        PathVo pathVo = new PathVo();
+        if(userCatalog == null){
+            pathVo.setPath("/我的资源");
+            return pathVo;
+        }
+
         if("/".equals(userCatalog.getCataPath())){
             pathVo.setPath("/我的资源");
         }
@@ -228,15 +233,25 @@ public class UserCatalogService {
                 throw new CollectionException(ErrorCodeEnum.CATALOG_NAME_IS_SAME);
             }
             String newPath = (parentCatalog.getCataPath() + "/" + catalogBo.getCataName()).replaceAll("//", "/");
-            // 数据库先改名
-            userCatalog.setCataName(catalogBo.getCataName());
-            userCatalog.setCataPath(newPath);
-            userCatalog.setParentId(catalogBo.getParentId());
-
-            // 更新数据库
-            if (!catalogRepository.updateById(userCatalog)) {
-                throw new CollectionException(ErrorCodeEnum.UPDATE_CATALOG_FAIL);
+            if(catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
+                    .eq(UserCatalog::getUserId, user.getUserId())
+                    .eq(UserCatalog::getCataPath, newPath)) != null){
+                //目标目录已存在
+                if(!catalogRepository.removeById(userCatalog.getCataId())){
+                    throw new CollectionException(ErrorCodeEnum.UPDATE_CATALOG_FAIL);
+                }
             }
+            else{
+                // 数据库先改名
+                userCatalog.setCataName(catalogBo.getCataName());
+                userCatalog.setCataPath(newPath);
+                userCatalog.setParentId(catalogBo.getParentId());
+                // 更新数据库
+                if (!catalogRepository.updateById(userCatalog)) {
+                    throw new CollectionException(ErrorCodeEnum.UPDATE_CATALOG_FAIL);
+                }
+            }
+
             // 更新物理文件夹
             ResourceStoreStrategy resourceStoreStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
             if (!resourceStoreStrategy.renameFolder(
