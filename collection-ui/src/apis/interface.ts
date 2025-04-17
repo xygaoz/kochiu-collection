@@ -56,5 +56,6 @@ export interface Catalog {
     id: number;
     label: string;
     level: number;
+    sno: number;
     children: Catalog[];
 }

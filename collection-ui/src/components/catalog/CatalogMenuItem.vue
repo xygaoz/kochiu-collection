@@ -1,6 +1,7 @@
 <template>
     <el-sub-menu
-        :index="`/Catalog/${item.id}`"
+        :index="`/Catalog/${item.sno}`"
+        :key="item.id"
         v-if="item.children && item.children.length > 0 && item.level < 4"
         @click="handleSubMenuClick"
     >
@@ -39,7 +40,8 @@
     </el-sub-menu>
     <el-menu-item
         v-else
-        :index="`/Catalog/${item.id}`"
+        :index="`/Catalog/${item.sno}`"
+        :key="item.id"
         @click="handleItemClick(item)"
     >
         <el-icon><Folder /></el-icon>
@@ -48,6 +50,7 @@
 </template>
 
 <script setup lang="ts">
+import { defineProps, defineEmits } from "vue"
 import { Folder, Plus, Switch } from "@element-plus/icons-vue";
 import { Catalog } from "@/apis/interface";
 

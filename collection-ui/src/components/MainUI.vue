@@ -300,7 +300,7 @@ const menuItemClick = (item: { path: string }) => {
 
 // 处理目录节点点击
 const handleNodeClick = (data: Catalog) => {
-    router.push(`/Catalog/${data.id}`).catch(err => {
+    router.push(`/Catalog/${data.sno}`).catch(err => {
         console.error('路由跳转失败:', err)
     })
 }

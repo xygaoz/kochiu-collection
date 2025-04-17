@@ -247,6 +247,7 @@ const handleRestore = (resources: Resource[]) => {
 
 
 .content-area {
+    padding: 10px!important;
     will-change: margin-top;
     overflow: auto;
     height: calc(100% - 32px);
