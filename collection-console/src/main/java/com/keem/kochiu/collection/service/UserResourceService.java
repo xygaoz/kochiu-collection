@@ -24,6 +24,7 @@ import com.keem.kochiu.collection.service.store.ResourceStrategyFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -63,6 +64,7 @@ public class UserResourceService {
      * @return
      * @throws CollectionException
      */
+    @Transactional(rollbackFor = Exception.class)
     public FileVo saveFile(UploadBo uploadBo, UserDto userDto) throws CollectionException {
 
         SysUser user = userRepository.getUser(userDto);
@@ -162,6 +164,7 @@ public class UserResourceService {
      * @param userDto
      * @param resourceInfo
      */
+    @Transactional(rollbackFor = Exception.class)
     public void updateResourceInfo(UserDto userDto, ResInfoBo resourceInfo) throws CollectionException {
 
         if(StringUtils.isBlank(resourceInfo.getTitle()) && StringUtils.isBlank(resourceInfo.getDescription())
@@ -271,6 +274,7 @@ public class UserResourceService {
      * @param batchUpdateBo
      * @throws CollectionException
      */
+    @Transactional(rollbackFor = Exception.class)
     public void batchUpdate(UserDto userDto, BatchUpdateBo batchUpdateBo) throws CollectionException {
 
         SysUser user = userRepository.getUser(userDto);
@@ -290,6 +294,7 @@ public class UserResourceService {
      * @param moveToBo
      * @throws CollectionException
      */
+    @Transactional(rollbackFor = Exception.class)
     public void moveToCategory(UserDto userDto, MoveToBo moveToBo) throws CollectionException {
         SysUser user = userRepository.getUser(userDto);
         if(categoryRepository.getById(moveToBo.getCateId()) == null){
@@ -304,6 +309,7 @@ public class UserResourceService {
      * @param moveToBo
      * @throws CollectionException
      */
+    @Transactional(rollbackFor = Exception.class)
     public void moveToRecycle(UserDto userDto, MoveToBo moveToBo) throws CollectionException {
         SysUser user = userRepository.getUser(userDto);
         if(!moveToBo.isDeleted()) {
@@ -324,6 +330,7 @@ public class UserResourceService {
      * @param moveToBo
      * @throws CollectionException
      */
+    @Transactional(rollbackFor = Exception.class)
     public void restoreFormRecycle(UserDto userDto, MoveToBo moveToBo) throws CollectionException {
         SysUser user = userRepository.getUser(userDto);
         resourceRepository.restoreFormRecycle(user.getUserId(), moveToBo);

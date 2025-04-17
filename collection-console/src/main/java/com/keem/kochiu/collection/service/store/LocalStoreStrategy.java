@@ -8,6 +8,7 @@ import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.data.vo.FileVo;
 import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.entity.UserResource;
+import com.keem.kochiu.collection.enums.ErrorCodeEnum;
 import com.keem.kochiu.collection.enums.FileTypeEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.properties.CollectionProperties;
@@ -35,7 +36,7 @@ import static com.keem.kochiu.collection.enums.ErrorCodeEnum.*;
 @Service("local")
 public class LocalStoreStrategy implements ResourceStoreStrategy {
 
-    private final CollectionProperties pluServiceProperties;
+    private final CollectionProperties collectionProperties;
     private final UserResourceRepository resourceRepository;
     private final SysUserRepository userRepository;
     private final FileStrategyFactory fileStrategyFactory;
@@ -44,7 +45,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
     public LocalStoreStrategy(CollectionProperties pluServiceProperties,
                               UserResourceRepository resourceRepository,
                               SysUserRepository userRepository, FileStrategyFactory fileStrategyFactory) {
-        this.pluServiceProperties = pluServiceProperties;
+        this.collectionProperties = pluServiceProperties;
         this.resourceRepository = resourceRepository;
         this.userRepository = userRepository;
         this.fileStrategyFactory = fileStrategyFactory;
@@ -58,7 +59,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
 
         //判断文件类型
         String extension = FilenameUtils.getExtension(uploadBo.getFile().getOriginalFilename());
-        if(!pluServiceProperties.getUploadTypes().contains(extension)){
+        if(!collectionProperties.getUploadTypes().contains(extension)){
             throw new CollectionException(UNSUPPORTED_FILE_TYPES);
         }
 
@@ -70,7 +71,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
         //读取文件到本地
         String url = "/" + userCode + "/" + dateFormat.format(System.currentTimeMillis());
         String returnUrl = "/" + dateFormat.format(System.currentTimeMillis());
-        String recFilePathDir = pluServiceProperties.getUploadPath();
+        String recFilePathDir = collectionProperties.getUploadPath();
         File dir = new File(recFilePathDir + url);
         if (!dir.exists()) {
             dir.mkdirs();
@@ -173,7 +174,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
         }
 
         //读取文件下载
-        String filePath = pluServiceProperties.getUploadPath() + url;
+        String filePath = collectionProperties.getUploadPath() + url;
         File file = new File(filePath);
         if(!file.exists()){
             response.setStatus(404);
@@ -217,21 +218,85 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
             return;
         }
 
-        File file = new File(pluServiceProperties.getUploadPath() + resource.getResourceUrl());
+        File file = new File(collectionProperties.getUploadPath() + resource.getResourceUrl());
         if(file.exists()){
             file.delete();
         }
         if(StringUtils.isNotBlank(resource.getThumbUrl())) {
-            file = new File(pluServiceProperties.getUploadPath() + resource.getThumbUrl());
+            file = new File(collectionProperties.getUploadPath() + resource.getThumbUrl());
             if (file.exists()) {
                 file.delete();
             }
         }
         if(StringUtils.isNotBlank(resource.getPreviewUrl())) {
-            file = new File(pluServiceProperties.getUploadPath() + resource.getPreviewUrl());
+            file = new File(collectionProperties.getUploadPath() + resource.getPreviewUrl());
             if (file.exists()) {
                 file.delete();
             }
         }
+    }
+
+    @Override
+    public boolean addFolder(String folderPath) throws CollectionException {
+        File file = new File(collectionProperties.getUploadPath() + folderPath);
+        if(!file.exists()){
+            if(!file.mkdirs()){
+                throw new CollectionException(ErrorCodeEnum.ADD_CATALOG_FAIL);
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean renameFolder(String oldFolderPath, String newFolderPath, boolean onlyRename) throws CollectionException {
+        if(onlyRename){
+            String[] paths = StringUtils.split(newFolderPath, "/");
+            if(new File(collectionProperties.getUploadPath() + newFolderPath).exists()){
+                throw new CollectionException(ErrorCodeEnum.CATALOG_IS_EXIST);
+            }
+            try {
+                FileUtil.rename(new File(collectionProperties.getUploadPath() + oldFolderPath), paths[paths.length - 1], false);
+                return true;
+            }
+            catch (Exception e) {
+                log.error("系统错误", e);
+                return false;
+            }
+        }
+        else{
+            if(new File(collectionProperties.getUploadPath() + newFolderPath).exists()){
+                //先复制原目录文件过去
+                try {
+                    FileUtil.copy(new File(collectionProperties.getUploadPath() + oldFolderPath), new File(collectionProperties.getUploadPath() + newFolderPath), true);
+                }
+                catch (Exception e) {
+                    log.error("系统错误", e);
+                    return false;
+                }
+                try {
+                    FileUtil.del(new File(collectionProperties.getUploadPath() + oldFolderPath));
+                    return true;
+                }
+                catch (Exception e) {
+                    log.error("系统错误", e);
+                    return false;
+                }
+            }
+            else {
+                try {
+                    FileUtil.move(new File(collectionProperties.getUploadPath() + oldFolderPath), new File(collectionProperties.getUploadPath() + newFolderPath), false);
+                    return true;
+                } catch (Exception e) {
+                    log.error("系统错误", e);
+                    return false;
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean deleteFolder(String folderPath) {
+        return false;
     }
 }

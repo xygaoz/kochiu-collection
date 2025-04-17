@@ -12,7 +12,10 @@ import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.properties.CollectionProperties;
 import com.keem.kochiu.collection.repository.SysUserRepository;
 import com.keem.kochiu.collection.repository.UserCatalogRepository;
+import com.keem.kochiu.collection.service.store.ResourceStoreStrategy;
+import com.keem.kochiu.collection.service.store.ResourceStrategyFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.util.List;
@@ -22,14 +25,14 @@ public class UserCatalogService {
 
     private final UserCatalogRepository catalogRepository;
     private final SysUserRepository userRepository;
-    private final CollectionProperties collectionProperties;
+    private final ResourceStrategyFactory resourceStrategyFactory;
 
     public UserCatalogService(UserCatalogRepository catalogRepository,
                               SysUserRepository userRepository,
-                              CollectionProperties collectionProperties) {
+                              ResourceStrategyFactory resourceStrategyFactory) {
         this.catalogRepository = catalogRepository;
         this.userRepository = userRepository;
-        this.collectionProperties = collectionProperties;
+        this.resourceStrategyFactory = resourceStrategyFactory;
     }
 
     /**
@@ -71,6 +74,7 @@ public class UserCatalogService {
             childCatalogVo.setId(child.getCataId());
             childCatalogVo.setLevel(child.getCataLevel());
             childCatalogVo.setSno(child.getCataSno());
+            childCatalogVo.setParentId(child.getParentId());
             parentCatalogVo.getChildren().add(childCatalogVo);
             // 递归处理子目录
             buildCatalogTree(userId, childCatalogVo, child.getCataId());
@@ -118,6 +122,13 @@ public class UserCatalogService {
         return pathVo;
     }
 
+    /**
+     * 添加目录
+     * @param userDto
+     * @param catalogBo
+     * @throws CollectionException
+     */
+    @Transactional(rollbackFor = Exception.class)
     public void addCatalog(UserDto userDto, CatalogBo catalogBo) throws CollectionException {
         SysUser user = userRepository.getUser(userDto);
 
@@ -127,6 +138,10 @@ public class UserCatalogService {
         if(parentCatalog == null){
             throw new CollectionException(ErrorCodeEnum.PARENT_CATALOG_IS_INVALID);
         }
+        if(parentCatalog.getCataLevel() + 1 > 3){
+            throw new CollectionException(ErrorCodeEnum.CATALOG_LEVEL_IS_MAX);
+        }
+
         //取最大序号
         Integer maxSno = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
                 .eq(UserCatalog::getUserId, user.getUserId())
@@ -143,15 +158,95 @@ public class UserCatalogService {
                 .build();
         if(catalogRepository.save(userCatalog)){
             //建物理文件夹
-            File file = new File(collectionProperties.getUploadPath() + "/" + user.getUserCode() + userCatalog.getCataPath());
-            if(!file.exists()){
-                if(!file.mkdirs()){
-                    throw new CollectionException(ErrorCodeEnum.ADD_CATALOG_FAIL);
-                }
+            ResourceStoreStrategy resourceStoreStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
+            if(!resourceStoreStrategy.addFolder("/" + user.getUserCode() + userCatalog.getCataPath())){
+                throw new CollectionException(ErrorCodeEnum.ADD_CATALOG_FAIL);
             }
         }
         else{
             throw new CollectionException(ErrorCodeEnum.ADD_CATALOG_FAIL);
+        }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void updateCatalog(UserDto userDto, CatalogBo catalogBo) throws CollectionException {
+        SysUser user = userRepository.getUser(userDto);
+        UserCatalog userCatalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
+                .eq(UserCatalog::getUserId, user.getUserId())
+                .eq(UserCatalog::getCataId, catalogBo.getCateId()));
+        if(userCatalog == null){
+            throw new CollectionException(ErrorCodeEnum.CATALOG_IS_INVALID);
+        }
+
+        if(catalogBo.getParentId().equals(userCatalog.getParentId())){
+            // 仅改名
+            if(catalogBo.getCataName().equals(userCatalog.getCataName())){
+                throw new CollectionException(ErrorCodeEnum.CATALOG_NAME_IS_SAME);
+            }
+
+            String oldPath = userCatalog.getCataPath();
+            // 分割路径并替换最后一部分
+            String[] pathParts = userCatalog.getCataPath().split("/");
+            if (pathParts.length > 0) {
+                pathParts[pathParts.length - 1] = catalogBo.getCataName();
+            }
+            String newPath = String.join("/", pathParts).replaceAll("//", "/");
+
+            // 数据库先改名
+            userCatalog.setCataName(catalogBo.getCataName());
+            userCatalog.setCataPath(newPath);
+
+            // 更新数据库
+            if (!catalogRepository.updateById(userCatalog)) {
+                throw new CollectionException(ErrorCodeEnum.UPDATE_CATALOG_FAIL);
+            }
+
+            // 更新物理文件夹
+            ResourceStoreStrategy resourceStoreStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
+            if (!resourceStoreStrategy.renameFolder(
+                    ("/" + user.getUserCode() + "/" + oldPath).replaceAll("//", "/"),
+                    ("/" + user.getUserCode() + "/" + newPath).replaceAll("//", "/"),
+                    true
+            )) {
+                throw new CollectionException(ErrorCodeEnum.UPDATE_CATALOG_FAIL);
+            }
+        }
+        else{
+            //改名兼移动
+            String oldPath = userCatalog.getCataPath();
+            UserCatalog parentCatalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
+                    .eq(UserCatalog::getUserId, user.getUserId())
+                    .eq(UserCatalog::getCataId, catalogBo.getParentId()));
+            if(parentCatalog == null){
+                throw new CollectionException(ErrorCodeEnum.PARENT_CATALOG_IS_INVALID);
+            }
+            if(parentCatalog.getCataLevel() + 1 > 3){
+                throw new CollectionException(ErrorCodeEnum.CATALOG_LEVEL_IS_MAX);
+            }
+
+            if(catalogBo.getCataName().equals(parentCatalog.getCataName())){
+                throw new CollectionException(ErrorCodeEnum.CATALOG_NAME_IS_SAME);
+            }
+            String newPath = (parentCatalog.getCataPath() + "/" + catalogBo.getCataName()).replaceAll("//", "/");
+            // 数据库先改名
+            userCatalog.setCataName(catalogBo.getCataName());
+            userCatalog.setCataPath(newPath);
+            userCatalog.setParentId(catalogBo.getParentId());
+
+            // 更新数据库
+            if (!catalogRepository.updateById(userCatalog)) {
+                throw new CollectionException(ErrorCodeEnum.UPDATE_CATALOG_FAIL);
+            }
+            // 更新物理文件夹
+            ResourceStoreStrategy resourceStoreStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
+            if (!resourceStoreStrategy.renameFolder(
+                    ("/" + user.getUserCode() + "/" + oldPath).replaceAll("//", "/"),
+                    ("/" + user.getUserCode() + "/" + newPath).replaceAll("//", "/"),
+                    false
+            )) {
+                throw new CollectionException(ErrorCodeEnum.UPDATE_CATALOG_FAIL);
+            }
+
         }
     }
 }

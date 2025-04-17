@@ -31,4 +31,26 @@ public interface ResourceStoreStrategy {
      * @param resourceId
      */
     void deleteFile(int userId, Long resourceId);
+
+    /**
+     * 创建文件夹
+     * @param folderPath
+     * @return
+     */
+    boolean addFolder(String folderPath) throws CollectionException;
+
+    /**
+     * 重命名文件夹
+     * @param oldFolderPath
+     * @param newFolderPath
+     * @return
+     */
+    boolean renameFolder(String oldFolderPath, String newFolderPath, boolean onlyRename) throws CollectionException;
+
+    /**
+     * 删除文件夹
+     * @param folderPath
+     * @return
+     */
+    boolean deleteFolder(String folderPath);
 }

@@ -6,7 +6,7 @@
         @click="handleSubMenuClick"
     >
         <template #title>
-            <div class="menu-item-content" @click.stop="handleTitleClick(item)">
+            <div class="menu-item-content" @mouseenter="showActions = item.level > 0" @mouseleave="showActions = false">
                 <div class="menu-icon">
                     <el-icon><Folder /></el-icon>
                 </div>
@@ -27,6 +27,22 @@
                         <Plus />
                     </el-icon>
                 </div>
+                <div class="action-buttons" v-if="showActions && item.level > 0">
+                    <el-icon
+                        @click.stop="$emit('edit-catalog', item)"
+                        class="action-icon"
+                        title="修改目录"
+                    >
+                        <Edit />
+                    </el-icon>
+                    <el-icon
+                        @click.stop="$emit('delete-catalog', item)"
+                        class="action-icon"
+                        title="删除目录"
+                    >
+                        <Delete />
+                    </el-icon>
+                </div>
             </div>
         </template>
         <catalog-menu-item
@@ -36,6 +52,8 @@
             @node-click="$emit('node-click', $event)"
             @toggle="$emit('toggle', $event)"
             @new-catalog="$emit('new-catalog', $event)"
+            @edit-catalog="$emit('edit-catalog', $event)"
+            @delete-catalog="$emit('delete-catalog', $event)"
         />
     </el-sub-menu>
     <el-menu-item
@@ -44,14 +62,32 @@
         :key="item.id"
         @click="handleItemClick(item)"
     >
-        <el-icon><Folder /></el-icon>
-        <span>{{ item.label }}</span>
+        <div class="menu-item-content" @mouseenter="showActions = item.level > 0" @mouseleave="showActions = false">
+            <el-icon><Folder /></el-icon>
+            <span class="menu-label">{{ item.label }}</span>
+            <div class="action-buttons" v-if="showActions && item.level > 0">
+                <el-icon
+                    @click.stop="$emit('edit-catalog', item)"
+                    class="action-icon"
+                    title="修改目录"
+                >
+                    <Edit />
+                </el-icon>
+                <el-icon
+                    @click.stop="$emit('delete-catalog', item)"
+                    class="action-icon"
+                    title="删除目录"
+                >
+                    <Delete />
+                </el-icon>
+            </div>
+        </div>
     </el-menu-item>
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits } from "vue"
-import { Folder, Plus, Switch } from "@element-plus/icons-vue";
+import { defineProps, defineEmits, ref } from "vue"
+import { Folder, Plus, Switch, Edit, Delete } from "@element-plus/icons-vue";
 import { Catalog } from "@/apis/interface";
 
 defineProps({
@@ -61,7 +97,8 @@ defineProps({
     },
 });
 
-const emit = defineEmits(['node-click', 'toggle', 'new-catalog']);
+const emit = defineEmits(['node-click', 'toggle', 'new-catalog', 'edit-catalog', 'delete-catalog']);
+const showActions = ref(false);
 
 const handleTitleClick = (item: Catalog) => {
     emit('node-click', item);
@@ -72,7 +109,6 @@ const handleItemClick = (item: Catalog) => {
 };
 
 const handleSubMenuClick = (e: Event) => {
-    // 阻止点击子菜单时的默认展开行为
     e.preventDefault();
 };
 </script>
@@ -82,6 +118,7 @@ const handleSubMenuClick = (e: Event) => {
     display: flex;
     align-items: center;
     width: 100%;
+    position: relative;
 }
 
 .menu-icon {
@@ -100,13 +137,18 @@ const handleSubMenuClick = (e: Event) => {
     gap: 5px;
 }
 
-.new-level {
+.action-buttons {
+    display: flex;
+    gap: 0;
+    margin-left: auto;
+}
+
+.new-level, .action-icon {
     cursor: pointer;
     font-size: 15px !important;
 }
 
-.new-level:hover {
+.new-level:hover, .action-icon:hover {
     color: #409EFF;
 }
-
 </style>

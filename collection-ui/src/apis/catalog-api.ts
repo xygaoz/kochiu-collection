@@ -34,3 +34,21 @@ export const getCatalogPath = async (sno: string): Promise<PathVo> => {
         return { path: "/", pathInfo: [] }; // 返回默认对象而不是空字符串
     });
 }
+
+export const updateCatalog = (data: { cateId: number; cataName: string; parentId?: number }) => {
+    return httpInstance.post("/catalog/update", data).then((model: any) => {
+        return !!model;
+    }).catch((error) => {
+        console.error("修改/移动目录失败:", error);
+        return false;
+    })
+};
+
+export const deleteCatalog = (data: {cateId: number, newParentId: number}) => {
+    return httpInstance.post("/catalog/remove", data).then((model: any) => {
+        return !!model;
+    }).catch((error) => {
+        console.error("删除目录失败:", error);
+        return false;
+    })
+};

@@ -11,5 +11,6 @@ public class CatalogVo {
     private String label;
     private int level;
     private int sno;
+    private Long parentId;
     private List<CatalogVo> children = new ArrayList<>();
 }

@@ -1,6 +1,8 @@
 package com.keem.kochiu.collection.controller;
 
+import com.keem.kochiu.collection.annotation.Add;
 import com.keem.kochiu.collection.annotation.CheckPermit;
+import com.keem.kochiu.collection.annotation.Edit;
 import com.keem.kochiu.collection.data.DefaultResult;
 import com.keem.kochiu.collection.data.bo.CatalogBo;
 import com.keem.kochiu.collection.data.vo.CatalogVo;
@@ -8,6 +10,7 @@ import com.keem.kochiu.collection.data.vo.PathVo;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.service.CheckPermitAspect;
 import com.keem.kochiu.collection.service.UserCatalogService;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -39,8 +42,15 @@ public class UserCatalogController {
 
     @CheckPermit
     @PostMapping("/add")
-    public DefaultResult<Boolean> addCatalog(CatalogBo catalogBo) throws CollectionException {
+    public DefaultResult<Boolean> addCatalog(@Validated({Add.class}) CatalogBo catalogBo) throws CollectionException {
         userCatalogService.addCatalog(CheckPermitAspect.USER_INFO.get(), catalogBo);
+        return DefaultResult.ok(true);
+    }
+
+    @CheckPermit
+    @PostMapping("/update")
+    public DefaultResult<Boolean> updateCatalog(@Validated({Edit.class}) CatalogBo catalogBo) throws CollectionException {
+        userCatalogService.updateCatalog(CheckPermitAspect.USER_INFO.get(), catalogBo);
         return DefaultResult.ok(true);
     }
 }

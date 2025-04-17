@@ -10,6 +10,7 @@ import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.repository.SysUserRepository;
 import com.keem.kochiu.collection.repository.UserCategoryRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -64,6 +65,7 @@ public class UserCategoryService {
      * @param categoryBo
      * @return
      */
+    @Transactional(rollbackFor = Exception.class)
     public CategoryVo addCategory(UserDto userDto, CategoryBo categoryBo) throws CollectionException {
 
         SysUser user = userRepository.getUser(userDto);

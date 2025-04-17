@@ -28,7 +28,12 @@ public enum ErrorCodeEnum {
     FAILED_GEN_TOKEN("1018", "生成token失败"),
     ROOT_FOLDER_IS_INVALID("1019", "根目录无效"),
     PARENT_CATALOG_IS_INVALID("1020", "父目录无效"),
-    ADD_CATALOG_FAIL("1029", "新建目录失败");
+    ADD_CATALOG_FAIL("1029", "新建目录失败"),
+    CATALOG_IS_INVALID("1030", "目录无效"),
+    CATALOG_NAME_IS_SAME("1031", "目录名称相同"),
+    UPDATE_CATALOG_FAIL("1032", "目录改名/移动失败"),
+    CATALOG_IS_EXIST("1033", "目录已经存在"),
+    CATALOG_LEVEL_IS_MAX("1034", "目录层次已经达到最大");
 
     private final String code;
     private final String message;

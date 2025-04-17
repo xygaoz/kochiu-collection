@@ -28,7 +28,9 @@
                                 :item="item"
                                 @node-click="handleNodeClick"
                                 @toggle="toggleCatalogMenu"
-                                @new-catalog="addCatalog"
+                                @new-catalog="handleAddCatalog"
+                                @edit-catalog="handleEditCatalog"
+                                @delete-catalog="handleDeleteCatalog"
                             />
                         </el-menu>
 
@@ -52,7 +54,7 @@
                                         <el-icon @click.stop="toggleCatalogMenu" class="new-level" title="切换到目录">
                                             <Switch />
                                         </el-icon>
-                                        <el-icon @click.stop="addCategory" class="new-level" title="新分类">
+                                        <el-icon @click.stop="handleAddCategory" class="new-level" title="新分类">
                                             <Plus />
                                         </el-icon>
                                     </div>
@@ -308,13 +310,13 @@ const handleNodeClick = (data: Catalog) => {
 };
 
 // 添加分类
-const addCategory = (e: Event) => {
+const handleAddCategory = (e: Event) => {
     e.stopPropagation()
     categoryDialog.value?.open()
 }
 
 // 添加目录
-const addCatalog = (e: Event) => {
+const handleAddCatalog = (e: Event) => {
     e.stopPropagation();
     catalogDialog.value?.open(currentCatalog.value?.id); // 传递当前目录ID
 };
@@ -333,6 +335,14 @@ const handleCatalogConfirm = async () => {
 const updateActiveMenu = () => {
     activeMenu.value = router.currentRoute.value.path
 }
+
+const handleEditCatalog = (catalog: Catalog) => {
+    catalogDialog.value?.open(catalog.parentId, catalog);
+};
+
+const handleDeleteCatalog = (catalog: Catalog) => {
+    catalogDialog.value?.openForDelete(catalog.parentId, catalog);
+};
 </script>
 
 <style scoped>

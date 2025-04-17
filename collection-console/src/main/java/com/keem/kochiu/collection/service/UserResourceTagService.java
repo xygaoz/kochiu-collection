@@ -10,6 +10,7 @@ import com.keem.kochiu.collection.repository.SysUserRepository;
 import com.keem.kochiu.collection.repository.UserResourceTagRepository;
 import com.keem.kochiu.collection.repository.UserTagRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -39,6 +40,7 @@ public class UserResourceTagService {
      * @return
      * @throws CollectionException
      */
+    @Transactional(rollbackFor = Exception.class)
     public TagDto addResourceTag(UserDto userDto, TagDto resourceInfo) throws CollectionException {
 
         SysUser user = userRepository.getUser(userDto);
@@ -78,6 +80,7 @@ public class UserResourceTagService {
      * @return
      * @throws CollectionException
      */
+    @Transactional(rollbackFor = Exception.class)
     public TagDto batchAddTag(UserDto userDto, BatchTagBo batchTagBo) throws CollectionException {
 
         SysUser user = userRepository.getUser(userDto);
@@ -101,6 +104,7 @@ public class UserResourceTagService {
      * @param tagDto
      * @throws CollectionException
      */
+    @Transactional(rollbackFor = Exception.class)
     public void removeResourceTag(UserDto userDto, TagDto tagDto) throws CollectionException {
 
         SysUser user = userRepository.getUser(userDto);
@@ -110,6 +114,7 @@ public class UserResourceTagService {
     /**
      * 批量删除资源标签
      */
+    @Transactional(rollbackFor = Exception.class)
     public void batchRemoveTag(UserDto userDto, BatchTagBo batchTagBo) throws CollectionException {
 
         SysUser user = userRepository.getUser(userDto);
