@@ -1,7 +1,7 @@
 <template>
     <el-container>
         <el-header class="cata-header">
-            路径:
+            <span style="margin: 0 10px 0 0;">路径:</span>
             <span class="path-segment" v-for="(segment, index) in processedPath" :key="index">
                 <router-link
                     v-if="segment.sno !== undefined"

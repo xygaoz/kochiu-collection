@@ -18,6 +18,7 @@ public class UserResource extends BaseEntity{
     private Long resourceId;
     private Integer userId;
     private Long cateId;
+    private Long cataId;
     private String sourceFileName;
     private String title;
     private String description;

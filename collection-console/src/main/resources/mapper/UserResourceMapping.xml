@@ -171,7 +171,7 @@
             DISTINCT r.*, c.CATE_NAME
         FROM
             user_resource r
-                JOIN folder_tree ft ON r.cata_sno = ft.cata_sno
+                JOIN folder_tree ft ON r.cata_id = ft.cata_id
                 join user_category c on r.CATE_ID=c.CATE_ID
                 left JOIN user_resource_tag t ON r.RESOURCE_ID = t.RESOURCE_ID AND r.USER_ID = t.USER_ID
                 left JOIN user_tag g ON t.TAG_ID = g.TAG_ID AND t.USER_ID = g.USER_ID

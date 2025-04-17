@@ -1,17 +1,20 @@
 package com.keem.kochiu.collection.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.keem.kochiu.collection.data.bo.CatalogBo;
 import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.data.vo.CatalogVo;
 import com.keem.kochiu.collection.data.vo.PathVo;
 import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.entity.UserCatalog;
+import com.keem.kochiu.collection.entity.UserResource;
 import com.keem.kochiu.collection.enums.ErrorCodeEnum;
+import com.keem.kochiu.collection.enums.RemoveCatalogEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
-import com.keem.kochiu.collection.properties.CollectionProperties;
 import com.keem.kochiu.collection.repository.SysUserRepository;
 import com.keem.kochiu.collection.repository.UserCatalogRepository;
+import com.keem.kochiu.collection.repository.UserResourceRepository;
 import com.keem.kochiu.collection.service.store.ResourceStoreStrategy;
 import com.keem.kochiu.collection.service.store.ResourceStrategyFactory;
 import org.springframework.stereotype.Service;
@@ -26,13 +29,16 @@ public class UserCatalogService {
     private final UserCatalogRepository catalogRepository;
     private final SysUserRepository userRepository;
     private final ResourceStrategyFactory resourceStrategyFactory;
+    private final UserResourceRepository resourceRepository;
 
     public UserCatalogService(UserCatalogRepository catalogRepository,
                               SysUserRepository userRepository,
-                              ResourceStrategyFactory resourceStrategyFactory) {
+                              ResourceStrategyFactory resourceStrategyFactory,
+                              UserResourceRepository resourceRepository) {
         this.catalogRepository = catalogRepository;
         this.userRepository = userRepository;
         this.resourceStrategyFactory = resourceStrategyFactory;
+        this.resourceRepository = resourceRepository;
     }
 
     /**
@@ -262,6 +268,66 @@ public class UserCatalogService {
                 throw new CollectionException(ErrorCodeEnum.UPDATE_CATALOG_FAIL);
             }
 
+        }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteCatalog(UserDto userDto, CatalogBo catalogBo) throws CollectionException {
+        SysUser user = userRepository.getUser(userDto);
+        UserCatalog userCatalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
+                .eq(UserCatalog::getUserId, user.getUserId())
+                .eq(UserCatalog::getCataId, catalogBo.getCateId()));
+        if(userCatalog == null){
+            throw new CollectionException(ErrorCodeEnum.CATALOG_IS_INVALID);
+        }
+
+        if(RemoveCatalogEnum.getEnum(catalogBo.getRemoveType()) == RemoveCatalogEnum.REMOVE_TYPE_DELETE){
+            String oldPath = userCatalog.getCataPath();
+            //先删除目录
+            if(!catalogRepository.removeById(userCatalog.getCataId())){
+                throw new CollectionException(ErrorCodeEnum.REMOVE_CATALOG_FAIL);
+            }
+            //删除资源
+            if(!resourceRepository.remove(new LambdaQueryWrapper<UserResource>()
+                    .eq(UserResource::getUserId, user.getUserId())
+                    .eq(UserResource::getCataId, userCatalog.getCataId())
+            )){
+                throw new CollectionException(ErrorCodeEnum.REMOVE_CATALOG_FAIL);
+            }
+
+            ResourceStoreStrategy resourceStoreStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
+            if(!resourceStoreStrategy.deleteFolder(("/" + user.getUserCode() + "/" + oldPath).replaceAll("//", "/"))){
+                throw new CollectionException(ErrorCodeEnum.REMOVE_CATALOG_FAIL);
+            }
+        }
+        else {
+            UserCatalog parentCatalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
+                    .eq(UserCatalog::getUserId, user.getUserId())
+                    .eq(UserCatalog::getCataId, catalogBo.getParentId()));
+            if (parentCatalog == null) {
+                throw new CollectionException(ErrorCodeEnum.PARENT_CATALOG_IS_INVALID);
+            }
+
+            // 更新数据库
+            if (!resourceRepository.update(null,
+                    new LambdaUpdateWrapper<UserResource>()
+                            .set(UserResource::getCataId, parentCatalog.getCataId())
+                            .eq(UserResource::getUserId, user.getUserId())
+                            .eq(UserResource::getCataId, userCatalog.getCataId())
+            )
+            ) {
+                throw new CollectionException(ErrorCodeEnum.UPDATE_CATALOG_FAIL);
+            }
+
+            // 更新物理文件夹
+            ResourceStoreStrategy resourceStoreStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
+            if (!resourceStoreStrategy.renameFolder(
+                    ("/" + user.getUserCode() + "/" + userCatalog.getCataPath()).replaceAll("//", "/"),
+                    ("/" + user.getUserCode() + "/" + parentCatalog.getCataPath()).replaceAll("//", "/"),
+                    false
+            )) {
+                throw new CollectionException(ErrorCodeEnum.UPDATE_CATALOG_FAIL);
+            }
         }
     }
 }

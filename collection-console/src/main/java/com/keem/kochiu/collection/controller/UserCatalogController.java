@@ -3,6 +3,7 @@ package com.keem.kochiu.collection.controller;
 import com.keem.kochiu.collection.annotation.Add;
 import com.keem.kochiu.collection.annotation.CheckPermit;
 import com.keem.kochiu.collection.annotation.Edit;
+import com.keem.kochiu.collection.annotation.Remove;
 import com.keem.kochiu.collection.data.DefaultResult;
 import com.keem.kochiu.collection.data.bo.CatalogBo;
 import com.keem.kochiu.collection.data.vo.CatalogVo;
@@ -51,6 +52,13 @@ public class UserCatalogController {
     @PostMapping("/update")
     public DefaultResult<Boolean> updateCatalog(@Validated({Edit.class}) CatalogBo catalogBo) throws CollectionException {
         userCatalogService.updateCatalog(CheckPermitAspect.USER_INFO.get(), catalogBo);
+        return DefaultResult.ok(true);
+    }
+
+    @CheckPermit
+    @PostMapping("/remove")
+    public DefaultResult<Boolean> removeCatalog(@Validated({Remove.class}) CatalogBo catalogBo) throws CollectionException {
+        userCatalogService.deleteCatalog(CheckPermitAspect.USER_INFO.get(), catalogBo);
         return DefaultResult.ok(true);
     }
 }

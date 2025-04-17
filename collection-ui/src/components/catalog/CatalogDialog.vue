@@ -11,6 +11,12 @@
             <el-form-item label="目录名称" v-if="!isDeleteMode" prop="cataName">
                 <el-input v-model="form.cataName" />
             </el-form-item>
+            <el-form-item v-if="isDeleteMode" label="资源移动">
+                <el-radio-group v-model="form.removeType">
+                    <el-radio value="1">移动到其他目录</el-radio>
+                    <el-radio value="2">删除目录下所有资源</el-radio>
+                </el-radio-group>
+            </el-form-item>
             <el-form-item :label="isDeleteMode ? '移动到目录' : '上级目录'" prop="parentId">
                 <el-tree-select
                     v-model="form.parentId"
@@ -42,7 +48,8 @@ const currentCatalog = ref<Catalog | null>(null);
 const form = ref({
     cateId: null as number | null,
     cataName: '',
-    parentId: null as number | null
+    parentId: null as number | null,
+    removeType: '1'
 });
 const catalogTree = ref<Catalog[]>([]);
 const emit = defineEmits(['confirm']);
@@ -97,7 +104,7 @@ const open = async (parentId?: number, catalog?: Catalog) => {
 // 打开删除对话框
 const openForDelete = async (parentId: number | undefined, catalog: Catalog) => {
     isDeleteMode.value = true;
-    dialogTitle.value = '删除目录';
+    dialogTitle.value = `删除目录【${catalog.label}】`;
     currentCatalog.value = catalog;
 
     visible.value = true;
@@ -107,7 +114,8 @@ const openForDelete = async (parentId: number | undefined, catalog: Catalog) => 
         form.value = {
             cateId: catalog.id,
             cataName: catalog.label,
-            parentId: parentId || null
+            parentId: parentId || null,
+            removeType: '1'
         };
     } catch (error) {
         console.error('加载目录树失败:', error);
@@ -120,11 +128,17 @@ const handleConfirm = async () => {
     if (isDeleteMode.value) {
         // 删除操作
         try {
-            if (currentCatalog.value?.id && form.value.parentId !== null) {
-                await deleteCatalog(currentCatalog.value.id, form.value.parentId);
-                ElMessage.success('目录删除成功');
-                visible.value = false;
-                emit('confirm');
+            if(form.value.removeType === '1' && form.value.parentId === null){
+                ElMessage.error('请选择移动到目录');
+                return;
+            }
+
+            if (currentCatalog.value?.id) {
+                if(await deleteCatalog(form.value)) {
+                    ElMessage.success('目录删除成功');
+                    visible.value = false;
+                    emit('confirm');
+                }
             }
         } catch (error) {
             ElMessage.error('目录删除失败');

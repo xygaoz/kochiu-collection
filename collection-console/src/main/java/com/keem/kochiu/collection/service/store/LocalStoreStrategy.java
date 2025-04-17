@@ -297,6 +297,6 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
 
     @Override
     public boolean deleteFolder(String folderPath) {
-        return false;
+        return FileUtil.del(new File(collectionProperties.getUploadPath() + folderPath));
     }
 }

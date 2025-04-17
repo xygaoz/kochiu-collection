@@ -33,7 +33,9 @@ public enum ErrorCodeEnum {
     CATALOG_NAME_IS_SAME("1031", "目录名称相同"),
     UPDATE_CATALOG_FAIL("1032", "目录改名/移动失败"),
     CATALOG_IS_EXIST("1033", "目录已经存在"),
-    CATALOG_LEVEL_IS_MAX("1034", "目录层次已经达到最大");
+    CATALOG_LEVEL_IS_MAX("1034", "目录层次已经达到最大"),
+    REMOVE_CATALOG_FAIL("1035", "目录删除失败"),
+    ;
 
     private final String code;
     private final String message;

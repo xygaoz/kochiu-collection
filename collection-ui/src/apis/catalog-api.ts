@@ -44,7 +44,7 @@ export const updateCatalog = (data: { cateId: number; cataName: string; parentId
     })
 };
 
-export const deleteCatalog = (data: {cateId: number, newParentId: number}) => {
+export const deleteCatalog = (data: {cateId: number, newParentId: number, removeType: number}) => {
     return httpInstance.post("/catalog/remove", data).then((model: any) => {
         return !!model;
     }).catch((error) => {
