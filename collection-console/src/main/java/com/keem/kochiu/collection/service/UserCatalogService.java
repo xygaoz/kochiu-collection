@@ -42,6 +42,8 @@ public class UserCatalogService {
         CatalogVo rootCatalogVo = new CatalogVo();
         rootCatalogVo.setLabel(catalogList.get(0).getFolderName());
         rootCatalogVo.setId(catalogList.get(0).getFolderSno());
+        rootCatalogVo.setLevel(catalogList.get(0).getFolderLevel());
+        rootCatalogVo.setSno(catalogList.get(0).getFolderSno());
 
         // 递归构建子目录
         buildCatalogTree(user.getUserId(), rootCatalogVo, catalogList.get(0).getFolderId());
@@ -61,6 +63,7 @@ public class UserCatalogService {
             childCatalogVo.setLabel(child.getFolderName());
             childCatalogVo.setId(child.getFolderSno());
             childCatalogVo.setLevel(child.getFolderLevel());
+            childCatalogVo.setSno(child.getFolderSno());
             parentCatalogVo.getChildren().add(childCatalogVo);
             // 递归处理子目录
             buildCatalogTree(userId, childCatalogVo, child.getFolderId());
@@ -78,5 +81,26 @@ public class UserCatalogService {
         }
         lambdaQueryWrapper.orderByAsc(UserCatalog::getFolderName);
         return catalogRepository.list(lambdaQueryWrapper);
+    }
+
+    /**
+     * 获取目录路径
+     * @param userDto
+     * @param sno
+     * @return
+     * @throws CollectionException
+     */
+    public String getCatalogPath(UserDto userDto, int sno) throws CollectionException {
+
+        SysUser user = userRepository.getUser(userDto);
+        String path = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
+                .eq(UserCatalog::getUserId, user.getUserId())
+                .eq(UserCatalog::getFolderSno, sno)).getFolderPath();
+        if("/".equals(path)){
+            return "/我的资源";
+        }
+        else{
+            return "/我的资源" + path;
+        }
     }
 }

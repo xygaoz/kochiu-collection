@@ -342,4 +342,18 @@ public class UserResourceService {
         PageInfo<UserResource> resourceList = resourceRepository.getResourceListByRecycle(user.getUserId(), filterResourceBo);
         return buildResourceList(user, resourceList);
     }
+
+    /**
+     * 获取目录下资源列表
+     * @param userDto
+     * @return
+     * @throws CollectionException
+     */
+    public PageVo<ResourceVo> getResourceListByCatalog(UserDto userDto,
+                                                       FilterResourceBo filterResourceBo) throws CollectionException {
+
+        SysUser user = userRepository.getUser(userDto);
+        PageInfo<UserResource> resourceList = resourceRepository.getCatalogResource(user.getUserId(), filterResourceBo);
+        return buildResourceList(user, resourceList);
+    }
 }

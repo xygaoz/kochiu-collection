@@ -11,4 +11,5 @@ public class FilterResourceBo extends PageBo{
     private String keyword;
     private String[] types;
     private String[] tags;
+    private Integer cataSno;
 }

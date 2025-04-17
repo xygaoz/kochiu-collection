@@ -284,4 +284,28 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
             );
         }
     }
-}
+
+    /**
+     * 获取目录下资源列表
+     * @param userId
+     * @return
+     */
+    public PageInfo<UserResource> getCatalogResource(int userId, FilterResourceBo filterResourceBo) {
+
+        try(Page<UserResource> page = PageHelper.startPage(filterResourceBo.getPageNum(), filterResourceBo.getPageSize())) {
+
+            Set<String> fileExtList = new HashSet<>();
+            if(filterResourceBo.getTypes() != null) {
+                for (String type : filterResourceBo.getTypes()) {
+                    fileExtList.addAll(FileTypeEnum.getNames(ResourceTypeEnum.getByValue(type)));
+                }
+            }
+            return new PageInfo<>(baseMapper.selectCatalogResource(userId,
+                    filterResourceBo.getCataSno(),
+                    filterResourceBo.getCateId(),
+                    filterResourceBo.getKeyword(),
+                    fileExtList.toArray(new String[0]),
+                    filterResourceBo.getTags())
+            );
+        }
+    }}

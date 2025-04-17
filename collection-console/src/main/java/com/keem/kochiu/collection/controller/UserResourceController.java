@@ -175,4 +175,18 @@ public class UserResourceController {
     public DefaultResult<PageVo<ResourceVo>> getAllResourceList(FilterResourceBo filterResourceBo) throws CollectionException {
         return DefaultResult.ok(resourceService.getAllResourceList(CheckPermitAspect.USER_INFO.get(), filterResourceBo));
     }
+
+    /**
+     * 获取目录下资源列表
+     * @param filterResourceBo
+     * @return
+     * @throws CollectionException
+     */
+    @CheckPermit
+    @PostMapping(RESOURCE_PATH + "/catalog/{sno}")
+    public DefaultResult<PageVo<ResourceVo>> getResourceListByCatalog(@PathVariable int sno,
+                                                                  FilterResourceBo filterResourceBo) throws CollectionException {
+        filterResourceBo.setCataSno(sno);
+        return DefaultResult.ok(resourceService.getResourceListByCatalog(CheckPermitAspect.USER_INFO.get(), filterResourceBo));
+    }
 }

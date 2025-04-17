@@ -7,6 +7,7 @@ import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.service.CheckPermitAspect;
 import com.keem.kochiu.collection.service.UserCatalogService;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,4 +32,9 @@ public class UserCatalogController {
         return DefaultResult.ok(Collections.singletonList(userCatalogService.getCatalogTree(CheckPermitAspect.USER_INFO.get())));
     }
 
+    @CheckPermit
+    @GetMapping("/path/{sno}")
+    public DefaultResult<String> getCatalogPath(@PathVariable int sno) throws CollectionException {
+        return DefaultResult.ok(userCatalogService.getCatalogPath(CheckPermitAspect.USER_INFO.get(), sno));
+    }
 }

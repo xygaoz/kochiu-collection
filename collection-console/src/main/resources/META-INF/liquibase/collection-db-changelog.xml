@@ -552,4 +552,19 @@
         </insert>
     </changeSet>
 
+    <changeSet id="kcdb_23" author="kochiu" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="user_catalog_idx3" tableName="user_catalog"/>
+            </not>
+        </preConditions>
+        <createIndex
+                indexName="user_catalog_idx3"
+                tableName="user_catalog">
+            <column name="USER_ID"/>
+            <column name="parent_id"/>
+        </createIndex>
+    </changeSet>
+
+
 </databaseChangeLog>

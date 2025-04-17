@@ -137,4 +137,67 @@
         ORDER BY r.CREATE_TIME DESC
     </select>
 
+    <select id="selectCatalogResource" resultType="com.keem.kochiu.collection.entity.UserResource">
+        WITH RECURSIVE folder_tree AS (
+            SELECT
+                folder_id,
+                folder_sno,
+                folder_name,
+                folder_path,
+                folder_level
+            FROM
+                user_catalog
+            WHERE
+                folder_sno = #{cataSno}
+              AND user_id = #{userId}
+
+            UNION ALL
+
+            -- 递归查询：查找所有子目录
+            SELECT
+                c.folder_id,
+                c.folder_sno,
+                c.folder_name,
+                c.folder_path,
+                c.folder_level
+            FROM
+                user_catalog c
+                    JOIN
+                folder_tree ft ON c.parent_id = ft.folder_id
+            WHERE
+                c.user_id = #{userId}
+        )
+        SELECT
+            DISTINCT r.*, c.CATE_NAME
+        FROM
+            user_resource r
+                JOIN folder_tree ft ON r.folder_sno = ft.folder_sno
+                join user_category c on r.CATE_ID=c.CATE_ID
+                left JOIN user_resource_tag t ON r.RESOURCE_ID = t.RESOURCE_ID AND r.USER_ID = t.USER_ID
+                left JOIN user_tag g ON t.TAG_ID = g.TAG_ID AND t.USER_ID = g.USER_ID
+        WHERE
+            r.USER_ID = #{userId}
+          AND r.deleted = 0
+        <if test="cateId != null and cateId > 0">
+            AND c.CATE_ID = #{cateId}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            <bind name="pattern" value="'%' + keyword + '%'"/>
+            AND (r.TITLE LIKE #{pattern} OR r.DESCRIPTION LIKE #{pattern} OR r.SOURCE_FILE_NAME LIKE #{pattern})
+        </if>
+        <if test="types != null and types.length > 0">
+            AND r.FILE_EXT IN
+            <foreach collection="types" item="type" open="(" separator="," close=")">
+                #{type}
+            </foreach>
+        </if>
+        <if test="tagNames != null and tagNames.length > 0">
+            AND g.tag_name IN
+            <foreach collection="tagNames" item="tagName" open="(" separator="," close=")">
+                #{tagName}
+            </foreach>
+        </if>
+        ORDER BY r.CREATE_TIME DESC
+
+    </select>
 </mapper>

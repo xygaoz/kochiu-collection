@@ -45,6 +45,15 @@ public interface UserResourceMapper extends BaseMapper<UserResource> {
             @Param("types") String[] types,
             @Param("tagNames") String[] tagNames
     );
+
+    List<UserResource> selectCatalogResource(
+            @Param("userId") int userId,
+            @Param("cataSno") Integer cataSno,
+            @Param("cateId") Long cateId,
+            @Param("keyword") String keyword,
+            @Param("types") String[] types,
+            @Param("tagNames") String[] tagNames
+    );
 }
 
 
