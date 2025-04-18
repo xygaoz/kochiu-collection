@@ -15,13 +15,33 @@
                 </el-select>
             </div>
         </div>
-        <div class="overwrite">
-            <div class="select-label">覆盖</div>
-            <div class="select-container">
-                <el-radio-group v-model="overwrite">
-                    <el-radio :label="true">是</el-radio>
-                    <el-radio :label="false">否</el-radio>
-                </el-radio-group>
+        <div class="condition">
+            <div class="overwrite">
+                <div class="select-label">覆盖</div>
+                <div class="select-container">
+                    <el-radio-group v-model="overwrite">
+                        <el-radio :label="true">是</el-radio>
+                        <el-radio :label="false">否</el-radio>
+                    </el-radio-group>
+                </div>
+            </div>
+            <div class="catalog">
+                <div style="float: left; width: 440px">
+                    <el-radio-group v-model="autoCreate">
+                        <el-radio :label="true">自动创建日期目录</el-radio>
+                        <el-radio :label="false">选择现有目录</el-radio>
+                    </el-radio-group>
+                </div>
+                <div class="select-container">
+                    <el-tree-select
+                        v-model="cataId"
+                        :data="catalogTree"
+                        check-strictly
+                        :props="treeProps"
+                        placeholder="请选择目录"
+                        :loading="loadingCatalog"
+                    />
+                </div>
             </div>
         </div>
 
@@ -89,9 +109,10 @@ import { UploadFilled } from '@element-plus/icons-vue'
 import { ElMessage } from "element-plus";
 import { ref, onMounted, reactive } from "vue";
 import { uploadFile } from "@/apis/resource-api";
-import { Category } from "@/apis/interface";
+import { Catalog, Category } from "@/apis/interface";
 import { getAllCategory } from "@/apis/category-api";
 import { AxiosProgressEvent } from "axios";
+import { getCatalogTree } from "@/apis/catalog-api";
 
 interface UploadFileItem {
     name: string;
@@ -116,8 +137,19 @@ const maxSize = 100 * 1024 * 1024; // 100MB in bytes
 const categories = reactive<Category[]>([])
 const selectedCategory = ref<number | null>(null);
 const overwrite = ref<boolean>(false);
+const autoCreate = ref<boolean>(false);
 const files = reactive<UploadFileItem[]>([]);
 const uploading = ref(false);
+
+const cataId = ref<number | null>(null);
+const loadingCatalog = ref(false);
+const catalogTree = ref<Catalog[]>([]);
+
+const treeProps = {
+    value: 'id',
+    label: 'label',
+    children: 'children'
+};
 
 // 处理文件选择
 const handleFileChange = (file: any, fileList: any[]) => {
@@ -216,10 +248,12 @@ const uploadFiles = async () => {
             file.progress = 0;
             file.status = undefined;
 
-            await uploadFile(
+            let result = await uploadFile(
                 file.raw,
                 selectedCategory.value,
                 overwrite.value.toString(),
+                cataId.value,
+                autoCreate.value,
                 (progressEvent: AxiosProgressEvent) => {
                     // 添加对 total 的检查
                     if (progressEvent.lengthComputable && progressEvent.total) {
@@ -227,9 +261,14 @@ const uploadFiles = async () => {
                     }
                 }
             );
-
-            file.progress = 100;
-            file.status = 'success';
+            if(result) {
+                file.progress = 100;
+                file.status = 'success';
+            }
+            else{
+                file.status = 'exception';
+                ElMessage.error(`文件 ${file.name} 上传失败`);
+            }
         } catch (error) {
             console.error("文件上传失败:", error);
             file.status = 'exception';
@@ -242,22 +281,41 @@ const uploadFiles = async () => {
 };
 
 // 获取分类信息
-onMounted(() => {
-    getAllCategory().then((response: Category[]) => {
+onMounted(async () => {
+    try {
+        loadingCatalog.value = true;
+
+        // 并行加载分类和目录树
+        const [categoriesRes, catalogTreeRes] = await Promise.all([
+            getAllCategory(),
+            getCatalogTree()
+        ]);
+
+        // 处理分类数据
         categories.length = 0;
-        response.forEach((item: Category) => {
+        categoriesRes.forEach((item: Category) => {
             categories.push({
                 cateId: item.cateId,
                 sno: item.sno,
                 cateName: item.cateName,
             });
         });
-        if (response.length > 0) {
-            selectedCategory.value = response[0].cateId; // 默认选择第一个分类
+        if (categoriesRes.length > 0) {
+            selectedCategory.value = categoriesRes[0].cateId;
         }
-    }).catch((error) => {
-        console.error("获取分类失败:", error);
-    });
+
+        // 处理目录数据
+        catalogTree.value = catalogTreeRes;
+        if (catalogTreeRes.length > 0) {
+            // 默认选择第一个顶级目录
+            cataId.value = catalogTreeRes[0].id;
+        }
+    } catch (error) {
+        console.error("初始化数据失败:", error);
+        ElMessage.error("加载数据失败");
+    } finally {
+        loadingCatalog.value = false;
+    }
 });
 </script>
 
@@ -285,8 +343,22 @@ onMounted(() => {
     margin: 10px 0 10px 0;
 }
 
-.overwrite {
+.condition{
     width: 100%;
+    margin: 10px 0 10px 0;
+    float: left;
+    display: flex;
+}
+
+.overwrite {
+    width: 30%;
+    margin: 10px 0 10px 0;
+    float: left;
+    display: flex;
+}
+
+.catalog{
+    width: 70%;
     margin: 10px 0 10px 0;
     float: left;
     display: flex;

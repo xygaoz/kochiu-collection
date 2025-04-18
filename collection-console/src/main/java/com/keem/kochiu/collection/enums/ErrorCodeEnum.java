@@ -35,7 +35,7 @@ public enum ErrorCodeEnum {
     CATALOG_IS_EXIST("1033", "目录已经存在"),
     CATALOG_LEVEL_IS_MAX("1034", "目录层次已经达到最大"),
     REMOVE_CATALOG_FAIL("1035", "目录删除失败"),
-    ;
+    CATEGORY_CREATE_FAILURE("1036", "创建目录失败");
 
     private final String code;
     private final String message;

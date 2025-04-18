@@ -3,7 +3,7 @@
 <mapper namespace="com.keem.kochiu.collection.mapper.UserCatalogMapper">
 
     <select id="selectLastInsertId" resultType="java.lang.Long">
-        SELECT last_insert_rowid() FROM user_category WHERE rowid = (SELECT last_insert_rowid())
+        SELECT last_insert_rowid() FROM user_catalog WHERE rowid = (SELECT last_insert_rowid())
     </select>
 
     <select id="selectParentCata" resultType="com.keem.kochiu.collection.entity.UserCatalog">

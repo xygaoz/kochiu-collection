@@ -18,4 +18,5 @@ public class ResourceDto {
     private String thumbRatio;
     private String previewUrl;
     private String md5;
+    private Long cataId;
 }

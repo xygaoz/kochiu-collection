@@ -15,4 +15,9 @@ public class UserCatalogRepository extends ServiceImpl<UserCatalogMapper, UserCa
     public List<UserCatalog> selectParentCata(int userId, long cataId){
         return baseMapper.selectParentCata(userId, cataId);
     }
+
+    public Long insert(UserCatalog userCatalog){
+        baseMapper.insert(userCatalog);
+        return baseMapper.selectLastInsertId();
+    }
 }

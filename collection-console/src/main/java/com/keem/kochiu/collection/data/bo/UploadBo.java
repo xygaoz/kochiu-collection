@@ -12,4 +12,6 @@ public class UploadBo {
     private MultipartFile file;
     private int categoryId;
     private boolean overwrite;
+    private Long cataId;
+    private boolean autoCreate;
 }

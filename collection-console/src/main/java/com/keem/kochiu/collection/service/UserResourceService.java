@@ -9,6 +9,7 @@ import com.keem.kochiu.collection.data.vo.FileVo;
 import com.keem.kochiu.collection.data.vo.PageVo;
 import com.keem.kochiu.collection.data.vo.ResourceVo;
 import com.keem.kochiu.collection.entity.SysUser;
+import com.keem.kochiu.collection.entity.UserCatalog;
 import com.keem.kochiu.collection.entity.UserResource;
 import com.keem.kochiu.collection.entity.UserTag;
 import com.keem.kochiu.collection.enums.ErrorCodeEnum;
@@ -16,10 +17,8 @@ import com.keem.kochiu.collection.enums.FileTypeEnum;
 import com.keem.kochiu.collection.enums.SaveTypeEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.properties.CollectionProperties;
-import com.keem.kochiu.collection.repository.SysUserRepository;
-import com.keem.kochiu.collection.repository.UserCategoryRepository;
-import com.keem.kochiu.collection.repository.UserResourceRepository;
-import com.keem.kochiu.collection.repository.UserTagRepository;
+import com.keem.kochiu.collection.repository.*;
+import com.keem.kochiu.collection.service.store.ResourceStoreStrategy;
 import com.keem.kochiu.collection.service.store.ResourceStrategyFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -43,19 +42,25 @@ public class UserResourceService {
     private final CollectionProperties properties;
     private final UserTagRepository tagRepository;
     private final UserCategoryRepository categoryRepository;
+    private final UserCatalogRepository catalogRepository;
+    private final UserCatalogService userCatalogService;
 
     public UserResourceService(ResourceStrategyFactory resourceStrategyFactory,
                                SysUserRepository userRepository,
                                UserResourceRepository resourceRepository,
                                CollectionProperties properties,
                                UserTagRepository tagRepository,
-                               UserCategoryRepository categoryRepository) {
+                               UserCategoryRepository categoryRepository,
+                               UserCatalogRepository catalogRepository,
+                               UserCatalogService userCatalogService) {
         this.resourceStrategyFactory = resourceStrategyFactory;
         this.userRepository = userRepository;
         this.resourceRepository = resourceRepository;
         this.properties = properties;
         this.tagRepository = tagRepository;
         this.categoryRepository = categoryRepository;
+        this.catalogRepository = catalogRepository;
+        this.userCatalogService = userCatalogService;
     }
 
     /**
@@ -74,12 +79,39 @@ public class UserResourceService {
             if(!resources.isEmpty() && !uploadBo.isOverwrite()){
                 throw new CollectionException(FILE_IS_EXIST);
             }
-            if(categoryRepository.getById(uploadBo.getCategoryId()) == null){
+
+            UserCatalog catalog = catalogRepository.getById(uploadBo.getCataId());
+            if(catalog == null){
                 throw new CollectionException(ErrorCodeEnum.CATEGORY_NOT_EXIST);
+            }
+            if(!uploadBo.isAutoCreate() && (uploadBo.getCataId() == null || catalogRepository.getById(uploadBo.getCataId()) == null)){
+                //非自动创建目录，检查目录是否存在
+                throw new CollectionException(ErrorCodeEnum.CATALOG_IS_INVALID);
+            }
+
+            String path;
+            if(uploadBo.isAutoCreate()) {
+                String catalogPath = ResourceStoreStrategy.dateFormat.format(System.currentTimeMillis());
+                path = "/" + user.getUserCode() + "/" + catalogPath;
+                //创建目录
+                Long id = userCatalogService.addCatalogPath(userDto, catalogPath);
+                if(id == null){
+                    throw new CollectionException(ErrorCodeEnum.CATEGORY_CREATE_FAILURE);
+                }
+                else{
+                    uploadBo.setCataId(id);
+                }
+            }
+            else{
+                path = "/" + user.getUserCode() + "/" + catalog.getCataPath();
+            }
+            path = path.replaceAll("//", "/");
+            if(path.endsWith("/")){
+                path = path.substring(0, path.length() - 1);
             }
 
             FileVo fileVo = resourceStrategyFactory.getStrategy(user.getStrategy())
-                    .saveFile(uploadBo, userDto, md5);
+                    .saveFile(uploadBo, userDto, md5, path);
             //保存成功。删除原有记录
             if(!resources.isEmpty() && uploadBo.isOverwrite()){
                 resourceRepository.removeById(resources.get(0).getResourceId(), true);

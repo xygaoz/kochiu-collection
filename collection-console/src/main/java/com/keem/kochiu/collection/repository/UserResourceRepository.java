@@ -44,6 +44,7 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
         UserResource userResource = new UserResource();
         userResource.setUserId(resourceDto.getUserId());
         userResource.setCateId(resourceDto.getCateId());
+        userResource.setCataId(resourceDto.getCataId());
         userResource.setSourceFileName(resourceDto.getSourceFileName());
         userResource.setFilePath(resourceDto.getResourceUrl());
         userResource.setSaveType(SaveTypeEnum.LOCAL.getCode());

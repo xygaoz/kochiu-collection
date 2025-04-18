@@ -20,8 +20,8 @@ import com.keem.kochiu.collection.service.store.ResourceStrategyFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class UserCatalogService {
@@ -140,7 +140,7 @@ public class UserCatalogService {
      * @throws CollectionException
      */
     @Transactional(rollbackFor = Exception.class)
-    public void addCatalog(UserDto userDto, CatalogBo catalogBo) throws CollectionException {
+    public Long addCatalog(UserDto userDto, CatalogBo catalogBo) throws CollectionException {
         SysUser user = userRepository.getUser(userDto);
 
         UserCatalog parentCatalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
@@ -167,16 +167,62 @@ public class UserCatalogService {
                 .cataPath((parentCatalog.getCataPath() + "/" + catalogBo.getCataName()).replaceAll("//", "/"))
                 .cataSno(maxSno + 1)
                 .build();
-        if(catalogRepository.save(userCatalog)){
+        Long id = catalogRepository.insert(userCatalog);
+        if(id != null){
             //建物理文件夹
             ResourceStoreStrategy resourceStoreStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
             if(!resourceStoreStrategy.addFolder("/" + user.getUserCode() + userCatalog.getCataPath())){
                 throw new CollectionException(ErrorCodeEnum.ADD_CATALOG_FAIL);
             }
+            return id;
         }
         else{
             throw new CollectionException(ErrorCodeEnum.ADD_CATALOG_FAIL);
         }
+    }
+
+    /**
+     * 根据路径添加，返回最终目录ID
+     * @param userDto
+     * @param path
+     * @return
+     * @throws CollectionException
+     */
+    public Long addCatalogPath(UserDto userDto, String path) throws CollectionException {
+
+        if(path.startsWith("/")){
+            path = path.substring(1);
+        }
+        String[] catalogNames = path.split("/");
+        AtomicReference<Long> id = new AtomicReference<>();
+        UserCatalog parent = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
+                .eq(UserCatalog::getUserId, userDto.getUserId())
+                .eq(UserCatalog::getCataSno, 0));
+        if(parent == null){
+            throw new CollectionException(ErrorCodeEnum.CATALOG_NAME_IS_SAME);
+        }
+        Long parentId = parent.getCataId();
+
+        String cataPath = "";
+        for(String catalogName : catalogNames){
+            cataPath += "/" + catalogName;
+            UserCatalog catalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
+                    .eq(UserCatalog::getUserId, userDto.getUserId())
+                    .eq(UserCatalog::getCataPath, cataPath)
+            );
+            if(catalog == null){
+                CatalogBo catalogBo = CatalogBo.builder()
+                        .parentId(parentId)
+                        .cataName(catalogName)
+                        .build();
+                id.set(addCatalog(userDto, catalogBo));
+            }
+            else{
+                id.set(catalog.getCataId());
+            }
+            parentId = id.get();
+        }
+        return id.get();
     }
 
     @Transactional(rollbackFor = Exception.class)

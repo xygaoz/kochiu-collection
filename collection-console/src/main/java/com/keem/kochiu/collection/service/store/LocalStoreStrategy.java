@@ -40,7 +40,6 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
     private final UserResourceRepository resourceRepository;
     private final SysUserRepository userRepository;
     private final FileStrategyFactory fileStrategyFactory;
-    private final static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
 
     public LocalStoreStrategy(CollectionProperties pluServiceProperties,
                               UserResourceRepository resourceRepository,
@@ -55,7 +54,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
      * 保存文件
      * @param uploadBo
      */
-    public FileVo saveFile(UploadBo uploadBo, UserDto userDto, String md5) throws CollectionException {
+    public FileVo saveFile(UploadBo uploadBo, UserDto userDto, String md5, String path) throws CollectionException {
 
         //判断文件类型
         String extension = FilenameUtils.getExtension(uploadBo.getFile().getOriginalFilename());
@@ -69,19 +68,18 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
         }
 
         //读取文件到本地
-        String url = "/" + userCode + "/" + dateFormat.format(System.currentTimeMillis());
-        String returnUrl = "/" + dateFormat.format(System.currentTimeMillis());
+        String returnUrl = path.substring(("/" + userCode).length());
         String recFilePathDir = collectionProperties.getUploadPath();
-        File dir = new File(recFilePathDir + url);
+        File dir = new File(recFilePathDir + path);
         if (!dir.exists()) {
             dir.mkdirs();
         }
 
         String filePath;
         try {
-            url += "/" + md5 + "." + extension;
+            path += "/" + md5 + "." + extension;
             returnUrl += "/" + md5 + "." + extension;
-            filePath = recFilePathDir + url;
+            filePath = recFilePathDir + path;
             File outfile = new File(filePath);
             FileUtil.writeBytes(uploadBo.getFile().getBytes(), outfile);
         }
@@ -94,8 +92,9 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
         ResourceDto resourceDto = ResourceDto.builder()
                 .userId(userDto.getUserId())
                 .cateId(uploadBo.getCategoryId())
+                .cataId(uploadBo.getCataId())
                 .sourceFileName(uploadBo.getFile().getOriginalFilename())
-                .resourceUrl(url)
+                .resourceUrl(path)
                 .fileExt(extension)
                 .size(uploadBo.getFile().getSize())
                 .md5(md5)

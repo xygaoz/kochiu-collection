@@ -7,8 +7,11 @@ import com.keem.kochiu.collection.exception.CollectionException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.text.SimpleDateFormat;
 
 public interface ResourceStoreStrategy {
+
+    public final static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
 
     /**
      * 保存文件
@@ -16,7 +19,7 @@ public interface ResourceStoreStrategy {
      * @return
      * @throws CollectionException
      */
-    FileVo saveFile(UploadBo uploadBo, UserDto user, String md5) throws CollectionException;
+    FileVo saveFile(UploadBo uploadBo, UserDto user, String md5, String path) throws CollectionException;
 
     /**
      * 下载文件
