@@ -104,6 +104,12 @@ routes.push(
         component: () => import('@/components/catalog/CatalogResource.vue'),
         meta: { showInMenu: false },
         props: true
+    },
+    {
+        path: '/Catalog/refresh',
+        redirect: to => {
+            return { path: to.query.redirect as string || '/' }
+        }
     }
 )
 

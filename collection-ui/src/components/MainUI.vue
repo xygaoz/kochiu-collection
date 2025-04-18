@@ -219,7 +219,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { Plus, Switch, Avatar, UploadFilled } from '@element-plus/icons-vue'
 import { listCategory } from '@/apis/category-api'
 import { listTag} from '@/apis/tag-api'
@@ -229,8 +228,7 @@ import CatalogMenuItem from '@/components/catalog/CatalogMenuItem.vue'
 import { Catalog, Category, ResourceType, Tag } from "@/apis/interface";
 import CategoryDialog from "@/components/category/CategoryDialog.vue";
 import CatalogDialog from "@/components/catalog/CatalogDialog.vue";
-
-const router = useRouter()
+import { useRoute, useRouter } from 'vue-router'
 
 // 状态管理
 const showCatalogMenu = ref(false)
@@ -243,6 +241,8 @@ const resourceTypes = ref<ResourceType[]>([])
 const categoryDialog = ref<InstanceType<typeof CategoryDialog>>()
 const catalogDialog = ref<InstanceType<typeof CatalogDialog>>()
 const currentCatalog = ref<Catalog | null>(null);
+const route = useRoute()
+const router = useRouter()
 
 // 初始化数据
 onMounted(async () => {
@@ -329,6 +329,12 @@ const handleCategoryConfirm = async () => {
 // 处理目录确认
 const handleCatalogConfirm = async () => {
     await loadCatalogTree()
+    // 如果当前路由是/Catalog页面，则重新加载
+    if (route.path.startsWith('/Catalog/')) {
+        const currentSno = route.params.sno;
+        await router.push('/Catalog/refresh');
+        await router.replace(`/Catalog/${currentSno}`);
+    }
 }
 
 // 更新当前激活菜单
