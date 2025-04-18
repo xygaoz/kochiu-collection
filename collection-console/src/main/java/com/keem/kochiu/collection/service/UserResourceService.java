@@ -274,6 +274,7 @@ public class UserResourceService {
                                     .description(resource.getDescription())
                                     .sourceFileName(resource.getSourceFileName())
                                     .cateName(resource.getCateName())
+                                    .cataPath(resource.getCataPath())
                                     .width(width)
                                     .height(height)
                                     .fileType(resource.getFileExt() + " / " +fileType.getDesc().getLabel())

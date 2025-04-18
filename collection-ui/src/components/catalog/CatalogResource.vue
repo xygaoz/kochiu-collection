@@ -13,6 +13,9 @@
                 <span v-else>{{ segment.name }}</span>
                 <span class="slash" v-if="index < processedPath.length - 1"> / </span>
             </span>
+            <span>
+                <el-checkbox v-model="include_sub_dir" label="包括子目录" size="small" @change="handleInclude"/>
+            </span>
         </el-header>
         <el-main style="margin: 0; padding: 0">
             <ResourceView
@@ -33,6 +36,8 @@ import { listCatalogFiles } from "@/apis/resource-api";
 import { PathVo, Resource, SearchForm } from "@/apis/interface";
 import ResourceView from "@/components/common/ResourceView.vue";
 import { getCatalogPath } from "@/apis/catalog-api";
+import { useGlobalStore } from "@/apis/global";
+import { storeToRefs } from "pinia";
 
 const route = useRoute();
 const files = ref<Resource[]>([]);
@@ -42,10 +47,18 @@ const pageSize = ref(500);
 const total = ref(0);
 const cataSno = ref("")
 const dataType = ref("catalog")
+const globalStore = useGlobalStore()
+const { include_sub_dir } = storeToRefs(globalStore)
 const pathVo = ref<PathVo>({
     path: "/",
     pathInfo: []
 })
+const searchData = ref<SearchForm>({
+    keyword: '',
+    types: [],
+    tags: [],
+    include: false
+});
 
 // 计算属性，将 pathInfo 转换为可用的路径段数组
 const processedPath = computed(() => {
@@ -90,9 +103,12 @@ watch(
                     path: pathData.path || `/${newId}`,
                     pathInfo: Array.isArray(pathData.pathInfo) ? pathData.pathInfo : []
                 };
+                searchData.value.include = include_sub_dir.value;
 
                 // 加载文件列表
-                const data = await listCatalogFiles(newId as string, currentPage.value, pageSize.value, {});
+                const data = await listCatalogFiles(newId as string, currentPage.value, pageSize.value,
+                    searchData.value
+                );
                 files.value = data.list;
                 total.value = data.total;
             } catch (error) {
@@ -124,7 +140,9 @@ const handleSearch = async (searchForm: SearchForm) => {
     try {
         loading.value = true;
         currentPage.value = 1
-        const data = await listCatalogFiles(cataSno.value, currentPage.value, pageSize.value, searchForm);
+        searchData.value = searchForm
+        searchData.value.include = include_sub_dir.value;
+        const data = await listCatalogFiles(cataSno.value, currentPage.value, pageSize.value, searchData.value);
         files.value = data.list;
         total.value = data.total;
         currentPage.value = data.pageNum;
@@ -134,6 +152,11 @@ const handleSearch = async (searchForm: SearchForm) => {
         loading.value = false;
     }
 };
+
+const handleInclude = async () => {
+    searchData.value.include = include_sub_dir.value;
+    await handleSearch(searchData.value)
+}
 </script>
 
 <style scoped>
@@ -141,10 +164,22 @@ const handleSearch = async (searchForm: SearchForm) => {
     height: 18px;
     font-size: 13px;
     display: flex;
-    align-items: end;
-    padding: 0 20px;
-    line-height: 1;
+    align-items: center; /* 垂直居中 */
+    padding: 5px 20px 0 20px;
     color: #5e5e5e;
+}
+
+/* 专门针对 Element Plus 复选框的垂直居中调整 */
+.cata-header .el-checkbox {
+    display: flex;
+    align-items: center;
+    margin: 0 0 0 20px; /* 移除默认边距 */
+}
+
+.cata-header .el-checkbox__label {
+    font-size: 13px;
+    padding-left: 8px;
+    line-height: 1; /* 防止文字行高影响垂直居中 */
 }
 
 .path-segment {

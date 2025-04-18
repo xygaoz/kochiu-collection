@@ -7,10 +7,11 @@
     </select>
 
     <select id="selectTagResource" resultType="com.keem.kochiu.collection.entity.UserResource">
-        select DISTINCT r.*, c.CATE_NAME from user_resource r
+        select DISTINCT r.*, c.CATE_NAME, a.cata_path from user_resource r
             join user_category c on r.CATE_ID=c.CATE_ID
             join user_resource_tag t on r.RESOURCE_ID=t.RESOURCE_ID and r.USER_ID=t.USER_ID
             join user_tag g on t.TAG_ID=g.TAG_ID and t.USER_ID=g.USER_ID
+            left join user_catalog a on a.CATA_ID=r.cata_id
         where r.USER_ID=#{userId} and g.TAG_ID=#{tagId} and r.DELETED=0
             <if test="keyword != null and keyword != ''">
                 <bind name="pattern" value="'%' + keyword + '%'"/>
@@ -26,11 +27,12 @@
     </select>
 
     <select id="selectCategoryResource" resultType="com.keem.kochiu.collection.entity.UserResource">
-        SELECT DISTINCT r.*, c.CATE_NAME
+        SELECT DISTINCT r.*, c.CATE_NAME, a.cata_path
         FROM user_resource r
             join user_category c on r.CATE_ID=c.CATE_ID
             left JOIN user_resource_tag t ON r.RESOURCE_ID = t.RESOURCE_ID AND r.USER_ID = t.USER_ID
             left JOIN user_tag g ON t.TAG_ID = g.TAG_ID AND t.USER_ID = g.USER_ID
+            left join user_catalog a on a.CATA_ID=r.cata_id
         WHERE r.USER_ID = #{userId}
             AND r.DELETED = 0
             AND c.CATE_ID = #{cateId}
@@ -54,11 +56,12 @@
     </select>
 
     <select id="selectTypeResource" resultType="com.keem.kochiu.collection.entity.UserResource">
-        SELECT DISTINCT r.*, c.CATE_NAME
+        SELECT DISTINCT r.*, c.CATE_NAME, a.cata_path
             FROM user_resource r
             join user_category c on r.CATE_ID=c.CATE_ID
             left JOIN user_resource_tag t ON r.RESOURCE_ID = t.RESOURCE_ID AND r.USER_ID = t.USER_ID
             left JOIN user_tag g ON t.TAG_ID = g.TAG_ID AND t.USER_ID = g.USER_ID
+            left join user_catalog a on a.CATA_ID=r.cata_id
         WHERE r.USER_ID = #{userId}
         AND r.DELETED = 0
         <if test="keyword != null and keyword != ''">
@@ -81,11 +84,12 @@
     </select>
 
     <select id="selectRecycleResource" resultType="com.keem.kochiu.collection.entity.UserResource">
-        SELECT DISTINCT r.*, c.CATE_NAME
+        SELECT DISTINCT r.*, c.CATE_NAME, a.cata_path
             FROM user_resource r
             join user_category c on r.CATE_ID=c.CATE_ID
             left JOIN user_resource_tag t ON r.RESOURCE_ID = t.RESOURCE_ID AND r.USER_ID = t.USER_ID
             left JOIN user_tag g ON t.TAG_ID = g.TAG_ID AND t.USER_ID = g.USER_ID
+            left join user_catalog a on a.CATA_ID=r.cata_id
         WHERE r.USER_ID = #{userId}
         AND r.DELETED = 1
         <if test="keyword != null and keyword != ''">
@@ -108,11 +112,12 @@
     </select>
 
     <select id="selectAllResource" resultType="com.keem.kochiu.collection.entity.UserResource">
-        SELECT DISTINCT r.*, c.CATE_NAME
+        SELECT DISTINCT r.*, c.CATE_NAME, a.cata_path
             FROM user_resource r
             join user_category c on r.CATE_ID=c.CATE_ID
             left JOIN user_resource_tag t ON r.RESOURCE_ID = t.RESOURCE_ID AND r.USER_ID = t.USER_ID
             left JOIN user_tag g ON t.TAG_ID = g.TAG_ID AND t.USER_ID = g.USER_ID
+            left join user_catalog a on a.CATA_ID=r.cata_id
         WHERE r.USER_ID = #{userId}
             AND r.DELETED = 0
             <if test="cateId != null and cateId > 0">
@@ -137,7 +142,7 @@
         ORDER BY r.CREATE_TIME DESC
     </select>
 
-    <select id="selectCatalogResource" resultType="com.keem.kochiu.collection.entity.UserResource">
+    <select id="selectCatalogResourceIncludeSub" resultType="com.keem.kochiu.collection.entity.UserResource">
         WITH RECURSIVE folder_tree AS (
             SELECT
                 cata_id,
@@ -168,7 +173,7 @@
                 c.user_id = #{userId}
         )
         SELECT
-            DISTINCT r.*, c.CATE_NAME
+            DISTINCT r.*, c.CATE_NAME, ft.cata_path
         FROM
             user_resource r
                 JOIN folder_tree ft ON r.cata_id = ft.cata_id
@@ -199,5 +204,41 @@
         </if>
         ORDER BY r.CREATE_TIME DESC
 
+    </select>
+
+
+    <select id="selectCatalogResource" resultType="com.keem.kochiu.collection.entity.UserResource">
+        SELECT DISTINCT r.*, c.CATE_NAME, ft.cata_path
+        FROM user_resource r
+            JOIN user_catalog ft ON r.cata_id = ft.cata_id and r.USER_ID=ft.USER_ID
+            join user_category c on r.CATE_ID=c.CATE_ID
+            left JOIN user_resource_tag t ON r.RESOURCE_ID = t.RESOURCE_ID AND r.USER_ID = t.USER_ID
+            left JOIN user_tag g ON t.TAG_ID = g.TAG_ID AND t.USER_ID = g.USER_ID
+        WHERE
+            r.USER_ID = #{userId}
+            AND r.deleted = 0
+            <if test="cateId != null and cateId > 0">
+                AND c.CATE_ID = #{cateId}
+            </if>
+            <if test="cataSno != null">
+                AND ft.cata_sno = #{cataSno}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                <bind name="pattern" value="'%' + keyword + '%'"/>
+                AND (r.TITLE LIKE #{pattern} OR r.DESCRIPTION LIKE #{pattern} OR r.SOURCE_FILE_NAME LIKE #{pattern})
+            </if>
+            <if test="types != null and types.length > 0">
+                AND r.FILE_EXT IN
+                <foreach collection="types" item="type" open="(" separator="," close=")">
+                    #{type}
+                </foreach>
+            </if>
+            <if test="tagNames != null and tagNames.length > 0">
+                AND g.tag_name IN
+                <foreach collection="tagNames" item="tagName" open="(" separator="," close=")">
+                    #{tagName}
+                </foreach>
+            </if>
+            ORDER BY r.CREATE_TIME DESC
     </select>
 </mapper>

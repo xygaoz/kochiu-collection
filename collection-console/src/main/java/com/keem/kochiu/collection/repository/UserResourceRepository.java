@@ -301,12 +301,24 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
                     fileExtList.addAll(FileTypeEnum.getNames(ResourceTypeEnum.getByValue(type)));
                 }
             }
-            return new PageInfo<>(baseMapper.selectCatalogResource(userId,
-                    filterResourceBo.getCataSno(),
-                    filterResourceBo.getCateId(),
-                    filterResourceBo.getKeyword(),
-                    fileExtList.toArray(new String[0]),
-                    filterResourceBo.getTags())
-            );
+
+            if(filterResourceBo.isInclude()) {
+                return new PageInfo<>(baseMapper.selectCatalogResourceIncludeSub(userId,
+                        filterResourceBo.getCataSno(),
+                        filterResourceBo.getCateId(),
+                        filterResourceBo.getKeyword(),
+                        fileExtList.toArray(new String[0]),
+                        filterResourceBo.getTags())
+                );
+            }
+            else{
+                return new PageInfo<>(baseMapper.selectCatalogResource(userId,
+                        filterResourceBo.getCataSno(),
+                        filterResourceBo.getCateId(),
+                        filterResourceBo.getKeyword(),
+                        fileExtList.toArray(new String[0]),
+                        filterResourceBo.getTags())
+                );
+            }
         }
     }}

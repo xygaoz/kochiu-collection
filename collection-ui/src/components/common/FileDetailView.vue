@@ -138,6 +138,10 @@
                 <div class="detail-value">{{ file.cateName }}</div>
             </div>
             <div class="detail-row">
+                <div class="detail-label">目录路径</div>
+                <div class="detail-value" style="margin: 3px 0 0 0;">{{ file.cataPath }}</div>
+            </div>
+            <div class="detail-row">
                 <div class="detail-label">文件名</div>
                 <div class="detail-value">{{ file.sourceFileName }}</div>
             </div>

@@ -105,7 +105,8 @@ const layoutRef = ref<{
 const searchData = ref<SearchForm>({
     keyword: '',
     types: [],
-    tags: []
+    tags: [],
+    include: false
 });
 
 const emit = defineEmits(['update-file', 'filter-data']);

@@ -25,6 +25,7 @@ export interface Resource {
     title: string;
     description: string;
     cateName: string;
+    cataPath: string;
     resolutionRatio: string;
     size: number;
     isPublic: number;
@@ -50,6 +51,7 @@ export interface SearchForm {
     keyword: string;
     types: string[];
     tags: string[];
+    include: boolean;
 }
 
 export interface Catalog {

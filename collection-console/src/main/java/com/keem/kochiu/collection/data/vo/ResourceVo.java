@@ -23,6 +23,7 @@ public class ResourceVo {
     private String fileType;
     private String typeName;
     private String cateName;
+    private String cataPath;
     private Integer isPublic;
     private Integer star;
     private Integer width;

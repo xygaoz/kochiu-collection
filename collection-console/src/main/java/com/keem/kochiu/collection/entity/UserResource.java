@@ -39,6 +39,8 @@ public class UserResource extends BaseEntity implements Cloneable{
     private LocalDateTime deleteTime;
     @TableField(exist = false)
     private String cateName;
+    @TableField(exist = false)
+    private String cataPath;
 
     @Override
     public UserResource clone() {
