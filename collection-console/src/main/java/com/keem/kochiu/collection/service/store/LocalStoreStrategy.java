@@ -367,9 +367,6 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
             if(userResource == null){
                 throw new CollectionException(ErrorCodeEnum.RESOURCE_NOT_EXIST);
             }
-            if(userResource.getCataId().equals(parentCatalog.getCataId())){
-                throw new CollectionException(ErrorCodeEnum.TARGET_CATALOG_IS_SAME);
-            }
 
             userResource.setCataId(parentCatalog.getCataId());
             //资源路径

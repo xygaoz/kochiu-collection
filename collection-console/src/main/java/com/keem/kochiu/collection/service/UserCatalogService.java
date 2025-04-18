@@ -259,6 +259,8 @@ public class UserCatalogService {
 
             // 更新物理文件夹
             ResourceStoreStrategy resourceStoreStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
+            //更新数据库
+            resourceStoreStrategy.updateResourcePath(user.getUserId(), catalogBo.getCateId(), catalogBo.getCateId());
             if (!resourceStoreStrategy.renameFolder(
                     ("/" + user.getUserCode() + "/" + oldPath).replaceAll("//", "/"),
                     ("/" + user.getUserCode() + "/" + newPath).replaceAll("//", "/"),
@@ -284,18 +286,29 @@ public class UserCatalogService {
                 throw new CollectionException(ErrorCodeEnum.CATALOG_NAME_IS_SAME);
             }
             String newPath = (parentCatalog.getCataPath() + "/" + catalogBo.getCataName()).replaceAll("//", "/");
+            Long targetCataId = catalogBo.getParentId();
             if(catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
                     .eq(UserCatalog::getUserId, user.getUserId())
                     .eq(UserCatalog::getCataPath, newPath)) != null){
-                //目标目录已存在
+                //目标目录已存在，抛弃旧目录
                 if(!catalogRepository.removeById(userCatalog.getCataId())){
                     throw new CollectionException(ErrorCodeEnum.UPDATE_CATALOG_FAIL);
                 }
             }
+            else{
+                //不存在，改当前目录的名称和路径
+                userCatalog.setCataName(catalogBo.getCataName());
+                userCatalog.setCataPath(newPath);
+                userCatalog.setParentId(catalogBo.getParentId());
+                if (!catalogRepository.updateById(userCatalog)) {
+                    throw new CollectionException(ErrorCodeEnum.UPDATE_CATALOG_FAIL);
+                }
+                targetCataId = userCatalog.getCataId();
+            }
 
             ResourceStoreStrategy resourceStoreStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
             //更新数据库
-            resourceStoreStrategy.updateResourcePath(user.getUserId(), catalogBo.getParentId(), catalogBo.getCateId());
+            resourceStoreStrategy.updateResourcePath(user.getUserId(), targetCataId, catalogBo.getCateId());
             // 更新物理文件夹
             if (!resourceStoreStrategy.renameFolder(
                     ("/" + user.getUserCode() + "/" + oldPath).replaceAll("//", "/"),
