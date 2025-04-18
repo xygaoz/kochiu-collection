@@ -3,11 +3,13 @@ package com.keem.kochiu.collection.service.store;
 import com.keem.kochiu.collection.data.bo.UploadBo;
 import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.data.vo.FileVo;
+import com.keem.kochiu.collection.entity.UserResource;
 import com.keem.kochiu.collection.exception.CollectionException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 public interface ResourceStoreStrategy {
 
@@ -36,6 +38,11 @@ public interface ResourceStoreStrategy {
     void deleteFile(int userId, Long resourceId);
 
     /**
+     * 移动文件
+     */
+    void moveFile(int userId, UserResource resource, String newPath);
+
+    /**
      * 创建文件夹
      * @param folderPath
      * @return
@@ -56,4 +63,21 @@ public interface ResourceStoreStrategy {
      * @return
      */
     boolean deleteFolder(String folderPath);
+
+    /**
+     * 更新文件路径
+     * @param userId
+     * @param targetCataId
+     * @param cataId
+     * @return
+     */
+    boolean updateResourcePath(int userId, Long targetCataId, Long cataId) throws CollectionException;
+
+    /**
+     * 更新文件路径
+     * @param userId
+     * @param targetCataId
+     * @return
+     */
+    boolean updateResourcesPath(int userId, Long targetCataId, List<Long> resourceIds) throws CollectionException;
 }

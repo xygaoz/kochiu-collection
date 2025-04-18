@@ -21,7 +21,7 @@
                     :selectedResource="selectedResource"
                     @preview="handlePreview"
                     @multiple-selected="handleMultipleSelected"
-                    @move-to-category="handleMoveToCate"
+                    @move-to-category="handleMoveTo"
                     @move-to-recycle="handleMoveToRecycle"
                     @restore="handleRestore"
                 />
@@ -44,7 +44,7 @@
                 @clear-selection="handleClearSelection"
                 @update-success="handleUpdateSuccess"
                 @select-all="handleSelectAll"
-                @move="handleMoveToCate"
+                @move="handleMoveTo"
                 @delete="handleMoveToRecycle"
                 @restore="handleRestore"
             />
@@ -58,6 +58,7 @@
     />
 
     <MoveToCategory ref="moveToCategoryDialog" @success="handleMoveSuccess" />
+    <MoveToCatalog ref="moveToCatalogDialog" @success="handleMoveSuccess" />
 </template>
 
 <script lang="ts" setup>
@@ -70,7 +71,8 @@ import FileDetailView from "@/components/common/FileDetailView.vue";
 import BatchEditView from "@/components/common/BatchEditView.vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import PdfPreviewDialog from "@/components/common/PdfPreviewDialog.vue";
-import MoveToCategory from "@/components/common/MoveToCategory.vue";
+import MoveToCategory from "@/components/category/MoveToCategory.vue";
+import MoveToCatalog from "@/components/catalog/MoveToCatalog.vue";
 import { moveToRecycle, restoreFormRecycle } from "@/apis/resource-api";
 
 const formExpanded = ref(false);
@@ -95,6 +97,7 @@ const selectedResource = ref<Resource | null>(null);
 const pdfDialogVisible = ref(false);
 const pdfPreviewUrl = ref('');
 const moveToCategoryDialog = ref();
+const moveToCatalogDialog = ref();
 const layoutRef = ref<{
     clearSelection: () => void,
     selectAll: () => void
@@ -169,10 +172,15 @@ const handleSelectAll = () => {
     selectedResources.value = [...props.files];
 };
 
-const handleMoveToCate = (resources: Resource[]) => {
+const handleMoveTo = (resources: Resource[]) => {
     //打开移动到分类弹窗
     const resourceIds = resources.map(r => r.resourceId);
-    moveToCategoryDialog.value?.open(resourceIds);
+    if(props.dataType === 'category') {
+        moveToCategoryDialog.value?.open(resourceIds);
+    }
+    else if(props.dataType === 'catalog'){
+        moveToCatalogDialog.value?.open(resourceIds);
+    }
 };
 
 // 移动到分类

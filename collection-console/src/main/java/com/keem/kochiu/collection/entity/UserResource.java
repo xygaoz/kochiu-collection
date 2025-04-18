@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("user_resource")
-public class UserResource extends BaseEntity{
+public class UserResource extends BaseEntity implements Cloneable{
 
     @TableId(type = IdType.INPUT)
     private Long resourceId;
@@ -39,4 +39,13 @@ public class UserResource extends BaseEntity{
     private LocalDateTime deleteTime;
     @TableField(exist = false)
     private String cateName;
+
+    @Override
+    public UserResource clone() {
+        try {
+            return (UserResource) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

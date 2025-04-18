@@ -158,6 +158,13 @@ public class UserResourceController {
         return DefaultResult.ok(true);
     }
 
+    @CheckPermit
+    @PostMapping(RESOURCE_PATH + "/moveToCatalog")
+    public DefaultResult<Boolean> moveToCatalog(@Validated({Edit.class}) MoveToCataBo moveToBo) throws CollectionException {
+        resourceService.moveToCatalog(CheckPermitAspect.USER_INFO.get(), moveToBo);
+        return DefaultResult.ok(true);
+    }
+
     /**
      * 根据文件类型获取资源列表
      * @param filterResourceBo

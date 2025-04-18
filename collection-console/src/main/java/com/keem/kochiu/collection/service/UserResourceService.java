@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.keem.kochiu.collection.enums.ErrorCodeEnum.*;
@@ -86,7 +87,7 @@ public class UserResourceService {
             }
             if(!uploadBo.isAutoCreate() && (uploadBo.getCataId() == null || catalogRepository.getById(uploadBo.getCataId()) == null)){
                 //非自动创建目录，检查目录是否存在
-                throw new CollectionException(ErrorCodeEnum.CATALOG_IS_INVALID);
+                throw new CollectionException(ErrorCodeEnum.CATALOG_NOT_EXIST);
             }
 
             String path;
@@ -96,7 +97,7 @@ public class UserResourceService {
                 //创建目录
                 Long id = userCatalogService.addCatalogPath(userDto, catalogPath);
                 if(id == null){
-                    throw new CollectionException(ErrorCodeEnum.CATEGORY_CREATE_FAILURE);
+                    throw new CollectionException(ErrorCodeEnum.CATALOG_CREATE_FAILURE);
                 }
                 else{
                     uploadBo.setCataId(id);
@@ -394,5 +395,34 @@ public class UserResourceService {
         SysUser user = userRepository.getUser(userDto);
         PageInfo<UserResource> resourceList = resourceRepository.getCatalogResource(user.getUserId(), filterResourceBo);
         return buildResourceList(user, resourceList);
+    }
+
+    /**
+     * 批量移动到目录
+     * @param userDto
+     * @param moveToBo
+     * @throws CollectionException
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void moveToCatalog(UserDto userDto, MoveToCataBo moveToBo) throws CollectionException {
+        SysUser user = userRepository.getUser(userDto);
+        UserCatalog catalog = catalogRepository.getById(moveToBo.getCataId());
+        if(catalog == null){
+            throw new CollectionException(ErrorCodeEnum.CATALOG_NOT_EXIST);
+        }
+
+        //先克隆资源对象，因为后面先变数据库再变文件
+        List<UserResource> resources = new ArrayList<>();
+        for(Long resourceId : moveToBo.getResourceIds()) {
+            resources.add(resourceRepository.getById(resourceId).clone());
+        }
+        ResourceStoreStrategy resourceStoreStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
+        //更新数据库
+        resourceStoreStrategy.updateResourcesPath(user.getUserId(), moveToBo.getCataId(), moveToBo.getResourceIds());
+        //移动物理文件
+        for(UserResource resource : resources){
+            resourceStoreStrategy.moveFile(user.getUserId(), resource,
+                    ("/" + user.getUserCode() + "/" + catalog.getCataPath()).replaceAll("//", "/"));
+        }
     }
 }

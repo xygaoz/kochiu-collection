@@ -1,7 +1,6 @@
 package com.keem.kochiu.collection.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.keem.kochiu.collection.data.bo.CatalogBo;
 import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.data.vo.CatalogVo;
@@ -147,7 +146,7 @@ public class UserCatalogService {
                 .eq(UserCatalog::getUserId, user.getUserId())
                 .eq(UserCatalog::getCataId, catalogBo.getParentId()));
         if(parentCatalog == null){
-            throw new CollectionException(ErrorCodeEnum.PARENT_CATALOG_IS_INVALID);
+            throw new CollectionException(ErrorCodeEnum.TARGET_CATALOG_IS_INVALID);
         }
         if(parentCatalog.getCataLevel() + 1 > 3){
             throw new CollectionException(ErrorCodeEnum.CATALOG_LEVEL_IS_MAX);
@@ -232,7 +231,7 @@ public class UserCatalogService {
                 .eq(UserCatalog::getUserId, user.getUserId())
                 .eq(UserCatalog::getCataId, catalogBo.getCateId()));
         if(userCatalog == null){
-            throw new CollectionException(ErrorCodeEnum.CATALOG_IS_INVALID);
+            throw new CollectionException(ErrorCodeEnum.CATALOG_NOT_EXIST);
         }
 
         if(catalogBo.getParentId().equals(userCatalog.getParentId())){
@@ -275,7 +274,7 @@ public class UserCatalogService {
                     .eq(UserCatalog::getUserId, user.getUserId())
                     .eq(UserCatalog::getCataId, catalogBo.getParentId()));
             if(parentCatalog == null){
-                throw new CollectionException(ErrorCodeEnum.PARENT_CATALOG_IS_INVALID);
+                throw new CollectionException(ErrorCodeEnum.TARGET_CATALOG_IS_INVALID);
             }
             if(parentCatalog.getCataLevel() + 1 > 3){
                 throw new CollectionException(ErrorCodeEnum.CATALOG_LEVEL_IS_MAX);
@@ -293,19 +292,11 @@ public class UserCatalogService {
                     throw new CollectionException(ErrorCodeEnum.UPDATE_CATALOG_FAIL);
                 }
             }
-            else{
-                // 数据库先改名
-                userCatalog.setCataName(catalogBo.getCataName());
-                userCatalog.setCataPath(newPath);
-                userCatalog.setParentId(catalogBo.getParentId());
-                // 更新数据库
-                if (!catalogRepository.updateById(userCatalog)) {
-                    throw new CollectionException(ErrorCodeEnum.UPDATE_CATALOG_FAIL);
-                }
-            }
 
-            // 更新物理文件夹
             ResourceStoreStrategy resourceStoreStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
+            //更新数据库
+            resourceStoreStrategy.updateResourcePath(user.getUserId(), catalogBo.getParentId(), catalogBo.getCateId());
+            // 更新物理文件夹
             if (!resourceStoreStrategy.renameFolder(
                     ("/" + user.getUserCode() + "/" + oldPath).replaceAll("//", "/"),
                     ("/" + user.getUserCode() + "/" + newPath).replaceAll("//", "/"),
@@ -324,9 +315,10 @@ public class UserCatalogService {
                 .eq(UserCatalog::getUserId, user.getUserId())
                 .eq(UserCatalog::getCataId, catalogBo.getCateId()));
         if(userCatalog == null){
-            throw new CollectionException(ErrorCodeEnum.CATALOG_IS_INVALID);
+            throw new CollectionException(ErrorCodeEnum.CATALOG_NOT_EXIST);
         }
 
+        //直接删除
         if(RemoveCatalogEnum.getEnum(catalogBo.getRemoveType()) == RemoveCatalogEnum.REMOVE_TYPE_DELETE){
             String oldPath = userCatalog.getCataPath();
             //先删除目录
@@ -347,26 +339,23 @@ public class UserCatalogService {
             }
         }
         else {
+            //删除前转移文件
             UserCatalog parentCatalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
                     .eq(UserCatalog::getUserId, user.getUserId())
                     .eq(UserCatalog::getCataId, catalogBo.getParentId()));
             if (parentCatalog == null) {
-                throw new CollectionException(ErrorCodeEnum.PARENT_CATALOG_IS_INVALID);
+                throw new CollectionException(ErrorCodeEnum.TARGET_CATALOG_IS_INVALID);
             }
 
-            // 更新数据库
-            if (!resourceRepository.update(null,
-                    new LambdaUpdateWrapper<UserResource>()
-                            .set(UserResource::getCataId, parentCatalog.getCataId())
-                            .eq(UserResource::getUserId, user.getUserId())
-                            .eq(UserResource::getCataId, userCatalog.getCataId())
-            )
-            ) {
-                throw new CollectionException(ErrorCodeEnum.UPDATE_CATALOG_FAIL);
+            //先删除目录
+            if(!catalogRepository.removeById(userCatalog.getCataId())){
+                throw new CollectionException(ErrorCodeEnum.REMOVE_CATALOG_FAIL);
             }
 
-            // 更新物理文件夹
             ResourceStoreStrategy resourceStoreStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
+            //更新数据库
+            resourceStoreStrategy.updateResourcePath(user.getUserId(), catalogBo.getParentId(), catalogBo.getCateId());
+            // 更新物理文件夹
             if (!resourceStoreStrategy.renameFolder(
                     ("/" + user.getUserCode() + "/" + userCatalog.getCataPath()).replaceAll("//", "/"),
                     ("/" + user.getUserCode() + "/" + parentCatalog.getCataPath()).replaceAll("//", "/"),

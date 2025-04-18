@@ -27,15 +27,17 @@ public enum ErrorCodeEnum {
     TAG_IS_EXIST("1017", "标签已存在"),
     FAILED_GEN_TOKEN("1018", "生成token失败"),
     ROOT_FOLDER_IS_INVALID("1019", "根目录无效"),
-    PARENT_CATALOG_IS_INVALID("1020", "父目录无效"),
+    TARGET_CATALOG_IS_INVALID("1020", "目标目录无效"),
     ADD_CATALOG_FAIL("1029", "新建目录失败"),
-    CATALOG_IS_INVALID("1030", "目录无效"),
+    CATALOG_NOT_EXIST("1030", "目录不存在"),
     CATALOG_NAME_IS_SAME("1031", "目录名称相同"),
     UPDATE_CATALOG_FAIL("1032", "目录改名/移动失败"),
     CATALOG_IS_EXIST("1033", "目录已经存在"),
     CATALOG_LEVEL_IS_MAX("1034", "目录层次已经达到最大"),
     REMOVE_CATALOG_FAIL("1035", "目录删除失败"),
-    CATEGORY_CREATE_FAILURE("1036", "创建目录失败");
+    CATALOG_CREATE_FAILURE("1036", "创建目录失败"),
+    TARGET_CATALOG_IS_SAME("1037", "目标目录相同"),
+    RESOURCE_NOT_EXIST("1038", "资源文件不存在");
 
     private final String code;
     private final String message;

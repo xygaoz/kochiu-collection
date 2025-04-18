@@ -264,3 +264,14 @@ export const listCatalogFiles = (sno: string, page: number, size: number, params
         ld.close();
     });
 }
+
+export const moveToCatalog = (resourceIds: number[], params: any): Promise<boolean> => {
+    const ld = loading("修改中")
+    params["resourceIds"] = resourceIds;
+    return httpInstance.post("/resource/moveToCatalog", params).then((model: any) => {
+        console.log("修改成功:", model);
+        return model;
+    }).finally(() => {
+        ld.close();
+    });
+}

@@ -8,12 +8,10 @@ import javax.validation.constraints.Size;
 import java.util.List;
 
 @Data
-public class MoveToBo {
-    @NotNull(groups = {Edit.class}, message = "分类Id不能为空！！！")
-    private Long cateId;
+public class MoveToCataBo {
+    @NotNull(groups = {Edit.class}, message = "目录Id不能为空！！！")
+    private Long cataId;
     @NotNull(message = "资源Id不能为空！！！")
     @Size(min = 1, message = "资源Id不能为空！！！")
     private List<Long> resourceIds;
-    //true时彻底删除（回收站删除传入）
-    private boolean deleted;
 }

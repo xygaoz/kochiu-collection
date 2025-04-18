@@ -2,17 +2,20 @@ package com.keem.kochiu.collection.service.store;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.unit.DataSizeUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.keem.kochiu.collection.data.bo.UploadBo;
 import com.keem.kochiu.collection.data.dto.ResourceDto;
 import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.data.vo.FileVo;
 import com.keem.kochiu.collection.entity.SysUser;
+import com.keem.kochiu.collection.entity.UserCatalog;
 import com.keem.kochiu.collection.entity.UserResource;
 import com.keem.kochiu.collection.enums.ErrorCodeEnum;
 import com.keem.kochiu.collection.enums.FileTypeEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.properties.CollectionProperties;
 import com.keem.kochiu.collection.repository.SysUserRepository;
+import com.keem.kochiu.collection.repository.UserCatalogRepository;
 import com.keem.kochiu.collection.repository.UserResourceRepository;
 import com.keem.kochiu.collection.service.file.FileStrategy;
 import com.keem.kochiu.collection.service.file.FileStrategyFactory;
@@ -28,7 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
+import java.util.List;
 
 import static com.keem.kochiu.collection.enums.ErrorCodeEnum.*;
 
@@ -40,14 +43,18 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
     private final UserResourceRepository resourceRepository;
     private final SysUserRepository userRepository;
     private final FileStrategyFactory fileStrategyFactory;
+    private final UserCatalogRepository catalogRepository;
 
     public LocalStoreStrategy(CollectionProperties pluServiceProperties,
                               UserResourceRepository resourceRepository,
-                              SysUserRepository userRepository, FileStrategyFactory fileStrategyFactory) {
+                              SysUserRepository userRepository,
+                              FileStrategyFactory fileStrategyFactory,
+                              UserCatalogRepository catalogRepository) {
         this.collectionProperties = pluServiceProperties;
         this.resourceRepository = resourceRepository;
         this.userRepository = userRepository;
         this.fileStrategyFactory = fileStrategyFactory;
+        this.catalogRepository = catalogRepository;
     }
 
     /**
@@ -236,6 +243,39 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
     }
 
     @Override
+    public void moveFile(int userId, UserResource resource, String newPath) {
+        //查找资源
+        if(resource == null){
+            return;
+        }
+        if(resource.getUserId() != userId){
+            return;
+        }
+
+        File dir = new File(collectionProperties.getUploadPath() + newPath);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        File file = new File(collectionProperties.getUploadPath() + resource.getResourceUrl());
+        if(file.exists()){
+            FileUtil.move(file, dir, true);
+        }
+        if(StringUtils.isNotBlank(resource.getThumbUrl())) {
+            file = new File(collectionProperties.getUploadPath() + resource.getThumbUrl());
+            if (file.exists()) {
+                FileUtil.move(file, dir, true);
+            }
+        }
+        if(StringUtils.isNotBlank(resource.getPreviewUrl())) {
+            file = new File(collectionProperties.getUploadPath() + resource.getPreviewUrl());
+            if (file.exists()) {
+                FileUtil.move(file, dir, true);
+            }
+        }
+    }
+
+    @Override
     public boolean addFolder(String folderPath) throws CollectionException {
         File file = new File(collectionProperties.getUploadPath() + folderPath);
         if(!file.exists()){
@@ -267,7 +307,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
             if(new File(collectionProperties.getUploadPath() + newFolderPath).exists()){
                 //先复制原目录文件过去
                 try {
-                    FileUtil.copy(new File(collectionProperties.getUploadPath() + oldFolderPath), new File(collectionProperties.getUploadPath() + newFolderPath), true);
+                    FileUtil.copyFilesFromDir(new File(collectionProperties.getUploadPath() + oldFolderPath), new File(collectionProperties.getUploadPath() + newFolderPath), true);
                 }
                 catch (Exception e) {
                     log.error("系统错误", e);
@@ -297,5 +337,61 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
     @Override
     public boolean deleteFolder(String folderPath) {
         return FileUtil.del(new File(collectionProperties.getUploadPath() + folderPath));
+    }
+
+    @Override
+    public boolean updateResourcePath(int userId, Long targetCataId, Long cataId) throws CollectionException {
+        //先取出该目录下的资源
+        List<UserResource> userResources = resourceRepository.list(new LambdaQueryWrapper<UserResource>()
+                .eq(UserResource::getUserId, userId)
+                .eq(UserResource::getCataId, cataId)
+        );
+        List<Long> resourceIds = userResources.stream().map(UserResource::getResourceId).toList();
+        return updateResourcesPath(userId, targetCataId, resourceIds);
+    }
+
+    @Override
+    public boolean updateResourcesPath(int userId, Long targetCataId, List<Long> resourceIds) throws CollectionException {
+        SysUser user = userRepository.getById(userId);
+        UserCatalog parentCatalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
+                .eq(UserCatalog::getUserId, userId)
+                .eq(UserCatalog::getCataId, targetCataId));
+        if (parentCatalog == null) {
+            throw new CollectionException(ErrorCodeEnum.TARGET_CATALOG_IS_INVALID);
+        }
+
+        // 更新数据库
+        //逐个更新
+        for (Long resourceId : resourceIds) {
+            UserResource userResource = resourceRepository.getById(resourceId);
+            if(userResource == null){
+                throw new CollectionException(ErrorCodeEnum.RESOURCE_NOT_EXIST);
+            }
+            if(userResource.getCataId().equals(parentCatalog.getCataId())){
+                throw new CollectionException(ErrorCodeEnum.TARGET_CATALOG_IS_SAME);
+            }
+
+            userResource.setCataId(parentCatalog.getCataId());
+            //资源路径
+            //截取文件名
+            String fileName = userResource.getFilePath().substring(userResource.getResourceUrl().lastIndexOf("/") + 1);
+            userResource.setFilePath("/" + user.getUserCode() + parentCatalog.getCataPath() + "/" + fileName);
+            if(userResource.getResourceUrl() != null){
+                fileName = userResource.getResourceUrl().substring(userResource.getResourceUrl().lastIndexOf("/") + 1);
+                userResource.setResourceUrl("/" + user.getUserCode() + parentCatalog.getCataPath() + "/" + fileName);
+            }
+            if(userResource.getThumbUrl() != null) {
+                fileName = userResource.getThumbUrl().substring(userResource.getThumbUrl().lastIndexOf("/") + 1);
+                userResource.setThumbUrl("/" + user.getUserCode() + parentCatalog.getCataPath() + "/" + fileName);
+            }
+            if(userResource.getPreviewUrl() != null) {
+                fileName = userResource.getPreviewUrl().substring(userResource.getPreviewUrl().lastIndexOf("/") + 1);
+                userResource.setPreviewUrl("/" + user.getUserCode() + parentCatalog.getCataPath() + "/" + fileName);
+            }
+            if(!resourceRepository.updateById(userResource)){
+                throw new CollectionException(ErrorCodeEnum.UPDATE_CATALOG_FAIL);
+            }
+        }
+        return false;
     }
 }
