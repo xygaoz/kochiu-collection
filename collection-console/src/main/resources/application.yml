@@ -7,7 +7,13 @@ spring:
     active: dev
   datasource:
     driver-class-name: org.sqlite.JDBC
-    url: jdbc:sqlite:${user.dir}/db/collection.db
+    url: jdbc:sqlite:${user.dir}/db/collection.db?journal_mode=WAL
+    # 连接池配置
+    hikari:
+      maximum-pool-size: 1
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.xml
     database-change-log-lock-table: KC_CO_DATABASECHANGELOGLOCK

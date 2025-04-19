@@ -16,7 +16,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.jdbc.core.JdbcTemplate;
 
+import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
 /**
@@ -28,6 +30,17 @@ import javax.sql.DataSource;
 public class DatabaseConfiguration {
 
     protected static final String LIQUIBASE_CHANGELOG_PREFIX = "KC_DB_";
+    private final JdbcTemplate jdbcTemplate;
+
+    public DatabaseConfiguration(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
+    // 在应用启动后执行以下代码检查
+    @PostConstruct
+    public void checkWalMode() {
+        log.info("Checking WAL mode: {}", jdbcTemplate.queryForObject("PRAGMA journal_mode", String.class));
+    }
 
     @Bean("KoChiuCollection")
     @Qualifier("KoChiuCollection")
