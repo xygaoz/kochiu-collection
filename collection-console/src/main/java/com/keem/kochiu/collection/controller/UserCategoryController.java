@@ -9,10 +9,7 @@ import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.service.CheckPermitAspect;
 import com.keem.kochiu.collection.service.UserCategoryService;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -47,5 +44,12 @@ public class UserCategoryController {
     public DefaultResult<CategoryVo> addCategory(@Validated({Add.class}) CategoryBo categoryBo) throws CollectionException {
 
         return DefaultResult.ok(userCategoryService.addCategory(CheckPermitAspect.USER_INFO.get(), categoryBo));
+    }
+
+    @CheckPermit
+    @GetMapping("/get/{cateSno}")
+    public DefaultResult<CategoryVo> getCategoryInfo(@PathVariable int cateSno) throws CollectionException {
+
+        return DefaultResult.ok(userCategoryService.getCategoryInfo(CheckPermitAspect.USER_INFO.get(), cateSno));
     }
 }

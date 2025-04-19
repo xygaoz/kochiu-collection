@@ -25,6 +25,18 @@ export const getAllCategory = (): Promise<Category[]> => {
     });
 }
 
+export const getCategory = (sno): Promise<Category> => {
+    return httpInstance.get("/category/get/" + sno).then((model: any) => {
+        if (model) {
+            return model as Category;
+        }
+        return null;
+    }).catch((error) => {
+        console.error("获取分类失败:", error);
+        return [];
+    });
+}
+
 export const updateCategory = (params: any): Promise<any> => {
     return httpInstance.post("/category/update", params).then((model: any) => {
         if (model) {

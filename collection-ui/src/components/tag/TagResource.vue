@@ -3,6 +3,8 @@
         v-model:files="files"
         :loading="loading"
         :data-type="dataType"
+        :id="tagId"
+        :current-select="tagName"
         @update-file="handleFileUpdate"
         @filter-data="handleSearch"
     />
@@ -14,6 +16,7 @@ import { useRoute } from "vue-router";
 import { listTagFiles } from "@/apis/resource-api";
 import { Resource, SearchForm } from "@/apis/interface";
 import ResourceView from "@/components/common/ResourceView.vue";
+import { getTag } from "@/apis/tag-api";
 
 const route = useRoute();
 const files = ref<Resource[]>([]);
@@ -22,6 +25,7 @@ const currentPage = ref(1);
 const pageSize = ref(500);
 const total = ref(0);
 const tagId = ref("")
+const tagName = ref("未知")
 const dataType = ref("tag")
 
 watch(
@@ -37,6 +41,11 @@ watch(
                 files.value = data.list;
                 total.value = data.total;
                 currentPage.value = data.pageNum;
+
+                const tag = await getTag(id);
+                if(tag){
+                    tagName.value = tag.tagName
+                }
             } catch (error) {
                 console.error("加载失败:", error);
             } finally {

@@ -24,3 +24,15 @@ export const getAllTag = (): Promise<Tag[]> => {
         return [];
     });
 }
+
+export const getTag = (tagId: number): Promise<Tag> => {
+    return httpInstance.get("/tag/get/" + tagId).then((model: any) => {
+        if (model) {
+            return model as Tag;
+        }
+        return null;
+    }).catch((error) => {
+        console.error("获取分类失败:", error);
+        return null;
+    });
+}

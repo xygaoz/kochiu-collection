@@ -16,8 +16,20 @@
         >
             <!-- 左侧表单内容 -->
             <div class="form-content">
+                <div class="cata-header" v-if="dataType === 'category'">
+                    <span style="margin: 0 10px 0 0;">分类: {{props.currentSelect}}</span>
+                </div>
+                <div class="cata-header" v-if="dataType === 'tag'">
+                    <span style="margin: 0 10px 0 0;">标签: {{props.currentSelect}}</span>
+                </div>
+                <div class="cata-header" v-if="dataType === 'type'">
+                    <span style="margin: 0 10px 0 0;">文件类型: {{props.currentSelect}}</span>
+                </div>
+                <div class="cata-header" v-if="dataType === 'recycle'">
+                    <span style="margin: 0 10px 0 0;">回收站</span>
+                </div>
                 <div class="cata-header" v-if="dataType === 'catalog'">
-                    <span style="margin: 0 10px 0 0;">路径:</span>
+                    <span style="margin: 0 10px 0 0;">目录:</span>
                     <span class="path-segment" v-for="(segment, index) in processedPath" :key="index">
                         <router-link
                             v-if="segment.sno !== undefined"
@@ -138,6 +150,10 @@ const props = defineProps({
     id: {
         type: String,
         required: true
+    },
+    currentSelect:{
+        type: String,
+        default: ''
     }
 });
 
@@ -421,8 +437,8 @@ watch(() => searchForm.include, (newVal) => {
     font-size: 13px;
     display: flex;
     align-items: center;
-    padding: 7px 20px 0 0;
-    color: #5e5e5e;
+    padding: 5px 20px 0 0;
+    color: #fe8686;
 }
 
 .path-segment {

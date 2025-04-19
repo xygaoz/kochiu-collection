@@ -7,6 +7,7 @@ import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.service.CheckPermitAspect;
 import com.keem.kochiu.collection.service.UserResourceTagService;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -36,6 +37,13 @@ public class UserTagController {
     public DefaultResult<List<TagDto>> getAllTag() throws CollectionException {
 
         return DefaultResult.ok(tagService.getAllTag(CheckPermitAspect.USER_INFO.get()));
+    }
+
+    @CheckPermit
+    @GetMapping("/get/{tagId}")
+    public DefaultResult<TagDto> getTagInfo(@PathVariable Long tagId) throws CollectionException {
+
+        return DefaultResult.ok(tagService.getTagInfo(CheckPermitAspect.USER_INFO.get(), tagId));
     }
 
 }

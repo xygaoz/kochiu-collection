@@ -3,6 +3,8 @@
         v-model:files="files"
         :loading="loading"
         :data-type="dataType"
+        :id="cateId"
+        :current-select="cateName"
         @update-file="handleFileUpdate"
         @filter-data="handleSearch"
     />
@@ -14,6 +16,7 @@ import { useRoute } from "vue-router";
 import { listCategoryFiles } from "@/apis/resource-api";
 import { Resource, SearchForm } from "@/apis/interface";
 import ResourceView from "@/components/common/ResourceView.vue";
+import { getCategory } from "@/apis/category-api";
 
 const route = useRoute();
 const files = ref<Resource[]>([]);
@@ -22,6 +25,7 @@ const currentPage = ref(1);
 const pageSize = ref(500);
 const total = ref(0);
 const cateId = ref("")
+const cateName = ref("未知")
 const dataType = ref("category")
 
 watch(
@@ -37,6 +41,9 @@ watch(
                 files.value = data.list;
                 total.value = data.total;
                 currentPage.value = data.pageNum;
+
+                const category = await getCategory(id);
+                cateName.value = category.cateName
             } catch (error) {
                 console.error("加载失败:", error);
             } finally {

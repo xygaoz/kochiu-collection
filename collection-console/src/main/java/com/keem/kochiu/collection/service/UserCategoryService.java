@@ -42,6 +42,18 @@ public class UserCategoryService {
                 .build()).toList();
     }
 
+    public CategoryVo getCategoryInfo(UserDto userDto, int cateSno) throws CollectionException {
+
+        SysUser user = userRepository.getUser(userDto);
+        UserCategory category = userCategoryRepository.getOne(new LambdaQueryWrapper<UserCategory>()
+                .eq(UserCategory::getUserId, user.getUserId())
+                .eq(UserCategory::getSno, cateSno));
+        return CategoryVo.builder()
+                .cateId(category.getCateId())
+                .cateName(category.getCateName())
+                .build();
+    }
+
     /**
      * 获取所有分类列表
      * @param userDto

@@ -3,6 +3,7 @@
         v-model:files="files"
         :loading="loading"
         :data-type="dataType"
+        :id="0"
         @filter-data="handleSearch"
     />
 </template>

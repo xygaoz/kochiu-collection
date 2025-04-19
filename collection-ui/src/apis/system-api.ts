@@ -57,7 +57,7 @@ export const loginService = (loginForm: any) => {
 };
 
 export const getResourceTypes = async (): Promise<ResourceType[]> => {
-    return httpInstance.post("/sys/resourceTypes").then((model) => {
+    return httpInstance.get("/sys/resourceTypes").then((model) => {
         if (model) {
             // 确保返回值始终是 ResourceType[]
             return Array.isArray(model) ? model : [];
@@ -68,3 +68,16 @@ export const getResourceTypes = async (): Promise<ResourceType[]> => {
         return [];
     });
 }
+
+export const getResourceType = async (typeName: string): Promise<ResourceType> => {
+    return httpInstance.get("/sys/resourceType/get/" + typeName).then((model) => {
+        if (model) {
+            return model as ResourceType;
+        }
+        return null;
+    }).catch((error) => {
+        console.error("获取资源类型失败:", error);
+        return null;
+    });
+}
+

@@ -1,5 +1,6 @@
 package com.keem.kochiu.collection.service;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.keem.kochiu.collection.data.bo.BatchTagBo;
 import com.keem.kochiu.collection.data.dto.TagDto;
 import com.keem.kochiu.collection.data.dto.UserDto;
@@ -160,4 +161,24 @@ public class UserResourceTagService {
                 .tagName(tag.getTagName())
                 .build()).toList();
    }
+
+    /**
+     * 获取标签信息
+     * @param userDto
+     * @param tagId
+     * @return
+     * @throws CollectionException
+     */
+   public TagDto getTagInfo(UserDto userDto, Long tagId) throws CollectionException {
+
+       SysUser user = userRepository.getUser(userDto);
+       UserTag userTag = userTagRepository.getOne(Wrappers.lambdaQuery(UserTag.class)
+               .eq(UserTag::getUserId, user.getUserId())
+               .eq(UserTag::getTagId, tagId));
+
+       return TagDto.builder()
+               .tagId(userTag.getTagId())
+               .tagName(userTag.getTagName())
+               .build();
+    }
 }

@@ -5,6 +5,7 @@
                 <SearchFormView
                     :data-type="props.dataType"
                     :id="props.id"
+                    :current-select="props.currentSelect"
                     @expand-change="handleExpandChange"
                     @search="handleSearch"
                 />
@@ -94,6 +95,10 @@ const props = defineProps({
     id: {
         type: String,
         required: true
+    },
+    currentSelect:{
+        type: String,
+        default: ''
     }
 });
 const currentComponent = WaterfallLayout;
