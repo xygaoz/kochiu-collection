@@ -373,7 +373,7 @@ const handleCategoryConfirm = async () => {
     if (route.path.startsWith('/Category/')) {
         let currentSno = route.params.sno;
         //判断当前分类是否存在
-        let found: boolean = false;
+        let found = false;
         categories.value.map((category) => {
             if (category.sno === currentSno) {
                 found = true
