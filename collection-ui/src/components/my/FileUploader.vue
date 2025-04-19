@@ -3,7 +3,7 @@
         <div class="title">文件上传</div>
         <!-- 添加分类选择下拉框 -->
         <div class="category">
-            <div class="select-label">选择分类</div>
+            <div class="select-label">分类</div>
             <div class="select-container">
                 <el-select v-model="selectedCategory" placeholder="请选择分类">
                     <el-option
@@ -15,33 +15,34 @@
                 </el-select>
             </div>
         </div>
-        <div class="condition">
-            <div class="overwrite">
-                <div class="select-label">覆盖</div>
-                <div class="select-container">
-                    <el-radio-group v-model="overwrite">
-                        <el-radio :label="true">是</el-radio>
-                        <el-radio :label="false">否</el-radio>
-                    </el-radio-group>
-                </div>
-            </div>
-            <div class="catalog">
-                <div style="float: left; width: 440px">
+        <div class="catalog">
+            <div class="select-label">目录</div>
+            <div class="select-container">
+                <div class="select-catalog">
                     <el-radio-group v-model="autoCreate">
-                        <el-radio :label="true">自动创建日期目录</el-radio>
+                        <el-radio :label="true">自动创建日期目录（YYYY/MM/DD）</el-radio>
                         <el-radio :label="false">选择现有目录</el-radio>
                     </el-radio-group>
                 </div>
-                <div class="select-container">
-                    <el-tree-select
+                <div class="catalog-list">
+                    <el-cascader
                         v-model="cataId"
-                        :data="catalogTree"
-                        check-strictly
-                        :props="treeProps"
+                        :options="catalogTree"
+                        :props="cascaderProps"
                         placeholder="请选择目录"
                         :loading="loadingCatalog"
+                        style="width: 100%;"
                     />
                 </div>
+            </div>
+        </div>
+        <div class="overwrite">
+            <div class="select-label">覆盖</div>
+            <div class="select-container">
+                <el-radio-group v-model="overwrite">
+                    <el-radio :label="true">是</el-radio>
+                    <el-radio :label="false">否</el-radio>
+                </el-radio-group>
             </div>
         </div>
 
@@ -145,10 +146,12 @@ const cataId = ref<number | null>(null);
 const loadingCatalog = ref(false);
 const catalogTree = ref<Catalog[]>([]);
 
-const treeProps = {
+const cascaderProps = {
     value: 'id',
     label: 'label',
-    children: 'children'
+    children: 'children',
+    checkStrictly: true,
+    emitPath: false // 只选中最后一级
 };
 
 // 处理文件选择
@@ -343,25 +346,28 @@ onMounted(async () => {
     margin: 10px 0 10px 0;
 }
 
-.condition{
+.overwrite {
     width: 100%;
     margin: 10px 0 10px 0;
     float: left;
     display: flex;
 }
 
-.overwrite {
-    width: 30%;
+.catalog {
+    width: 100%;
     margin: 10px 0 10px 0;
     float: left;
     display: flex;
 }
 
-.catalog{
-    width: 70%;
-    margin: 10px 0 10px 0;
+.select-catalog{
+    width: 40%;
     float: left;
-    display: flex;
+}
+
+.catalog-list{
+    width: 60%;
+    float: left;
 }
 
 .select-label {
