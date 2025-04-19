@@ -28,6 +28,12 @@
                 <div class="cata-header" v-if="dataType === 'recycle'">
                     <span style="margin: 0 10px 0 0;">回收站</span>
                 </div>
+                <div class="cata-header" v-if="dataType === 'all-category'">
+                    <span style="margin: 0 10px 0 0;">所有分类</span>
+                </div>
+                <div class="cata-header" v-if="dataType === 'all-tag'">
+                    <span style="margin: 0 10px 0 0;">所有标签</span>
+                </div>
                 <div class="cata-header" v-if="dataType === 'catalog'">
                     <span style="margin: 0 10px 0 0;">目录:</span>
                     <span class="path-segment" v-for="(segment, index) in processedPath" :key="index">
