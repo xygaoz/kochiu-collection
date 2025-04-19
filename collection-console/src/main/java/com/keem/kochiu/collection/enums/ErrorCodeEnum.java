@@ -37,7 +37,9 @@ public enum ErrorCodeEnum {
     REMOVE_CATALOG_FAIL("1035", "目录删除失败"),
     CATALOG_CREATE_FAILURE("1036", "创建目录失败"),
     TARGET_CATALOG_IS_SAME("1037", "目标目录相同"),
-    RESOURCE_NOT_EXIST("1038", "资源文件不存在");
+    RESOURCE_NOT_EXIST("1038", "资源文件不存在"),
+    TARGET_CATALOG_IS_NOT_NULL("1039", "目标目录ID不能为空"),
+    ;
 
     private final String code;
     private final String message;

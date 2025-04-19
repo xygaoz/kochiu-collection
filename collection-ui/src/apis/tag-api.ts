@@ -30,9 +30,9 @@ export const getTag = (tagId: number): Promise<Tag> => {
         if (model) {
             return model as Tag;
         }
-        return null;
+        return {tagId: 0, tagName: ""};
     }).catch((error) => {
         console.error("获取分类失败:", error);
-        return null;
+        return {tagId: 0, tagName: ""};
     });
 }

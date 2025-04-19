@@ -321,4 +321,19 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
                 );
             }
         }
-    }}
+    }
+
+    /**
+     * 获取目录下资源列表
+     * @param userId
+     * @param cateId
+     * @return
+     */
+    public List<UserResource> getResources(Integer userId, Long cateId) {
+
+        LambdaQueryWrapper<UserResource> lambdaQueryWrapper = new LambdaQueryWrapper<UserResource>()
+                .eq(UserResource::getUserId, userId)
+                .eq(UserResource::getCataId, cateId);
+        return list(lambdaQueryWrapper);
+    }
+}

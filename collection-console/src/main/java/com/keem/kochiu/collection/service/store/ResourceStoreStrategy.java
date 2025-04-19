@@ -37,6 +37,8 @@ public interface ResourceStoreStrategy {
      */
     void deleteFile(int userId, Long resourceId);
 
+    void deleteFile(int userId, UserResource resource);
+
     /**
      * 移动文件
      */

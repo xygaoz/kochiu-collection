@@ -25,15 +25,15 @@ export const getAllCategory = (): Promise<Category[]> => {
     });
 }
 
-export const getCategory = (sno): Promise<Category> => {
+export const getCategory = (sno: number): Promise<Category> => {
     return httpInstance.get("/category/get/" + sno).then((model: any) => {
         if (model) {
             return model as Category;
         }
-        return null;
+        return {sno: 0, cateName: "", cateId: 0};
     }).catch((error) => {
         console.error("获取分类失败:", error);
-        return [];
+        return {sno: 0, cateName: "", cateId: 0};
     });
 }
 
@@ -41,6 +41,15 @@ export const updateCategory = (params: any): Promise<any> => {
     return httpInstance.post("/category/update", params).then((model: any) => {
         if (model) {
             console.log("修改成功:", model);
+            return model;
+        }
+    });
+}
+
+export const deleteCategory = (params: any): Promise<any> => {
+    return httpInstance.post("/category/remove", params).then((model: any) => {
+        if (model) {
+            console.log("删除成功:", model);
             return model;
         }
     });

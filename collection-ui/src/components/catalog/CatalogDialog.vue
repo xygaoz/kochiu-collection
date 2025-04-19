@@ -8,6 +8,9 @@
         <el-form :model="form" label-width="90px" :rules="isDeleteMode ? {} : rules"
                  ref="formRef"
         >
+            <el-form-item label="目录编号" prop="sno">
+                <span>{{ form.sno }}</span>
+            </el-form-item>
             <el-form-item label="目录名称" v-if="!isDeleteMode" prop="cataName">
                 <el-input v-model="form.cataName" />
             </el-form-item>
@@ -39,7 +42,8 @@
 import { ref, defineEmits, defineExpose } from 'vue';
 import { Catalog } from "@/apis/interface";
 import { addCatalog, updateCatalog, deleteCatalog, getCatalogTree } from "@/apis/catalog-api";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
+import { restoreFormRecycle } from "@/apis/resource-api";
 
 const visible = ref(false);
 const isDeleteMode = ref(false);
@@ -49,7 +53,8 @@ const form = ref({
     cateId: null as number | null,
     cataName: '',
     parentId: null as number | null,
-    removeType: '1'
+    removeType: '1',
+    sno: null as number | null
 });
 const catalogTree = ref<Catalog[]>([]);
 const emit = defineEmits(['confirm']);
@@ -85,13 +90,15 @@ const open = async (parentId?: number, catalog?: Catalog) => {
             form.value = {
                 cateId: catalog.id,
                 cataName: catalog.label,
-                parentId: catalog.parentId || parentId || null
+                parentId: catalog.parentId || parentId || null,
+                sno: catalog.sno
             };
         } else {
             form.value = {
                 cateId: null,
                 cataName: '',
-                parentId: parentId || null
+                parentId: parentId || null,
+                sno: null
             };
         }
     } catch (error) {
@@ -115,7 +122,8 @@ const openForDelete = async (parentId: number | undefined, catalog: Catalog) => 
             cateId: catalog.id,
             cataName: catalog.label,
             parentId: parentId || null,
-            removeType: '1'
+            removeType: '1',
+            sno: catalog.sno
         };
     } catch (error) {
         console.error('加载目录树失败:', error);
@@ -134,11 +142,21 @@ const handleConfirm = async () => {
             }
 
             if (currentCatalog.value?.id) {
-                if(await deleteCatalog(form.value)) {
-                    ElMessage.success('目录删除成功');
-                    visible.value = false;
-                    emit('confirm');
-                }
+                ElMessageBox.confirm(
+                    form.value.removeType === '1' ? '您移动这些资源吗？' : '删除目录将永久删除目录下所有资源，不能恢复！！',
+                    '警告',
+                    {
+                        confirmButtonText: '确认',
+                        cancelButtonText: '取消',
+                        type: 'warning',
+                    }
+                ).then(async () => {
+                    if(await deleteCatalog(form.value)) {
+                        ElMessage.success('目录删除成功');
+                        visible.value = false;
+                        emit('confirm');
+                    }
+                });
             }
         } catch (error) {
             ElMessage.error('目录删除失败');

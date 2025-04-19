@@ -2,6 +2,8 @@ package com.keem.kochiu.collection.controller;
 
 import com.keem.kochiu.collection.annotation.Add;
 import com.keem.kochiu.collection.annotation.CheckPermit;
+import com.keem.kochiu.collection.annotation.Edit;
+import com.keem.kochiu.collection.annotation.Remove;
 import com.keem.kochiu.collection.data.DefaultResult;
 import com.keem.kochiu.collection.data.bo.CategoryBo;
 import com.keem.kochiu.collection.data.vo.CategoryVo;
@@ -25,6 +27,11 @@ public class UserCategoryController {
         this.userCategoryService = userCategoryService;
     }
 
+    /**
+     * 分类列表（菜单用）
+     * @return
+     * @throws CollectionException
+     */
     @CheckPermit
     @GetMapping("/list")
     public DefaultResult<List<CategoryVo>> getCategoryList() throws CollectionException {
@@ -44,6 +51,22 @@ public class UserCategoryController {
     public DefaultResult<CategoryVo> addCategory(@Validated({Add.class}) CategoryBo categoryBo) throws CollectionException {
 
         return DefaultResult.ok(userCategoryService.addCategory(CheckPermitAspect.USER_INFO.get(), categoryBo));
+    }
+
+    @CheckPermit
+    @PostMapping("/update")
+    public DefaultResult<Boolean> updateCategory(@Validated({Edit.class}) CategoryBo categoryBo) throws CollectionException {
+
+        userCategoryService.updateCategory(CheckPermitAspect.USER_INFO.get(), categoryBo);
+        return DefaultResult.ok(true);
+    }
+
+    @CheckPermit
+    @PostMapping("/remove")
+    public DefaultResult<Boolean> removeCategory(@Validated({Remove.class}) CategoryBo categoryBo) throws CollectionException {
+
+        userCategoryService.removeCategory(CheckPermitAspect.USER_INFO.get(), categoryBo);
+        return DefaultResult.ok(true);
     }
 
     @CheckPermit

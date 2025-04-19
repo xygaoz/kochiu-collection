@@ -66,11 +66,33 @@
                                     @click="menuItemClick({path: `/Category/${category.sno}`})"
                                 >
                                     <template #title>
-                                        <div class="menu-icon">
-                                            <i class="iconfont icon-col-fenlei3" style="font-size: 18px; color: rgb(59,130,246)"></i>
-                                        </div>
-                                        <div class="menu-label">
-                                            {{ category.cateName }}
+                                        <div
+                                            class="menu-item-content"
+                                            @mouseenter="showCategoryActions = category.sno"
+                                            @mouseleave="showCategoryActions = null"
+                                        >
+                                            <div class="menu-icon">
+                                                <i class="iconfont icon-col-fenlei3" style="font-size: 18px; color: rgb(59,130,246)"></i>
+                                            </div>
+                                            <div class="menu-label">
+                                                {{ category.cateName }}
+                                            </div>
+                                            <div class="action-buttons" v-if="showCategoryActions === category.sno">
+                                                <el-icon
+                                                    @click.stop="handleEditCategory(category)"
+                                                    class="action-icon"
+                                                    title="修改分类"
+                                                >
+                                                    <Edit />
+                                                </el-icon>
+                                                <el-icon
+                                                    @click.stop="handleDeleteCategory(category)"
+                                                    class="action-icon"
+                                                    title="删除分类"
+                                                >
+                                                    <Delete />
+                                                </el-icon>
+                                            </div>
                                         </div>
                                     </template>
                                 </el-menu-item>
@@ -219,7 +241,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { Plus, Switch, Avatar, UploadFilled } from '@element-plus/icons-vue'
+import { Plus, Switch, Avatar, UploadFilled, Edit, Delete } from "@element-plus/icons-vue";
 import { listCategory } from '@/apis/category-api'
 import { listTag} from '@/apis/tag-api'
 import { getResourceTypes } from '@/apis/system-api'
@@ -243,6 +265,7 @@ const catalogDialog = ref<InstanceType<typeof CatalogDialog>>()
 const currentCatalog = ref<Catalog | null>(null);
 const route = useRoute()
 const router = useRouter()
+const showCategoryActions = ref<string | null>(null)
 
 // 初始化数据
 onMounted(async () => {
@@ -324,6 +347,22 @@ const handleAddCatalog = (e: Event) => {
 // 处理分类确认
 const handleCategoryConfirm = async () => {
     await loadCategories()
+    if (route.path.startsWith('/Category/')) {
+        let currentSno = route.params.sno;
+        //判断当前分类是否存在
+        let found: boolean = false;
+        categories.value.map((category) => {
+            if (category.sno === currentSno) {
+                found = true
+            }
+        })
+        if(!found){
+            currentSno = categories.value[0].sno
+        }
+
+        await router.push('/Category/refresh');
+        await router.replace(`/Category/${currentSno}`);
+    }
 }
 
 // 处理目录确认
@@ -349,6 +388,14 @@ const handleEditCatalog = (catalog: Catalog) => {
 const handleDeleteCatalog = (catalog: Catalog) => {
     catalogDialog.value?.openForDelete(catalog.parentId, catalog);
 };
+
+const handleEditCategory = (category: Category) => {
+    categoryDialog.value?.open(category)
+}
+
+const handleDeleteCategory = (category: Category) => {
+    categoryDialog.value?.openForDelete(category)
+}
 </script>
 
 <style scoped>
@@ -432,6 +479,46 @@ const handleDeleteCatalog = (catalog: Catalog) => {
 
 .action-button{
     float: right;
+}
+
+.menu-item-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    position: relative;
+}
+
+.menu-icon {
+    width: 32px;
+    text-align: center;
+    color: rgb(59,130,246);
+    flex-shrink: 0;
+}
+
+.menu-label {
+    flex: 1;
+    margin-left: 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 5px;
+    margin-left: auto;
+    padding-right: 8px;
+}
+
+.action-icon {
+    cursor: pointer;
+    font-size: 15px !important;
+    color: #909399;
+    transition: color 0.2s;
+}
+
+.action-icon:hover {
+    color: #409EFF;
 }
 
 </style>

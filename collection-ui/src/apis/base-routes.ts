@@ -110,6 +110,12 @@ routes.push(
         redirect: to => {
             return { path: to.query.redirect as string || '/' }
         }
+    },
+    {
+        path: '/Category/refresh',
+        redirect: to => {
+            return { path: to.query.redirect as string || '/' }
+        }
     }
 )
 

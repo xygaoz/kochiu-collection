@@ -352,6 +352,10 @@ public class UserCatalogService {
             }
         }
         else {
+            if(catalogBo.getParentId() == null){
+                throw new CollectionException(ErrorCodeEnum.TARGET_CATALOG_IS_NOT_NULL);
+            }
+
             //删除前转移文件
             UserCatalog parentCatalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
                     .eq(UserCatalog::getUserId, user.getUserId())

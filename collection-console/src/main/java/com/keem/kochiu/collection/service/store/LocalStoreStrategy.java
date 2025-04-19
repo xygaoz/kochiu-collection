@@ -64,7 +64,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
     public FileVo saveFile(UploadBo uploadBo, UserDto userDto, String md5, String path) throws CollectionException {
 
         //判断文件类型
-        String extension = FilenameUtils.getExtension(uploadBo.getFile().getOriginalFilename());
+        String extension = FilenameUtils.getExtension(uploadBo.getFile().getOriginalFilename()).toLowerCase();
         if(!collectionProperties.getUploadTypes().contains(extension)){
             throw new CollectionException(UNSUPPORTED_FILE_TYPES);
         }
@@ -217,6 +217,11 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
     public void deleteFile(int userId, Long resourceId) {
         //查找资源
         UserResource resource = resourceRepository.getById(resourceId);
+        deleteFile(userId, resource);
+    }
+
+    @Override
+    public void deleteFile(int userId, UserResource resource) {
         if(resource == null){
             return;
         }

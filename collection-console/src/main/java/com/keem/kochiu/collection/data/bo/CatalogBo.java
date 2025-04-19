@@ -16,7 +16,7 @@ public class CatalogBo {
     private Long cateId;
     @NotNull(groups = {Add.class, Edit.class}, message = "目录名称不能为空！！！")
     private String cataName;
-    @NotNull(groups = {Add.class, Edit.class, Remove.class}, message = "上级目录ID不能为空！！！")
+    @NotNull(groups = {Add.class, Edit.class}, message = "上级目录ID不能为空！！！")
     private Long parentId;
     private Integer removeType = 1;
 }

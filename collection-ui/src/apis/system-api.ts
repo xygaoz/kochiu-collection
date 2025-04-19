@@ -70,14 +70,14 @@ export const getResourceTypes = async (): Promise<ResourceType[]> => {
 }
 
 export const getResourceType = async (typeName: string): Promise<ResourceType> => {
-    return httpInstance.get("/sys/resourceType/get/" + typeName).then((model) => {
+    return httpInstance.get("/sys/resourceType/get/" + typeName).then((model: any) => {
         if (model) {
             return model as ResourceType;
         }
-        return null;
+        return { label: "未知", value: "unknown" } as ResourceType;
     }).catch((error) => {
         console.error("获取资源类型失败:", error);
-        return null;
+        return { label: "未知", value: "unknown" } as ResourceType;
     });
 }
 
