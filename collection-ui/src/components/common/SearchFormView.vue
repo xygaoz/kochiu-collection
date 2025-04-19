@@ -16,6 +16,24 @@
         >
             <!-- 左侧表单内容 -->
             <div class="form-content">
+                <div class="cata-header" v-if="dataType === 'catalog'">
+                    <span style="margin: 0 10px 0 0;">路径:</span>
+                    <span class="path-segment" v-for="(segment, index) in processedPath" :key="index">
+                        <router-link
+                            v-if="segment.sno !== undefined"
+                            :to="`/Catalog/${segment.sno}`"
+                            class="path-link"
+                        >
+                            {{ segment.name }}
+                        </router-link>
+                        <span v-else>{{ segment.name }}</span>
+                        <span class="slash" v-if="index < processedPath.length - 1"> / </span>
+                    </span>
+                </div>
+                <el-form-item prop="include" class="form-item" v-if="dataType == 'catalog'">
+                    <el-checkbox v-model="searchForm.include" size="small"
+                                 class="checkbox-include">包含子目录</el-checkbox>
+                </el-form-item>
                 <el-form-item label="分类" prop="cateId" class="form-item"
                               v-if="props.dataType == 'all-category' || props.dataType == 'catalog'"
                 >
@@ -85,13 +103,16 @@
 </template>
 
 <script setup lang="ts">
-import { defineEmits, defineProps, nextTick, onMounted, onUnmounted, reactive, ref, watch } from "vue";
+import { computed, defineEmits, defineProps, nextTick, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { ElInput, ElMessage } from "element-plus";
 import { ArrowDown } from "@element-plus/icons-vue";
 import { getResourceTypes } from "@/apis/system-api";
-import { Category, ResourceType, SearchForm } from "@/apis/interface";
+import { Category, PathVo, ResourceType, SearchForm } from "@/apis/interface";
 import { getAllCategory } from "@/apis/category-api";
 import TagSelector from "@/components/common/TagSelector.vue";
+import { getCatalogPath } from "@/apis/catalog-api";
+import { useGlobalStore } from "@/apis/global";
+import { storeToRefs } from 'pinia'
 
 const searchFormRef = ref();
 const typeOptions = ref<ResourceType[]>([]);
@@ -104,6 +125,8 @@ const categories = ref<Category[]>([])
 const showTagSelector = ref(true);
 const shouldCloseTagSelector = ref(false);
 const tagSelectorRef = ref();
+const globalStore = useGlobalStore()
+const { include_sub_dir } = storeToRefs(globalStore)
 
 const emit = defineEmits(['expand-change', 'search']);
 
@@ -111,6 +134,10 @@ const props = defineProps({
     dataType: {
         type: String,
         default: 'category'
+    },
+    id: {
+        type: String,
+        required: true
     }
 });
 
@@ -118,7 +145,39 @@ const searchForm = reactive<SearchForm>({
     cateId: '',
     keyword: '',
     types: [],
-    tags: []
+    tags: [],
+    include: include_sub_dir.value
+});
+
+const pathVo = ref<PathVo>({
+    path: "/",
+    pathInfo: []
+})
+
+// 计算属性，将 pathInfo 转换为可用的路径段数组
+const processedPath = computed(() => {
+    // 确保pathInfo存在且是数组
+    const pathInfo = Array.isArray(pathVo.value.pathInfo) ? pathVo.value.pathInfo : [];
+
+    // 处理API返回的pathInfo
+    if (pathInfo.length > 0) {
+        return pathInfo.map(info => ({
+            name: info.cataName,
+            sno: info.sno
+        }));
+    }
+
+    // 备用方案：处理path字符串
+    const segments = (pathVo.value.path || '').split('/').filter(Boolean);
+    if (segments.length > 0) {
+        return segments.map(segment => ({
+            name: segment,
+            sno: undefined
+        }));
+    }
+
+    // 默认返回当前目录 - 修改这里，直接使用 props.id 而不是 props.id.value
+    return [{ name: '当前目录', sno: props.id }];
 });
 
 const checkCollapseNeed = () => {
@@ -167,12 +226,11 @@ const toggleExpand = () => {
 };
 
 const handleSearch = () => {
-    emit('search', searchForm);
-    // 搜索后自动折叠
+    emit('search', { ...searchForm })
     if (isExpanded.value) {
-        toggleExpand();
+        toggleExpand()
     }
-};
+}
 
 const resetForm = () => {
     searchFormRef.value?.resetFields();
@@ -210,6 +268,20 @@ onMounted(async () => {
         typeOptions.value = res || [];
         checkCollapseNeed();
         await getCategories();
+
+        if(props.dataType == 'catalog') {
+            if (props.id) {
+                // 加载路径信息
+                const pathData = await getCatalogPath(props.id);
+                console.log('API返回的路径数据:', pathData); // 调试日志
+
+                pathVo.value = {
+                    path: pathData.path || `/${props.id}`,
+                    pathInfo: Array.isArray(pathData.pathInfo) ? pathData.pathInfo : []
+                };
+            }
+        }
+
         window.addEventListener('resize', checkCollapseNeed);
     } catch (error) {
         console.error("加载失败:", error);
@@ -231,6 +303,15 @@ watch(isExpanded, (newVal) => {
         showTagSelector.value = true;
     }
 });
+
+// 监听 include 变化
+watch(() => searchForm.include, (newVal) => {
+    console.log('searchForm.include changed:', newVal)
+    console.log('Before update - globalStore:', globalStore.include_sub_dir)
+    globalStore.setIncludeSubDir(newVal)
+    console.log('After update - globalStore:', globalStore.include_sub_dir)
+    emit('search', { ...searchForm, include: newVal })
+}, { immediate: true })
 </script>
 
 <style scoped>
@@ -291,11 +372,11 @@ watch(isExpanded, (newVal) => {
 }
 
 .keyword-input {
-    width: 180px;
+    width: 100px;
 }
 
 .category-select{
-    width: 120px;
+    width: 100px;
 }
 
 :deep(.el-form-item__content) {
@@ -334,4 +415,36 @@ watch(isExpanded, (newVal) => {
     transform: rotate(180deg);
     transition: transform 0.3s;
 }
+
+.cata-header {
+    height: 20px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    padding: 7px 20px 0 0;
+    color: #5e5e5e;
+}
+
+.path-segment {
+    display: inline-flex;
+    align-items: center;
+}
+
+.slash {
+    margin: 0 2px;
+    color: #666;
+}
+
+.path-link {
+    color: #409EFF;
+    padding: 0 3px;
+    border-radius: 3px;
+    transition: all 0.3s;
+    text-decoration: none;
+}
+.path-link:hover {
+    background: #ecf5ff;
+    text-decoration: none;
+}
+
 </style>

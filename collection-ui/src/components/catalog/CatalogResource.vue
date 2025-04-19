@@ -1,43 +1,21 @@
 <template>
-    <el-container>
-        <el-header class="cata-header">
-            <span style="margin: 0 10px 0 0;">路径:</span>
-            <span class="path-segment" v-for="(segment, index) in processedPath" :key="index">
-                <router-link
-                    v-if="segment.sno !== undefined"
-                    :to="`/Catalog/${segment.sno}`"
-                    class="path-link"
-                >
-                    {{ segment.name }}
-                </router-link>
-                <span v-else>{{ segment.name }}</span>
-                <span class="slash" v-if="index < processedPath.length - 1"> / </span>
-            </span>
-            <span>
-                <el-checkbox v-model="include_sub_dir" label="包括子目录" size="small" @change="handleInclude"/>
-            </span>
-        </el-header>
-        <el-main style="margin: 0; padding: 0">
-            <ResourceView
-                v-model:files="files"
-                :loading="loading"
-                :data-type="dataType"
-                @update-file="handleFileUpdate"
-                @filter-data="handleSearch"
-            />
-        </el-main>
-    </el-container>
+    <ResourceView
+        v-if="cataSno"
+        v-model:files="files"
+        :loading="loading"
+        :data-type="dataType"
+        :id="cataSno"
+        @update-file="handleFileUpdate"
+        @filter-data="handleSearch"
+    />
 </template>
 
 <script setup lang="ts">
 import { ref, watch, computed } from "vue";
 import { useRoute } from "vue-router";
 import { listCatalogFiles } from "@/apis/resource-api";
-import { PathVo, Resource, SearchForm } from "@/apis/interface";
+import { Resource, SearchForm } from "@/apis/interface";
 import ResourceView from "@/components/common/ResourceView.vue";
-import { getCatalogPath } from "@/apis/catalog-api";
-import { useGlobalStore } from "@/apis/global";
-import { storeToRefs } from "pinia";
 
 const route = useRoute();
 const files = ref<Resource[]>([]);
@@ -45,14 +23,7 @@ const loading = ref(true);
 const currentPage = ref(1);
 const pageSize = ref(500);
 const total = ref(0);
-const cataSno = ref("")
 const dataType = ref("catalog")
-const globalStore = useGlobalStore()
-const { include_sub_dir } = storeToRefs(globalStore)
-const pathVo = ref<PathVo>({
-    path: "/",
-    pathInfo: []
-})
 const searchData = ref<SearchForm>({
     keyword: '',
     types: [],
@@ -60,32 +31,7 @@ const searchData = ref<SearchForm>({
     include: false
 });
 
-// 计算属性，将 pathInfo 转换为可用的路径段数组
-const processedPath = computed(() => {
-    // 确保pathInfo存在且是数组
-    const pathInfo = Array.isArray(pathVo.value.pathInfo) ? pathVo.value.pathInfo : [];
-
-    // 处理API返回的pathInfo
-    if (pathInfo.length > 0) {
-        return pathInfo.map(info => ({
-            name: info.cataName,
-            sno: info.sno
-        }));
-    }
-
-    // 备用方案：处理path字符串
-    const segments = (pathVo.value.path || '').split('/').filter(Boolean);
-    if (segments.length > 0) {
-        return segments.map(segment => ({
-            name: segment,
-            sno: undefined
-        }));
-    }
-
-    // 默认返回当前目录
-    return [{ name: '当前目录', sno: cataSno.value }];
-});
-
+const cataSno = ref("")
 
 watch(
     () => route.params.sno,
@@ -94,17 +40,6 @@ watch(
             try {
                 loading.value = true;
                 cataSno.value = newId as string;
-
-                // 加载路径信息
-                const pathData = await getCatalogPath(newId as string);
-                console.log('API返回的路径数据:', pathData); // 调试日志
-
-                pathVo.value = {
-                    path: pathData.path || `/${newId}`,
-                    pathInfo: Array.isArray(pathData.pathInfo) ? pathData.pathInfo : []
-                };
-                searchData.value.include = include_sub_dir.value;
-
                 // 加载文件列表
                 const data = await listCatalogFiles(newId as string, currentPage.value, pageSize.value,
                     searchData.value
@@ -113,10 +48,6 @@ watch(
                 total.value = data.total;
             } catch (error) {
                 console.error("加载失败:", error);
-                pathVo.value = {
-                    path: `/${newId}`,
-                    pathInfo: [{ sno: newId, cataName: '当前目录' }]
-                };
             } finally {
                 loading.value = false;
             }
@@ -140,9 +71,7 @@ const handleSearch = async (searchForm: SearchForm) => {
     try {
         loading.value = true;
         currentPage.value = 1
-        searchData.value = searchForm
-        searchData.value.include = include_sub_dir.value;
-        const data = await listCatalogFiles(cataSno.value, currentPage.value, pageSize.value, searchData.value);
+        const data = await listCatalogFiles(cataSno.value, currentPage.value, pageSize.value, searchForm);
         files.value = data.list;
         total.value = data.total;
         currentPage.value = data.pageNum;
@@ -152,55 +81,7 @@ const handleSearch = async (searchForm: SearchForm) => {
         loading.value = false;
     }
 };
-
-const handleInclude = async () => {
-    searchData.value.include = include_sub_dir.value;
-    await handleSearch(searchData.value)
-}
 </script>
 
 <style scoped>
-.cata-header {
-    height: 18px;
-    font-size: 13px;
-    display: flex;
-    align-items: center; /* 垂直居中 */
-    padding: 5px 20px 0 20px;
-    color: #5e5e5e;
-}
-
-/* 专门针对 Element Plus 复选框的垂直居中调整 */
-.cata-header .el-checkbox {
-    display: flex;
-    align-items: center;
-    margin: 0 0 0 20px; /* 移除默认边距 */
-}
-
-.cata-header .el-checkbox__label {
-    font-size: 13px;
-    padding-left: 8px;
-    line-height: 1; /* 防止文字行高影响垂直居中 */
-}
-
-.path-segment {
-    display: inline-flex;
-    align-items: center;
-}
-
-.slash {
-    margin: 0 2px;
-    color: #666;
-}
-
-.path-link {
-    color: #409EFF;
-    padding: 0 3px;
-    border-radius: 3px;
-    transition: all 0.3s;
-    text-decoration: none;
-}
-.path-link:hover {
-    background: #ecf5ff;
-    text-decoration: none;
-}
 </style>

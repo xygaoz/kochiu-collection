@@ -7,9 +7,12 @@ import 'element-plus/dist/index.css'
 import './assets/iconfont/iconfont.css'
 import * as Icons from '@element-plus/icons-vue'
 import { createPinia } from "pinia";
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 
 const app = createApp(App)
 const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate)
+
 app.use(ElementPlus)
 app.use(pinia)
 for (const [key, component] of Object.entries(Icons)) {

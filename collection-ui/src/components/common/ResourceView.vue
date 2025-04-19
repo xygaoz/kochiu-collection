@@ -4,6 +4,7 @@
             <el-header class="search-header" :style="headerHeightStyle">
                 <SearchFormView
                     :data-type="props.dataType"
+                    :id="props.id"
                     @expand-change="handleExpandChange"
                     @search="handleSearch"
                 />
@@ -89,6 +90,10 @@ const props = defineProps({
     dataType: {
         type: String,
         default: 'category'
+    },
+    id: {
+        type: String,
+        required: true
     }
 });
 const currentComponent = WaterfallLayout;
