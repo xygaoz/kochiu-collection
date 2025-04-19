@@ -208,6 +208,29 @@
                                 </template>
                             </el-menu-item>
                         </el-sub-menu>
+                        <!-- 系统管理菜单 -->
+                        <el-sub-menu index="system-group">
+                            <template #title>
+                                <div class="menu-icon">
+                                    <i class="iconfont icon-col-shezhi" style="font-size: 21px; color: rgb(59,130,246)"></i>
+                                </div>
+                                <div class="menu-label">系统管理</div>
+                            </template>
+                            <!-- 可以在这里添加系统管理的子菜单项 -->
+                            <!-- 例如：<el-menu-item index="/System/Users">用户管理</el-menu-item> -->
+                        </el-sub-menu>
+
+                        <!-- 帮助菜单 -->
+                        <el-menu-item index="/Help" @click="menuItemClick({path: '/Help'})">
+                            <template #title>
+                                <div class="menu-icon">
+                                    <el-icon style="color: rgb(59,130,246)">
+                                        <Help />
+                                    </el-icon>
+                                </div>
+                                <div class="menu-label">帮助</div>
+                            </template>
+                        </el-menu-item>
                     </el-menu>
                 </div>
             </el-aside>

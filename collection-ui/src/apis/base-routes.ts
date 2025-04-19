@@ -52,7 +52,7 @@ routes.push(
             {
                 path: '/BatchImport',
                 name: 'batch-import',
-                component: () => import('@/components/my/FileUploader.vue'),
+                component: () => import('@/components/my/BatchImport.vue'),
                 meta: { title: '批量导入', icon: 'icon-col-piliangdaoru1', iconType: 'iconfont', style: 'font-size: 18px; color: rgb(59,130,246); margin: 0 3px 0 0' },
             },
             {
