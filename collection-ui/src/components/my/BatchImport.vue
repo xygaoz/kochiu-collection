@@ -237,11 +237,21 @@ const startImport = async () => {
     try {
         // 1. 调用后端启动导入
         const taskId = await batchImport(form.value);
+        console.log("Task ID:", taskId); // 调试日志
 
-        // 2. 建立 WebSocket 连接
-        const ws = new WebSocket(`ws://${process.env.VUE_APP_TARGET_URL}/ws/import-progress?task-id=${taskId}`);
+        // 2. 动态获取 WebSocket URL
+        const wsUrl = `${import.meta.env.VUE_WS_TARGET_URL}/ws/import-progress?task-id=${taskId}`;
+        console.log("WebSocket URL:", wsUrl); // 调试日志
+
+        // 3. 建立 WebSocket 连接
+        const ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+            console.log("WebSocket 连接已建立"); // 调试日志
+        };
 
         ws.onmessage = (event) => {
+            console.log("收到进度消息:", event.data); // 调试日志
             const progress = JSON.parse(event.data);
             progressPercent.value = Math.floor((progress.current / progress.total) * 100);
             processedCount.value = progress.current;
@@ -260,11 +270,21 @@ const startImport = async () => {
             }
         };
 
-        ws.onerror = () => {
-            errorMessage.value = 'WebSocket 连接错误';
+        ws.onerror = (error) => {
+            console.error("WebSocket 错误:", error); // 调试日志
+            errorMessage.value = `连接失败: ${error.type}`;
             importComplete.value = true;
         };
+
+        ws.onclose = (event) => {
+            console.log("WebSocket 关闭:", event.code, event.reason); // 调试日志
+            if (!importComplete.value) {
+                errorMessage.value = '连接意外关闭';
+            }
+        };
+
     } catch (error) {
+        console.error("导入启动异常:", error); // 调试日志
         progressStatus.value = 'exception';
         errorMessage.value = error instanceof Error ? error.message : '导入启动失败';
         importComplete.value = true;

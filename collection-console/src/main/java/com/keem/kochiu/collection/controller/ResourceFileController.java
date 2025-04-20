@@ -4,12 +4,16 @@ import com.keem.kochiu.collection.annotation.CheckPermit;
 import com.keem.kochiu.collection.data.DefaultResult;
 import com.keem.kochiu.collection.data.bo.BatchImportBo;
 import com.keem.kochiu.collection.data.bo.UploadBo;
+import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.data.vo.FileVo;
 import com.keem.kochiu.collection.enums.PermitEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.service.CheckPermitAspect;
+import com.keem.kochiu.collection.service.ImportTaskService;
 import com.keem.kochiu.collection.service.ResourceFileService;
-import com.keem.kochiu.collection.service.UserResourceService;
+import com.keem.kochiu.collection.handler.ImportProgressWebSocketHandler;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,14 +25,18 @@ import java.util.concurrent.CompletableFuture;
 
 import static com.keem.kochiu.collection.Constant.PUBLIC_URL;
 
+@Slf4j
 @RestController
 public class ResourceFileController {
 
     private final String RESOURCE_PATH = PUBLIC_URL + "/resource";
     private final ResourceFileService resourceFileService;
+    private final ImportTaskService taskService;
 
-    public ResourceFileController(ResourceFileService resourceFileService) {
+    public ResourceFileController(ResourceFileService resourceFileService,
+                                  ImportTaskService taskService) {
         this.resourceFileService = resourceFileService;
+        this.taskService = taskService;
     }
 
 
@@ -47,16 +55,32 @@ public class ResourceFileController {
 
     @CheckPermit
     @PostMapping(RESOURCE_PATH + "/batchImport")
-    public ResponseEntity<String> batchImport(BatchImportBo request) {
+    public DefaultResult<String> batchImport(BatchImportBo request) {
         String taskId = UUID.randomUUID().toString();
-        CompletableFuture.runAsync(() -> {
+        UserDto userDto = CheckPermitAspect.USER_INFO.get();
+
+        // 通过 ImportTaskService 提交任务
+        taskService.submitTask(() -> {
             try {
-                resourceFileService.batchImport(taskId, CheckPermitAspect.USER_INFO.get(), request);
+                resourceFileService.batchImport(taskId, userDto, request);
             } catch (CollectionException e) {
-                throw new RuntimeException(e);
+                log.error("批量导入失败", e);
+                ImportProgressWebSocketHandler.sendProgress(taskId,
+                        new ImportProgressWebSocketHandler.ImportProgress(0, 100, "", "error", e.getMessage())
+                );
             }
         });
-        return ResponseEntity.ok(taskId);
+
+        return DefaultResult.ok(taskId);
     }
 
+    @PostMapping("/cancel/{taskId}")
+    public ResponseEntity<String> cancelImport(@PathVariable String taskId) {
+        boolean success = taskService.cancelTask(taskId);
+        if (success) {
+            ImportProgressWebSocketHandler.sendCancelled(taskId); // 通知前端
+            return ResponseEntity.ok("取消成功");
+        }
+        return ResponseEntity.status(404).body("任务不存在或已完成");
+    }
 }

@@ -1,6 +1,7 @@
 package com.keem.kochiu.collection.service;
 
 import cn.hutool.crypto.digest.DigestUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.keem.kochiu.collection.data.bo.BatchImportBo;
 import com.keem.kochiu.collection.data.bo.PathBo;
 import com.keem.kochiu.collection.data.bo.UploadBo;
@@ -39,19 +40,21 @@ public class ResourceFileService {
     private final UserCatalogService userCatalogService;
     private final UserCatalogRepository catalogRepository;
     private final SystemService systemService;
+    private final ObjectMapper objectMapper;
 
     public ResourceFileService(ResourceStrategyFactory resourceStrategyFactory,
                                SysUserRepository userRepository,
                                UserResourceRepository resourceRepository,
                                UserCatalogService userCatalogService,
                                UserCatalogRepository catalogRepository,
-                               SystemService systemService) {
+                               SystemService systemService, ObjectMapper objectMapper) {
         this.resourceStrategyFactory = resourceStrategyFactory;
         this.userRepository = userRepository;
         this.resourceRepository = resourceRepository;
         this.userCatalogService = userCatalogService;
         this.catalogRepository = catalogRepository;
         this.systemService = systemService;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -139,41 +142,53 @@ public class ResourceFileService {
         resourceStrategyFactory.getStrategy(user.getStrategy()).download(request, response, resourceId);
     }
 
-
+    /**
+     * 批量导入
+     * @param taskId
+     * @param userDto
+     * @param batchImportBo
+     * @throws CollectionException
+     */
     public void batchImport(String taskId, UserDto userDto, BatchImportBo batchImportBo) throws CollectionException {
         SysUser user = userRepository.getUser(userDto);
-        if(!systemService.testServerPath(PathBo.builder().
-                path(batchImportBo.getSourcePath()).
-                importMethod(batchImportBo.getImportMethod())
-                .build())){
+        if (!systemService.testServerPath(PathBo.builder()
+                .path(batchImportBo.getSourcePath())
+                .importMethod(batchImportBo.getImportMethod())
+                .build())) {
             throw new CollectionException(ErrorCodeEnum.SERVER_PATH_ERROR);
         }
 
         try {
             for (int i = 1; i <= 100; i++) {
-                Thread.sleep(100); // 模拟处理延迟
-                ImportProgressWebSocketHandler.ImportProgress progress =
-                        new ImportProgressWebSocketHandler.ImportProgress(
-                                i, 100, "file_" + i + ".txt", "processing", null
-                        );
+                // 检查是否被取消（通过线程中断）
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException("任务被取消");
+                }
+
+                Thread.sleep(1000); // 模拟处理
+                log.info("处理进度：{}%", i);
+
+                // 发送进度前打印日志
+                log.info("发送进度: taskId={}, progress={}/100", taskId, i);
+                ImportProgressWebSocketHandler.ImportProgress progress = new ImportProgressWebSocketHandler.ImportProgress(i, 100, "file_" + i, "processing", null);
+                String json = objectMapper.writeValueAsString(progress); // 假设使用 Jackson
+                log.info("准备发送进度: {}", json); // 关键日志
                 ImportProgressWebSocketHandler.sendProgress(taskId, progress);
+                Thread.sleep(1000);
             }
-            // 任务完成
             ImportProgressWebSocketHandler.sendProgress(taskId,
-                    new ImportProgressWebSocketHandler.ImportProgress(
-                            100, 100, "", "completed", null
-                    ));
+                    new ImportProgressWebSocketHandler.ImportProgress(100, 100, "", "completed", null)
+            );
         } catch (InterruptedException e) {
             ImportProgressWebSocketHandler.sendProgress(taskId,
-                    new ImportProgressWebSocketHandler.ImportProgress(
-                            0, 100, "", "error", "导入被中断"
-                    ));
+                    new ImportProgressWebSocketHandler.ImportProgress(0, 100, "", "cancelled", "用户主动取消")
+            );
+            throw new CollectionException(ErrorCodeEnum.TASK_CANCELLED);
         } catch (Exception e) {
             ImportProgressWebSocketHandler.sendProgress(taskId,
-                    new ImportProgressWebSocketHandler.ImportProgress(
-                            0, 100, "", "error", e.getMessage()
-                    ));
+                    new ImportProgressWebSocketHandler.ImportProgress(0, 100, "", "error", e.getMessage())
+            );
+            throw new CollectionException(ErrorCodeEnum.IMPORT_ERROR, e.getMessage());
         }
-
     }
 }

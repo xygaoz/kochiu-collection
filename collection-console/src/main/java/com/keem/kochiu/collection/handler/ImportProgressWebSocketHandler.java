@@ -3,6 +3,7 @@ package com.keem.kochiu.collection.handler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 public class ImportProgressWebSocketHandler extends TextWebSocketHandler {
 
     // 存储任务ID与WebSocketSession的映射
@@ -18,11 +20,16 @@ public class ImportProgressWebSocketHandler extends TextWebSocketHandler {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        String taskId = session.getHandshakeHeaders().getFirst("task-id");
-        if (taskId != null) {
-            sessions.put(taskId, session);
-        }
+    public void afterConnectionEstablished(WebSocketSession session) {
+        String taskId = getTaskIdFromSession(session); // 从请求参数获取taskId
+        sessions.put(taskId, session);
+        log.info("WebSocket 连接建立: taskId={}", taskId);
+    }
+
+    private String getTaskIdFromSession(WebSocketSession session) {
+        // 从URL参数中提取taskId，例如: /ws/import-progress?task-id=123
+        String query = session.getUri().getQuery();
+        return query.split("=")[1];
     }
 
     @Override
@@ -31,13 +38,32 @@ public class ImportProgressWebSocketHandler extends TextWebSocketHandler {
     }
 
     // 发送进度更新（供其他服务调用）
-    public static void sendProgress(String taskId, ImportProgress progress) {
+    public static void sendProgress(String taskId, Object progress) {
         WebSocketSession session = sessions.get(taskId);
         if (session != null && session.isOpen()) {
             try {
-                session.sendMessage(new TextMessage(objectMapper.writeValueAsString(progress)));
+                String message = objectMapper.writeValueAsString(progress);
+                session.sendMessage(new TextMessage(message));
+                log.debug("消息已发送: taskId={}, message={}", taskId, message); // 关键日志
             } catch (IOException e) {
-                sessions.remove(taskId); // 发送失败时清理
+                log.error("发送消息失败", e);
+                sessions.remove(taskId);
+            }
+        }
+    }
+
+    // 发送取消通知
+    public static void sendCancelled(String taskId) {
+        WebSocketSession session = sessions.get(taskId);
+        if (session != null) {
+            try {
+                ImportProgress progress = new ImportProgress(
+                        0, 100, "", "cancelled", "任务已被用户取消"
+                );
+                session.sendMessage(new TextMessage(objectMapper.writeValueAsString(progress)));
+                session.close(); // 关闭连接
+            } catch (IOException e) {
+                sessions.remove(taskId);
             }
         }
     }

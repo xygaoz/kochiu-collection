@@ -16,4 +16,9 @@ public class CollectionException extends Exception{
         super(code.getMessage());
         this.errorCode = code;
     }
+
+    public CollectionException(ErrorCodeEnum errorCodeEnum, String message) {
+        super(message);
+        this.errorCode = errorCodeEnum;
+    }
 }
