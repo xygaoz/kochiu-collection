@@ -1,11 +1,9 @@
 package com.keem.kochiu.collection.service;
 
-import cn.hutool.crypto.digest.DigestUtil;
 import com.github.pagehelper.PageInfo;
 import com.keem.kochiu.collection.data.bo.*;
 import com.keem.kochiu.collection.data.dto.TagDto;
 import com.keem.kochiu.collection.data.dto.UserDto;
-import com.keem.kochiu.collection.data.vo.FileVo;
 import com.keem.kochiu.collection.data.vo.PageVo;
 import com.keem.kochiu.collection.data.vo.ResourceVo;
 import com.keem.kochiu.collection.entity.SysUser;
@@ -25,13 +23,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.keem.kochiu.collection.enums.ErrorCodeEnum.*;
+import static com.keem.kochiu.collection.enums.ErrorCodeEnum.CONTENT_CANNOT_BE_EMPTY;
 
 @Slf4j
 @Service
@@ -44,7 +39,6 @@ public class UserResourceService {
     private final UserTagRepository tagRepository;
     private final UserCategoryRepository categoryRepository;
     private final UserCatalogRepository catalogRepository;
-    private final UserCatalogService userCatalogService;
 
     public UserResourceService(ResourceStrategyFactory resourceStrategyFactory,
                                SysUserRepository userRepository,
@@ -52,8 +46,7 @@ public class UserResourceService {
                                CollectionProperties properties,
                                UserTagRepository tagRepository,
                                UserCategoryRepository categoryRepository,
-                               UserCatalogRepository catalogRepository,
-                               UserCatalogService userCatalogService) {
+                               UserCatalogRepository catalogRepository) {
         this.resourceStrategyFactory = resourceStrategyFactory;
         this.userRepository = userRepository;
         this.resourceRepository = resourceRepository;
@@ -61,93 +54,8 @@ public class UserResourceService {
         this.tagRepository = tagRepository;
         this.categoryRepository = categoryRepository;
         this.catalogRepository = catalogRepository;
-        this.userCatalogService = userCatalogService;
     }
 
-    /**
-     * 通过策略保存文件
-     * @param uploadBo
-     * @return
-     * @throws CollectionException
-     */
-    @Transactional(rollbackFor = Exception.class)
-    public FileVo saveFile(UploadBo uploadBo, UserDto userDto) throws CollectionException {
-
-        SysUser user = userRepository.getUser(userDto);
-        try {
-            String md5 = DigestUtil.md5Hex(DigestUtil.md5Hex(uploadBo.getFile().getBytes()));
-            List<UserResource> resources =resourceRepository.countFileMd5(user.getUserId(), md5);
-            if(!resources.isEmpty() && !uploadBo.isOverwrite()){
-                throw new CollectionException(FILE_IS_EXIST);
-            }
-
-            UserCatalog catalog = catalogRepository.getById(uploadBo.getCataId());
-            if(catalog == null){
-                throw new CollectionException(ErrorCodeEnum.CATEGORY_NOT_EXIST);
-            }
-            if(!uploadBo.isAutoCreate() && (uploadBo.getCataId() == null || catalogRepository.getById(uploadBo.getCataId()) == null)){
-                //非自动创建目录，检查目录是否存在
-                throw new CollectionException(ErrorCodeEnum.CATALOG_NOT_EXIST);
-            }
-
-            String path;
-            if(uploadBo.isAutoCreate()) {
-                String catalogPath = ResourceStoreStrategy.dateFormat.format(System.currentTimeMillis());
-                path = "/" + user.getUserCode() + "/" + catalogPath;
-                //创建目录
-                Long id = userCatalogService.addCatalogPath(userDto, catalogPath);
-                if(id == null){
-                    throw new CollectionException(ErrorCodeEnum.CATALOG_CREATE_FAILURE);
-                }
-                else{
-                    uploadBo.setCataId(id);
-                }
-            }
-            else{
-                path = "/" + user.getUserCode() + "/" + catalog.getCataPath();
-            }
-            path = path.replaceAll("//", "/");
-            if(path.endsWith("/")){
-                path = path.substring(0, path.length() - 1);
-            }
-
-            FileVo fileVo = resourceStrategyFactory.getStrategy(user.getStrategy())
-                    .saveFile(uploadBo, userDto, md5, path);
-            //保存成功。删除原有记录
-            if(!resources.isEmpty() && uploadBo.isOverwrite()){
-                resourceRepository.removeById(resources.get(0).getResourceId(), true);
-            }
-            return fileVo;
-        }catch (IOException e){
-            log.error("文件保存失败", e);
-            throw new CollectionException(FILE_SAVING_FAILURE);
-        }
-    }
-
-    /**
-     * 通过策略下载文件
-     * @param request
-     * @param response
-     * @param resourceId
-     */
-    public void download(HttpServletRequest request, HttpServletResponse response, Long resourceId) {
-
-        //查找资源
-        UserResource resource = resourceRepository.getById(resourceId);
-        if(resource == null){
-            response.setStatus(404);
-            return;
-        }
-
-        int userId = resource.getUserId();
-        SysUser user = userRepository.getById(userId);
-        if (user == null) {
-            response.setStatus(404);
-            return;
-        }
-
-        resourceStrategyFactory.getStrategy(user.getStrategy()).download(request, response, resourceId);
-    }
 
     /**
      * 获取用户分类资源列表
@@ -426,4 +334,5 @@ public class UserResourceService {
                     ("/" + user.getUserCode() + "/" + catalog.getCataPath()).replaceAll("//", "/"));
         }
     }
+
 }

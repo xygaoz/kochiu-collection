@@ -275,3 +275,12 @@ export const moveToCatalog = (resourceIds: number[], params: any): Promise<boole
         ld.close();
     });
 }
+
+export const batchImport = (params: any): Promise<string> => {
+    const ld = loading("开始导入")
+    return httpInstance.post("/resource/batchImport", params).then((model: any) => {
+        return model as string;
+    }).finally(() => {
+        ld.close();
+    });
+}

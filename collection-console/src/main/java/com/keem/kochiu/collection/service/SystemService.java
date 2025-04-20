@@ -73,7 +73,7 @@ public class SystemService {
                     // 测试读权限
                     file.list();
                     // 测试写权限
-                    if(ImportMethodEnum.getByCode(pathBo.getImportMethod()) == ImportMethodEnum.MOVE) {
+                    if(pathBo.getImportMethod() == ImportMethodEnum.MOVE) {
                         File testFile = new File(file, ".kochiu_test_" + System.currentTimeMillis());
                         boolean created = testFile.createNewFile();
                         if (created) {

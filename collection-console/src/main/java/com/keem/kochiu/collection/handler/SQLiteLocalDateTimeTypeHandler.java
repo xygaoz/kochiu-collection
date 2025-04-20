@@ -1,4 +1,4 @@
-package com.keem.kochiu.collection.config;
+package com.keem.kochiu.collection.handler;
 
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;

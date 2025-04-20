@@ -39,7 +39,7 @@ public enum ErrorCodeEnum {
     TARGET_CATALOG_IS_SAME("1037", "目标目录相同"),
     RESOURCE_NOT_EXIST("1038", "资源文件不存在"),
     TARGET_CATALOG_IS_NOT_NULL("1039", "目标目录ID不能为空"),
-    ;
+    SERVER_PATH_ERROR("1040", "服务端资源目录不存在或不能访问");
 
     private final String code;
     private final String message;

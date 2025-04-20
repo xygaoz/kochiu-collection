@@ -81,3 +81,19 @@ export const getResourceType = async (typeName: string): Promise<ResourceType> =
     });
 }
 
+export const testServerPath = async (path: string, importMethod: string): Promise<boolean> => {
+    const params = {
+        path: path,
+        importMethod: importMethod
+    };
+    return httpInstance.post("/sys/testServerPath", params).then((model: any) => {
+        if (model) {
+            return model as boolean;
+        }
+        return false;
+    }).catch((error) => {
+        console.error("测试服务器路径失败:", error);
+        return false;
+    });
+}
+

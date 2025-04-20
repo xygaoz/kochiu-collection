@@ -37,19 +37,6 @@ public class UserResourceController {
         this.tagService = tagService;
     }
 
-    @CheckPermit(on = {PermitEnum.UI, PermitEnum.API})
-    @PostMapping(RESOURCE_PATH + "/upload")
-    public DefaultResult<FileVo> upload(@Valid UploadBo uploadBo) throws CollectionException {
-
-        return DefaultResult.ok(resourceService.saveFile(uploadBo, CheckPermitAspect.USER_INFO.get()));
-    }
-
-    @RequestMapping("/resource/{resourceId}/**")
-    public void download(HttpServletRequest request, HttpServletResponse response, @PathVariable Long resourceId){
-
-        resourceService.download(request, response, resourceId);
-    }
-
     @CheckPermit
     @PostMapping(RESOURCE_PATH + "/category/{cateId}")
     public DefaultResult<PageVo<ResourceVo>> getResourceListByCate(@PathVariable int cateId,

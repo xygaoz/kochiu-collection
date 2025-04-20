@@ -53,20 +53,21 @@
 
                 <!-- 4. 自动创建目录选项 -->
                 <el-form-item label="自动创建目录规则" prop="autoCreateRule">
-                    <el-radio-group v-model="form.autoCreateRule">
-                        <el-radio :label="1">在我的资源下创建日期目录 (格式: YYYY-MM-DD)</el-radio>
-                        <el-radio :label="2">按服务端路径子目录结构创建</el-radio>
+                    <el-radio-group v-model="form.autoCreateRule" :disabled="form.importMethod === 3">
+                        <el-radio :label="1">在根目录创建日期目录 (格式: YYYY-MM-DD)</el-radio>
+                        <el-radio :label="2">在根目录按服务端路径子目录结构创建</el-radio>
                         <el-radio :label="3">不自动创建 (仅导入到根目录)</el-radio>
                     </el-radio-group>
                 </el-form-item>
 
                 <!-- 5. 导入方式 -->
                 <el-form-item label="导入方式" prop="importMethod">
-                    <el-radio-group v-model="form.importMethod">
+                    <el-radio-group v-model="form.importMethod" style="width: 100%">
                         <el-radio :label="1">复制到新位置</el-radio>
                         <el-radio :label="2">移动到新位置</el-radio>
                         <el-radio :label="3">保持原路径 (仅建立索引)</el-radio>
                     </el-radio-group>
+                    <div class="form-tip">选择保持原路径，创建目录规则强制为"不自动创建 (仅导入到根目录)"</div>
                 </el-form-item>
 
                 <!-- 操作按钮 -->
@@ -94,11 +95,14 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from "vue";
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { listCategory } from '@/apis/category-api'
 import { getCatalogTree } from '@/apis/catalog-api'
+import { Catalog, Category } from "@/apis/interface";
+import { testServerPath } from "@/apis/system-api";
+import { batchImport } from "@/apis/resource-api";
 
 // 表单数据
 const form = ref({
@@ -144,10 +148,32 @@ const importComplete = ref(false)
 // 表单引用
 const importForm = ref<FormInstance>()
 
+// 监听导入方式变化
+watch(() => form.value.importMethod, (newVal) => {
+    // 当选择"保持原路径"时，强制设置不自动创建目录
+    if (newVal === 3) {
+        form.value.autoCreateRule = 3
+        form.value.catalogId = null
+    }
+})
+
+// 监听自动创建规则变化
+watch(() => form.value.autoCreateRule, (newVal) => {
+    // 当导入方式为"保持原路径"时，不允许修改自动创建规则
+    if (form.value.importMethod === 3 && newVal !== 3) {
+        form.value.autoCreateRule = 3
+        form.value.catalogId = null
+        ElMessage.warning('保持原路径模式下，必须选择"不自动创建"')
+    }
+})
+
 // 加载分类和目录数据
 onMounted(async () => {
     try {
         categoryList.value = await listCategory()
+        if(categoryList.value.length > 0){
+            form.value.categoryId = categoryList.value[0].cateId
+        }
         catalogTree.value = await getCatalogTree()
     } catch (error) {
         ElMessage.error('加载分类或目录数据失败')
@@ -164,8 +190,13 @@ const testPathConnection = async () => {
 
     try {
         // 这里调用API测试路径是否可访问
-        // const result = await testServerPath(form.value.sourcePath)
-        ElMessage.success('路径可访问')
+        const result = await testServerPath(form.value.sourcePath, form.value.importMethod)
+        if(result) {
+            ElMessage.success('路径可访问')
+        }
+        else{
+            ElMessage.error('路径不可访问或不存在')
+        }
     } catch (error) {
         ElMessage.error('路径不可访问或不存在')
     }
@@ -197,48 +228,55 @@ const submitForm = async () => {
 
 // 开始导入过程
 const startImport = async () => {
-    progressDialogVisible.value = true
-    progressPercent.value = 0
-    processedCount.value = 0
-    importComplete.value = false
-    errorMessage.value = ''
+    progressDialogVisible.value = true;
+    progressPercent.value = 0;
+    processedCount.value = 0;
+    importComplete.value = false;
+    errorMessage.value = '';
 
     try {
-        // 模拟导入过程
-        totalCount.value = 100 // 假设有100个文件
+        // 1. 调用后端启动导入
+        const taskId = await batchImport(form.value);
 
-        for (let i = 1; i <= 100; i++) {
-            if (importComplete.value) break // 如果用户取消
+        // 2. 建立 WebSocket 连接
+        const ws = new WebSocket(`ws://${process.env.VUE_APP_TARGET_URL}/ws/import-progress?task-id=${taskId}`);
 
-            processedCount.value = i
-            progressPercent.value = i
-            currentFile.value = `文件_${i}.jpg`
+        ws.onmessage = (event) => {
+            const progress = JSON.parse(event.data);
+            progressPercent.value = Math.floor((progress.current / progress.total) * 100);
+            processedCount.value = progress.current;
+            totalCount.value = progress.total;
+            currentFile.value = progress.currentFile;
 
-            // 模拟处理延迟
-            await new Promise(resolve => setTimeout(resolve, 100))
-
-            // 模拟错误
-            if (i === 50) {
-                throw new Error('模拟错误: 文件处理失败')
+            if (progress.status === 'completed') {
+                importComplete.value = true;
+                progressStatus.value = 'success';
+                ws.close();
+            } else if (progress.status === 'error') {
+                importComplete.value = true;
+                progressStatus.value = 'exception';
+                errorMessage.value = progress.errorMessage;
+                ws.close();
             }
-        }
+        };
 
-        progressStatus.value = 'success'
-        ElMessage.success('导入完成')
+        ws.onerror = () => {
+            errorMessage.value = 'WebSocket 连接错误';
+            importComplete.value = true;
+        };
     } catch (error) {
-        progressStatus.value = 'exception'
-        errorMessage.value = error instanceof Error ? error.message : '导入过程中发生错误'
-        ElMessage.error('导入过程中发生错误')
-    } finally {
-        importComplete.value = true
+        progressStatus.value = 'exception';
+        errorMessage.value = error instanceof Error ? error.message : '导入启动失败';
+        importComplete.value = true;
     }
-}
+};
 
 // 取消导入
 const cancelImport = () => {
-    importComplete.value = true
-    ElMessage.warning('导入已取消')
-}
+    importComplete.value = true;
+    // 可以调用后端取消接口（需额外实现）
+    ElMessage.warning('导入已取消');
+};
 
 // 重置表单
 const resetForm = () => {
@@ -261,7 +299,8 @@ const resetForm = () => {
 .form-tip {
     font-size: 12px;
     color: #999;
-    margin-top: 5px;
+    margin-top: 2px;
+    display: block; /* 确保以块级元素显示 */
 }
 
 .progress-info {
