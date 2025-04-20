@@ -3,6 +3,7 @@ package com.keem.kochiu.collection.data.bo;
 import com.keem.kochiu.collection.annotation.Add;
 import com.keem.kochiu.collection.annotation.Edit;
 import com.keem.kochiu.collection.annotation.Remove;
+import com.keem.kochiu.collection.enums.RemoveEnum;
 import lombok.Builder;
 import lombok.Data;
 
@@ -18,5 +19,5 @@ public class CatalogBo {
     private String cataName;
     @NotNull(groups = {Add.class, Edit.class}, message = "上级目录ID不能为空！！！")
     private Long parentId;
-    private Integer removeType = 1;
+    private RemoveEnum removeType;
 }

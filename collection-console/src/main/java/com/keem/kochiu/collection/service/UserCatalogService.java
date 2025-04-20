@@ -9,7 +9,7 @@ import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.entity.UserCatalog;
 import com.keem.kochiu.collection.entity.UserResource;
 import com.keem.kochiu.collection.enums.ErrorCodeEnum;
-import com.keem.kochiu.collection.enums.RemoveCatalogEnum;
+import com.keem.kochiu.collection.enums.RemoveEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.repository.SysUserRepository;
 import com.keem.kochiu.collection.repository.UserCatalogRepository;
@@ -332,7 +332,7 @@ public class UserCatalogService {
         }
 
         //直接删除
-        if(RemoveCatalogEnum.getEnum(catalogBo.getRemoveType()) == RemoveCatalogEnum.REMOVE_TYPE_DELETE){
+        if(catalogBo.getRemoveType() == RemoveEnum.REMOVE_TYPE_DELETE){
             String oldPath = userCatalog.getCataPath();
             //先删除目录
             if(!catalogRepository.removeById(userCatalog.getCataId())){

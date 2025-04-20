@@ -1,12 +1,11 @@
 package com.keem.kochiu.collection.controller;
 
 import com.keem.kochiu.collection.data.DefaultResult;
+import com.keem.kochiu.collection.data.bo.PathBo;
 import com.keem.kochiu.collection.data.vo.ResourceTypeVo;
 import com.keem.kochiu.collection.enums.ResourceTypeEnum;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.keem.kochiu.collection.service.SystemService;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,6 +19,12 @@ import static com.keem.kochiu.collection.Constant.PUBLIC_URL;
 @RestController
 @RequestMapping(PUBLIC_URL + "/sys")
 public class SystemController {
+
+    private final SystemService systemService;
+
+    public SystemController(SystemService systemService) {
+        this.systemService = systemService;
+    }
 
     @GetMapping("/resourceTypes")
     public DefaultResult<List<ResourceTypeVo>> getSysResourceTypes() {
@@ -39,5 +44,10 @@ public class SystemController {
         ResourceTypeVo resourceTypeVo = new ResourceTypeVo(resourceTypeEnum.getLabel(), resourceTypeEnum.name().toLowerCase());
 
         return DefaultResult.ok(resourceTypeVo);
+    }
+
+    @PostMapping("/testServerPath")
+    public DefaultResult<Boolean> testServerPath(PathBo pathBo) {
+        return DefaultResult.ok(systemService.testServerPath(pathBo));
     }
 }

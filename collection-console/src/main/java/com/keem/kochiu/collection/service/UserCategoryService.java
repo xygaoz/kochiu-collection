@@ -8,7 +8,7 @@ import com.keem.kochiu.collection.data.vo.CategoryVo;
 import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.entity.UserCategory;
 import com.keem.kochiu.collection.entity.UserResource;
-import com.keem.kochiu.collection.enums.RemoveCatalogEnum;
+import com.keem.kochiu.collection.enums.RemoveEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.repository.SysUserRepository;
 import com.keem.kochiu.collection.repository.UserCategoryRepository;
@@ -135,7 +135,7 @@ public class UserCategoryService {
 
         SysUser user = userRepository.getUser(userDto);
         //直接删除
-        if(RemoveCatalogEnum.getEnum(categoryBo.getRemoveType()) == RemoveCatalogEnum.REMOVE_TYPE_DELETE) {
+        if(categoryBo.getRemoveType() == RemoveEnum.REMOVE_TYPE_DELETE) {
             //先取出分类下的资源文件克隆
             List<UserResource> resources = userResourceRepository.getResources(user.getUserId(), categoryBo.getCateId());
             List<UserResource> res = new ArrayList<>();
