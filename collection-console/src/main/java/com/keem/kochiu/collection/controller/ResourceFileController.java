@@ -56,8 +56,13 @@ public class ResourceFileController {
         String taskId = UUID.randomUUID().toString();
         UserDto userDto = CheckPermitAspect.USER_INFO.get();
 
+        // 检查用户是否已有任务在执行
+        if (taskService.hasRunningTask(userDto.getUserId())) {
+            return DefaultResult.fail("您已有任务在执行中，请等待完成或取消当前任务");
+        }
+
         // 通过 ImportTaskService 提交任务
-        taskService.submitTask(() -> {
+        taskService.submitTask(userDto.getUserId(), taskId, () -> {
             try {
                 resourceFileService.batchImport(taskId, userDto, request);
             } catch (CollectionException e) {
@@ -72,11 +77,11 @@ public class ResourceFileController {
     }
 
     @GetMapping(RESOURCE_PATH + "/cancelImport/{taskId}")
-    public DefaultResult<String> cancelBatchImport(@PathVariable String taskId) {
+    public DefaultResult<Boolean> cancelBatchImport(@PathVariable String taskId) {
         boolean success = taskService.cancelTask(taskId);
         if (success) {
             ImportProgressWebSocketHandler.sendCancelled(taskId); // 通知前端
-            return DefaultResult.ok("取消成功");
+            return DefaultResult.ok(true);
         }
         return DefaultResult.fail("任务不存在或已完成");
     }

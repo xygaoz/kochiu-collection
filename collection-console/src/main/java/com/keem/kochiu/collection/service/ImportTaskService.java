@@ -13,10 +13,16 @@ import java.util.concurrent.*;
 public class ImportTaskService {
     // 存储所有任务的 Future 引用（用于取消）
     private final Map<String, Future<?>> taskFutures = new ConcurrentHashMap<>();
+    // 存储用户与任务的映射关系（key: userId, value: taskId）
+    private final Map<Integer, String> userTaskMap = new ConcurrentHashMap<>();
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
-    public String submitTask(Runnable task) {
-        String taskId = UUID.randomUUID().toString();
+    public void submitTask(Integer userId, String taskId, Runnable task) {
+        // 检查用户是否已有任务在执行
+        if (userTaskMap.containsKey(userId)) {
+            throw new IllegalStateException("用户已有任务在执行中");
+        }
+
         Future<?> future = executor.submit(() -> {
             try {
                 task.run();
@@ -24,10 +30,11 @@ public class ImportTaskService {
                 log.error("任务执行失败: {}", taskId, e);
             } finally {
                 taskFutures.remove(taskId); // 任务完成或异常时清理
+                userTaskMap.remove(userId);
             }
         });
         taskFutures.put(taskId, future);
-        return taskId;
+        userTaskMap.put(userId, taskId);
     }
 
 
@@ -37,9 +44,16 @@ public class ImportTaskService {
         if (future != null) {
             boolean cancelled = future.cancel(true); // true 表示中断正在执行的任务
             taskFutures.remove(taskId);
+            // 从用户映射中移除
+            userTaskMap.values().removeIf(taskId::equals);
             return cancelled;
         }
         return false;
+    }
+
+    // 检查用户是否有任务在执行
+    public boolean hasRunningTask(Integer userId) {
+        return userTaskMap.containsKey(userId);
     }
 
     // 清理资源（可选）

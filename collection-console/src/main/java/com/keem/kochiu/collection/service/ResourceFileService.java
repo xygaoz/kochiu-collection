@@ -174,7 +174,7 @@ public class ResourceFileService {
                 String json = objectMapper.writeValueAsString(progress); // 假设使用 Jackson
                 log.info("准备发送进度: {}", json); // 关键日志
                 ImportProgressWebSocketHandler.sendProgress(taskId, progress);
-                Thread.sleep(1000);
+                Thread.sleep(500);
             }
             ImportProgressWebSocketHandler.sendProgress(taskId,
                     new ImportProgressWebSocketHandler.ImportProgress(100, 100, "", "completed", null)

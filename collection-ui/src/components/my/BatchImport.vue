@@ -106,6 +106,7 @@ import { cancelBatchImport, startBatchImport } from "@/apis/resource-api";
 
 // 表单数据
 const form = ref({
+    taskId: '',
     sourcePath: '',
     categoryId: null as number | null,
     catalogId: null as number[] | null,
@@ -237,7 +238,11 @@ const startImport = async () => {
     try {
         // 1. 调用后端启动导入
         const taskId = await startBatchImport(form.value);
+        if(!taskId){
+            return
+        }
         console.log("Task ID:", taskId); // 调试日志
+        form.value.taskId = taskId;
 
         // 2. 动态获取 WebSocket URL
         const wsUrl = `${import.meta.env.VUE_WS_TARGET_URL}/ws/import-progress?task-id=${taskId}`;
@@ -302,7 +307,9 @@ const startImport = async () => {
 const cancelImport = async () => {
     importComplete.value = true;
     const result = await cancelBatchImport(form.value.taskId);
-    ElMessage.info(result);
+    if(result) {
+        ElMessage.info("任务取消了");
+    }
 };
 
 // 重置表单

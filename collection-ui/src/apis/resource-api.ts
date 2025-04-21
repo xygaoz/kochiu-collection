@@ -277,17 +277,20 @@ export const moveToCatalog = (resourceIds: number[], params: any): Promise<boole
     });
 }
 
-export const startBatchImport = (params: any): Promise<string> => {
+export const startBatchImport = (params: any): Promise<string | null> => {
     const ld = loading("开始导入")
     return httpInstance.post(resourceApi + "/startBatchImport", params).then((model: any) => {
-        return model as string;
+        if(model) {
+            return model as string;
+        }
+        return null;
     }).finally(() => {
         ld.close();
     });
 }
 
-export const cancelBatchImport = (taskId: string): Promise<string> => {
+export const cancelBatchImport = (taskId: string): Promise<boolean> => {
     return httpInstance.get(resourceApi + "/cancelImport/" + taskId).then((model: any) => {
-        return model as string;
+        return model as boolean;
     });
 }
