@@ -110,7 +110,7 @@ const form = ref({
     taskId: '',
     sourcePath: '',
     categoryId: null as number | null,
-    catalogId: null as number[] | null,
+    catalogId: null as number | null,
     autoCreateRule: 1,
     importMethod: 1
 })
@@ -134,7 +134,8 @@ const cascaderProps = {
     value: 'id',
     label: 'label',
     children: 'children',
-    checkStrictly: true
+    checkStrictly: true,
+    emitPath: false
 }
 
 // 进度对话框相关

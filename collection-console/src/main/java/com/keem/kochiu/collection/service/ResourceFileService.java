@@ -298,10 +298,10 @@ public class ResourceFileService {
                     default:
                         throw new CollectionException(ErrorCodeEnum.IMPORT_METHOD_ERROR);
                 }
-                log.info("处理进度：{}%", i);
+                log.info("处理进度：{}%", (i+1)/(float)files.size()*100);
 
                 // 发送进度前打印日志
-                log.info("发送进度: taskId={}, progress={}/100", taskId, i + 1);
+                log.info("发送进度: taskId={}, progress={}/{}", taskId, i + 1, files.size());
                 ImportProgressWebSocketHandler.ImportProgress progress = new ImportProgressWebSocketHandler.ImportProgress(i + 1, files.size(), successCount, failCount, filePath, "processing", null);
                 String json = objectMapper.writeValueAsString(progress); // 假设使用 Jackson
                 log.info("准备发送进度: {}", json); // 关键日志
@@ -444,7 +444,7 @@ public class ResourceFileService {
                         batchImportBo.getCategoryId(),
                         batchImportBo.getCatalogId(),
                         true,
-                        true,
+                        false,
                         user.getStrategy());
 
                 //保存成功。删除原有记录
