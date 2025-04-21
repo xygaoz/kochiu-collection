@@ -83,6 +83,7 @@
             <el-progress :percentage="progressPercent" :status="progressStatus" />
             <div class="progress-info">
                 <div>已处理: {{ processedCount }} / {{ totalCount }}</div>
+                <div>成功: {{ successCount }} 失败: {{ failCount }}</div>
                 <div>当前文件: {{ currentFile }}</div>
                 <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
             </div>
@@ -141,6 +142,8 @@ const progressDialogVisible = ref(false)
 const progressPercent = ref(0)
 const progressStatus = ref('')
 const processedCount = ref(0)
+const successCount = ref(0)
+const failCount = ref(0)
 const totalCount = ref(0)
 const currentFile = ref('')
 const errorMessage = ref('')
@@ -232,6 +235,8 @@ const startImport = async () => {
     progressDialogVisible.value = true;
     progressPercent.value = 0;
     processedCount.value = 0;
+    successCount.value = 0;
+    failCount.value = 0;
     importComplete.value = false;
     errorMessage.value = '';
 
@@ -259,9 +264,19 @@ const startImport = async () => {
             console.log("收到进度消息:", event.data); // 调试日志
             const progress = JSON.parse(event.data);
             progressPercent.value = Math.floor((progress.current / progress.total) * 100);
-            processedCount.value = progress.current;
-            totalCount.value = progress.total;
+            if(progress.current >= 0) {
+                processedCount.value = progress.current;
+            }
+            if(progress.total >= 0) {
+                totalCount.value = progress.total;
+            }
             currentFile.value = progress.currentFile;
+            if(progress.success >= 0) {
+                successCount.value = progress.success;
+            }
+            if(progress.fail >= 0) {
+                failCount.value = progress.fail;
+            }
 
             if (progress.status === 'completed') {
                 importComplete.value = true;

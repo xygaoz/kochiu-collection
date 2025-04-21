@@ -3,7 +3,6 @@ package com.keem.kochiu.collection.service.store;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.unit.DataSizeUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.keem.kochiu.collection.data.bo.UploadBo;
 import com.keem.kochiu.collection.data.dto.ResourceDto;
 import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.data.vo.FileVo;
@@ -29,11 +28,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import static com.keem.kochiu.collection.enums.ErrorCodeEnum.*;
+import static com.keem.kochiu.collection.enums.ErrorCodeEnum.ILLEGAL_REQUEST;
+import static com.keem.kochiu.collection.enums.ErrorCodeEnum.UNSUPPORTED_FILE_TYPES;
 
 @Slf4j
 @Service("local")
@@ -59,12 +60,17 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
 
     /**
      * 保存文件
-     * @param uploadBo
      */
-    public FileVo saveFile(UploadBo uploadBo, UserDto userDto, String md5, String path) throws CollectionException {
+    public FileVo saveFile(InputStream fileInputStream,
+                           String originalFilename,
+                           UserDto userDto,
+                           String md5,
+                           String savePath,
+                           Long categoryId,
+                           Long cataId) throws CollectionException {
 
         //判断文件类型
-        String extension = FilenameUtils.getExtension(uploadBo.getFile().getOriginalFilename()).toLowerCase();
+        String extension = FilenameUtils.getExtension(originalFilename).toLowerCase();
         if(!collectionProperties.getUploadTypes().contains(extension)){
             throw new CollectionException(UNSUPPORTED_FILE_TYPES);
         }
@@ -75,35 +81,30 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
         }
 
         //读取文件到本地
-        String returnUrl = path.substring(("/" + userCode).length());
+        String returnUrl = savePath.substring(("/" + userCode).length());
         String recFilePathDir = collectionProperties.getUploadPath();
-        File dir = new File(recFilePathDir + path);
+        File dir = new File(recFilePathDir + savePath);
         if (!dir.exists()) {
             dir.mkdirs();
         }
 
         String filePath;
-        try {
-            path += "/" + md5 + "." + extension;
-            returnUrl += "/" + md5 + "." + extension;
-            filePath = recFilePathDir + path;
-            File outfile = new File(filePath);
-            FileUtil.writeBytes(uploadBo.getFile().getBytes(), outfile);
-        }
-        catch (IOException e){
-            log.error("文件保存失败", e);
-            throw new CollectionException(FILE_SAVING_FAILURE);
-        }
+        savePath += "/" + md5 + "." + extension;
+        returnUrl += "/" + md5 + "." + extension;
+        filePath = recFilePathDir + savePath;
+        File outfile = new File(filePath);
+        FileUtil.writeFromStream(fileInputStream, outfile);
+        long size = FileUtil.size(outfile);
 
         FileTypeEnum fileType = FileTypeEnum.getByValue(extension);
         ResourceDto resourceDto = ResourceDto.builder()
                 .userId(userDto.getUserId())
-                .cateId(uploadBo.getCategoryId())
-                .cataId(uploadBo.getCataId())
-                .sourceFileName(uploadBo.getFile().getOriginalFilename())
-                .resourceUrl(path)
+                .cateId(categoryId)
+                .cataId(cataId)
+                .sourceFileName(originalFilename)
+                .resourceUrl(savePath)
                 .fileExt(extension)
-                .size(uploadBo.getFile().getSize())
+                .size(size)
                 .md5(md5)
                .build();
         //生成缩略图
@@ -120,9 +121,60 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
         return FileVo.builder()
                 .url("/" + resId + returnUrl)
                 .thumbnailUrl(thumbUrl)
-                .size(DataSizeUtil.format(uploadBo.getFile().getSize()))
+                .size(DataSizeUtil.format(size))
                 .mimeType(fileType.getMimeType())
                 .build();
+    }
+
+    /**
+     * 直接保存资源
+     * @param file
+     * @param userDto
+     * @param md5
+     * @param savePath
+     * @param categoryId
+     * @param cataId
+     * @throws CollectionException
+     */
+    public void saveResource(File file,
+                           UserDto userDto,
+                           String md5,
+                           String savePath,
+                           Long categoryId,
+                           Long cataId) throws CollectionException {
+
+        //判断文件类型
+        String extension = FilenameUtils.getExtension(file.getName()).toLowerCase();
+        if(!collectionProperties.getUploadTypes().contains(extension)){
+            throw new CollectionException(UNSUPPORTED_FILE_TYPES);
+        }
+
+        String userCode = userDto != null ? userDto.getUserCode() : null;
+        if(userCode == null){
+            throw new CollectionException(ILLEGAL_REQUEST);
+        }
+
+        String recFilePathDir = collectionProperties.getUploadPath();
+        String filePath = recFilePathDir + "/" + userCode + savePath + "/" + md5 + "." + extension;
+        filePath = filePath.replaceAll("//", "/");
+
+        long size = FileUtil.size(file);
+
+        FileTypeEnum fileType = FileTypeEnum.getByValue(extension);
+        ResourceDto resourceDto = ResourceDto.builder()
+                .userId(userDto.getUserId())
+                .cateId(categoryId)
+                .cataId(cataId)
+                .sourceFileName(file.getAbsolutePath())
+                .resourceUrl(savePath)
+                .fileExt(extension)
+                .size(size)
+                .md5(md5)
+                .build();
+        //生成缩略图
+        createThumbnail(resourceDto, fileType, filePath);
+
+        resourceRepository.saveResource(resourceDto);
     }
 
     /**

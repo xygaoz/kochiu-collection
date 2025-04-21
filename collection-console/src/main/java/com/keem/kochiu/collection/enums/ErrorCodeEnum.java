@@ -41,7 +41,11 @@ public enum ErrorCodeEnum {
     TARGET_CATALOG_IS_NOT_NULL("1039", "目标目录ID不能为空"),
     SERVER_PATH_ERROR("1040", "服务端资源目录不存在或不能访问"),
     TASK_CANCELLED("1041", "任务取消"),
-    IMPORT_ERROR("1042", "导入错误");
+    IMPORT_ERROR("1042", "导入错误"),
+    IMPORT_METHOD_ERROR("1043", "导入方式错误"),
+    AUTO_CREATE_RULE_ERROR("1044", "创建目录规则错误"),
+    ROOT_CATALOG_IS_INVALID("1045", "根目录信息错误"),
+    ;
 
     private final String code;
     private final String message;

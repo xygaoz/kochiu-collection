@@ -60,7 +60,7 @@ public class ImportProgressWebSocketHandler extends TextWebSocketHandler {
         if (session != null) {
             try {
                 ImportProgress progress = new ImportProgress(
-                        0, 100, "", "cancelled", "任务已被用户取消"
+                        -1, -1, -1, -1, "", "cancelled", "任务已被用户取消"
                 );
                 session.sendMessage(new TextMessage(objectMapper.writeValueAsString(progress)));
                 session.close(); // 关闭连接
@@ -76,6 +76,8 @@ public class ImportProgressWebSocketHandler extends TextWebSocketHandler {
     public static class ImportProgress {
         private int current;
         private int total;
+        private int success;
+        private int fail;
         private String currentFile;
         private String status; // "processing", "completed", "error"
         private String errorMessage;

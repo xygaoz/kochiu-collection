@@ -10,7 +10,7 @@ public class UploadBo {
 
     @NotNull(message = "文件不能为空")
     private MultipartFile file;
-    private int categoryId;
+    private Long categoryId;
     private boolean overwrite;
     private Long cataId;
     private boolean autoCreate;

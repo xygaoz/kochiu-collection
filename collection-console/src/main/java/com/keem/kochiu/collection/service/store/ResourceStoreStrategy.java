@@ -1,6 +1,5 @@
 package com.keem.kochiu.collection.service.store;
 
-import com.keem.kochiu.collection.data.bo.UploadBo;
 import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.data.vo.FileVo;
 import com.keem.kochiu.collection.entity.UserResource;
@@ -8,20 +7,44 @@ import com.keem.kochiu.collection.exception.CollectionException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
 public interface ResourceStoreStrategy {
 
-    public final static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
 
     /**
      * 保存文件
-     * @param uploadBo
      * @return
      * @throws CollectionException
      */
-    FileVo saveFile(UploadBo uploadBo, UserDto user, String md5, String path) throws CollectionException;
+    FileVo saveFile(InputStream fileInputStream,
+                    String originalFilename,
+                    UserDto userDto,
+                    String md5,
+                    String savePath,
+                    Long categoryId,
+                    Long cataId) throws CollectionException;
+
+    /**
+     * 直接保存资源文件
+     * @param file
+     * @param userDto
+     * @param md5
+     * @param savePath
+     * @param categoryId
+     * @param cataId
+     * @throws CollectionException
+     */
+    void saveResource(File file,
+                      UserDto userDto,
+                      String md5,
+                      String savePath,
+                      Long categoryId,
+                      Long cataId) throws CollectionException;
 
     /**
      * 下载文件

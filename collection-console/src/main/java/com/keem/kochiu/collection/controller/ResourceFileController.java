@@ -68,7 +68,7 @@ public class ResourceFileController {
             } catch (CollectionException e) {
                 log.error("批量导入失败", e);
                 ImportProgressWebSocketHandler.sendProgress(taskId,
-                        new ImportProgressWebSocketHandler.ImportProgress(0, 100, "", "error", e.getMessage())
+                        new ImportProgressWebSocketHandler.ImportProgress(-1, -1, -1, -1, "", "error", e.getMessage())
                 );
             }
         });
