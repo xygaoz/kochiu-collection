@@ -4,12 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNull;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
@@ -20,7 +22,7 @@ public class ImportProgressWebSocketHandler extends TextWebSocketHandler {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) {
+    public void afterConnectionEstablished(@NonNull WebSocketSession session) {
         String taskId = getTaskIdFromSession(session); // 从请求参数获取taskId
         sessions.put(taskId, session);
         log.info("WebSocket 连接建立: taskId={}", taskId);
@@ -28,12 +30,12 @@ public class ImportProgressWebSocketHandler extends TextWebSocketHandler {
 
     private String getTaskIdFromSession(WebSocketSession session) {
         // 从URL参数中提取taskId，例如: /ws/import-progress?task-id=123
-        String query = session.getUri().getQuery();
+        String query = Objects.requireNonNull(session.getUri()).getQuery();
         return query.split("=")[1];
     }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+    public void afterConnectionClosed(@NonNull WebSocketSession session, @NonNull CloseStatus status) throws Exception {
         sessions.values().remove(session); // 连接关闭时移除
     }
 
