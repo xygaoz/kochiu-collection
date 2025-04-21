@@ -39,9 +39,9 @@ routes.push(
         ]
     },
     {
-        path: '/My',
-        name: "my",
-        meta: { title: '我的', icon: 'Avatar', iconType: 'icons-vue', style: 'color: rgb(59,130,246); margin: 0 -1px 0 0;' },
+        path: '/Resource',
+        name: "resource",
+        meta: { title: '资源', icon: 'Collection', iconType: 'icons-vue', style: 'color: rgb(59,130,246); margin: 0 -1px 0 0;' },
         children: [
             {
                 path: '/Upload',

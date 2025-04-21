@@ -176,10 +176,10 @@
                             <template #title>
                                 <div class="menu-icon">
                                     <el-icon style="color: rgb(59,130,246); margin: 0 -1px 0 0;">
-                                        <Avatar />
+                                        <Collection />
                                     </el-icon>
                                 </div>
-                                <div class="menu-label">我的</div>
+                                <div class="menu-label">资源</div>
                             </template>
                             <el-menu-item index="/Upload" @click="menuItemClick({path: '/Upload'})">
                                 <template #title>
@@ -264,7 +264,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { Plus, Switch, Avatar, UploadFilled, Edit, Delete } from "@element-plus/icons-vue";
+import { Plus, Switch, Collection, UploadFilled, Edit, Delete } from "@element-plus/icons-vue";
 import { listCategory } from '@/apis/category-api'
 import { listTag} from '@/apis/tag-api'
 import { getResourceTypes } from '@/apis/system-api'
