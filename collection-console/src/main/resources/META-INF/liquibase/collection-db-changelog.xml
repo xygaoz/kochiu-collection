@@ -268,7 +268,7 @@
             <column name="CATE_ID" remarks="分类ID" type="INTEGER" defaultValue="1">
                 <constraints nullable="false"/>
             </column>
-            <column name="cata_sno" remarks="文件夹序号" type="INTEGER" defaultValue="0">
+            <column name="cata_id" remarks="目录ID" type="INTEGER" defaultValue="0">
                 <constraints nullable="false"/>
             </column>
             <column name="resource_type" remarks="资源类型" type="INTEGER" defaultValue="0">
@@ -531,7 +531,7 @@
                 indexName="user_catalog_idx2"
                 tableName="user_catalog" unique="true">
             <column name="USER_ID"/>
-            <column name="folder_sno"/>
+            <column name="cata_sno"/>
         </createIndex>
     </changeSet>
 
@@ -545,7 +545,7 @@
             <column name="cata_name" value="我的资源"/>
             <column name="cata_path" value="/"/>
             <column name="cata_level" value="0"/>
-            <column name="folder_sno" value="0"/>
+            <column name="cata_sno" value="1"/>
             <column name="CREATE_TIME" valueComputed="datetime('now')"/>
             <column name="CREATE_BY" value="sys"/>
             <column name="DB_VERSION" value="1"/>
@@ -565,6 +565,5 @@
             <column name="parent_id"/>
         </createIndex>
     </changeSet>
-
 
 </databaseChangeLog>
