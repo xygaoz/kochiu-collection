@@ -22,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.keem.kochiu.collection.Constant.ROOT_CATALOG_SNO;
+
 @Service
 public class UserCatalogService {
 
@@ -196,7 +198,7 @@ public class UserCatalogService {
         AtomicReference<Long> id = new AtomicReference<>();
         UserCatalog parent = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
                 .eq(UserCatalog::getUserId, userDto.getUserId())
-                .eq(UserCatalog::getCataSno, 0));
+                .eq(UserCatalog::getCataSno, ROOT_CATALOG_SNO));
         if(parent == null){
             throw new CollectionException(ErrorCodeEnum.CATALOG_NAME_IS_SAME);
         }

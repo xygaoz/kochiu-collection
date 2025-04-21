@@ -1,5 +1,6 @@
 package com.keem.kochiu.collection.data.dto;
 
+import com.keem.kochiu.collection.enums.SaveTypeEnum;
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,6 +12,7 @@ public class ResourceDto {
     private long cateId;
     private String sourceFileName;
     private String resourceUrl;
+    private String filePath;
     private String fileExt;
     private String resolutionRatio;
     private Long size;
@@ -19,4 +21,5 @@ public class ResourceDto {
     private String previewUrl;
     private String md5;
     private Long cataId;
+    private SaveTypeEnum saveType = SaveTypeEnum.LOCAL;
 }

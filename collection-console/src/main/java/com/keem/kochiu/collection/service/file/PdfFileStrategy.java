@@ -16,7 +16,7 @@ public class PdfFileStrategy implements FileStrategy{
     /**
      * 生成缩略图
      *
-     * @param filePath
+     * @param file
      * @param thumbFilePath
      * @param fileType
      * @param resourceDto
@@ -24,13 +24,13 @@ public class PdfFileStrategy implements FileStrategy{
      * @throws Exception
      */
     @Override
-    public String createThumbnail(String filePath,
+    public String createThumbnail(File file,
                                   String thumbFilePath,
                                   String thumbUrl,
                                   FileTypeEnum fileType,
                                   ResourceDto resourceDto) throws Exception {
 
-        try (PDDocument document = PDDocument.load(new File(filePath))) {
+        try (PDDocument document = PDDocument.load(file)) {
             PDFRenderer renderer = new PDFRenderer(document);
             BufferedImage image = renderer.renderImage(0, 1.5f); // 1.5倍缩放提升清晰度
 

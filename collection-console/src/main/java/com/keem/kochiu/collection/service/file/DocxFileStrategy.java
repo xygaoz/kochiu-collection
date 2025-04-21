@@ -21,7 +21,7 @@ public class DocxFileStrategy extends DocFileStrategy{
     /**
      * 生成缩略图
      *
-     * @param filePath
+     * @param wordFile
      * @param thumbFilePath
      * @param fileType
      * @param resourceDto
@@ -29,24 +29,24 @@ public class DocxFileStrategy extends DocFileStrategy{
      * @throws Exception
      */
     @Override
-    public String createThumbnail(String filePath,
+    public String createThumbnail(File wordFile,
                                   String thumbFilePath,
                                   String thumbUrl,
                                   FileTypeEnum fileType,
                                   ResourceDto resourceDto) throws Exception {
 
-        String pdfPath = filePath.replace(".docx", ".pdf");
+        String pdfPath = thumbFilePath.substring(0, thumbFilePath.lastIndexOf("_thumb.png")) + ".pdf";
 
         // Step 1: Convert Word to HTML
         if(properties.getOfficeHome() != null && new File(properties.getOfficeHome()).exists()){
-            convertDocToPdfOfJodconverter(filePath, pdfPath);
+            convertDocToPdfOfJodconverter(wordFile, pdfPath);
         }
         else {
-            convertDocxToPdf(filePath, pdfPath);
+            convertDocxToPdf(wordFile, pdfPath);
         }
 
         // Step 3: Convert PDF first page to image
-        String thumbRatio = pdfFileStrategy.createThumbnail(pdfPath, thumbFilePath, thumbUrl, fileType, resourceDto);
+        String thumbRatio = pdfFileStrategy.createThumbnail(new File(pdfPath), thumbFilePath, thumbUrl, fileType, resourceDto);
         resourceDto.setThumbRatio(thumbRatio);
         resourceDto.setThumbUrl(thumbUrl);
         resourceDto.setPreviewUrl(thumbUrl.replace("_thumb.png", ".pdf"));
@@ -54,9 +54,9 @@ public class DocxFileStrategy extends DocFileStrategy{
         return thumbRatio;
     }
 
-    private static void convertDocxToPdf(String wordPath, String outputPath) throws Exception {
+    private static void convertDocxToPdf(File wordFile, String outputPath) throws Exception {
         // 1. 加载 Word 文档
-        WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new File(wordPath));
+        WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(wordFile);
 
         // 2. 配置输出流
         FileOutputStream outputStream = new FileOutputStream(outputPath);

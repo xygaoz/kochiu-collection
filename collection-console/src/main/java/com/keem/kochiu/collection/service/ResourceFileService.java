@@ -14,6 +14,7 @@ import com.keem.kochiu.collection.entity.UserResource;
 import com.keem.kochiu.collection.enums.ErrorCodeEnum;
 import com.keem.kochiu.collection.enums.FileTypeEnum;
 import com.keem.kochiu.collection.enums.ImportMethodEnum;
+import com.keem.kochiu.collection.enums.SaveTypeEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.handler.ImportProgressWebSocketHandler;
 import com.keem.kochiu.collection.repository.SysUserRepository;
@@ -27,13 +28,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -79,17 +78,38 @@ public class ResourceFileService {
     public FileVo saveFile(UploadBo uploadBo, UserDto userDto) throws CollectionException {
 
         SysUser user = userRepository.getUser(userDto);
-        try(InputStream is = uploadBo.getFile().getInputStream()){
-            return saveFile(is,
-                    uploadBo.getFile().getOriginalFilename(),
-                    DigestUtil.md5Hex(is),
-                    userDto,
-                    uploadBo.getCategoryId(),
-                    uploadBo.getCataId(),
-                    uploadBo.isOverwrite(),
-                    uploadBo.isAutoCreate(),
-                    user.getStrategy());
-        } catch (IOException e) {
+        try {
+            // 创建临时文件
+            Path tempFile = Files.createTempFile("upload-", ".tmp");
+            Files.copy(uploadBo.getFile().getInputStream(), tempFile, StandardCopyOption.REPLACE_EXISTING);
+            // 计算MD5
+            String md5 = DigestUtil.md5Hex(tempFile.toFile());
+
+            // 使用临时文件
+            try (InputStream is = Files.newInputStream(tempFile)) {
+                return saveFile(is,
+                        uploadBo.getFile().getOriginalFilename(),
+                        md5,
+                        userDto,
+                        uploadBo.getCategoryId(),
+                        uploadBo.getCataId(),
+                        uploadBo.isOverwrite(),
+                        uploadBo.isAutoCreate(),
+                        user.getStrategy());
+            } catch (IOException e) {
+                log.error("文件保存失败", e);
+                throw new CollectionException(FILE_SAVING_FAILURE);
+            }
+            finally {
+                try {
+                    Files.deleteIfExists(tempFile);
+                }
+                catch (IOException e) {
+                    log.error("删除临时文件失败", e);
+                }
+            }
+        }
+        catch (IOException e){
             log.error("文件保存失败", e);
             throw new CollectionException(FILE_SAVING_FAILURE);
         }
@@ -225,7 +245,7 @@ public class ResourceFileService {
 
         int successCount = 0, failCount = 0;
         try {
-            for (int i = 1; i <= files.size(); i++) {
+            for (int i = 0; i < files.size(); i++) {
                 // 检查是否被取消（通过线程中断）
                 if (Thread.currentThread().isInterrupted()) {
                     throw new InterruptedException("任务被取消");
@@ -258,10 +278,12 @@ public class ResourceFileService {
                     }
                     case KEEP_ORIGINAL: {
                         try {
-                            storeStrategy.saveResource(file,
+                            //提取子目录
+                            String catalogPath = getSubPath(relativePath);
+                            storeStrategy.saveLinkResource(file,
                                             userDto,
                                             md5,
-                                            relativePath, //根据原目录结构保存缩略图
+                                            catalogPath, //根据原目录结构保存缩略图
                                             batchImportBo.getCategoryId(),
                                             rootCataId
                                     );
@@ -279,8 +301,8 @@ public class ResourceFileService {
                 log.info("处理进度：{}%", i);
 
                 // 发送进度前打印日志
-                log.info("发送进度: taskId={}, progress={}/100", taskId, i);
-                ImportProgressWebSocketHandler.ImportProgress progress = new ImportProgressWebSocketHandler.ImportProgress(i, files.size(), successCount, failCount, filePath, "processing", null);
+                log.info("发送进度: taskId={}, progress={}/100", taskId, i + 1);
+                ImportProgressWebSocketHandler.ImportProgress progress = new ImportProgressWebSocketHandler.ImportProgress(i + 1, files.size(), successCount, failCount, filePath, "processing", null);
                 String json = objectMapper.writeValueAsString(progress); // 假设使用 Jackson
                 log.info("准备发送进度: {}", json); // 关键日志
                 ImportProgressWebSocketHandler.sendProgress(taskId, progress);
@@ -293,11 +315,17 @@ public class ResourceFileService {
                     new ImportProgressWebSocketHandler.ImportProgress(-1, files.size(), successCount, failCount, "", "cancelled", "用户主动取消")
             );
             throw new CollectionException(ErrorCodeEnum.TASK_CANCELLED);
-        } catch (Exception e) {
+        } catch (CollectionException e) {
             ImportProgressWebSocketHandler.sendProgress(taskId,
                     new ImportProgressWebSocketHandler.ImportProgress(-1, files.size(), successCount, failCount, "", "error", e.getMessage())
             );
-            throw new CollectionException(ErrorCodeEnum.IMPORT_ERROR, e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            ImportProgressWebSocketHandler.sendProgress(taskId,
+                    new ImportProgressWebSocketHandler.ImportProgress(-1, files.size(), successCount, failCount, "", "error", "系统错误")
+            );
+            log.error("批量导入失败", e);
+            throw new CollectionException(ErrorCodeEnum.IMPORT_ERROR, "系统错误");
         }
     }
 

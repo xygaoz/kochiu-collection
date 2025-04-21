@@ -19,7 +19,7 @@ import java.nio.file.StandardCopyOption;
 public class Mp3FileStrategy implements FileStrategy{
 
     @Override
-    public String createThumbnail(String filePath,
+    public String createThumbnail(File file,
                                   String thumbFilePath,
                                   String thumbUrl,
                                   FileTypeEnum fileType,

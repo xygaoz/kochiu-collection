@@ -18,6 +18,8 @@ public final class Constant {
     public static final String TOKEN_TYPE_ACCESS = "access";
     public static final String TOKEN_TYPE_REFRESH = "refresh";
 
+    public static final int ROOT_CATALOG_SNO = 1;
+
     private Constant(){
 
     }

@@ -35,7 +35,7 @@ public class XlsFileStrategy implements FileStrategy{
     /**
      * 生成缩略图
      *
-     * @param filePath
+     * @param excelFile
      * @param thumbFilePath
      * @param fileType
      * @param resourceDto
@@ -43,7 +43,7 @@ public class XlsFileStrategy implements FileStrategy{
      * @throws Exception
      */
     @Override
-    public String createThumbnail(String filePath,
+    public String createThumbnail(File excelFile,
                                   String thumbFilePath,
                                   String thumbUrl,
                                   FileTypeEnum fileType,
@@ -51,16 +51,15 @@ public class XlsFileStrategy implements FileStrategy{
 
         String thumbRatio;
         if(properties.getOfficeHome() != null && new File(properties.getOfficeHome()).exists()) {
-            String pdfPath = filePath.replace(".xlsx", ".pdf");
-            pdfPath = pdfPath.replace(".xls", ".pdf");
+            String pdfPath = thumbFilePath.substring(0, thumbFilePath.lastIndexOf("_thumb.png")) + ".pdf";
 
-            convertExcelToPdfOfJodconverter(filePath, pdfPath);
+            convertExcelToPdfOfJodconverter(excelFile, pdfPath);
 
-            thumbRatio = pdfFileStrategy.createThumbnail(pdfPath, thumbFilePath, thumbUrl, fileType, resourceDto);
+            thumbRatio = pdfFileStrategy.createThumbnail(new File(pdfPath), thumbFilePath, thumbUrl, fileType, resourceDto);
             resourceDto.setPreviewUrl(thumbUrl.replace("_thumb.png", ".pdf"));
         }
         else{
-            thumbRatio = convertExcelToImageOfDraw(filePath, thumbFilePath);
+            thumbRatio = convertExcelToImageOfDraw(excelFile, thumbFilePath);
         }
         resourceDto.setThumbRatio(thumbRatio);
         resourceDto.setThumbUrl(thumbUrl);
@@ -69,16 +68,16 @@ public class XlsFileStrategy implements FileStrategy{
 
     /**
      * 将 Excel 转换为图片
-     * @param excelPath
+     * @param excelFile
      * @param outputPath
      */
-    private static String convertExcelToImageOfDraw(String excelPath, String outputPath){
+    private static String convertExcelToImageOfDraw(File excelFile, String outputPath){
         // A4 纸尺寸（300 DPI）
         final int A4_WIDTH = 2480;
         final int A4_HEIGHT = 3508;
 
-        try (FileInputStream fis = new FileInputStream(excelPath);
-             Workbook workbook = excelPath.endsWith(".xls") ? new HSSFWorkbook(fis) : new XSSFWorkbook(fis)) {
+        try (FileInputStream fis = new FileInputStream(excelFile);
+             Workbook workbook = excelFile.getName().endsWith(".xls") ? new HSSFWorkbook(fis) : new XSSFWorkbook(fis)) {
 
             // 获取第一个工作表
             Sheet sheet = workbook.getSheetAt(0);
@@ -143,7 +142,7 @@ public class XlsFileStrategy implements FileStrategy{
         }
     }
 
-    private void convertExcelToPdfOfJodconverter(String excelPath, String outputPath) throws Exception{
+    private void convertExcelToPdfOfJodconverter(File excelFile, String outputPath) throws Exception{
         // 启动 LibreOffice 服务
         OfficeManager officeManager = LocalOfficeManager.builder()
                 .officeHome(properties.getOfficeHome())  // 修改为你的 LibreOffice 路径
@@ -152,7 +151,7 @@ public class XlsFileStrategy implements FileStrategy{
         try {
             officeManager.start();
             LocalConverter.make()
-                    .convert(new File(excelPath))
+                    .convert(excelFile)
                     .to(new File(outputPath))
                     .execute();
             System.out.println("Excel 转换成功！");

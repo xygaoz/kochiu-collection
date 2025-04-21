@@ -39,12 +39,12 @@ public interface ResourceStoreStrategy {
      * @param cataId
      * @throws CollectionException
      */
-    void saveResource(File file,
-                      UserDto userDto,
-                      String md5,
-                      String savePath,
-                      Long categoryId,
-                      Long cataId) throws CollectionException;
+    void saveLinkResource(File file,
+                          UserDto userDto,
+                          String md5,
+                          String savePath,
+                          Long categoryId,
+                          Long cataId) throws CollectionException;
 
     /**
      * 下载文件

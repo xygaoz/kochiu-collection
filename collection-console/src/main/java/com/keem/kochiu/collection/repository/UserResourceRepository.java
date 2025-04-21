@@ -37,17 +37,16 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
      * 保存资源，返回资源id
      * @param resourceDto
      * @return
-     * @throws CollectionException
      */
-    public Long saveResource(ResourceDto resourceDto) throws CollectionException {
+    public Long saveResource(ResourceDto resourceDto) {
 
         UserResource userResource = new UserResource();
         userResource.setUserId(resourceDto.getUserId());
         userResource.setCateId(resourceDto.getCateId());
         userResource.setCataId(resourceDto.getCataId());
         userResource.setSourceFileName(resourceDto.getSourceFileName());
-        userResource.setFilePath(resourceDto.getResourceUrl());
-        userResource.setSaveType(SaveTypeEnum.LOCAL.getCode());
+        userResource.setFilePath(resourceDto.getFilePath() == null ? resourceDto.getResourceUrl() : resourceDto.getFilePath());
+        userResource.setSaveType(resourceDto.getSaveType().getCode());
         userResource.setResourceUrl(resourceDto.getResourceUrl());
         userResource.setFileExt(resourceDto.getFileExt());
         userResource.setResolutionRatio(resourceDto.getResolutionRatio());

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -20,7 +21,7 @@ public class TxtFileStrategy implements FileStrategy{
     /**
      * 生成缩略图
      *
-     * @param filePath
+     * @param file
      * @param thumbFilePath
      * @param fileType
      * @param resourceDto
@@ -28,7 +29,7 @@ public class TxtFileStrategy implements FileStrategy{
      * @throws Exception
      */
     @Override
-    public String createThumbnail(String filePath,
+    public String createThumbnail(File file,
                                   String thumbFilePath,
                                   String thumbUrl,
                                   FileTypeEnum fileType,
@@ -39,7 +40,7 @@ public class TxtFileStrategy implements FileStrategy{
         final int A4_HEIGHT = 3508;
 
         try {
-            List<String> lines = Files.readAllLines(Paths.get(filePath));
+            List<String> lines = Files.readAllLines(file.toPath());
 
             // 计算图像的高度
             int height = Math.min(lines.size() * 20, A4_HEIGHT); // 每行的高度为20像素

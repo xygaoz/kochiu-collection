@@ -30,7 +30,7 @@ public class Mp4FileStrategy implements FileStrategy{
     protected JpgFileStrategy jpgFileStrategy;
 
     @Override
-    public String createThumbnail(String filePath,
+    public String createThumbnail(File file,
                                   String thumbFilePath,
                                   String thumbUrl,
                                   FileTypeEnum fileType,
@@ -41,7 +41,7 @@ public class Mp4FileStrategy implements FileStrategy{
             try {
                 // 获取视频总时长（秒）
                 Process durationProcess = new ProcessBuilder(
-                        properties.getFfmpegPath() + "/ffmpeg", "-i", filePath, "-f", "null", "-"
+                        properties.getFfmpegPath() + "/ffmpeg", "-i", file.getAbsolutePath(), "-f", "null", "-"
                 ).redirectErrorStream(true).start();
 
                 BufferedReader reader = new BufferedReader(
@@ -67,7 +67,7 @@ public class Mp4FileStrategy implements FileStrategy{
                 Process captureProcess = new ProcessBuilder(
                         "ffmpeg",
                         "-ss", String.valueOf(randomTime), // 跳转到随机时间
-                        "-i", filePath,
+                        "-i", file.getAbsolutePath(),
                         "-vframes", "1",                  // 只取1帧
                         "-q:v", "10",                     // 输出质量（1-31，越小越好）
                         thumbFilePath
@@ -77,7 +77,7 @@ public class Mp4FileStrategy implements FileStrategy{
                 log.debug("帧已保存到: " + thumbFilePath);
 
                 //再次生成缩略图
-                resourceDto.setThumbRatio(jpgFileStrategy.createThumbnail(thumbFilePath, thumbFilePath, thumbUrl, fileType, resourceDto));
+                resourceDto.setThumbRatio(jpgFileStrategy.createThumbnail(new File(thumbFilePath), thumbFilePath, thumbUrl, fileType, resourceDto));
 
             } catch (Exception e) {
                 log.error("视频截帧失败", e);

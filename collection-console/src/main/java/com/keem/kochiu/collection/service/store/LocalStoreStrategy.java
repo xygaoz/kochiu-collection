@@ -11,6 +11,7 @@ import com.keem.kochiu.collection.entity.UserCatalog;
 import com.keem.kochiu.collection.entity.UserResource;
 import com.keem.kochiu.collection.enums.ErrorCodeEnum;
 import com.keem.kochiu.collection.enums.FileTypeEnum;
+import com.keem.kochiu.collection.enums.SaveTypeEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.properties.CollectionProperties;
 import com.keem.kochiu.collection.repository.SysUserRepository;
@@ -95,6 +96,9 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
         File outfile = new File(filePath);
         FileUtil.writeFromStream(fileInputStream, outfile);
         long size = FileUtil.size(outfile);
+        if(size == 0) {
+            throw new CollectionException(ErrorCodeEnum.FILE_SAVING_FAILURE);
+        }
 
         FileTypeEnum fileType = FileTypeEnum.getByValue(extension);
         ResourceDto resourceDto = ResourceDto.builder()
@@ -106,6 +110,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
                 .fileExt(extension)
                 .size(size)
                 .md5(md5)
+                .saveType(SaveTypeEnum.LOCAL)
                .build();
         //生成缩略图
         createThumbnail(resourceDto, fileType, filePath);
@@ -136,12 +141,13 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
      * @param cataId
      * @throws CollectionException
      */
-    public void saveResource(File file,
-                           UserDto userDto,
-                           String md5,
-                           String savePath,
-                           Long categoryId,
-                           Long cataId) throws CollectionException {
+    public void saveLinkResource(File file,
+                                 UserDto userDto,
+                                 String md5,
+                                 String savePath,
+                                 Long categoryId,
+                                 Long cataId
+                             ) throws CollectionException {
 
         //判断文件类型
         String extension = FilenameUtils.getExtension(file.getName()).toLowerCase();
@@ -154,9 +160,12 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
             throw new CollectionException(ILLEGAL_REQUEST);
         }
 
+        String resourceUrl = "/" + userCode + savePath + "/" + md5 + "." + extension;
         String recFilePathDir = collectionProperties.getUploadPath();
-        String filePath = recFilePathDir + "/" + userCode + savePath + "/" + md5 + "." + extension;
-        filePath = filePath.replaceAll("//", "/");
+        File dir = new File(recFilePathDir + "/" + userCode + savePath);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
 
         long size = FileUtil.size(file);
 
@@ -165,14 +174,16 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
                 .userId(userDto.getUserId())
                 .cateId(categoryId)
                 .cataId(cataId)
-                .sourceFileName(file.getAbsolutePath())
-                .resourceUrl(savePath)
+                .filePath(file.getAbsolutePath())
+                .sourceFileName(file.getName())
+                .resourceUrl(resourceUrl)
                 .fileExt(extension)
                 .size(size)
                 .md5(md5)
+                .saveType(SaveTypeEnum.LINK)
                 .build();
         //生成缩略图
-        createThumbnail(resourceDto, fileType, filePath);
+        createThumbnail(resourceDto, fileType, file.getAbsolutePath(), recFilePathDir + resourceUrl);
 
         resourceRepository.saveResource(resourceDto);
     }
@@ -192,7 +203,23 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
 
             FileStrategy fileStrategy = fileStrategyFactory.getStrategy(fileType);
             try {
-                fileStrategy.createThumbnail(filePath, thumbFilePath, thumbUrl, fileType, resourceDto);
+                fileStrategy.createThumbnail(new File(filePath), thumbFilePath, thumbUrl, fileType, resourceDto);
+            } catch (Exception e) {
+                log.error("缩略图生成失败", e);
+            }
+        }
+    }
+
+    private void createThumbnail(ResourceDto resourceDto, FileTypeEnum fileType, String sourceFile, String thumbFilePath){
+
+        //判断文件是否需要生成缩略图
+        if(fileType.isThumb()) {
+            thumbFilePath = thumbFilePath.replace("." + resourceDto.getFileExt(), "_thumb.png");
+            String thumbUrl = resourceDto.getResourceUrl().replace("." + resourceDto.getFileExt(), "_thumb.png");
+
+            FileStrategy fileStrategy = fileStrategyFactory.getStrategy(fileType);
+            try {
+                fileStrategy.createThumbnail(new File(sourceFile), thumbFilePath, thumbUrl, fileType, resourceDto);
             } catch (Exception e) {
                 log.error("缩略图生成失败", e);
             }

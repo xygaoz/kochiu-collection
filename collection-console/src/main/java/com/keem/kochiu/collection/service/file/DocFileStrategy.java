@@ -31,7 +31,7 @@ public class DocFileStrategy implements FileStrategy{
     /**
      * 生成缩略图
      *
-     * @param filePath
+     * @param file
      * @param thumbFilePath
      * @param fileType
      * @param resourceDto
@@ -39,24 +39,24 @@ public class DocFileStrategy implements FileStrategy{
      * @throws Exception
      */
     @Override
-    public String createThumbnail(String filePath,
+    public String createThumbnail(File file,
                                   String thumbFilePath,
                                   String thumbUrl,
                                   FileTypeEnum fileType,
                                   ResourceDto resourceDto) throws Exception {
 
-        String pdfPath = filePath.replace(".doc", ".pdf");
+        String pdfPath = thumbFilePath.substring(0, thumbFilePath.lastIndexOf("_thumb.png")) + ".pdf";
 
         // Step 1: Convert Word to HTML
         if(properties.getOfficeHome() != null && new File(properties.getOfficeHome()).exists()){
-            convertDocToPdfOfJodconverter(filePath, pdfPath);
+            convertDocToPdfOfJodconverter(file, pdfPath);
         }
         else {
-            convertDocToPdf(filePath, pdfPath);
+            convertDocToPdf(file, pdfPath);
         }
 
         // Step 3: Convert PDF first page to image
-        String thumbRatio = pdfFileStrategy.createThumbnail(pdfPath, thumbFilePath, thumbUrl, fileType, resourceDto);
+        String thumbRatio = pdfFileStrategy.createThumbnail(new File(pdfPath), thumbFilePath, thumbUrl, fileType, resourceDto);
         resourceDto.setThumbRatio(thumbRatio);
         resourceDto.setThumbUrl(thumbUrl);
 
@@ -65,8 +65,8 @@ public class DocFileStrategy implements FileStrategy{
         return thumbRatio;
     }
 
-    private void convertDocToPdf(String wordPath, String outputPath) throws Exception{
-        try (FileInputStream fis = new FileInputStream(wordPath);
+    private void convertDocToPdf(File wordFile, String outputPath) throws Exception{
+        try (FileInputStream fis = new FileInputStream(wordFile);
              HWPFDocument doc = new HWPFDocument(fis)) {
 
             WordExtractor extractor = new WordExtractor(doc);
@@ -85,7 +85,7 @@ public class DocFileStrategy implements FileStrategy{
         }
     }
 
-    protected void convertDocToPdfOfJodconverter(String wordPath, String outputPath) throws Exception{
+    protected void convertDocToPdfOfJodconverter(File wordFile, String outputPath) throws Exception{
         // 启动 LibreOffice 服务
         OfficeManager officeManager = LocalOfficeManager.builder()
                 .officeHome(properties.getOfficeHome())  // 修改为你的 LibreOffice 路径
@@ -94,7 +94,7 @@ public class DocFileStrategy implements FileStrategy{
         try {
             officeManager.start();
             LocalConverter.make()
-                    .convert(new File(wordPath))
+                    .convert(wordFile)
                     .to(new File(outputPath))
                     .execute();
             System.out.println("PDF 转换成功！");

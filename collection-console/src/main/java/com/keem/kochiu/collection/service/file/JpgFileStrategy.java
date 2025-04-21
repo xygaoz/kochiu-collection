@@ -6,6 +6,7 @@ import com.keem.kochiu.collection.util.ImageUtil;
 import org.springframework.stereotype.Service;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 
 @Service("jpg")
 public class JpgFileStrategy implements FileStrategy{
@@ -13,7 +14,7 @@ public class JpgFileStrategy implements FileStrategy{
     /**
      * 生成缩略图
      *
-     * @param filePath
+     * @param file
      * @param thumbFilePath
      * @param fileType
      * @param resourceDto
@@ -21,7 +22,7 @@ public class JpgFileStrategy implements FileStrategy{
      * @throws Exception
      */
     @Override
-    public String createThumbnail(String filePath,
+    public String createThumbnail(File file,
                                   String thumbFilePath,
                                   String thumbUrl,
                                   FileTypeEnum fileType,
@@ -30,7 +31,7 @@ public class JpgFileStrategy implements FileStrategy{
         String resolutionRation = null;
         //生成缩略图
         // 读取原始图片
-        BufferedImage srcImg = ImageUtil.readImageWithFallback(filePath);
+        BufferedImage srcImg = ImageUtil.readImageWithFallback(file);
         if(fileType.isResolutionRatio()){
             resolutionRation = srcImg.getWidth() + "x" + srcImg.getHeight();
         }

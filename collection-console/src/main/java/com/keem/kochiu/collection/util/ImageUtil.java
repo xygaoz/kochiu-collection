@@ -15,28 +15,28 @@ import java.util.Iterator;
 public class ImageUtil {
 
     // 支持 WebP/GIF 的增强读取方法
-    public static BufferedImage readImageWithFallback(String path) throws IOException {
+    public static BufferedImage readImageWithFallback(File file) throws IOException {
         try {
-            return ImageIO.read(new File(path));
+            return ImageIO.read(file);
         } catch (IOException e) {
             // 特殊格式回退处理
-            if (path.toLowerCase().endsWith(".webp")) {
-                return readWebPImage(path);
-            } else if (path.toLowerCase().endsWith(".gif")) {
-                return readGifFirstFrame(path);
+            if (file.getName().toLowerCase().endsWith(".webp")) {
+                return readWebPImage(file);
+            } else if (file.getName().toLowerCase().endsWith(".gif")) {
+                return readGifFirstFrame(file);
             }
             throw e;
         }
     }
 
     // 读取 WebP 图像
-    private static BufferedImage readWebPImage(String path) throws IOException {
-        return ImageIO.read(new File(path)); // 依赖 webp-imageio-core
+    private static BufferedImage readWebPImage(File file) throws IOException {
+        return ImageIO.read(file); // 依赖 webp-imageio-core
     }
 
     // 读取 GIF 第一帧
-    private static BufferedImage readGifFirstFrame(String path) throws IOException {
-        try (ImageInputStream in = ImageIO.createImageInputStream(new File(path))) {
+    private static BufferedImage readGifFirstFrame(File file) throws IOException {
+        try (ImageInputStream in = ImageIO.createImageInputStream(file)) {
             Iterator<ImageReader> readers = ImageIO.getImageReaders(in);
             if (readers.hasNext()) {
                 ImageReader reader = readers.next();

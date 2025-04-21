@@ -34,7 +34,7 @@ public class PptFileStrategy implements FileStrategy{
     /**
      * 生成缩略图
      *
-     * @param filePath
+     * @param pptFile
      * @param thumbFilePath
      * @param fileType
      * @param resourceDto
@@ -42,7 +42,7 @@ public class PptFileStrategy implements FileStrategy{
      * @throws Exception
      */
     @Override
-    public String createThumbnail(String filePath,
+    public String createThumbnail(File pptFile,
                                   String thumbFilePath,
                                   String thumbUrl,
                                   FileTypeEnum fileType,
@@ -50,8 +50,7 @@ public class PptFileStrategy implements FileStrategy{
 
         String thumbRatio;
         if (properties.getOfficeHome() != null && new File(properties.getOfficeHome()).exists()) {
-            String pdfPath = filePath.replace(".pptx", ".pdf");
-            pdfPath = pdfPath.replace(".ppt", ".pdf");
+            String pdfPath = thumbFilePath.substring(0, thumbFilePath.lastIndexOf("_thumb.png")) + ".pdf";
 
             OfficeManager officeManager = LocalOfficeManager.builder()
                     .officeHome(properties.getOfficeHome())
@@ -68,26 +67,26 @@ public class PptFileStrategy implements FileStrategy{
                                 new PagesSelectorFilter(1, 1)
                         )
                         .build()
-                        .convert(new File(filePath))
+                        .convert(pptFile)
                         .to(new File(pdfPath))
                         .execute();
 
-                thumbRatio = pdfFileStrategy.createThumbnail(pdfPath, thumbFilePath, thumbUrl, fileType, resourceDto);
+                thumbRatio = pdfFileStrategy.createThumbnail(new File(pdfPath), thumbFilePath, thumbUrl, fileType, resourceDto);
                 resourceDto.setPreviewUrl(thumbUrl.replace("_thumb.png", ".pdf"));
             } finally {
                 officeManager.stop();
             }
         }
         else{
-            thumbRatio = convertPptFirstPage(filePath, thumbFilePath);
+            thumbRatio = convertPptFirstPage(pptFile, thumbFilePath);
         }
         resourceDto.setThumbRatio(thumbRatio);
         resourceDto.setThumbUrl(thumbUrl);
         return thumbRatio;
     }
 
-    public String convertPptFirstPage(String pptPath, String outputPath) throws IOException {
-        try (SlideShow<?, ?> slideShow = new XMLSlideShow(new FileInputStream(pptPath))) {
+    public String convertPptFirstPage(File pptFile, String outputPath) throws IOException {
+        try (SlideShow<?, ?> slideShow = new XMLSlideShow(new FileInputStream(pptFile))) {
             Dimension pageSize = slideShow.getPageSize();
             BufferedImage image = new BufferedImage(pageSize.width, pageSize.height, BufferedImage.TYPE_INT_RGB);
             Graphics2D graphics = image.createGraphics();
