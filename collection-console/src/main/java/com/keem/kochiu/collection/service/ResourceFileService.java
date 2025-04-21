@@ -220,6 +220,13 @@ public class ResourceFileService {
      * @param batchImportBo
      * @throws CollectionException
      */
+    /**
+     * 批量导入
+     * @param taskId
+     * @param userDto
+     * @param batchImportBo
+     * @throws CollectionException
+     */
     public void batchImport(String taskId, UserDto userDto, BatchImportBo batchImportBo) throws CollectionException {
         SysUser user = userRepository.getUser(userDto);
         if (!systemService.testServerPath(PathBo.builder()
@@ -229,14 +236,14 @@ public class ResourceFileService {
             throw new CollectionException(ErrorCodeEnum.SERVER_PATH_ERROR);
         }
 
-        //取出服务器路径里适合导入的文件
+        // 取出服务器路径里适合导入的文件
         List<File> files = listImportableFiles(batchImportBo.getSourcePath(), true);
-        //取用户根目录ID
+        // 取用户根目录ID
         Long rootCataId = catalogRepository.getUserRoot(user.getUserId());
         if (rootCataId == null){
             throw new CollectionException(ErrorCodeEnum.ROOT_CATALOG_IS_INVALID);
         }
-        //判断目录是否存在
+        // 判断目录是否存在
         if(batchImportBo.getCatalogId() != null){
             if(catalogRepository.getById(batchImportBo.getCatalogId()) == null){
                 throw new CollectionException(ErrorCodeEnum.CATALOG_NOT_EXIST);
@@ -255,7 +262,7 @@ public class ResourceFileService {
                 String filePath = file.getAbsolutePath();
                 String relativePath = filePath.substring(batchImportBo.getSourcePath().length());
 
-                //获取文件MD5，查出相同文件的记录
+                // 获取文件MD5，查出相同文件的记录
                 String md5 = DigestUtil.md5Hex(file);
                 List<UserResource> resources = resourceRepository.countFileMd5(userDto.getUserId(), md5);
 
@@ -278,18 +285,18 @@ public class ResourceFileService {
                     }
                     case KEEP_ORIGINAL: {
                         try {
-                            //提取子目录
+                            // 提取子目录
                             String catalogPath = getSubPath(relativePath);
+                            // 调用 saveLinkResource 方法保存链接资源
                             storeStrategy.saveLinkResource(file,
-                                            userDto,
-                                            md5,
-                                            catalogPath, //根据原目录结构保存缩略图
-                                            batchImportBo.getCategoryId(),
-                                            rootCataId
-                                    );
+                                    userDto,
+                                    md5,
+                                    catalogPath, // 根据原目录结构保存缩略图
+                                    batchImportBo.getCategoryId(),
+                                    rootCataId
+                            );
                             successCount++;
-                        }
-                        catch (Exception e) {
+                        } catch (Exception e) {
                             log.error("文件保存失败", e);
                             failCount++;
                         }
