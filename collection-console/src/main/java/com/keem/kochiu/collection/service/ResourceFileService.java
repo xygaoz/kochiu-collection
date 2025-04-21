@@ -13,6 +13,7 @@ import com.keem.kochiu.collection.entity.UserCatalog;
 import com.keem.kochiu.collection.entity.UserResource;
 import com.keem.kochiu.collection.enums.ErrorCodeEnum;
 import com.keem.kochiu.collection.enums.FileTypeEnum;
+import com.keem.kochiu.collection.enums.ImportMethodEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.handler.ImportProgressWebSocketHandler;
 import com.keem.kochiu.collection.repository.SysUserRepository;
@@ -235,108 +236,7 @@ public class ResourceFileService {
                 ResourceStoreStrategy storeStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
 
                 switch (batchImportBo.getImportMethod()){
-                    case COPY: {
-                        switch (batchImportBo.getAutoCreateRule()){
-                            //在根目录创建日期目录
-                            case CREATE_DATE_DIRECTORY: {
-                                try(InputStream is = new FileInputStream(file)){
-                                    saveFile(is,
-                                            file.getName(),
-                                            md5,
-                                            userDto,
-                                            batchImportBo.getCategoryId(),
-                                            rootCataId,
-                                            true,
-                                            true,
-                                            user.getStrategy());
-
-                                    //保存成功。删除原有记录
-                                    if(!resources.isEmpty()){
-                                        for(UserResource resource : resources){
-                                            resourceRepository.removeById(resource);
-                                            //删除文件
-                                            storeStrategy.deleteFile(userDto.getUserId(), resource);
-                                        }
-                                    }
-                                    successCount++;
-
-                                } catch (IOException e) {
-                                    log.error("文件保存失败", e);
-                                    failCount++;
-                                }
-                                break;
-                            }
-                            //在根目录按服务端路径子目录结构创建
-                            case MIRROR_SOURCE_DIRECTORY: {
-                                //提取子目录
-                                String catalogPath = getSubPath(relativePath);
-                                if(isMore4Floors(catalogPath)){
-                                    log.error("目录层级超过4层，无法导入{}", filePath);
-                                    failCount++;
-                                    continue;
-                                }
-
-                                Long cataId;
-                                if(!"/".equals(catalogPath)){
-                                    //不是根目录
-                                    cataId = userCatalogService.addCatalogPath(userDto, catalogPath);
-                                }
-                                else{
-                                    cataId = rootCataId;
-                                }
-                                try(InputStream is = new FileInputStream(file)){
-                                    saveFile(is,
-                                            file.getName(),
-                                            md5,
-                                            userDto,
-                                            batchImportBo.getCategoryId(),
-                                            cataId,
-                                            true,
-                                            false,
-                                            user.getStrategy());
-
-                                    for(UserResource resource : resources){
-                                        resourceRepository.removeById(resource);
-                                        //删除文件
-                                        storeStrategy.deleteFile(userDto.getUserId(), resource);
-                                    }
-                                    successCount++;
-
-                                } catch (IOException e) {
-                                    log.error("文件保存失败", e);
-                                    failCount++;
-                                }
-                                break;
-                            }
-                            //不自动创建，保存到根目录
-                            case NO_AUTO_CREATE: {
-                                try(InputStream is = new FileInputStream(file)){
-                                    saveFile(is,
-                                            file.getName(),
-                                            md5,
-                                            userDto,
-                                            batchImportBo.getCategoryId(),
-                                            rootCataId,
-                                            true,
-                                            false,
-                                            user.getStrategy());
-
-                                    //一起存在到根目录只会有一份文件，只删除资源记录即可
-                                    for(UserResource resource : resources){
-                                        resourceRepository.removeById(resource);
-                                    }
-                                    successCount++;
-                                } catch (IOException e) {
-                                    log.error("文件保存失败", e);
-                                    failCount++;
-                                }
-                                break;
-                            }
-                            default:
-                                throw new CollectionException(ErrorCodeEnum.AUTO_CREATE_RULE_ERROR);
-                        }
-                        break;
-                    }
+                    case COPY:
                     case MOVE: {
                         switch (batchImportBo.getAutoCreateRule()){
                             //在根目录创建日期目录
@@ -437,17 +337,32 @@ public class ResourceFileService {
                             default:
                                 throw new CollectionException(ErrorCodeEnum.AUTO_CREATE_RULE_ERROR);
                         }
-                        FileUtil.del(file);
+
+                        if(batchImportBo.getImportMethod() == ImportMethodEnum.MOVE){
+                            FileUtil.del(file);
+                        }
                         break;
                     }
                     case KEEP_ORIGINAL: {
+                        try {
+                            storeStrategy.saveResource(file,
+                                            userDto,
+                                            md5,
+                                            relativePath, //根据原目录结构保存缩略图
+                                            batchImportBo.getCategoryId(),
+                                            rootCataId
+                                    );
+                            successCount++;
+                        }
+                        catch (Exception e) {
+                            log.error("文件保存失败", e);
+                            failCount++;
+                        }
                         break;
                     }
                     default:
                         throw new CollectionException(ErrorCodeEnum.IMPORT_METHOD_ERROR);
                 }
-
-                Thread.sleep(500); // 模拟处理
                 log.info("处理进度：{}%", i);
 
                 // 发送进度前打印日志
@@ -456,7 +371,6 @@ public class ResourceFileService {
                 String json = objectMapper.writeValueAsString(progress); // 假设使用 Jackson
                 log.info("准备发送进度: {}", json); // 关键日志
                 ImportProgressWebSocketHandler.sendProgress(taskId, progress);
-                Thread.sleep(500);
             }
             ImportProgressWebSocketHandler.sendProgress(taskId,
                     new ImportProgressWebSocketHandler.ImportProgress(files.size(), files.size(), successCount, failCount, "", "completed", null)
