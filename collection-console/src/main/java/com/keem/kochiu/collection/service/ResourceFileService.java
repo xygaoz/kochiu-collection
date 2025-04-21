@@ -216,6 +216,12 @@ public class ResourceFileService {
         if (rootCataId == null){
             throw new CollectionException(ErrorCodeEnum.ROOT_CATALOG_IS_INVALID);
         }
+        //判断目录是否存在
+        if(batchImportBo.getCatalogId() != null){
+            if(catalogRepository.getById(batchImportBo.getCatalogId()) == null){
+                throw new CollectionException(ErrorCodeEnum.CATALOG_NOT_EXIST);
+            }
+        }
 
         int successCount = 0, failCount = 0;
         try {
@@ -238,104 +244,11 @@ public class ResourceFileService {
                 switch (batchImportBo.getImportMethod()){
                     case COPY:
                     case MOVE: {
-                        switch (batchImportBo.getAutoCreateRule()){
-                            //在根目录创建日期目录
-                            case CREATE_DATE_DIRECTORY: {
-                                try(InputStream is = new FileInputStream(file)){
-                                    saveFile(is,
-                                            file.getName(),
-                                            md5,
-                                            userDto,
-                                            batchImportBo.getCategoryId(),
-                                            rootCataId,
-                                            true,
-                                            true,
-                                            user.getStrategy());
-
-                                    //保存成功。删除原有记录
-                                    if(!resources.isEmpty()){
-                                        for(UserResource resource : resources){
-                                            resourceRepository.removeById(resource);
-                                            //删除文件
-                                            storeStrategy.deleteFile(userDto.getUserId(), resource);
-                                        }
-                                    }
-                                    successCount++;
-
-                                } catch (IOException e) {
-                                    log.error("文件保存失败", e);
-                                    failCount++;
-                                }
-                                break;
-                            }
-                            //在根目录按服务端路径子目录结构创建
-                            case MIRROR_SOURCE_DIRECTORY: {
-                                //提取子目录
-                                String catalogPath = getSubPath(relativePath);
-                                if(isMore4Floors(catalogPath)){
-                                    log.error("目录层级超过4层，无法导入{}", filePath);
-                                    failCount++;
-                                    continue;
-                                }
-
-                                Long cataId;
-                                if(!"/".equals(catalogPath)){
-                                    //不是根目录
-                                    cataId = userCatalogService.addCatalogPath(userDto, catalogPath);
-                                }
-                                else{
-                                    cataId = rootCataId;
-                                }
-                                try(InputStream is = new FileInputStream(file)){
-                                    saveFile(is,
-                                            file.getName(),
-                                            md5,
-                                            userDto,
-                                            batchImportBo.getCategoryId(),
-                                            cataId,
-                                            true,
-                                            false,
-                                            user.getStrategy());
-
-                                    for(UserResource resource : resources){
-                                        resourceRepository.removeById(resource);
-                                        //删除文件
-                                        storeStrategy.deleteFile(userDto.getUserId(), resource);
-                                    }
-                                    successCount++;
-
-                                } catch (IOException e) {
-                                    log.error("文件保存失败", e);
-                                    failCount++;
-                                }
-                                break;
-                            }
-                            //不自动创建，保存到根目录
-                            case NO_AUTO_CREATE: {
-                                try(InputStream is = new FileInputStream(file)){
-                                    saveFile(is,
-                                            file.getName(),
-                                            md5,
-                                            userDto,
-                                            batchImportBo.getCategoryId(),
-                                            rootCataId,
-                                            true,
-                                            false,
-                                            user.getStrategy());
-
-                                    //一起存在到根目录只会有一份文件，只删除资源记录即可
-                                    for(UserResource resource : resources){
-                                        resourceRepository.removeById(resource);
-                                    }
-                                    successCount++;
-                                } catch (IOException e) {
-                                    log.error("文件保存失败", e);
-                                    failCount++;
-                                }
-                                break;
-                            }
-                            default:
-                                throw new CollectionException(ErrorCodeEnum.AUTO_CREATE_RULE_ERROR);
+                        if(handleCopyOrMove(batchImportBo, file, md5, userDto, user, rootCataId, resources, storeStrategy)){
+                            successCount++;
+                        }
+                        else{
+                            failCount++;
                         }
 
                         if(batchImportBo.getImportMethod() == ImportMethodEnum.MOVE){
@@ -385,6 +298,140 @@ public class ResourceFileService {
                     new ImportProgressWebSocketHandler.ImportProgress(-1, files.size(), successCount, failCount, "", "error", e.getMessage())
             );
             throw new CollectionException(ErrorCodeEnum.IMPORT_ERROR, e.getMessage());
+        }
+    }
+
+    /**
+     * 处理复制或移动
+     */
+    private boolean handleCopyOrMove(BatchImportBo batchImportBo, File file,
+                                  String md5, UserDto userDto, SysUser user,
+                                  Long rootCataId, List<UserResource> resources,
+                                  ResourceStoreStrategy storeStrategy) throws CollectionException {
+
+        //假如没有选择导入目录，下面的目录规则生效
+        if(batchImportBo.getCatalogId() == null) {
+            switch (batchImportBo.getAutoCreateRule()) {
+                //在根目录创建日期目录
+                case CREATE_DATE_DIRECTORY: {
+                    try (InputStream is = new FileInputStream(file)) {
+                        saveFile(is,
+                                file.getName(),
+                                md5,
+                                userDto,
+                                batchImportBo.getCategoryId(),
+                                rootCataId,
+                                true,
+                                true,
+                                user.getStrategy());
+
+                        //保存成功。删除原有记录
+                        if (!resources.isEmpty()) {
+                            for (UserResource resource : resources) {
+                                resourceRepository.removeById(resource);
+                                //删除文件
+                                storeStrategy.deleteFile(userDto.getUserId(), resource);
+                            }
+                        }
+                        return true;
+                    } catch (IOException e) {
+                        log.error("文件保存失败", e);
+                        return false;
+                    }
+                }
+                //在根目录按服务端路径子目录结构创建
+                case MIRROR_SOURCE_DIRECTORY: {
+                    String filePath = file.getAbsolutePath();
+                    String relativePath = filePath.substring(batchImportBo.getSourcePath().length());
+                    //提取子目录
+                    String catalogPath = getSubPath(relativePath);
+                    if (isMore4Floors(catalogPath)) {
+                        log.error("目录层级超过4层，无法导入{}", filePath);
+                        return false;
+                    }
+
+                    Long cataId;
+                    if (!"/".equals(catalogPath)) {
+                        //不是根目录
+                        cataId = userCatalogService.addCatalogPath(userDto, catalogPath);
+                    } else {
+                        cataId = rootCataId;
+                    }
+                    try (InputStream is = new FileInputStream(file)) {
+                        saveFile(is,
+                                file.getName(),
+                                md5,
+                                userDto,
+                                batchImportBo.getCategoryId(),
+                                cataId,
+                                true,
+                                false,
+                                user.getStrategy());
+
+                        for (UserResource resource : resources) {
+                            resourceRepository.removeById(resource);
+                            //删除文件
+                            storeStrategy.deleteFile(userDto.getUserId(), resource);
+                        }
+                        return true;
+
+                    } catch (IOException e) {
+                        log.error("文件保存失败", e);
+                        return false;
+                    }
+                }
+                //不自动创建，保存到根目录
+                case NO_AUTO_CREATE: {
+                    try (InputStream is = new FileInputStream(file)) {
+                        saveFile(is,
+                                file.getName(),
+                                md5,
+                                userDto,
+                                batchImportBo.getCategoryId(),
+                                rootCataId,
+                                true,
+                                false,
+                                user.getStrategy());
+
+                        //一起存在到根目录只会有一份文件，只删除资源记录即可
+                        for (UserResource resource : resources) {
+                            resourceRepository.removeById(resource);
+                        }
+                        return true;
+                    } catch (IOException e) {
+                        log.error("文件保存失败", e);
+                        return false;
+                    }
+                }
+                default:
+                    throw new CollectionException(ErrorCodeEnum.AUTO_CREATE_RULE_ERROR);
+            }
+        }
+        else{
+            try (InputStream is = new FileInputStream(file)) {
+                saveFile(is,
+                        file.getName(),
+                        md5,
+                        userDto,
+                        batchImportBo.getCategoryId(),
+                        batchImportBo.getCatalogId(),
+                        true,
+                        true,
+                        user.getStrategy());
+
+                //保存成功。删除原有记录
+                if (!resources.isEmpty()) {
+                    for (UserResource resource : resources) {
+                        resourceRepository.removeById(resource);
+                        //删除文件
+                        storeStrategy.deleteFile(userDto.getUserId(), resource);
+                    }
+                }
+                return true;
+            } catch (IOException e) {
+                log.error("文件保存失败", e);
+                return false;
+            }
         }
     }
 
