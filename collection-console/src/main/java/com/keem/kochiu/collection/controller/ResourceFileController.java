@@ -8,20 +8,17 @@ import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.data.vo.FileVo;
 import com.keem.kochiu.collection.enums.PermitEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
+import com.keem.kochiu.collection.handler.ImportProgressWebSocketHandler;
 import com.keem.kochiu.collection.service.CheckPermitAspect;
 import com.keem.kochiu.collection.service.ImportTaskService;
 import com.keem.kochiu.collection.service.ResourceFileService;
-import com.keem.kochiu.collection.handler.ImportProgressWebSocketHandler;
-
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 import static com.keem.kochiu.collection.Constant.PUBLIC_URL;
 
@@ -54,8 +51,8 @@ public class ResourceFileController {
     }
 
     @CheckPermit
-    @PostMapping(RESOURCE_PATH + "/batchImport")
-    public DefaultResult<String> batchImport(BatchImportBo request) {
+    @PostMapping(RESOURCE_PATH + "/startBatchImport")
+    public DefaultResult<String> startBatchImport(BatchImportBo request) {
         String taskId = UUID.randomUUID().toString();
         UserDto userDto = CheckPermitAspect.USER_INFO.get();
 
@@ -74,13 +71,13 @@ public class ResourceFileController {
         return DefaultResult.ok(taskId);
     }
 
-    @PostMapping("/cancel/{taskId}")
-    public ResponseEntity<String> cancelImport(@PathVariable String taskId) {
+    @GetMapping(RESOURCE_PATH + "/cancelImport/{taskId}")
+    public DefaultResult<String> cancelBatchImport(@PathVariable String taskId) {
         boolean success = taskService.cancelTask(taskId);
         if (success) {
             ImportProgressWebSocketHandler.sendCancelled(taskId); // 通知前端
-            return ResponseEntity.ok("取消成功");
+            return DefaultResult.ok("取消成功");
         }
-        return ResponseEntity.status(404).body("任务不存在或已完成");
+        return DefaultResult.fail("任务不存在或已完成");
     }
 }

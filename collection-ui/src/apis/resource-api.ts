@@ -4,6 +4,7 @@ import httpInstance, { loading } from "@/apis/utils";
 import { PageInfo, Resource, Tag } from "@/apis/interface";
 import type { AxiosProgressEvent } from 'axios'
 
+const resourceApi = "/resource";
 export const uploadFile = (
     file: File,
     categoryId: number,
@@ -20,7 +21,7 @@ export const uploadFile = (
     formData.append('autoCreate', autoCreate);
 
     const ld = loading("上传中");
-    return httpInstance.post("/resource/upload", formData, {
+    return httpInstance.post(resourceApi + "/upload", formData, {
         onUploadProgress: (progressEvent: AxiosProgressEvent) => { // 使用 AxiosProgressEvent
             if (onProgress) {
                 onProgress(progressEvent); // 触发回调
@@ -50,7 +51,7 @@ export const listCategoryFiles = (cateId: string, page: number, size: number, pa
     Object.keys(params).forEach(key => {
         requestParams[key] = params[key];
     });
-    return httpInstance.post("/resource/category/" + cateId, requestParams).then((model: any) => {
+    return httpInstance.post(resourceApi + "/category/" + cateId, requestParams).then((model: any) => {
         if (model) {
             console.log("获取文件列表成功:", model);
             return model as PageInfo<Resource>;
@@ -67,7 +68,7 @@ export const listCategoryFiles = (cateId: string, page: number, size: number, pa
 export const updateResource = (resourceId: number, params: any): Promise<boolean> => {
     const ld = loading("修改中")
     params["resourceId"] = resourceId;
-    return httpInstance.post("/resource/updateInfo", params).then((model: any) => {
+    return httpInstance.post(resourceApi + "/updateInfo", params).then((model: any) => {
         console.log("修改成功:", model);
         return model;
     }).finally(() => {
@@ -77,7 +78,7 @@ export const updateResource = (resourceId: number, params: any): Promise<boolean
 
 export const bacthUpdateResource = (resourceIds: number[], params: any): Promise<boolean> => {
     params["resourceIds"] = resourceIds;
-    return httpInstance.post("/resource/batchUpdate", params).then((model: any) => {
+    return httpInstance.post(resourceApi + "/batchUpdate", params).then((model: any) => {
         console.log("修改成功:", model);
         return model;
     })
@@ -85,14 +86,14 @@ export const bacthUpdateResource = (resourceIds: number[], params: any): Promise
 
 export const addResourceTag = (resourceId: number, params: any): Promise<Tag> => {
     params["resourceId"] = resourceId;
-    return httpInstance.post("/resource/addTag", params).then((model: any) => {
+    return httpInstance.post(resourceApi + "/addTag", params).then((model: any) => {
         return model;
     });
 }
 
 export const removeResourceTag = (resourceId: number, params: any): Promise<any> => {
     params["resourceId"] = resourceId;
-    return httpInstance.post("/resource/removeTag", params).then((model: any) => {
+    return httpInstance.post(resourceApi + "/removeTag", params).then((model: any) => {
         return model;
     });
 }
@@ -100,14 +101,14 @@ export const removeResourceTag = (resourceId: number, params: any): Promise<any>
 
 export const batchAddTag = (resourceIds: number[], params: any): Promise<any> => {
     params["resourceIds"] = resourceIds;
-    return httpInstance.post("/resource/batchAddTag", params).then((model: any) => {
+    return httpInstance.post(resourceApi + "/batchAddTag", params).then((model: any) => {
         return model;
     });
 }
 
 export const batchRemoveTag = (resourceIds: number[], params: any): Promise<any> => {
     params["resourceIds"] = resourceIds;
-    return httpInstance.post("/resource/batchRemoveTag", params).then((model: any) => {
+    return httpInstance.post(resourceApi + "/batchRemoveTag", params).then((model: any) => {
         return model;
     });
 }
@@ -122,7 +123,7 @@ export const listTagFiles = (tagId: string, page: number, size: number, params: 
     Object.keys(params).forEach(key => {
         requestParams[key] = params[key];
     });
-    return httpInstance.post("/resource/tag/" + tagId, requestParams).then((model: any) => {
+    return httpInstance.post(resourceApi + "/tag/" + tagId, requestParams).then((model: any) => {
         if (model) {
             console.log("获取文件列表成功:", model);
             return model as PageInfo<Resource>;
@@ -146,7 +147,7 @@ export const listTypeFiles = (typeName: string, page: number, size: number, para
     Object.keys(params).forEach(key => {
         requestParams[key] = params[key];
     });
-    return httpInstance.post("/resource/type/" + typeName, requestParams).then((model: any) => {
+    return httpInstance.post(resourceApi + "/type/" + typeName, requestParams).then((model: any) => {
         if (model) {
             console.log("获取文件列表成功:", model);
             return model as PageInfo<Resource>;
@@ -163,7 +164,7 @@ export const listTypeFiles = (typeName: string, page: number, size: number, para
 export const moveToCategory = (resourceIds: number[], params: any): Promise<boolean> => {
     const ld = loading("修改中")
     params["resourceIds"] = resourceIds;
-    return httpInstance.post("/resource/moveToCategory", params).then((model: any) => {
+    return httpInstance.post(resourceApi + "/moveToCategory", params).then((model: any) => {
         console.log("修改成功:", model);
         return model;
     }).finally(() => {
@@ -174,7 +175,7 @@ export const moveToCategory = (resourceIds: number[], params: any): Promise<bool
 export const moveToRecycle = (resourceIds: number[], params: any): Promise<boolean> => {
     const ld = loading("移动中")
     params["resourceIds"] = resourceIds;
-    return httpInstance.post("/resource/moveToRecycle", params).then((model: any) => {
+    return httpInstance.post(resourceApi + "/moveToRecycle", params).then((model: any) => {
         console.log("移动成功:", model);
         return model;
     }).finally(() => {
@@ -185,7 +186,7 @@ export const moveToRecycle = (resourceIds: number[], params: any): Promise<boole
 export const restoreFormRecycle = (resourceIds: number[], params: any): Promise<boolean> => {
     const ld = loading("恢复中")
     params["resourceIds"] = resourceIds;
-    return httpInstance.post("/resource/restore", params).then((model: any) => {
+    return httpInstance.post(resourceApi + "/restore", params).then((model: any) => {
         console.log("恢复成功:", model);
         return model;
     }).finally(() => {
@@ -203,7 +204,7 @@ export const listRecycleFiles = (page: number, size: number, params: any): Promi
     Object.keys(params).forEach(key => {
         requestParams[key] = params[key];
     });
-    return httpInstance.post("/resource/recycle", requestParams).then((model: any) => {
+    return httpInstance.post(resourceApi + "/recycle", requestParams).then((model: any) => {
         if (model) {
             console.log("获取文件列表成功:", model);
             return model as PageInfo<Resource>;
@@ -227,7 +228,7 @@ export const listAllFiles = (page: number, size: number, params: any): Promise<P
     Object.keys(params).forEach(key => {
         requestParams[key] = params[key];
     });
-    return httpInstance.post("/resource/all", requestParams).then((model: any) => {
+    return httpInstance.post(resourceApi + "/all", requestParams).then((model: any) => {
         if (model) {
             console.log("获取文件列表成功:", model);
             return model as PageInfo<Resource>;
@@ -251,7 +252,7 @@ export const listCatalogFiles = (sno: string, page: number, size: number, params
     Object.keys(params).forEach(key => {
         requestParams[key] = params[key];
     });
-    return httpInstance.post("/resource/catalog/" + sno, requestParams).then((model: any) => {
+    return httpInstance.post(resourceApi + "/catalog/" + sno, requestParams).then((model: any) => {
         if (model) {
             console.log("获取文件列表成功:", model);
             return model as PageInfo<Resource>;
@@ -268,7 +269,7 @@ export const listCatalogFiles = (sno: string, page: number, size: number, params
 export const moveToCatalog = (resourceIds: number[], params: any): Promise<boolean> => {
     const ld = loading("修改中")
     params["resourceIds"] = resourceIds;
-    return httpInstance.post("/resource/moveToCatalog", params).then((model: any) => {
+    return httpInstance.post(resourceApi + "/moveToCatalog", params).then((model: any) => {
         console.log("修改成功:", model);
         return model;
     }).finally(() => {
@@ -276,11 +277,17 @@ export const moveToCatalog = (resourceIds: number[], params: any): Promise<boole
     });
 }
 
-export const batchImport = (params: any): Promise<string> => {
+export const startBatchImport = (params: any): Promise<string> => {
     const ld = loading("开始导入")
-    return httpInstance.post("/resource/batchImport", params).then((model: any) => {
+    return httpInstance.post(resourceApi + "/startBatchImport", params).then((model: any) => {
         return model as string;
     }).finally(() => {
         ld.close();
+    });
+}
+
+export const cancelBatchImport = (taskId: string): Promise<string> => {
+    return httpInstance.get(resourceApi + "/cancelImport/" + taskId).then((model: any) => {
+        return model as string;
     });
 }

@@ -1,8 +1,9 @@
 import { Catalog, PathVo } from "@/apis/interface";
 import httpInstance from "@/apis/utils";
 
+const catalogApi = '/catalog'
 export const getCatalogTree = (): Promise<Catalog[]> => {
-    return httpInstance.get("/catalog/tree").then((model: any) => {
+    return httpInstance.get(catalogApi + "/tree").then((model: any) => {
         if (model) {
             return model as Catalog[];
         }
@@ -15,7 +16,7 @@ export const getCatalogTree = (): Promise<Catalog[]> => {
 
 export const addCatalog = (data: { cataName: string, parentId?: number }): Promise<boolean> => {
 
-    return httpInstance.post("/catalog/add", data).then((model: any) => {
+    return httpInstance.post(catalogApi + "/add", data).then((model: any) => {
         return !!model;
     }).catch((error) => {
         console.error("新建目录失败:", error);
@@ -24,7 +25,7 @@ export const addCatalog = (data: { cataName: string, parentId?: number }): Promi
 }
 
 export const getCatalogPath = async (sno: string): Promise<PathVo> => {
-    return httpInstance.get("/catalog/path/" + sno).then((model: any) => {
+    return httpInstance.get(catalogApi + "/path/" + sno).then((model: any) => {
         if (model) {
             return model as PathVo;
         }
@@ -36,7 +37,7 @@ export const getCatalogPath = async (sno: string): Promise<PathVo> => {
 }
 
 export const updateCatalog = (data: { cateId: number; cataName: string; parentId?: number }) => {
-    return httpInstance.post("/catalog/update", data).then((model: any) => {
+    return httpInstance.post(catalogApi + "/update", data).then((model: any) => {
         return !!model;
     }).catch((error) => {
         console.error("修改/移动目录失败:", error);
@@ -45,7 +46,7 @@ export const updateCatalog = (data: { cateId: number; cataName: string; parentId
 };
 
 export const deleteCatalog = (data: {cateId: number, newParentId: number, removeType: number}) => {
-    return httpInstance.post("/catalog/remove", data).then((model: any) => {
+    return httpInstance.post(catalogApi + "/remove", data).then((model: any) => {
         return !!model;
     }).catch((error) => {
         console.error("删除目录失败:", error);

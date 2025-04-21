@@ -2,6 +2,7 @@ import httpInstance from "@/apis/utils"; // 导入httpInstance
 import { loading } from "@/apis/utils";
 import { ResourceType } from "@/apis/interface";
 
+const sysApi = "/sys";
 export const tokenStore = {
     setToken(token: string, expirySeconds: number) {
         const item = {
@@ -29,7 +30,7 @@ export const tokenStore = {
 
 // 创建一个方法来获取公钥
 export const getPublicKey = () => {
-    return httpInstance.get("/sys/publicKey").then((model) => {
+    return httpInstance.get(sysApi + "/publicKey").then((model) => {
         if (model) {
             console.log("获取公钥成功:", model);
             return model;
@@ -43,7 +44,7 @@ export const getPublicKey = () => {
 // 登录
 export const loginService = (loginForm: any) => {
     const ld = loading("登录中");
-    return httpInstance.post("/sys/login", loginForm).then((model) => {
+    return httpInstance.post(sysApi + "/login", loginForm).then((model) => {
         if (model) {
             console.log("登录成功，获取token:", model);
             return model;
@@ -57,7 +58,7 @@ export const loginService = (loginForm: any) => {
 };
 
 export const getResourceTypes = async (): Promise<ResourceType[]> => {
-    return httpInstance.get("/sys/resourceTypes").then((model) => {
+    return httpInstance.get(sysApi + "/resourceTypes").then((model) => {
         if (model) {
             // 确保返回值始终是 ResourceType[]
             return Array.isArray(model) ? model : [];
@@ -70,7 +71,7 @@ export const getResourceTypes = async (): Promise<ResourceType[]> => {
 }
 
 export const getResourceType = async (typeName: string): Promise<ResourceType> => {
-    return httpInstance.get("/sys/resourceType/get/" + typeName).then((model: any) => {
+    return httpInstance.get(sysApi + "/resourceType/get/" + typeName).then((model: any) => {
         if (model) {
             return model as ResourceType;
         }
@@ -86,7 +87,7 @@ export const testServerPath = async (path: string, importMethod: string): Promis
         path: path,
         importMethod: importMethod
     };
-    return httpInstance.post("/sys/testServerPath", params).then((model: any) => {
+    return httpInstance.post(sysApi + "/testServerPath", params).then((model: any) => {
         if (model) {
             return model as boolean;
         }

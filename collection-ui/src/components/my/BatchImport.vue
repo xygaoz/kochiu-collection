@@ -102,7 +102,7 @@ import { listCategory } from '@/apis/category-api'
 import { getCatalogTree } from '@/apis/catalog-api'
 import { Catalog, Category } from "@/apis/interface";
 import { testServerPath } from "@/apis/system-api";
-import { batchImport } from "@/apis/resource-api";
+import { cancelBatchImport, startBatchImport } from "@/apis/resource-api";
 
 // 表单数据
 const form = ref({
@@ -219,7 +219,7 @@ const submitForm = async () => {
         )
 
         // 开始导入
-        startImport()
+        await startImport()
     } catch (error) {
         // 验证失败或用户取消
         console.log('导入取消或验证失败', error)
@@ -236,7 +236,7 @@ const startImport = async () => {
 
     try {
         // 1. 调用后端启动导入
-        const taskId = await batchImport(form.value);
+        const taskId = await startBatchImport(form.value);
         console.log("Task ID:", taskId); // 调试日志
 
         // 2. 动态获取 WebSocket URL
@@ -262,6 +262,13 @@ const startImport = async () => {
                 importComplete.value = true;
                 progressStatus.value = 'success';
                 ws.close();
+                form.value = {
+                    sourcePath: '',
+                    categoryId: null,
+                    catalogId: null,
+                    autoCreateRule: 1,
+                    importMethod: 1
+                };
             } else if (progress.status === 'error') {
                 importComplete.value = true;
                 progressStatus.value = 'exception';
@@ -292,10 +299,10 @@ const startImport = async () => {
 };
 
 // 取消导入
-const cancelImport = () => {
+const cancelImport = async () => {
     importComplete.value = true;
-    // 可以调用后端取消接口（需额外实现）
-    ElMessage.warning('导入已取消');
+    const result = await cancelBatchImport(form.value.taskId);
+    ElMessage.info(result);
 };
 
 // 重置表单

@@ -1,8 +1,9 @@
 import { Tag } from "@/apis/interface";
 import httpInstance from "@/apis/utils";
 
+const tagApi = "/tag";
 export const listTag = (): Promise<Tag[]> => {
-    return httpInstance.get("/tag/list").then((model: any) => {
+    return httpInstance.get(tagApi + "/list").then((model: any) => {
         if (model) {
             return model as Tag[];
         }
@@ -14,7 +15,7 @@ export const listTag = (): Promise<Tag[]> => {
 }
 
 export const getAllTag = (): Promise<Tag[]> => {
-    return httpInstance.get("/tag/all").then((model: any) => {
+    return httpInstance.get(tagApi + "/all").then((model: any) => {
         if (model) {
             return model as Tag[];
         }
@@ -26,7 +27,7 @@ export const getAllTag = (): Promise<Tag[]> => {
 }
 
 export const getTag = (tagId: number): Promise<Tag> => {
-    return httpInstance.get("/tag/get/" + tagId).then((model: any) => {
+    return httpInstance.get(tagApi + "/get/" + tagId).then((model: any) => {
         if (model) {
             return model as Tag;
         }
