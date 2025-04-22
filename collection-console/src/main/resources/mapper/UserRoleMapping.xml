@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.keem.kochiu.collection.mapper.UserRoleMapper">
+
+    <select id="selectLastInsertId" resultType="java.lang.Integer">
+        SELECT last_insert_rowid() FROM user_role WHERE rowid = (SELECT last_insert_rowid())
+    </select>
+
+</mapper>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.keem.kochiu.collection.mapper.SysRoleMapper">
+
+    <select id="selectLastInsertId" resultType="java.lang.Integer">
+        SELECT last_insert_rowid() FROM sys_role WHERE rowid = (SELECT last_insert_rowid())
+    </select>
+
+    <select id="selectUserRole" resultType="com.keem.kochiu.collection.entity.SysRole">
+        SELECT distinct r.* FROM sys_role r join user_role u on r.role_id=u.role_id
+            where u.user_id=#{userId}
+    </select>
+</mapper>

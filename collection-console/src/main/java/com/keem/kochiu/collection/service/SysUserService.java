@@ -8,7 +8,9 @@ import com.keem.kochiu.collection.data.dto.LoginDto;
 import com.keem.kochiu.collection.data.dto.TokenDto;
 import com.keem.kochiu.collection.data.vo.PageVo;
 import com.keem.kochiu.collection.data.vo.ResourceVo;
+import com.keem.kochiu.collection.data.vo.RoleVo;
 import com.keem.kochiu.collection.data.vo.UserVo;
+import com.keem.kochiu.collection.entity.SysRole;
 import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.enums.PermitEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
@@ -35,13 +37,15 @@ public class SysUserService {
     private final SysUserRepository userRepository;
     private final SysSecurityRepository securityRepository;
     private final TokenService tokenService;
+    private final SysRoleService roleService;
 
     public SysUserService(SysUserRepository userRepository,
                           SysSecurityRepository securityRepository,
-                          TokenService tokenService) {
+                          TokenService tokenService, SysRoleService roleService) {
         this.userRepository = userRepository;
         this.securityRepository = securityRepository;
         this.tokenService = tokenService;
+        this.roleService = roleService;
     }
 
     /**
@@ -136,16 +140,23 @@ public class SysUserService {
         PageInfo<SysUser> userList = userRepository.listUser(userBo);
         List<UserVo> users = userList.getList()
                 .stream()
-                .map(user -> UserVo.builder()
-                                .userId(user.getUserId())
-                                .userCode(user.getUserCode())
-                                .userName(user.getUserName())
-                                .token(user.getToken())
-                                .key("*********")
-                                .strategy(user.getStrategy())
-                                .createTime(user.getCreateTime())
-                                .updateTime(user.getUpdateTime())
-                                .build()
+                .map(user -> {
+                    List<SysRole> roles = roleService.selectUserRole(user.getUserId());
+                            return UserVo.builder()
+                                    .userId(user.getUserId())
+                                    .userCode(user.getUserCode())
+                                    .userName(user.getUserName())
+                                    .token(user.getToken())
+                                    .key("*********")
+                                    .strategy(user.getStrategy())
+                                    .createTime(user.getCreateTime())
+                                    .updateTime(user.getUpdateTime())
+                                    .roles(roles.stream().map(role -> RoleVo.builder()
+                                            .roleId(role.getRoleId())
+                                            .roleName(role.getRoleName())
+                                            .build()).toList())
+                                    .build();
+                        }
                 ).toList();
 
         return PageVo.<UserVo>builder()

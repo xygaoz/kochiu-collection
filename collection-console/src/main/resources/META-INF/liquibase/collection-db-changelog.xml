@@ -633,4 +633,65 @@
         </insert>
     </changeSet>
 
+    <changeSet id="kcdb_27" author="kochiu" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="user_role"/>
+            </not>
+        </preConditions>
+        <createTable remarks="用户角色表" tableName="user_role">
+            <column name="user_role_id" type="INTEGER" remarks="id">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role_id" type="INTEGER" remarks="角色ID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="INTEGER" remarks="用户ID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATE_TIME" remarks="创建时间" type="date"/>
+            <column name="CREATE_BY" remarks="创建人" type="VARCHAR(20)"/>
+            <column name="UPDATE_TIME" remarks="更新时间" type="date"/>
+            <column name="UPDATE_BY" remarks="更新人" type="VARCHAR(20)"/>
+            <column name="DB_VERSION" remarks="数据版本" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- 添加主键自增元数据 -->
+        <addAutoIncrement
+                tableName="user_role"
+                columnName="user_role_id"
+                columnDataType="INTEGER"
+        />
+    </changeSet>
+
+    <changeSet id="kcdb_28" author="kochiu" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="user_role_idx1" tableName="user_role"/>
+            </not>
+        </preConditions>
+        <createIndex
+                indexName="user_role_idx1"
+                tableName="user_role" unique="true">
+            <column name="role_id"/>
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="kcdb_29" author="kochiu" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <rowCount expectedRows="0" tableName="user_role"/>
+        </preConditions>
+        <insert tableName="user_role">
+            <column name="user_role_id" value="1"/>
+            <column name="role_id" value="1"/>
+            <column name="user_id" value="1"/>
+            <column name="CREATE_TIME" valueComputed="datetime('now')"/>
+            <column name="CREATE_BY" value="sys"/>
+            <column name="DB_VERSION" value="1"/>
+        </insert>
+    </changeSet>
+
 </databaseChangeLog>
