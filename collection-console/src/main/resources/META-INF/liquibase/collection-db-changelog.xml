@@ -566,4 +566,71 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="kcdb_24" author="kochiu" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="sys_strategy"/>
+            </not>
+        </preConditions>
+        <createTable remarks="资源存储策略表" tableName="sys_strategy">
+            <column name="strategy_id" type="INTEGER" remarks="策略id">
+                <constraints nullable="false"/>
+            </column>
+            <column name="strategy_code" type="VARCHAR(20)" remarks="策略编号">
+                <constraints nullable="false"/>
+            </column>
+            <column name="strategy_name" type="VARCHAR(200)" remarks="策略名称">
+                <constraints nullable="false"/>
+            </column>
+            <column name="server_url" type="VARCHAR(300)" remarks="保存地址/服务网址">
+                <constraints nullable="false"/>
+            </column>
+            <column name="username" type="varchar(20)" remarks="访问账号"/>
+            <column name="password" type="varchar(20)" remarks="访问密码"/>
+            <column name="other_config" remarks="其他配置（json格式）" type="VARCHAR(500)"/>
+            <column name="CREATE_TIME" remarks="创建时间" type="date"/>
+            <column name="CREATE_BY" remarks="创建人" type="VARCHAR(20)"/>
+            <column name="UPDATE_TIME" remarks="更新时间" type="date"/>
+            <column name="UPDATE_BY" remarks="更新人" type="VARCHAR(20)"/>
+            <column name="DB_VERSION" remarks="数据版本" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- 添加主键自增元数据 -->
+        <addAutoIncrement
+                tableName="sys_strategy"
+                columnName="strategy_id"
+                columnDataType="INTEGER"
+        />
+    </changeSet>
+
+    <changeSet id="kcdb_25" author="kochiu" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="sys_strategy_idx1" tableName="sys_strategy"/>
+            </not>
+        </preConditions>
+        <createIndex
+                indexName="sys_strategy_idx1"
+                tableName="sys_strategy" unique="true">
+            <column name="strategy_code"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="kcdb_26" author="kochiu" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <rowCount expectedRows="0" tableName="sys_strategy"/>
+        </preConditions>
+        <insert tableName="sys_strategy">
+            <column name="strategy_id" value="1"/>
+            <column name="strategy_code" value="local"/>
+            <column name="strategy_name" value="本地存储"/>
+            <column name="server_url" value="/Volumes/Document/Temp/collection"/>
+            <column name="CREATE_TIME" valueComputed="datetime('now')"/>
+            <column name="CREATE_BY" value="sys"/>
+            <column name="DB_VERSION" value="1"/>
+        </insert>
+    </changeSet>
+
 </databaseChangeLog>
