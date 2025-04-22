@@ -59,7 +59,7 @@
         <el-dialog :title="dialogTitle" v-model="dialogVisible" width="50%">
             <el-form :model="userForm" :rules="rules" ref="userFormRef" label-width="120px">
                 <el-form-item label="用户编码" prop="userCode">
-                    <el-input v-model="userForm.userCode" placeholder="请输入用户编码"></el-input>
+                    <el-input v-model="userForm.userCode" placeholder="请输入用户编码" :disabled="!isAdd"></el-input>
                 </el-form-item>
                 <el-form-item label="用户名称" prop="userName">
                     <el-input v-model="userForm.userName" placeholder="请输入用户名称"></el-input>
@@ -68,12 +68,34 @@
                     <el-input v-model="userForm.password" type="password" placeholder="请输入密码"></el-input>
                 </el-form-item>
                 <el-form-item label="存储策略" prop="strategy">
-                    <el-option
-                        v-for="strategy in strategyList"
-                        :key="strategy.strategyCode"
-                        :label="strategy.strategyName"
-                        :value="strategy.strategyCode">
-                    </el-option>
+                    <el-select v-model="userForm.strategy" placeholder="请选择存储策略">
+                        <el-option
+                            v-for="strategy in strategyList"
+                            :key="strategy.strategyCode"
+                            :label="strategy.strategyName"
+                            :value="strategy.strategyCode">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="加密密钥" prop="key" v-if="isAdd">
+                    <el-input
+                        v-model="userForm.key"
+                        :type="showKey ? 'text' : 'password'"
+                        placeholder="请输入加密密钥"
+                    >
+                        <template #suffix>
+                            <el-icon
+                                @click="showKey = !showKey"
+                                style="cursor: pointer;"
+                            >
+                                <View v-if="!showKey" />
+                                <Hide v-else />
+                            </el-icon>
+                        </template>
+                    </el-input>
+                </el-form-item>
+                <el-form-item label="Api Token" prop="token">
+                    <el-input v-model="userForm.token" disabled></el-input>
                 </el-form-item>
             </el-form>
             <template #footer>
@@ -94,6 +116,7 @@ import axios from "axios";
 import { Strategy, User } from "@/apis/interface";
 import { listUsers } from "@/apis/user-api";
 import { getStrategyList } from "@/apis/system-api";
+import { Hide, View } from "@element-plus/icons-vue";
 
 interface Pagination {
     currentPage: number
@@ -113,6 +136,7 @@ const dialogTitle = ref('')
 const isAdd = ref(false)
 const userFormRef = ref<FormInstance>()
 const strategyList = ref<Strategy[]>([])
+const showKey = ref(false)
 
 const pagination = reactive<Pagination>({
     currentPage: 1,
@@ -155,8 +179,22 @@ const rules = reactive<FormRules>({
     ],
     strategy: [
         { required: true, message: '请选择存储策略', trigger: 'change' }
-    ]
+    ],
+    key: [
+        { required: true, message: '请输入加密密钥', trigger: 'blur' },
+        { min: 10, max: 20, message: '长度在 8 到 20 个字符', trigger: 'blur' }
+    ],
 })
+
+//生成随机密钥的函数
+const generateRandomKey = (length = 10) => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+};
 
 const fetchUsers = async () => {
     loading.value = true
@@ -244,7 +282,7 @@ const submitForm = async () => {
             ElMessage.success('更新用户成功')
         }
         dialogVisible.value = false
-        fetchUsers()
+        await fetchUsers()
     } catch (error: any) {
         ElMessage.error('操作失败: ' + error.message)
     }
@@ -257,7 +295,7 @@ const resetForm = () => {
         userName: '',
         password: '',
         strategy: 'local',
-        key: '',
+        key: generateRandomKey(), // 自动生成密钥
         token: '',
     })
 }
