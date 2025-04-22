@@ -171,66 +171,79 @@
                             </el-menu-item>
                         </el-sub-menu>
 
-                        <!-- 我的菜单 -->
-                        <el-sub-menu index="my-group">
-                            <template #title>
-                                <div class="menu-icon">
-                                    <el-icon style="color: rgb(59,130,246); margin: 0 -1px 0 0;">
-                                        <Collection />
-                                    </el-icon>
-                                </div>
-                                <div class="menu-label">资源</div>
-                            </template>
-                            <el-menu-item index="/Upload" @click="menuItemClick({path: '/Upload'})">
+                        <!-- 动态生成特定菜单项 -->
+                        <template v-for="menu in fixedMenuItems" :key="menu.path">
+                            <!-- 有子菜单的情况（资源、系统管理） -->
+                            <el-sub-menu
+                                v-if="menu.children && menu.children.length > 0"
+                                :index="menu.path"
+                            >
                                 <template #title>
                                     <div class="menu-icon">
-                                        <el-icon style="color: rgb(59,130,246)">
-                                            <UploadFilled />
-                                        </el-icon>
+                                        <template v-if="menu.meta?.iconType === 'iconfont'">
+                                            <i
+                                                :class="`iconfont ${menu.meta?.icon}`"
+                                                :style="menu.meta?.style as StyleValue"
+                                            ></i>
+                                        </template>
+                                        <template v-else>
+                                            <el-icon :style="menu.meta?.style as StyleValue">
+                                                <component :is="menu.meta?.icon" />
+                                            </el-icon>
+                                        </template>
                                     </div>
-                                    <div class="menu-label">上传文件</div>
+                                    <div class="menu-label">{{ menu.meta?.title }}</div>
                                 </template>
-                            </el-menu-item>
-                            <el-menu-item index="/BatchImport" @click="menuItemClick({path: '/BatchImport'})">
-                                <template #title>
-                                    <div class="menu-icon">
-                                        <i class="iconfont icon-col-piliangdaoru1" style="font-size: 18px; color: rgb(59,130,246); margin: 0 3px 0 0"></i>
-                                    </div>
-                                    <div class="menu-label">批量导入</div>
-                                </template>
-                            </el-menu-item>
-                            <el-menu-item index="/Recycle" @click="menuItemClick({path: '/Recycle'})">
-                                <template #title>
-                                    <div class="menu-icon">
-                                        <i class="iconfont icon-col-huishouzhanx" style="font-size: 22px; color: rgb(59,130,246); margin: 0 1px 0 0"></i>
-                                    </div>
-                                    <div class="menu-label">回收站</div>
-                                </template>
-                            </el-menu-item>
-                        </el-sub-menu>
-                        <!-- 系统管理菜单 -->
-                        <el-sub-menu index="system-group">
-                            <template #title>
-                                <div class="menu-icon">
-                                    <i class="iconfont icon-col-shezhi" style="font-size: 21px; color: rgb(59,130,246)"></i>
-                                </div>
-                                <div class="menu-label">系统管理</div>
-                            </template>
-                            <!-- 可以在这里添加系统管理的子菜单项 -->
-                            <!-- 例如：<el-menu-item index="/System/Users">用户管理</el-menu-item> -->
-                        </el-sub-menu>
 
-                        <!-- 帮助菜单 -->
-                        <el-menu-item index="/Help" @click="menuItemClick({path: '/Help'})">
-                            <template #title>
-                                <div class="menu-icon">
-                                    <el-icon style="color: rgb(59,130,246)">
-                                        <Help />
-                                    </el-icon>
-                                </div>
-                                <div class="menu-label">帮助</div>
-                            </template>
-                        </el-menu-item>
+                                <el-menu-item
+                                    v-for="child in menu.children"
+                                    :key="child.path"
+                                    :index="child.path"
+                                    @click="menuItemClick({path: child.path})"
+                                >
+                                    <template #title>
+                                        <div class="menu-icon">
+                                            <template v-if="child.meta?.iconType === 'iconfont'">
+                                                <i
+                                                    :class="`iconfont ${child.meta?.icon}`"
+                                                    :style="child.meta?.style as StyleValue"
+                                                ></i>
+                                            </template>
+                                            <template v-else>
+                                                <el-icon :style="child.meta?.style">
+                                                    <component :is="child.meta?.icon" />
+                                                </el-icon>
+                                            </template>
+                                        </div>
+                                        <div class="menu-label">{{ child.meta?.title }}</div>
+                                    </template>
+                                </el-menu-item>
+                            </el-sub-menu>
+
+                            <!-- 没有子菜单的情况（帮助） -->
+                            <el-menu-item
+                                v-else
+                                :index="menu.path"
+                                @click="menuItemClick({path: menu.path})"
+                            >
+                                <template #title>
+                                    <div class="menu-icon">
+                                        <template v-if="menu.meta?.iconType === 'iconfont'">
+                                            <i
+                                                :class="`iconfont ${menu.meta?.icon}`"
+                                                :style="menu.meta?.style as StyleValue"
+                                            ></i>
+                                        </template>
+                                        <template v-else>
+                                            <el-icon :style="menu.meta?.style">
+                                                <component :is="menu.meta?.icon" />
+                                            </el-icon>
+                                        </template>
+                                    </div>
+                                    <div class="menu-label">{{ menu.meta?.title }}</div>
+                                </template>
+                            </el-menu-item>
+                        </template>
                     </el-menu>
                 </div>
             </el-aside>
@@ -263,7 +276,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, StyleValue } from "vue";
 import { Plus, Switch, Collection, UploadFilled, Edit, Delete } from "@element-plus/icons-vue";
 import { listCategory } from '@/apis/category-api'
 import { listTag} from '@/apis/tag-api'
@@ -288,7 +301,14 @@ const catalogDialog = ref<InstanceType<typeof CatalogDialog>>()
 const currentCatalog = ref<Catalog | null>(null);
 const route = useRoute()
 const router = useRouter()
-const showCategoryActions = ref<string | null>(null)
+const showCategoryActions = ref<number | null>(null)
+
+// 计算属性：获取特定菜单项（资源、系统管理、帮助）
+const fixedMenuItems = computed(() => {
+    return router.options.routes.filter(route =>
+        ['/Resource', '/System', '/Help'].includes(route.path)
+    )
+})
 
 // 初始化数据
 onMounted(async () => {
@@ -358,7 +378,7 @@ const handleNodeClick = (data: Catalog) => {
 // 添加分类
 const handleAddCategory = (e: Event) => {
     e.stopPropagation()
-    categoryDialog.value?.open()
+    categoryDialog.value?.open(null as unknown as Category)
 }
 
 // 添加目录
@@ -371,7 +391,7 @@ const handleAddCatalog = (e: Event) => {
 const handleCategoryConfirm = async () => {
     await loadCategories()
     if (route.path.startsWith('/Category/')) {
-        let currentSno = route.params.sno;
+        let currentSno = Number(route.params.sno); // 将 currentSno 转换为 number 类型
         //判断当前分类是否存在
         let found = false;
         categories.value.map((category) => {
@@ -543,5 +563,4 @@ const handleDeleteCategory = (category: Category) => {
 .action-icon:hover {
     color: #409EFF;
 }
-
 </style>

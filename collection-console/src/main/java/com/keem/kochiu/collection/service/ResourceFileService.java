@@ -279,7 +279,7 @@ public class ResourceFileService {
                         }
 
                         if(batchImportBo.getImportMethod() == ImportMethodEnum.MOVE){
-                            FileUtil.del(file);
+                            Files.deleteIfExists(file.toPath());
                         }
                         break;
                     }

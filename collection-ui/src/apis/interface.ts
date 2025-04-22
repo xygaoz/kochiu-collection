@@ -72,3 +72,13 @@ export interface PathInfo{
     sno: number;
     cataName: string;
 }
+
+export interface User {
+    userId?: string
+    userCode: string
+    userName: string
+    password?: string
+    strategy: string
+    key: string
+    token: string
+}

@@ -119,7 +119,9 @@ const open = async (category: Category) => {
 
     dialogVisible.value = true
     await nextTick(() => {
-        formRef.value.clearValidate()
+        if (formRef.value) {
+            formRef.value.clearValidate()
+        }
     })
 }
 
@@ -137,7 +139,9 @@ const openForDelete = async (category: Category) => {
 
     dialogVisible.value = true
     nextTick(() => {
-        formRef.value?.clearValidate()
+        if (formRef.value) {
+            formRef.value.clearValidate()
+        }
     })
 }
 
@@ -211,10 +215,7 @@ const submitForm = async () => {
 
             let result;
             if (isEditMode.value) {
-                result = await updateCategory({
-                    cateId: form.cateId,
-                    ...params
-                })
+                result = await updateCategory(params)
             } else {
                 result = await createCategory(params)
             }
