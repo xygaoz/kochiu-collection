@@ -1,9 +1,14 @@
 package com.keem.kochiu.collection.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.github.pagehelper.PageInfo;
 import com.keem.kochiu.collection.data.bo.LoginBo;
+import com.keem.kochiu.collection.data.bo.UserBo;
 import com.keem.kochiu.collection.data.dto.LoginDto;
 import com.keem.kochiu.collection.data.dto.TokenDto;
+import com.keem.kochiu.collection.data.vo.PageVo;
+import com.keem.kochiu.collection.data.vo.ResourceVo;
+import com.keem.kochiu.collection.data.vo.UserVo;
 import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.enums.PermitEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
@@ -16,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 import static com.keem.kochiu.collection.Constant.*;
@@ -122,5 +128,32 @@ public class SysUserService {
     public void updateLastRefreshTime(SysUser user) {
         user.setLastTokenTime(LocalDateTime.now());
         userRepository.updateById(user);
+    }
+
+    //获取用户列表
+    public PageVo<UserVo> listUsers(UserBo userBo) throws CollectionException {
+
+        PageInfo<SysUser> userList = userRepository.listUser(userBo);
+        List<UserVo> users = userList.getList()
+                .stream()
+                .map(user -> UserVo.builder()
+                                .userId(user.getUserId())
+                                .userCode(user.getUserCode())
+                                .userName(user.getUserName())
+                                .token(user.getToken())
+                                .key("*********")
+                                .strategy(user.getStrategy())
+                                .createTime(user.getCreateTime())
+                                .updateTime(user.getUpdateTime())
+                                .build()
+                ).toList();
+
+        return PageVo.<UserVo>builder()
+                .list(users)
+                .pageNum(userList.getPageNum())
+                .pageSize(userList.getPageSize())
+                .total(userList.getTotal())
+                .pages(userList.getPages())
+                .build();
     }
 }

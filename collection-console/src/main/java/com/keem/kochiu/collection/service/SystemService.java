@@ -1,17 +1,22 @@
 package com.keem.kochiu.collection.service;
 
 import com.keem.kochiu.collection.data.bo.PathBo;
+import com.keem.kochiu.collection.data.vo.StrategyVo;
 import com.keem.kochiu.collection.enums.ImportMethodEnum;
+import com.keem.kochiu.collection.repository.SysStrategyRepository;
 import org.springframework.stereotype.Service;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Service
 public class SystemService {
+
+    private final SysStrategyRepository strategyRepository;
 
     // Linux系统敏感目录
     private static final Set<String> LINUX_SENSITIVE_DIRS = new HashSet<>(Arrays.asList(
@@ -27,6 +32,10 @@ public class SystemService {
             "C:\\Users", "C:\\Documents and Settings", "C:\\PerfLogs",
             "C:\\Recovery", "C:\\Config.Msi", "C:\\MSOCache"
     ));
+
+    public SystemService(SysStrategyRepository strategyRepository) {
+        this.strategyRepository = strategyRepository;
+    }
 
     /**
      * 测试服务端路径是否可读写
@@ -123,5 +132,18 @@ public class SystemService {
         }
 
         return false;
+    }
+
+    // 获取系统策略列表
+    public List<StrategyVo> getStrategyList() {
+        return strategyRepository
+                .list()
+                .stream()
+                .map(strategy ->
+                        StrategyVo.builder()
+                                .strategyCode(strategy.getStrategyCode())
+                                .strategyName(strategy.getStrategyName())
+                                .build())
+                .toList();
     }
 }

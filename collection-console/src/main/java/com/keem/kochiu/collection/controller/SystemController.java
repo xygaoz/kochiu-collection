@@ -3,6 +3,7 @@ package com.keem.kochiu.collection.controller;
 import com.keem.kochiu.collection.data.DefaultResult;
 import com.keem.kochiu.collection.data.bo.PathBo;
 import com.keem.kochiu.collection.data.vo.ResourceTypeVo;
+import com.keem.kochiu.collection.data.vo.StrategyVo;
 import com.keem.kochiu.collection.enums.ResourceTypeEnum;
 import com.keem.kochiu.collection.service.SystemService;
 import org.springframework.web.bind.annotation.*;
@@ -49,5 +50,10 @@ public class SystemController {
     @PostMapping("/testServerPath")
     public DefaultResult<Boolean> testServerPath(PathBo pathBo) {
         return DefaultResult.ok(systemService.testServerPath(pathBo));
+    }
+
+    @GetMapping("/strategy/list")
+    public DefaultResult<List<StrategyVo>> getStrategyList() {
+        return DefaultResult.ok(systemService.getStrategyList());
     }
 }

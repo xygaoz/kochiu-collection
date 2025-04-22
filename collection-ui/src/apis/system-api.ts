@@ -1,6 +1,6 @@
 import httpInstance from "@/apis/utils"; // 导入httpInstance
 import { loading } from "@/apis/utils";
-import { ResourceType } from "@/apis/interface";
+import { ResourceType, Strategy } from "@/apis/interface";
 
 const sysApi = "/sys";
 export const tokenStore = {
@@ -98,3 +98,15 @@ export const testServerPath = async (path: string, importMethod: string): Promis
     });
 }
 
+export const getStrategyList = async (): Promise<Strategy[]> => {
+    return httpInstance.get(sysApi + "/strategy/list").then((model) => {
+        if (model) {
+            // 确保返回值始终是 Strategy[]
+            return Array.isArray(model) ? model : [];
+        }
+        return [];
+    }).catch((error) => {
+        console.error("获取资源类型失败:", error);
+        return [];
+    });
+}

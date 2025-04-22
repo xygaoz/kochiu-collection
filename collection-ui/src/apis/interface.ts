@@ -74,11 +74,16 @@ export interface PathInfo{
 }
 
 export interface User {
-    userId?: string
+    userId: string
     userCode: string
     userName: string
-    password?: string
+    password: string
     strategy: string
     key: string
     token: string
+}
+
+export interface Strategy {
+    strategyCode: string
+    strategyName: string
 }

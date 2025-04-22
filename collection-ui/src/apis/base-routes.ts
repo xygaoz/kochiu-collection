@@ -68,6 +68,12 @@ routes.push(
         name: 'system',
         meta: { title: '系统管理', icon: 'icon-col-shezhi', iconType: 'iconfont', style: 'font-size: 21px; color: rgb(59,130,246' },
         children: [
+            {
+                path: '/User',
+                name: 'user',
+                component: () => import('@/components/sys/UserView.vue'),
+                meta: { title: '用户管理', icon: 'UserFilled', iconType: 'icons-vue', style: 'color: rgb(59,130,246);' },
+            },
         ]
     },
     {

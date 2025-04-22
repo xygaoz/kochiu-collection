@@ -1,6 +1,11 @@
 package com.keem.kochiu.collection.repository;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.keem.kochiu.collection.data.bo.UserBo;
 import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.exception.CollectionException;
@@ -24,5 +29,26 @@ public class SysUserRepository extends ServiceImpl<SysUserMapper, SysUser>{
         }
 
         return user;
+    }
+
+    /**
+     * 查询用户列表
+     * @param userBo
+     * @return
+     * @throws CollectionException
+     */
+    public PageInfo<SysUser> listUser(UserBo userBo) throws CollectionException {
+
+        try(Page<SysUser> page = PageHelper.startPage(userBo.getPageNum(), userBo.getPageSize())) {
+
+            LambdaQueryWrapper<SysUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            if(userBo.getUserCode() != null){
+                lambdaQueryWrapper.like(SysUser::getUserCode, userBo.getUserCode());
+            }
+            if(userBo.getUserName() != null){
+                lambdaQueryWrapper.like(SysUser::getUserName, userBo.getUserName());
+            }
+            return new PageInfo<>(list(lambdaQueryWrapper));
+        }
     }
 }
