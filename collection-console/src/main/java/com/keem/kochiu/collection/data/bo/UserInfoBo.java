@@ -1,0 +1,23 @@
+package com.keem.kochiu.collection.data.bo;
+
+import com.keem.kochiu.collection.annotation.Add;
+import com.keem.kochiu.collection.annotation.Edit;
+import lombok.Data;
+
+import javax.validation.constraints.NotNull;
+
+@Data
+public class UserInfoBo {
+
+    @NotNull(groups = {Edit.class}, message = "用户Id不能为空")
+    private Integer userId;
+    @NotNull(message = "用户编码不能为空")
+    private String userCode;
+    @NotNull(message = "用户名称不能为空")
+    private String userName;
+    @NotNull(groups = {Add.class}, message = "登录密码不能为空")
+    private String password;
+    @NotNull(message = "存储不能为空")
+    private String strategy;
+
+}

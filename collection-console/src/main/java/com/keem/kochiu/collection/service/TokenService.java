@@ -2,6 +2,7 @@ package com.keem.kochiu.collection.service;
 
 import com.keem.kochiu.collection.data.dto.TokenDto;
 import com.keem.kochiu.collection.entity.SysUser;
+import com.keem.kochiu.collection.enums.UserStatusEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.repository.SysSecurityRepository;
 import com.keem.kochiu.collection.repository.SysUserRepository;
@@ -85,8 +86,14 @@ public class TokenService {
         SysUser user = userRepository.getById(userId);
         if (user == null) {
             log.error("用户不存在");
-            throw new CollectionException(ERROR_TOKEN_INVALID);
+            throw new CollectionException(USER_IS_NOT_EXIST);
         }
+
+        if(user.getStatus() == UserStatusEnum.STOP.getCode()){
+            log.error("用户已停用");
+            throw new CollectionException(ERROR_USER_STOP);
+        }
+
         if(isApi && user.getToken() == null){
             throw new CollectionException(ERROR_TOKEN_NOT_EXIST);
         }

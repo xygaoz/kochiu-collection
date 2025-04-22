@@ -3,23 +3,28 @@ package com.keem.kochiu.collection.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.pagehelper.PageInfo;
 import com.keem.kochiu.collection.data.bo.LoginBo;
-import com.keem.kochiu.collection.data.bo.UserBo;
+import com.keem.kochiu.collection.data.bo.SearchUserBo;
+import com.keem.kochiu.collection.data.bo.UserInfoBo;
 import com.keem.kochiu.collection.data.dto.LoginDto;
 import com.keem.kochiu.collection.data.dto.TokenDto;
 import com.keem.kochiu.collection.data.vo.PageVo;
-import com.keem.kochiu.collection.data.vo.ResourceVo;
 import com.keem.kochiu.collection.data.vo.RoleVo;
 import com.keem.kochiu.collection.data.vo.UserVo;
 import com.keem.kochiu.collection.entity.SysRole;
 import com.keem.kochiu.collection.entity.SysUser;
+import com.keem.kochiu.collection.entity.UserRole;
+import com.keem.kochiu.collection.enums.ErrorCodeEnum;
 import com.keem.kochiu.collection.enums.PermitEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.repository.SysSecurityRepository;
 import com.keem.kochiu.collection.repository.SysUserRepository;
+import com.keem.kochiu.collection.repository.UserRoleRepository;
 import com.keem.kochiu.collection.util.HexUtils;
 import com.keem.kochiu.collection.util.RsaHexUtil;
 import com.keem.kochiu.collection.util.SHA256Util;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -38,14 +43,18 @@ public class SysUserService {
     private final SysSecurityRepository securityRepository;
     private final TokenService tokenService;
     private final SysRoleService roleService;
+    private final UserRoleRepository userRoleRepository;
 
     public SysUserService(SysUserRepository userRepository,
                           SysSecurityRepository securityRepository,
-                          TokenService tokenService, SysRoleService roleService) {
+                          TokenService tokenService,
+                          SysRoleService roleService,
+                          UserRoleRepository userRoleRepository) {
         this.userRepository = userRepository;
         this.securityRepository = securityRepository;
         this.tokenService = tokenService;
         this.roleService = roleService;
+        this.userRoleRepository = userRoleRepository;
     }
 
     /**
@@ -135,9 +144,9 @@ public class SysUserService {
     }
 
     //获取用户列表
-    public PageVo<UserVo> listUsers(UserBo userBo) throws CollectionException {
+    public PageVo<UserVo> listUsers(SearchUserBo searchUserBo) throws CollectionException {
 
-        PageInfo<SysUser> userList = userRepository.listUser(userBo);
+        PageInfo<SysUser> userList = userRepository.listUser(searchUserBo);
         List<UserVo> users = userList.getList()
                 .stream()
                 .map(user -> {
@@ -166,5 +175,56 @@ public class SysUserService {
                 .total(userList.getTotal())
                 .pages(userList.getPages())
                 .build();
+    }
+
+    //添加用户
+    public void addUser(UserInfoBo userInfoBo) throws CollectionException {
+
+        //判断用户编码是否被占用
+        if(userRepository.getOneOpt(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserCode, userInfoBo.getUserCode()), false).isPresent()){
+            throw new CollectionException(ErrorCodeEnum.USER_CODE_IS_EXIST);
+        }
+
+        SysUser user = SysUser.builder()
+                .userCode(userInfoBo.getUserCode())
+                .userName(userInfoBo.getUserName())
+                .password(SHA256Util.encryptBySHA256(userInfoBo.getPassword()))
+                .strategy(userInfoBo.getStrategy())
+                .key(RandomStringUtils.random(8, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?"))
+                .build();
+        userRepository.save(user);
+    }
+
+    //更新用户
+    public void updateUser(UserInfoBo userInfoBo) throws CollectionException {
+
+        SysUser user = userRepository.getById(userInfoBo.getUserId());
+        if(user == null){
+            throw new CollectionException(ErrorCodeEnum.USER_IS_NOT_EXIST);
+        }
+        if(StringUtils.isNotBlank(userInfoBo.getUserCode())){
+            //判断用户编码是否被占用
+            if(userRepository.getOneOpt(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserCode, userInfoBo.getUserCode()), false).isPresent()){
+                throw new CollectionException(ErrorCodeEnum.USER_CODE_IS_EXIST);
+            }
+            user.setUserCode(userInfoBo.getUserCode());
+        }
+        if(StringUtils.isNotBlank(userInfoBo.getUserName())){
+            user.setUserName(userInfoBo.getUserName());
+        }
+        if(StringUtils.isNotBlank(userInfoBo.getStrategy())){
+            user.setStrategy(userInfoBo.getStrategy());
+        }
+        userRepository.updateById(user);
+    }
+
+    //删除用户
+    public void deleteUser(int userId) throws CollectionException {
+        SysUser user = userRepository.getById(userId);
+        if(user == null){
+            throw new CollectionException(ErrorCodeEnum.USER_IS_NOT_EXIST);
+        }
+        userRepository.removeById(userId);
+        userRoleRepository.remove(new LambdaQueryWrapper<UserRole>().eq(UserRole::getUserId, userId));
     }
 }

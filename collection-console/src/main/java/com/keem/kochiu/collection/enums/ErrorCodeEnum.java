@@ -45,7 +45,9 @@ public enum ErrorCodeEnum {
     IMPORT_METHOD_ERROR("1043", "导入方式错误"),
     AUTO_CREATE_RULE_ERROR("1044", "创建目录规则错误"),
     ROOT_CATALOG_IS_INVALID("1045", "根目录信息错误"),
-    ;
+    USER_CODE_IS_EXIST("1046", "用户编码已经存在"),
+    USER_IS_NOT_EXIST("1047", "用户不存在"),
+    ERROR_USER_STOP("1048", "用户已经停用");
 
     private final String code;
     private final String message;

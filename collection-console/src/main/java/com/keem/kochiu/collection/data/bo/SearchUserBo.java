@@ -5,7 +5,7 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class UserBo extends PageBo{
+public class SearchUserBo extends PageBo{
 
     private String userCode;
     private String userName;
