@@ -3,6 +3,7 @@ package com.keem.kochiu.collection.data.bo;
 import com.keem.kochiu.collection.annotation.Add;
 import com.keem.kochiu.collection.annotation.Edit;
 import lombok.Data;
+import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
 
@@ -19,5 +20,7 @@ public class UserInfoBo {
     private String password;
     @NotNull(message = "存储不能为空")
     private String strategy;
-
+    @NotNull(message = "角色不能为空")
+    @Length(min = 1, message = "角色不能为空")
+    private Integer[] roles;
 }

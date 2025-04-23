@@ -47,7 +47,12 @@ public enum ErrorCodeEnum {
     ROOT_CATALOG_IS_INVALID("1045", "根目录信息错误"),
     USER_CODE_IS_EXIST("1046", "用户编码已经存在"),
     USER_IS_NOT_EXIST("1047", "用户不存在"),
-    ERROR_USER_STOP("1048", "用户已经停用");
+    ERROR_USER_STOP("1048", "用户已经停用"),
+    USER_PASSWORD_DECRYPT_ERROR("1049", "密码解密失败"),
+    PASSWORDS_ARE_INCONSISTENT_ERROR("1050", "两次输入的密码不一致"),
+    USER_STATUS_ERROR("1051", "用户状态错误"),
+    PERMISSION_IS_INVALID("1052", "无权限访问"),
+    ;
 
     private final String code;
     private final String message;

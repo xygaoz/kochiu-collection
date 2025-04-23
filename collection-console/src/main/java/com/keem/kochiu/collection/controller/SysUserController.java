@@ -3,9 +3,12 @@ package com.keem.kochiu.collection.controller;
 import com.keem.kochiu.collection.annotation.Add;
 import com.keem.kochiu.collection.annotation.CheckPermit;
 import com.keem.kochiu.collection.annotation.Edit;
+import com.keem.kochiu.collection.annotation.Module;
 import com.keem.kochiu.collection.data.DefaultResult;
+import com.keem.kochiu.collection.data.bo.ResetPwdBo;
 import com.keem.kochiu.collection.data.bo.SearchUserBo;
 import com.keem.kochiu.collection.data.bo.UserInfoBo;
+import com.keem.kochiu.collection.data.bo.UserStatusBo;
 import com.keem.kochiu.collection.data.vo.PageVo;
 import com.keem.kochiu.collection.data.vo.UserVo;
 import com.keem.kochiu.collection.exception.CollectionException;
@@ -32,7 +35,9 @@ public class SysUserController {
         return DefaultResult.ok(userService.listUsers(searchUserBo));
     }
 
-    @CheckPermit
+    @CheckPermit(modules = {
+        @Module(modeCode = "user", byAction = {"add"})
+    })
     @PostMapping("/add")
     public DefaultResult<Boolean> addUser(@Validated({Add.class}) UserInfoBo userInfoBo) throws CollectionException {
 
@@ -40,7 +45,9 @@ public class SysUserController {
         return DefaultResult.ok(true);
     }
 
-    @CheckPermit
+    @CheckPermit(modules = {
+            @Module(modeCode = "user", byAction = {"edit"})
+    })
     @PostMapping("/update")
     public DefaultResult<Boolean> updateUser(@Validated({Edit.class}) UserInfoBo userInfoBo) throws CollectionException {
 
@@ -48,11 +55,33 @@ public class SysUserController {
         return DefaultResult.ok(true);
     }
 
-    @CheckPermit
+    @CheckPermit(modules = {
+            @Module(modeCode = "user", byAction = {"delete"})
+    })
     @GetMapping("/delete/{userId}")
     public DefaultResult<Boolean> deleteUser(@PathVariable int userId) throws CollectionException {
 
         userService.deleteUser(userId);
+        return DefaultResult.ok(true);
+    }
+
+    @CheckPermit(modules = {
+            @Module(modeCode = "user", byAction = {"reset-pwd"})
+    })
+    @GetMapping("/resetPwd")
+    public DefaultResult<Boolean> resetPwd(ResetPwdBo resetPwdBo) throws CollectionException {
+
+        userService.resetPassword(resetPwdBo);
+        return DefaultResult.ok(true);
+    }
+
+    @CheckPermit(modules = {
+            @Module(modeCode = "user", byAction = {"enable-disable"})
+    })
+    @GetMapping("/enable-disable")
+    public DefaultResult<Boolean> enableOrDisable(UserStatusBo userStatusBo) throws CollectionException {
+
+        userService.enableOrDisable(userStatusBo);
         return DefaultResult.ok(true);
     }
 }

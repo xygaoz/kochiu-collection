@@ -13,4 +13,5 @@ import java.lang.annotation.*;
 public @interface CheckPermit {
 
     PermitEnum[] on() default PermitEnum.UI;
+    Module[] modules() default {};
 }

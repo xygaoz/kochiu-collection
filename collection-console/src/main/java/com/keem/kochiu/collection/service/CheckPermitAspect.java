@@ -1,6 +1,7 @@
 package com.keem.kochiu.collection.service;
 
 import com.keem.kochiu.collection.annotation.CheckPermit;
+import com.keem.kochiu.collection.annotation.Module;
 import com.keem.kochiu.collection.data.dto.TokenDto;
 import com.keem.kochiu.collection.data.dto.UserDto;
 import com.keem.kochiu.collection.enums.PermitEnum;
@@ -13,6 +14,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -22,6 +24,7 @@ import java.lang.reflect.Method;
 
 import static com.keem.kochiu.collection.Constant.*;
 import static com.keem.kochiu.collection.enums.ErrorCodeEnum.ERROR_TOKEN_INVALID;
+import static com.keem.kochiu.collection.enums.ErrorCodeEnum.PERMISSION_IS_INVALID;
 import static com.keem.kochiu.collection.enums.PermitEnum.API;
 
 
@@ -36,9 +39,15 @@ public class CheckPermitAspect {
 
     public static ThreadLocal<UserDto> USER_INFO = new ThreadLocal<>();
     private final TokenService tokenService;
+    private final SysSecurityService securityService;
 
-    public CheckPermitAspect(TokenService tokenService) {
+    @Value("${server.servlet.context-path}")
+    private String contextPath = "";
+
+    public CheckPermitAspect(TokenService tokenService,
+                             SysSecurityService securityService) {
         this.tokenService = tokenService;
+        this.securityService = securityService;
     }
 
     /**
@@ -62,14 +71,20 @@ public class CheckPermitAspect {
 
         if(checkPermit != null) {
             HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+
+            /// 获取当前访问的 URL
+            String requestUrl = request.getRequestURI();
+            requestUrl = requestUrl.substring(request.getContextPath().length());
+            log.info("Current request URL: {}", requestUrl);
+
             String authorization = request.getHeader(HEADER_AUTHORIZATION);
-            if(!checkPermit(authorization, checkPermit)){
+            if(!checkPermit(requestUrl, authorization, checkPermit)){
                 throw new CollectionException(ERROR_TOKEN_INVALID);
             }
         }
     }
 
-    private boolean checkPermit(String authorization, CheckPermit checkPermit) throws CollectionException {
+    private boolean checkPermit(String requestUrl, String authorization, CheckPermit checkPermit) throws CollectionException {
 
         TokenDto tokenDto = tokenService.validateToken(authorization,
                 ArrayUtils.contains(checkPermit.on(), API) && checkPermit.on().length == 1);
@@ -90,6 +105,30 @@ public class CheckPermitAspect {
         if(tokenDto.getClaims().get(TOKEN_API_FLAG).equals(API.name())){
             if(!tokenDto.getUser().getToken().equals(authorization)){
                 throw new CollectionException(ERROR_TOKEN_INVALID);
+            }
+        }
+
+        //校验权限
+        if(checkPermit.modules() != null && checkPermit.modules().length > 0) {
+            boolean isPermit = false;
+            for(Module module : checkPermit.modules()){
+                if(module.byAction() == null){
+                    if(securityService.hasPermission(tokenDto.getUser().getUserId(), module.modeCode(), null)){
+                        isPermit = true;
+                    }
+                }
+                else{
+                    for(String action : module.byAction()){
+                        if(securityService.hasPermission(tokenDto.getUser().getUserId(), module.modeCode(), action)){
+                            if(securityService.urlMatching(requestUrl, module.modeCode(), action)){
+                                isPermit = true;
+                            }
+                        }
+                    }
+                }
+            }
+            if(!isPermit){
+                throw new CollectionException(PERMISSION_IS_INVALID);
             }
         }
 

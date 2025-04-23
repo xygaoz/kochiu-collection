@@ -880,6 +880,16 @@
             <column name="CREATE_BY" value="sys"/>
             <column name="DB_VERSION" value="1"/>
         </insert>
+        <insert tableName="sys_module_action">
+            <column name="action_id" value="5"/>
+            <column name="module_id" value="2"/>
+            <column name="action_code" value="enable-disable"/>
+            <column name="action_name" value="停用/启用"/>
+            <column name="action_url" value="/api/v1/user/resetpwd"/>
+            <column name="CREATE_TIME" valueComputed="datetime('now')"/>
+            <column name="CREATE_BY" value="sys"/>
+            <column name="DB_VERSION" value="1"/>
+        </insert>
     </changeSet>
 
     <changeSet id="kcdb_36" author="kochiu" runOnChange="true">
@@ -969,6 +979,15 @@
             <column name="user_id" value="1"/>
             <column name="module_id" value="2"/>
             <column name="action_id" value="4"/>
+            <column name="CREATE_TIME" valueComputed="datetime('now')"/>
+            <column name="CREATE_BY" value="sys"/>
+            <column name="DB_VERSION" value="1"/>
+        </insert>
+        <insert tableName="user_permission">
+            <column name="permission_id" value="5"/>
+            <column name="user_id" value="1"/>
+            <column name="module_id" value="2"/>
+            <column name="action_id" value="5"/>
             <column name="CREATE_TIME" valueComputed="datetime('now')"/>
             <column name="CREATE_BY" value="sys"/>
             <column name="DB_VERSION" value="1"/>

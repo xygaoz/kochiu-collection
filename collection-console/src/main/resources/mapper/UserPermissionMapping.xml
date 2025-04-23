@@ -5,4 +5,14 @@
     <select id="selectLastInsertId" resultType="java.lang.Integer">
         SELECT last_insert_rowid() FROM user_permission WHERE rowid = (SELECT last_insert_rowid())
     </select>
+
+    <select id="getUserPermission" resultType="com.keem.kochiu.collection.entity.UserPermission">
+        SELECT * FROM user_permission p
+                 join sys_module_action a on p.action_id = a.action_id and a.module_id=p.module_id
+                 join sys_module m on a.module_id = m.module_id and p.module_id = m.module_id
+                 WHERE p.user_id = #{userId} AND m.module_code = #{moduleCode}
+                   <if test="actionCode != null">
+                    AND a.action_code = #{actionCode}
+                   </if>
+    </select>
 </mapper>

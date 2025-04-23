@@ -5,4 +5,10 @@
     <select id="selectLastInsertId" resultType="java.lang.Integer">
         SELECT last_insert_rowid() FROM sys_module_action WHERE rowid = (SELECT last_insert_rowid())
     </select>
+
+    <select id="selectModuleAction" resultType="com.keem.kochiu.collection.entity.SysModuleAction">
+        SELECT a.* FROM sys_module_action a
+            join main.sys_module sm on a.module_id=sm.module_id
+            where sm.module_code=#{moduleCode} and a.action_code=#{actionCode}
+    </select>
 </mapper>

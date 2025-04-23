@@ -7,4 +7,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UserPermissionRepository extends ServiceImpl<UserPermissionMapper, UserPermission> {
+
+    public boolean hasPermission(int userId, String moduleCode, String actionCode) {
+        return !getBaseMapper().getUserPermission(userId, moduleCode, actionCode).isEmpty();
+    }
 }

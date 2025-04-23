@@ -7,4 +7,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class SysModuleActionRepository extends ServiceImpl<SysModuleActionMapper, SysModuleAction> {
+
+    public SysModuleAction selectModuleAction(String moduleCode, String actionCode){
+        return baseMapper.selectModuleAction(moduleCode, actionCode);
+    }
 }
