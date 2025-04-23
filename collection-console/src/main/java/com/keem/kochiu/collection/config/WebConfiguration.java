@@ -2,6 +2,7 @@ package com.keem.kochiu.collection.config;
 
 import com.keem.kochiu.collection.enums.AutoCreateRuleEnum;
 import com.keem.kochiu.collection.enums.ImportMethodEnum;
+import com.keem.kochiu.collection.enums.RemoveUserOptionEnum;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.format.FormatterRegistry;
@@ -17,6 +18,7 @@ public class WebConfiguration implements WebMvcConfigurer {
         registry.addConverter(new StringToRemoveEnumConverter());
         registry.addConverter(new StringToAutoCreateRuleEnumConverter());
         registry.addConverter(new StringToImportMethodEnumConverter());
+        registry.addConverter(new StringToRemoveUserOptionEnumConverter());
     }
 
     public static class StringToRemoveEnumConverter implements Converter<String, RemoveEnum> {
@@ -37,6 +39,13 @@ public class WebConfiguration implements WebMvcConfigurer {
         @Override
         public ImportMethodEnum convert(@Nullable String source) {
             return ImportMethodEnum.getByCode(source); // 调用枚举的 fromCode 方法
+        }
+    }
+
+    public static class StringToRemoveUserOptionEnumConverter implements Converter<String, RemoveUserOptionEnum> {
+        @Override
+        public RemoveUserOptionEnum convert(@Nullable String source) {
+            return RemoveUserOptionEnum.getByValue(source); // 调用枚举的 fromCode 方法
         }
     }
 }

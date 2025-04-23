@@ -17,6 +17,7 @@ public class UserVo {
     private String token;
     private String key;
     private String strategy;
+    private Integer status;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

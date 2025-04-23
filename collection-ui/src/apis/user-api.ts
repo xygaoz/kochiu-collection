@@ -40,3 +40,40 @@ export const updateUser = (params: any): Promise<boolean> => {
         return false;
     });
 }
+
+export const deleteUser = (params: any): Promise<boolean> => {
+    return httpInstance.post(userApi + "/delete", params).then((model: any) => {
+        if (model) {
+            console.log("更新用户成功:", model);
+            return model as boolean;
+        }
+        return false;
+    }).catch((error) => {
+        console.error("更新用户失败:", error);
+        return false;
+    });
+}
+
+export const resetPwd = (params: any): Promise<boolean> => {
+    return httpInstance.post(userApi + "/resetpwd", params).then((model: any) => {
+        if (model) {
+            console.log("重置用户密码成功:", model);
+            return model as boolean;
+        }
+        return false;
+    }).catch((error) => {
+        console.error("重置用户密码失败:", error);
+        return false;
+    });
+}
+
+export const enableOrDisable = (params: any): Promise<boolean> => {
+    return httpInstance.post(userApi + "/enable-disable", params).then((model: any) => {
+        if (model) {
+            return model as boolean;
+        }
+        return false;
+    }).catch((error) => {
+        return false;
+    });
+}

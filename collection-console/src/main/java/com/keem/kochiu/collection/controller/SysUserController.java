@@ -5,10 +5,7 @@ import com.keem.kochiu.collection.annotation.CheckPermit;
 import com.keem.kochiu.collection.annotation.Edit;
 import com.keem.kochiu.collection.annotation.Module;
 import com.keem.kochiu.collection.data.DefaultResult;
-import com.keem.kochiu.collection.data.bo.ResetPwdBo;
-import com.keem.kochiu.collection.data.bo.SearchUserBo;
-import com.keem.kochiu.collection.data.bo.UserInfoBo;
-import com.keem.kochiu.collection.data.bo.UserStatusBo;
+import com.keem.kochiu.collection.data.bo.*;
 import com.keem.kochiu.collection.data.vo.PageVo;
 import com.keem.kochiu.collection.data.vo.UserVo;
 import com.keem.kochiu.collection.exception.CollectionException;
@@ -58,17 +55,17 @@ public class SysUserController {
     @CheckPermit(modules = {
             @Module(modeCode = "user", byAction = {"delete"})
     })
-    @GetMapping("/delete/{userId}")
-    public DefaultResult<Boolean> deleteUser(@PathVariable int userId) throws CollectionException {
+    @PostMapping("/delete")
+    public DefaultResult<Boolean> deleteUser(RemoveUserBo removeUserBo) throws CollectionException {
 
-        userService.deleteUser(userId);
+        userService.deleteUser(removeUserBo);
         return DefaultResult.ok(true);
     }
 
     @CheckPermit(modules = {
             @Module(modeCode = "user", byAction = {"reset-pwd"})
     })
-    @GetMapping("/resetPwd")
+    @PostMapping("/resetpwd")
     public DefaultResult<Boolean> resetPwd(ResetPwdBo resetPwdBo) throws CollectionException {
 
         userService.resetPassword(resetPwdBo);
@@ -78,7 +75,7 @@ public class SysUserController {
     @CheckPermit(modules = {
             @Module(modeCode = "user", byAction = {"enable-disable"})
     })
-    @GetMapping("/enable-disable")
+    @PostMapping("/enable-disable")
     public DefaultResult<Boolean> enableOrDisable(UserStatusBo userStatusBo) throws CollectionException {
 
         userService.enableOrDisable(userStatusBo);

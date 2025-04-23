@@ -5,8 +5,8 @@ import lombok.Getter;
 @Getter
 public enum UserStatusEnum {
 
-    NORMAL(1, "start", "正常"),
-    STOP(2, "stop", "停用")
+    NORMAL(1, "enable", "正常"),
+    STOP(2, "disable", "停用")
     ;
 
     private final int code;
