@@ -53,9 +53,16 @@
             <el-table-column label="操作" width="300">
                 <template #default="{row}">
                     <el-button size="small" @click="handleEdit(row)">编辑</el-button>
-                    <el-button size="small" type="danger" @click="handleDelete(row.userId)" v-if="row.userCode !== 'admin'">删除</el-button>
+                    <el-button
+                        size="small"
+                        type="danger"
+                        @click="handleDelete(row.userId, row.userCode)"
+                        v-if="row.userCode !== 'admin'"
+                    >
+                        删除
+                    </el-button>
                     <el-button size="small" type="primary" @click="handleEdit(row)">停用</el-button>
-                    <el-button size="small" type="warning" @click="handleDelete(row.userId)">重置密码</el-button>
+                    <el-button size="small" type="warning" @click="handleDelete(row.userId, row.userCode)">重置密码</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -123,16 +130,48 @@
                 </span>
             </template>
         </el-dialog>
+
+        <!-- 删除确认对话框 -->
+        <el-dialog
+            v-model="deleteDialogVisible"
+            title="删除用户"
+            width="500px"
+        >
+            <p>确定要删除用户 {{ deleteUserInfo.userCode }} 吗？</p>
+            <el-radio-group v-model="deleteOption">
+                <el-radio label="keep">保留资源文件</el-radio>
+                <el-radio label="delete">删除资源文件</el-radio>
+            </el-radio-group>
+            <template #footer>
+            <span class="dialog-footer">
+                <el-button @click="deleteDialogVisible = false">取消</el-button>
+                <el-button type="primary" @click="confirmDelete">确认</el-button>
+            </span>
+            </template>
+        </el-dialog>
+
+        <!-- 重置密码 -->
+        <el-dialog
+            v-model="resetDialogVisible"
+            title="重置密码"
+            width="500px"
+        >
+            <template #footer>
+            <span class="dialog-footer">
+                <el-button @click="resetDialogVisible = false">取消</el-button>
+                <el-button type="primary" @click="confirmReset">确认</el-button>
+            </span>
+            </template>
+        </el-dialog>
     </div>
 </template>
 
 <script lang="ts" setup>
 import { onMounted, reactive, ref } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
-import { ElMessage, ElMessageBox } from "element-plus";
-import axios from "axios";
+import { ElMessage } from "element-plus";
 import { Role, Strategy, User } from "@/apis/interface";
-import { addUser, listUsers, updateUser } from "@/apis/user-api";
+import { addUser, deleteUser, listUsers, updateUser } from "@/apis/user-api";
 import { getPublicKey, getStrategyList } from "@/apis/system-api";
 import { listRoles } from "@/apis/role-api";
 import { encryptPassword } from "@/apis/utils";
@@ -158,6 +197,15 @@ const strategyList = ref<Strategy[]>([])
 const allRoles = ref<Role[]>([]);
 const rolesError = ref(false);
 const publicKey = ref<string | null>(null); // 用于存储公钥
+const deleteDialogVisible = ref(false);
+const deleteOption = ref<'keep' | 'delete'>('keep');
+const resetDialogVisible = ref(false);
+
+const deleteUserInfo = reactive({
+    userId: '',
+    userCode: '',
+    deleteOption: ''
+});
 
 const pagination = reactive<Pagination>({
     currentPage: 1,
@@ -305,23 +353,24 @@ const handleEdit = (row: User) => {
     dialogVisible.value = true;
 };
 
-const handleDelete = (id: string) => {
-    ElMessageBox.confirm('确认删除该用户吗?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-    }).then(async () => {
-        try {
-            await axios.delete(`/api/users/${id}`)
-            ElMessage.success('删除成功')
-            fetchUsers()
-        } catch (error: any) {
-            ElMessage.error('删除失败: ' + error.message)
+const handleDelete = (userId: string, userCode: string) => {
+    deleteUserInfo.userId = userId;
+    deleteUserInfo.userCode = userCode;
+    deleteDialogVisible.value = true;
+};
+
+const confirmDelete = async () => {
+    try {
+        deleteUserInfo.deleteOption  = deleteOption.value;
+        if(await deleteUser(deleteUserInfo)) {
+            ElMessage.success('删除成功');
+            await fetchUsers();
+            deleteDialogVisible.value = false;
         }
-    }).catch(() => {
-        ElMessage.info('已取消删除')
-    })
-}
+    } catch (error: any) {
+        ElMessage.error('删除失败: ' + error.message);
+    }
+};
 
 const submitForm = async () => {
     if (!userFormRef.value) return
@@ -369,6 +418,10 @@ const resetForm = () => {
         strategy: 'local',
         roles: []
     })
+}
+
+const confirmReset = () => {
+    resetDialogVisible.value = false
 }
 
 const refreshData = () => {
