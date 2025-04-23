@@ -57,8 +57,8 @@ import { ref, defineEmits, onMounted } from "vue"; // 添加onMounted
 import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router"; // 导入useRouter
 import { getPublicKey, loginService, tokenStore } from "@/apis/system-api"; // 导入getPublicKey方法
-import { JSEncrypt } from 'jsencrypt';
 import Cookies from 'js-cookie';
+import { encryptPassword } from "@/apis/utils";
 
 const loginForm = ref({
     username: "",
@@ -88,7 +88,7 @@ const login = async () => {
     loginFormRef.value.validate(async (valid) => {
         if (valid) {
 
-            const encryptedPassword = encryptPassword(loginForm.value.password); // 加密密码
+            const encryptedPassword = encryptPassword(publicKey, loginForm.value.password); // 加密密码
             console.log("加密后的密码：", encryptedPassword)
             if (!encryptedPassword) {
                 ElMessage.error('加密失败');
@@ -125,24 +125,6 @@ onMounted(async () => {
     }
 });
 
-// 加密密码的方法
-const encryptPassword = (password) => {
-
-    // 创建JSEncrypt实例
-    const encryptor = new JSEncrypt();
-    encryptor.setPublicKey(publicKey);
-    // 验证公钥是否设置成功
-    if (!encryptor.getPublicKey()) {
-        ElMessage.error('公钥设置失败');
-        return
-    }
-    // 同步加密（JSEncrypt默认是同步操作）
-    const encrypted = encryptor.encrypt(password);
-    if (!encrypted) throw new Error('加密失败');
-
-    // 执行加密
-    return encrypted;
-};
 </script>
 
 <style lang="scss" scoped>

@@ -29,12 +29,13 @@ export const tokenStore = {
 };
 
 // 创建一个方法来获取公钥
-export const getPublicKey = () => {
-    return httpInstance.get(sysApi + "/publicKey").then((model) => {
+export const getPublicKey = async(): Promise<string | null> => {
+    return httpInstance.get(sysApi + "/publicKey").then((model: any) => {
         if (model) {
             console.log("获取公钥成功:", model);
-            return model;
+            return model as string;
         }
+        return null;
     }).catch((error) => {
         console.error("获取公钥失败:", error);
         throw error; // 抛出错误以便调用者处理

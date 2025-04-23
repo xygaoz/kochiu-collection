@@ -225,13 +225,6 @@ public class SysUserService {
         if(user == null){
             throw new CollectionException(ErrorCodeEnum.USER_IS_NOT_EXIST);
         }
-        if(StringUtils.isNotBlank(userInfoBo.getUserCode())){
-            //判断用户编码是否被占用
-            if(userRepository.getOneOpt(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserCode, userInfoBo.getUserCode()), false).isPresent()){
-                throw new CollectionException(ErrorCodeEnum.USER_CODE_IS_EXIST);
-            }
-            user.setUserCode(userInfoBo.getUserCode());
-        }
         if(StringUtils.isNotBlank(userInfoBo.getUserName())){
             user.setUserName(userInfoBo.getUserName());
         }

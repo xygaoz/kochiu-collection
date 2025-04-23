@@ -81,6 +81,12 @@ export interface User {
     strategy: string
     key: string
     token: string
+    roles: Role[]
+}
+
+export interface Role {
+    roleId: string
+    roleName: string
 }
 
 export interface Strategy {

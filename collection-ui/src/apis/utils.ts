@@ -5,6 +5,7 @@ import qs from "qs";
 import router from "@/apis/base-routes"; // 引入qs库来处理form-data
 import { tokenStore } from "@/apis/system-api";
 import Cookies from "js-cookie"; // 引入tokenStore
+import { JSEncrypt } from 'jsencrypt';
 
 const httpInstance = axios.create({
     baseURL: process.env.VUE_APP_BASE_API,
@@ -238,3 +239,22 @@ export const downloadFile = (url: string, data: any) => {
             ElMessage.error(err || '下载失败！')
         })
 }
+
+// 加密密码的方法
+export const encryptPassword = (publicKey: string, password: string) => {
+
+    // 创建JSEncrypt实例
+    const encryptor = new JSEncrypt();
+    encryptor.setPublicKey(publicKey);
+    // 验证公钥是否设置成功
+    if (!encryptor.getPublicKey()) {
+        ElMessage.error('公钥设置失败');
+        return
+    }
+    // 同步加密（JSEncrypt默认是同步操作）
+    const encrypted = encryptor.encrypt(password);
+    if (!encrypted) throw new Error('加密失败');
+
+    // 执行加密
+    return encrypted;
+};

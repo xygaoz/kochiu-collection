@@ -24,8 +24,25 @@
         </div>
 
         <el-table :data="userList" border style="width: 100%" v-loading="loading">
-            <el-table-column prop="userCode" label="用户编码" width="150"></el-table-column>
+            <el-table-column prop="userCode" label="用户编码" width="150" fixed></el-table-column>
             <el-table-column prop="userName" label="用户名称" width="120"></el-table-column>
+            <el-table-column label="用户角色" width="220">
+                <template #default="{row}">
+                    <div class="role-tags">
+                        <el-tag
+                            v-for="role in row.roles"
+                            :key="role.roleId"
+                            size="small"
+                            class="role-tag"
+                        >
+                            {{ role.roleName }}
+                        </el-tag>
+                        <el-tag v-if="!row.roles || row.roles.length === 0" size="small" type="info">
+                            无角色
+                        </el-tag>
+                    </div>
+                </template>
+            </el-table-column>
             <el-table-column label="存储策略" width="120">
                 <template #default="{row}">
                     {{ getStrategyName(row.strategy) }}
@@ -33,13 +50,12 @@
             </el-table-column>
             <el-table-column prop="key" label="加密密钥" width="120"></el-table-column>
             <el-table-column prop="token" label="Api Token" width="250"></el-table-column>
-            <el-table-column label="操作">
+            <el-table-column label="操作" width="300">
                 <template #default="{row}">
                     <el-button size="small" @click="handleEdit(row)">编辑</el-button>
-                    <el-button size="small" type="danger" @click="handleDelete(row.userId)">删除</el-button>
+                    <el-button size="small" type="danger" @click="handleDelete(row.userId)" v-if="row.userCode !== 'admin'">删除</el-button>
+                    <el-button size="small" type="primary" @click="handleEdit(row)">停用</el-button>
                     <el-button size="small" type="warning" @click="handleDelete(row.userId)">重置密码</el-button>
-                    <el-button size="small" type="info" @click="handleDelete(row.userId)">重置密钥</el-button>
-                    <el-button size="small" type="primary" @click="handleDelete(row.userId)">重置Token</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -77,25 +93,27 @@
                         </el-option>
                     </el-select>
                 </el-form-item>
-                <el-form-item label="加密密钥" prop="key" v-if="isAdd">
-                    <el-input
-                        v-model="userForm.key"
-                        :type="showKey ? 'text' : 'password'"
-                        placeholder="请输入加密密钥"
-                    >
-                        <template #suffix>
-                            <el-icon
-                                @click="showKey = !showKey"
-                                style="cursor: pointer;"
-                            >
-                                <View v-if="!showKey" />
-                                <Hide v-else />
-                            </el-icon>
-                        </template>
-                    </el-input>
-                </el-form-item>
-                <el-form-item label="Api Token" prop="token">
-                    <el-input v-model="userForm.token" disabled></el-input>
+
+                <!-- 角色选择区域 -->
+                <el-form-item
+                    label="用户角色"
+                    prop="roles"
+                    :rules="rules.roles"
+                    :class="{'is-error': rolesError}"
+                >
+                    <div class="role-tags-container">
+                        <el-tag
+                            v-for="role in allRoles"
+                            :key="role.roleId"
+                            :type="isRoleSelected(role.roleId) ? '' : 'info'"
+                            :effect="isRoleSelected(role.roleId) ? 'dark' : 'plain'"
+                            :class="{'dashed-tag': !isRoleSelected(role.roleId)}"
+                            @click="toggleRole(role)"
+                        >
+                            {{ role.roleName }}
+                        </el-tag>
+                    </div>
+                    <div class="el-form-item__error" v-if="rolesError">请选择用户角色</div>
                 </el-form-item>
             </el-form>
             <template #footer>
@@ -113,10 +131,11 @@ import { onMounted, reactive, ref } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElMessage, ElMessageBox } from "element-plus";
 import axios from "axios";
-import { Strategy, User } from "@/apis/interface";
-import { listUsers } from "@/apis/user-api";
-import { getStrategyList } from "@/apis/system-api";
-import { Hide, View } from "@element-plus/icons-vue";
+import { Role, Strategy, User } from "@/apis/interface";
+import { addUser, listUsers, updateUser } from "@/apis/user-api";
+import { getPublicKey, getStrategyList } from "@/apis/system-api";
+import { listRoles } from "@/apis/role-api";
+import { encryptPassword } from "@/apis/utils";
 
 interface Pagination {
     currentPage: number
@@ -136,7 +155,9 @@ const dialogTitle = ref('')
 const isAdd = ref(false)
 const userFormRef = ref<FormInstance>()
 const strategyList = ref<Strategy[]>([])
-const showKey = ref(false)
+const allRoles = ref<Role[]>([]);
+const rolesError = ref(false);
+const publicKey = ref<string | null>(null); // 用于存储公钥
 
 const pagination = reactive<Pagination>({
     currentPage: 1,
@@ -149,14 +170,22 @@ const searchForm = reactive<SearchForm>({
     userName: ''
 })
 
-const userForm = reactive<User>({
+interface Form {
+    userId: string
+    userCode: string
+    userName: string
+    password: string
+    strategy: string
+    roles: string[]
+}
+
+const userForm = reactive<Form>({
     userId: '',
     userCode: '',
     userName: '',
     password: '',
     strategy: 'local',
-    key: '',
-    token: '',
+    roles: []
 })
 
 const getStrategyName = (strategyCode: string) => {
@@ -180,20 +209,29 @@ const rules = reactive<FormRules>({
     strategy: [
         { required: true, message: '请选择存储策略', trigger: 'change' }
     ],
-    key: [
-        { required: true, message: '请输入加密密钥', trigger: 'blur' },
-        { min: 10, max: 20, message: '长度在 8 到 20 个字符', trigger: 'blur' }
-    ],
+    roles: [
+        {
+            validator: (rule, value, callback) => {
+                if (!value || value.length === 0) {
+                    rolesError.value = true;
+                    callback(new Error('请选择用户角色'));
+                } else {
+                    rolesError.value = false;
+                    callback();
+                }
+            },
+            trigger: 'change' // 虽然不自动触发，但保留
+        }
+    ]
 })
 
-//生成随机密钥的函数
-const generateRandomKey = (length = 10) => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
-    let result = '';
-    for (let i = 0; i < length; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
+const fetchAllRoles = async () => {
+    try {
+        allRoles.value = await listRoles();
+    } catch (error) {
+        console.error("获取角色列表失败:", error);
+        ElMessage.error("获取角色列表失败");
     }
-    return result;
 };
 
 const fetchUsers = async () => {
@@ -215,6 +253,18 @@ const fetchUsers = async () => {
         loading.value = false
     }
 }
+
+const isRoleSelected = (roleId: string) => {
+    return userForm.roles.includes(roleId);
+};
+
+const toggleRole = (role: Role) => {
+    if (isRoleSelected(role.roleId)) {
+        userForm.roles = userForm.roles.filter(r => r !== role.roleId);
+    } else {
+        userForm.roles.push(role.roleId);
+    }
+};
 
 const handleSearch = () => {
     pagination.currentPage = 1
@@ -245,11 +295,15 @@ const handleAdd = () => {
 }
 
 const handleEdit = (row: User) => {
-    dialogTitle.value = '编辑用户'
-    isAdd.value = false
-    Object.assign(userForm, row)
-    dialogVisible.value = true
-}
+    dialogTitle.value = '编辑用户';
+    isAdd.value = false;
+    Object.assign(userForm, {
+        ...row,
+        // 将角色对象数组转换为角色ID数组
+        roles: row.roles ? row.roles.map(role => role.roleId) : []
+    });
+    dialogVisible.value = true;
+};
 
 const handleDelete = (id: string) => {
     ElMessageBox.confirm('确认删除该用户吗?', '提示', {
@@ -271,14 +325,32 @@ const handleDelete = (id: string) => {
 
 const submitForm = async () => {
     if (!userFormRef.value) return
+
+    // 手动检查角色
+    if (userForm.roles.length === 0) {
+        rolesError.value = true;
+        ElMessage.error('请至少选择一个角色');
+        return;
+    }
     await userFormRef.value.validate()
 
     try {
         if (isAdd.value) {
-            await axios.post('/api/users', userForm)
+
+            const encryptedPassword = encryptPassword(publicKey.value!, userForm.password);
+            const params = {
+                ...userForm,
+                password: encryptedPassword,
+            }
+
+            if(!await addUser(params)) {
+                return
+            }
             ElMessage.success('新增用户成功')
         } else {
-            await axios.put(`/api/users/${userForm.userId}`, userForm)
+            if(!await updateUser(userForm)) {
+                return
+            }
             ElMessage.success('更新用户成功')
         }
         dialogVisible.value = false
@@ -295,8 +367,7 @@ const resetForm = () => {
         userName: '',
         password: '',
         strategy: 'local',
-        key: generateRandomKey(), // 自动生成密钥
-        token: '',
+        roles: []
     })
 }
 
@@ -304,9 +375,16 @@ const refreshData = () => {
     fetchUsers()
 }
 
-onMounted(() => {
-    fetchUsers()
-})
+onMounted(async () => {
+    try {
+        publicKey.value = await getPublicKey();
+    } catch (error) {
+        console.error("获取公钥失败:", error);
+        ElMessage.error("获取公钥失败");
+    }
+    await fetchUsers();
+    await fetchAllRoles();
+});
 </script>
 
 <style scoped>
@@ -329,5 +407,51 @@ onMounted(() => {
 .pagination {
     margin-top: 20px;
     text-align: right;
+}
+
+.role-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.role-tag {
+    margin-right: 4px;
+}
+
+.role-tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.dashed-tag {
+    border-style: dashed !important;
+    cursor: pointer;
+}
+
+.el-tag {
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.el-tag:hover {
+    opacity: 0.8;
+}
+
+.is-error .role-tags-container {
+    border: 1px solid #f56c6c;
+    border-radius: 4px;
+    padding: 8px;
+}
+
+.el-form-item__error {
+    color: #f56c6c;
+    font-size: 12px;
+    line-height: 1;
+    padding-top: 4px;
+    position: absolute;
+    top: 100%;
+    left: 0;
 }
 </style>

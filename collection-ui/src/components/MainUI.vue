@@ -306,7 +306,7 @@ const showCategoryActions = ref<number | null>(null)
 // 计算属性：获取特定菜单项（资源、系统管理、帮助）
 const fixedMenuItems = computed(() => {
     return router.options.routes.filter(route =>
-        ['/Resource', '/System', '/Help'].includes(route.path)
+        ['/My', '/System', '/Help'].includes(route.path)
     )
 })
 

@@ -14,3 +14,29 @@ export const listUsers = (params: any): Promise<PageInfo<User>> => {
         return { pageNum: 0, pageSize: 0, total: 0, pages: 0, list: [] };
     });
 }
+
+export const addUser = (params: any): Promise<boolean> => {
+    return httpInstance.post(userApi + "/add", params).then((model: any) => {
+        if (model) {
+            console.log("添加用户成功:", model);
+            return model as boolean;
+        }
+        return false;
+    }).catch((error) => {
+        console.error("添加用户失败:", error);
+        return false;
+    });
+}
+
+export const updateUser = (params: any): Promise<boolean> => {
+    return httpInstance.post(userApi + "/update", params).then((model: any) => {
+        if (model) {
+            console.log("更新用户成功:", model);
+            return model as boolean;
+        }
+        return false;
+    }).catch((error) => {
+        console.error("更新用户失败:", error);
+        return false;
+    });
+}

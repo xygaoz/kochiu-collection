@@ -39,9 +39,9 @@ routes.push(
         ]
     },
     {
-        path: '/Resource',
-        name: "resource",
-        meta: { title: '资源', icon: 'Collection', iconType: 'icons-vue', style: 'color: rgb(59,130,246); margin: 0 -1px 0 0;' },
+        path: '/My',
+        name: "my",
+        meta: { title: '我的', icon: 'Collection', iconType: 'icons-vue', style: 'color: rgb(59,130,246); margin: 0 -1px 0 0;' },
         children: [
             {
                 path: '/Upload',
@@ -66,7 +66,7 @@ routes.push(
     {
         path: '/System',
         name: 'system',
-        meta: { title: '系统管理', icon: 'icon-col-shezhi', iconType: 'iconfont', style: 'font-size: 21px; color: rgb(59,130,246' },
+        meta: { title: '系统管理', icon: 'icon-col-shezhi', iconType: 'iconfont', style: 'font-size: 21px; color: rgb(59,130,246)' },
         children: [
             {
                 path: '/User',
