@@ -11,4 +11,11 @@
             join main.sys_module sm on a.module_id=sm.module_id
             where sm.module_code=#{moduleCode} and a.action_code=#{actionCode}
     </select>
-</mapper>
+
+    <select id="getRolePermission" resultType="com.keem.kochiu.collection.entity.SysModuleAction">
+        SELECT a.*, case p.permission_id is null when true then 0 else 1 end as selected
+        FROM sys_module_action a
+                 join sys_module m on a.module_id = m.module_id
+                 left join user_permission p on p.action_id = a.action_id and p.module_id = a.module_id and p.role_id=#{roleId}
+        where m.module_id=#{moduleId}
+    </select></mapper>

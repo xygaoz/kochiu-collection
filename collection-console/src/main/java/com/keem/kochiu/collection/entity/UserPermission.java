@@ -23,4 +23,8 @@ public class UserPermission extends BaseEntity {
     @TableField("action_id")
     private Long actionId;
 
+    @TableField(exist = false)
+    private String moduleName;
+    @TableField(exist = false)
+    private String actionName;
 }

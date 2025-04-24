@@ -88,9 +88,31 @@ export interface User {
 export interface Role {
     roleId: string
     roleName: string
+    permissions: Permission[]
+}
+
+export interface Permission {
+    actionId: number;
+    moduleName: string;
+    actionName: string
 }
 
 export interface Strategy {
     strategyCode: string
     strategyName: string
+}
+
+export interface Module {
+    moduleId: number;
+    moduleName: string;
+    moduleCode: string;
+    children: Module[];
+    actions: Action[];
+}
+
+export interface Action {
+    actionId: number;
+    actionName: string;
+    actionCode: string;
+    selected: boolean;
 }

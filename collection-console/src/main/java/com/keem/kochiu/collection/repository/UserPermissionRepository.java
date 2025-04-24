@@ -5,6 +5,8 @@ import com.keem.kochiu.collection.entity.UserPermission;
 import com.keem.kochiu.collection.mapper.UserPermissionMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserPermissionRepository extends ServiceImpl<UserPermissionMapper, UserPermission> {
 
@@ -12,7 +14,10 @@ public class UserPermissionRepository extends ServiceImpl<UserPermissionMapper, 
         return !getBaseMapper().getUserPermission(userId, moduleCode, actionCode).isEmpty();
     }
 
-    // 删除用户权限
+    public List<UserPermission> getRolePermission(Integer roleId) {
+        return getBaseMapper().getRolePermission(roleId);
+    }
+
     public int deleteUserPermission(Integer userId) {
         return getBaseMapper().deleteUserPermission(userId);
     }
