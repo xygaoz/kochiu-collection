@@ -902,7 +902,7 @@
             <column name="permission_id" type="INTEGER" remarks="id">
                 <constraints nullable="false"/>
             </column>
-            <column name="user_id" type="INTEGER" remarks="用户ID">
+            <column name="role_id" type="INTEGER" remarks="角色ID">
                 <constraints nullable="false"/>
             </column>
             <column name="module_id" type="INTEGER" remarks="模块ID">
@@ -937,7 +937,7 @@
         <createIndex
                 indexName="user_permission_idx1"
                 tableName="user_permission" unique="true">
-            <column name="user_id"/>
+            <column name="role_id"/>
             <column name="module_id"/>
             <column name="action_id"/>
         </createIndex>
@@ -949,7 +949,7 @@
         </preConditions>
         <insert tableName="user_permission">
             <column name="permission_id" value="1"/>
-            <column name="user_id" value="1"/>
+            <column name="role_id" value="1"/>
             <column name="module_id" value="2"/>
             <column name="action_id" value="1"/>
             <column name="CREATE_TIME" valueComputed="datetime('now')"/>
@@ -958,7 +958,7 @@
         </insert>
         <insert tableName="user_permission">
             <column name="permission_id" value="2"/>
-            <column name="user_id" value="1"/>
+            <column name="role_id" value="1"/>
             <column name="module_id" value="2"/>
             <column name="action_id" value="2"/>
             <column name="CREATE_TIME" valueComputed="datetime('now')"/>
@@ -967,7 +967,7 @@
         </insert>
         <insert tableName="user_permission">
             <column name="permission_id" value="3"/>
-            <column name="user_id" value="1"/>
+            <column name="role_id" value="1"/>
             <column name="module_id" value="2"/>
             <column name="action_id" value="3"/>
             <column name="CREATE_TIME" valueComputed="datetime('now')"/>
@@ -976,7 +976,7 @@
         </insert>
         <insert tableName="user_permission">
             <column name="permission_id" value="4"/>
-            <column name="user_id" value="1"/>
+            <column name="role_id" value="1"/>
             <column name="module_id" value="2"/>
             <column name="action_id" value="4"/>
             <column name="CREATE_TIME" valueComputed="datetime('now')"/>
@@ -985,7 +985,7 @@
         </insert>
         <insert tableName="user_permission">
             <column name="permission_id" value="5"/>
-            <column name="user_id" value="1"/>
+            <column name="role_id" value="1"/>
             <column name="module_id" value="2"/>
             <column name="action_id" value="5"/>
             <column name="CREATE_TIME" valueComputed="datetime('now')"/>

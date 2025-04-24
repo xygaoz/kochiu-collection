@@ -268,7 +268,7 @@ public class SysUserService {
         userRepository.removeById(user.getUserId());
         userRoleRepository.remove(new LambdaQueryWrapper<UserRole>().eq(UserRole::getUserId, user.getUserId()));
         userRoleRepository.remove(new LambdaQueryWrapper<UserRole>().eq(UserRole::getUserId, user.getUserId()));
-        userPermissionRepository.remove(new LambdaQueryWrapper<UserPermission>().eq(UserPermission::getUserId, user.getUserId()));
+        userPermissionRepository.deleteUserPermission(user.getUserId());
 
         if(removeUserBo.getDeleteOption() == RemoveUserOptionEnum.DELETE_RESOURCE){
             //删除用户资源

@@ -14,8 +14,8 @@ public class UserPermission extends BaseEntity {
     @TableId(value = "permission_id")
     private Long permissionId;
 
-    @TableField("user_id")
-    private Long userId;
+    @TableField("role_id")
+    private Long roleId;
 
     @TableField("module_id")
     private Long moduleId;

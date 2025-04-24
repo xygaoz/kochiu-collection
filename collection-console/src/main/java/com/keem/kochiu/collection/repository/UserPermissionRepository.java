@@ -11,4 +11,9 @@ public class UserPermissionRepository extends ServiceImpl<UserPermissionMapper, 
     public boolean hasPermission(int userId, String moduleCode, String actionCode) {
         return !getBaseMapper().getUserPermission(userId, moduleCode, actionCode).isEmpty();
     }
+
+    // 删除用户权限
+    public int deleteUserPermission(Integer userId) {
+        return getBaseMapper().deleteUserPermission(userId);
+    }
 }

@@ -10,9 +10,20 @@
         SELECT * FROM user_permission p
                  join sys_module_action a on p.action_id = a.action_id and a.module_id=p.module_id
                  join sys_module m on a.module_id = m.module_id and p.module_id = m.module_id
-                 WHERE p.user_id = #{userId} AND m.module_code = #{moduleCode}
+                 join user_role r on r.role_id=p.role_id
+                 join sys_user u on u.user_id = r.user_id
+                 WHERE u.user_id = #{userId} AND m.module_code = #{moduleCode}
                    <if test="actionCode != null">
                     AND a.action_code = #{actionCode}
                    </if>
     </select>
+
+    <delete id="deleteUserPermission">
+        DELETE FROM user_permission
+        WHERE EXISTS (
+            SELECT 1 FROM user_role
+            WHERE user_role.role_id = user_permission.role_id
+              AND user_role.user_id = #{userId}
+        )
+    </delete>
 </mapper>
