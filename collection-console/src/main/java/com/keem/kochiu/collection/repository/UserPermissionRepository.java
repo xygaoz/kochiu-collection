@@ -14,7 +14,7 @@ public class UserPermissionRepository extends ServiceImpl<UserPermissionMapper, 
         return !getBaseMapper().getUserPermission(userId, moduleCode, actionCode).isEmpty();
     }
 
-    public List<UserPermission> getRolePermission(Integer roleId) {
+    public List<UserPermission> getRolePermission(Long roleId) {
         return getBaseMapper().getRolePermission(roleId);
     }
 

@@ -16,8 +16,11 @@ export const listRoles = (): Promise<Role[]> => {
 }
 
 export const addRole = (role: any): Promise<boolean> => {
-    return httpInstance.post(roleApi + "/add", role).then(() => {
-        return true;
+    return httpInstance.post(roleApi + "/add", role).then((model: any) => {
+        if (model) {
+            return model as boolean;
+        }
+        return false;
     }).catch((error) => {
         console.error("新增角色失败:", error);
         return false;
@@ -25,8 +28,11 @@ export const addRole = (role: any): Promise<boolean> => {
 }
 
 export const updateRole = (role: any): Promise<boolean> => {
-    return httpInstance.post(roleApi + "/update", role).then(() => {
-        return true;
+    return httpInstance.post(roleApi + "/update", role).then((model: any) => {
+        if (model) {
+            return model as boolean;
+        }
+        return false;
     }).catch((error) => {
         console.error("更新角色失败:", error);
         return false;
@@ -34,8 +40,11 @@ export const updateRole = (role: any): Promise<boolean> => {
 }
 
 export const deleteRole = (roleId: string): Promise<boolean> => {
-    return httpInstance.post(roleApi + "/delete", { roleId }).then(() => {
-        return true;
+    return httpInstance.get(roleApi + "/delete/" + roleId).then((model: any) => {
+        if (model) {
+            return model as boolean;
+        }
+        return false;
     }).catch((error) => {
         console.error("删除角色失败:", error);
         return false;

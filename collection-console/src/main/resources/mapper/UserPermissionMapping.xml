@@ -22,7 +22,6 @@
         SELECT distinct p.*, m.module_name, a.action_name FROM user_permission p
         join sys_module_action a on p.action_id = a.action_id and a.module_id=p.module_id
         join sys_module m on a.module_id = m.module_id and p.module_id = m.module_id
-        join user_role r on r.role_id=p.role_id
         WHERE p.role_id = #{roleId}
     </select>
 

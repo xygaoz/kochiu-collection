@@ -1,12 +1,15 @@
 package com.keem.kochiu.collection.controller;
 
+import com.keem.kochiu.collection.annotation.Add;
 import com.keem.kochiu.collection.annotation.CheckPermit;
+import com.keem.kochiu.collection.annotation.Edit;
 import com.keem.kochiu.collection.data.DefaultResult;
+import com.keem.kochiu.collection.data.bo.RoleBo;
 import com.keem.kochiu.collection.data.vo.RoleVo;
+import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.service.SysRoleService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -26,5 +29,26 @@ public class SysRoleController {
     @GetMapping("/list")
     public DefaultResult<List<RoleVo>> getRoleList() {
         return DefaultResult.ok(sysRoleService.selectAll());
+    }
+
+    @CheckPermit
+    @PostMapping("/add")
+    public DefaultResult<Boolean> addRole(@Validated({Add.class}) RoleBo roleBo) {
+        sysRoleService.addRole(roleBo);
+        return DefaultResult.ok(true);
+    }
+
+    @CheckPermit
+    @PostMapping("/update")
+    public DefaultResult<Boolean> updateRole(@Validated({Edit.class}) RoleBo roleBo) throws CollectionException {
+        sysRoleService.updateRole(roleBo);
+        return DefaultResult.ok(true);
+    }
+
+    @CheckPermit
+    @GetMapping("/delete/{roleId}")
+    public DefaultResult<Boolean> deleteRole(@PathVariable Long roleId) throws CollectionException {
+        sysRoleService.deleteRole(roleId);
+        return DefaultResult.ok(true);
     }
 }

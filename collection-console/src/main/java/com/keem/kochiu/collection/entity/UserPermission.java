@@ -1,26 +1,23 @@
 package com.keem.kochiu.collection.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+@Builder
 @Data
 @EqualsAndHashCode(callSuper = true)
 @TableName("user_permission")
 public class UserPermission extends BaseEntity {
 
-    @TableId(value = "permission_id")
+    @TableId(type = IdType.INPUT)
     private Long permissionId;
-
-    @TableField("role_id")
     private Long roleId;
-
-    @TableField("module_id")
     private Long moduleId;
-
-    @TableField("action_id")
     private Long actionId;
 
     @TableField(exist = false)

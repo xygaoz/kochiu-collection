@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface SysRoleMapper extends BaseMapper<SysRole> {
 
-    Integer selectLastInsertId();
+    Long selectLastInsertId();
 
     List<SysRole> selectUserRole(@Param("userId") int userId);
 }

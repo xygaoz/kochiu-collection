@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 public class RoleVo {
 
-    private int roleId;
+    private Long roleId;
     private String roleName;
     private List<Permission> permissions;
 

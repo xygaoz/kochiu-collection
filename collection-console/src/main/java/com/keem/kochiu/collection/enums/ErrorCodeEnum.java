@@ -52,7 +52,7 @@ public enum ErrorCodeEnum {
     PASSWORDS_ARE_INCONSISTENT_ERROR("1050", "两次输入的密码不一致"),
     USER_STATUS_ERROR("1051", "用户状态错误"),
     PERMISSION_IS_INVALID("1052", "无权限访问"),
-    ;
+    ROLE_IS_NOT_EXIST("1053", "角色不存在");
 
     private final String code;
     private final String message;

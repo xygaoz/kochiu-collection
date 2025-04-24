@@ -14,7 +14,7 @@ public interface UserPermissionMapper extends BaseMapper<UserPermission> {
                                            @Param("moduleCode") String moduleCode,
                                            @Param("actionCode") String actionCode);
 
-    List<UserPermission> getRolePermission(@Param("roleId") Integer roleId);
+    List<UserPermission> getRolePermission(@Param("roleId") Long roleId);
 
     int deleteUserPermission(@Param("userId") int userId);
 }

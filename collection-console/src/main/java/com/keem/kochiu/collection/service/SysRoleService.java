@@ -1,11 +1,20 @@
 package com.keem.kochiu.collection.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.keem.kochiu.collection.data.bo.RoleBo;
 import com.keem.kochiu.collection.data.vo.RoleVo;
+import com.keem.kochiu.collection.entity.SysModuleAction;
 import com.keem.kochiu.collection.entity.SysRole;
 import com.keem.kochiu.collection.entity.UserPermission;
+import com.keem.kochiu.collection.entity.UserRole;
+import com.keem.kochiu.collection.enums.ErrorCodeEnum;
+import com.keem.kochiu.collection.exception.CollectionException;
+import com.keem.kochiu.collection.repository.SysModuleActionRepository;
 import com.keem.kochiu.collection.repository.SysRoleRepository;
 import com.keem.kochiu.collection.repository.UserPermissionRepository;
+import com.keem.kochiu.collection.repository.UserRoleRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,17 +25,25 @@ public class SysRoleService {
 
     private final SysRoleRepository sysRoleRepository;
     private final UserPermissionRepository userPermissionRepository;
+    private final SysModuleActionRepository sysModuleActionRepository;
+    private final UserRoleRepository userRoleRepository;
 
     public SysRoleService(SysRoleRepository sysRoleRepository,
-                          UserPermissionRepository userPermissionRepository) {
+                          UserPermissionRepository userPermissionRepository,
+                          SysModuleActionRepository sysModuleActionRepository,
+                          UserRoleRepository userRoleRepository) {
         this.sysRoleRepository = sysRoleRepository;
         this.userPermissionRepository = userPermissionRepository;
+        this.sysModuleActionRepository = sysModuleActionRepository;
+        this.userRoleRepository = userRoleRepository;
     }
 
+    // 根据用户ID查询角色列表
     public List<SysRole> selectUserRole(int userId){
         return sysRoleRepository.selectUserRole(userId);
     }
 
+    // 查询所有角色
     public List<RoleVo> selectAll() {
         return sysRoleRepository.list().stream().map(role -> {
             List<UserPermission> permissions = userPermissionRepository.getRolePermission(role.getRoleId());
@@ -41,5 +58,71 @@ public class SysRoleService {
                                     .collect(Collectors.toList()))
                     .build();
         }).collect(Collectors.toList());
+    }
+
+    // 添加角色
+    @Transactional(rollbackFor = Exception.class)
+    public void addRole(RoleBo roleBo){
+
+        SysRole role = SysRole.builder()
+                .roleName(roleBo.getRoleName())
+                .build();
+        sysRoleRepository.save(role);
+        Long roleId = sysRoleRepository.getBaseMapper().selectLastInsertId();
+        // 添加权限
+        for(Long actionId : roleBo.getPermissions()){
+
+            SysModuleAction action = sysModuleActionRepository.getById(actionId);
+
+            UserPermission permission = UserPermission.builder()
+                    .roleId(roleId)
+                    .moduleId(action.getModuleId())
+                    .actionId(actionId)
+                    .build();
+            userPermissionRepository.save(permission);
+        }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void updateRole(RoleBo roleBo) throws CollectionException {
+
+        SysRole role = sysRoleRepository.getById(roleBo.getRoleId());
+        if(role == null){
+            throw new CollectionException(ErrorCodeEnum.ROLE_IS_NOT_EXIST);
+        }
+        role.setRoleName(roleBo.getRoleName());
+        sysRoleRepository.updateById(role);
+
+        //先删除权限再添加
+        if(userPermissionRepository.remove(new LambdaQueryWrapper<UserPermission>()
+                .eq(UserPermission::getRoleId, roleBo.getRoleId())
+        )){
+            for(Long actionId : roleBo.getPermissions()){
+
+                SysModuleAction action = sysModuleActionRepository.getById(actionId);
+
+                UserPermission permission = UserPermission.builder()
+                        .roleId(role.getRoleId())
+                        .moduleId(action.getModuleId())
+                        .actionId(actionId)
+                        .build();
+                userPermissionRepository.save(permission);
+            }
+        }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteRole(Long roleId) throws CollectionException {
+        SysRole role = sysRoleRepository.getById(roleId);
+        if(role == null){
+            throw new CollectionException(ErrorCodeEnum.ROLE_IS_NOT_EXIST);
+        }
+        sysRoleRepository.removeById(roleId);
+
+        //删除权限
+        userPermissionRepository.remove(new LambdaQueryWrapper<UserPermission>()
+                .eq(UserPermission::getRoleId, roleId));
+        //删除用户角色
+        userRoleRepository.remove(new LambdaQueryWrapper<UserRole>().eq(UserRole::getRoleId, roleId));
     }
 }
