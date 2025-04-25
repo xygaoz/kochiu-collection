@@ -34,6 +34,10 @@ export const useUserStore = defineStore('userStore', () => {
         }
     };
 
+    const getUsername = () => {
+        return currentSettings.value.username;
+    };
+
     const setIncludeSubDir = (value: boolean) => {
         if (currentUserCode.value) {
             userSettingsMap.value[currentUserCode.value].include_sub_dir = value;
@@ -48,6 +52,7 @@ export const useUserStore = defineStore('userStore', () => {
         initializeUser,
         clearCurrentUser,
         setIncludeSubDir,
+        getUsername,
         include_sub_dir: computed({
             get: () => currentSettings.value.include_sub_dir,
             set: (val) => setIncludeSubDir(val)

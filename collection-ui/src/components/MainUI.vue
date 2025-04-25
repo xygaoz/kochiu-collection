@@ -334,7 +334,7 @@
                                         src="/images/user.gif"
                                         class="user-avatar"
                                     />
-                                    <span class="username">{{ userStore.currentUserCode }}</span>
+                                    <span class="username">{{ userStore.getUsername() }}</span>
                                     <el-icon class="dropdown-icon"><ArrowDown /></el-icon>
                                 </div>
                                 <template #dropdown>
