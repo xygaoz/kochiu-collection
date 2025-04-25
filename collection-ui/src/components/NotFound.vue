@@ -1,0 +1,21 @@
+<template>
+    <div>
+        <el-row>
+            <el-col :span="24">
+                <el-card>
+                    <div>
+                        <span>404</span>
+                    </div>
+                    <div>
+                        <el-alert
+                            title="404"
+                            type="error"
+                            description="对不起，您访问的页面不存在。"
+                            show-icon>
+                        </el-alert>
+                    </div>
+                </el-card>
+            </el-col>
+        </el-row>
+    </div>
+</template>

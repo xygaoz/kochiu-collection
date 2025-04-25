@@ -350,18 +350,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, StyleValue } from "vue";
-import { Plus, Switch, Collection, UploadFilled, Edit, Delete } from "@element-plus/icons-vue";
-import { listCategory } from '@/apis/category-api'
-import { listTag} from '@/apis/tag-api'
-import { getResourceTypes } from '@/apis/system-api'
-import { getCatalogTree } from '@/apis/catalog-api'
-import CatalogMenuItem from '@/components/catalog/CatalogMenuItem.vue'
-import { Catalog, Category, Menu, ResourceType, Tag } from "@/apis/interface";
+import { computed, onMounted, ref, StyleValue } from "vue";
+import { Delete, Edit, Plus, Switch } from "@element-plus/icons-vue";
+import { listCategory } from "@/apis/category-api";
+import { listTag } from "@/apis/tag-api";
+import { getResourceTypes } from "@/apis/system-api";
+import { getCatalogTree } from "@/apis/catalog-api";
+import CatalogMenuItem from "@/components/catalog/CatalogMenuItem.vue";
+import { Catalog, Category, Menu, ResourceType, RouteMenu, Tag } from "@/apis/interface";
 import CategoryDialog from "@/components/category/CategoryDialog.vue";
 import CatalogDialog from "@/components/catalog/CatalogDialog.vue";
-import { useRoute, useRouter } from 'vue-router'
-import { getMyMenu } from '@/apis/user-api'
+import { useRoute, useRouter } from "vue-router";
+import { getMyMenu } from "@/apis/user-api";
 
 
 // 状态管理
@@ -378,16 +378,14 @@ const currentCatalog = ref<Catalog | null>(null);
 const route = useRoute()
 const router = useRouter()
 const showCategoryActions = ref<number | null>(null)
-const dynamicMenus = ref<Menu[]>([])
+const dynamicMenus = ref<RouteMenu[]>([])
 
 // 计算属性：获取特定菜单项（资源、系统管理、帮助）
 const fixedMenuItems = computed(() => {
     // 固定菜单项
-    const fixedRoutes = router.options.routes.filter(route =>
+    return router.options.routes.filter(route =>
         ['/My', '/Help'].includes(route.path)
     )
-
-    return fixedRoutes
 })
 
 // 初始化数据
@@ -436,7 +434,7 @@ const loadCatalogTree = async () => {
 const loadDynamicMenus = async () => {
     try {
         const menus = await getMyMenu()
-        dynamicMenus.value = menus.map(menu => ({
+        dynamicMenus.value = menus.map((menu: Menu) => ({
             path: menu.path,
             name: menu.name,
             meta: {
@@ -455,7 +453,7 @@ const loadDynamicMenus = async () => {
                     style: child.style
                 }
             })) || []
-        }))
+        } as RouteMenu))
 
         // 动态添加路由
         menus.forEach(menu => {
@@ -506,15 +504,29 @@ const loadDynamicMenus = async () => {
 
 // 解析组件路径
 const resolveComponent = (name: string) => {
-    // 根据菜单名称映射到不同位置的组件
-    if (name.toLowerCase().includes('user')) {
-        return import('@/components/sys/UserView.vue')
-    } else if (name.toLowerCase().includes('role')) {
-        return import('@/components/sys/RoleView.vue')
+    try {
+        // 根据菜单名称映射到不同位置的组件
+        if (name.toLowerCase().includes('user')) {
+            return import('@/components/sys/UserView.vue')
+        } else if (name.toLowerCase().includes('role')) {
+            return import('@/components/sys/RoleView.vue')
+        }
+        // 默认尝试从sys目录加载
+        return import('@/components/sys/' + name + 'View.vue')
+            .catch(() => import('@/components/' + name.toLowerCase() + '/' + name +'.vue'))
+    } catch (error) {
+        console.error('组件加载失败:', error)
+        return import('@/components/NotFound.vue') // 提供一个默认的NotFound组件
     }
-    // 默认尝试从sys目录加载
-    return import(`@/components/sys/${name}View.vue`)
-        .catch(() => import(`@/components/${name.toLowerCase()}/${name}.vue`))
+}
+
+// 处理菜单点击
+const menuItemClick = (item: { path: string }) => {
+    if (router.currentRoute.value.path !== item.path) {
+        router.push(item.path).catch(err => {
+            console.error('路由跳转失败:', err)
+        })
+    }
 }
 
 // 切换目录菜单显示
@@ -524,13 +536,6 @@ const toggleCatalogMenu = async (e: Event) => {
     if (showCatalogMenu.value) {
         await loadCatalogTree()
     }
-}
-
-// 处理菜单点击
-const menuItemClick = (item: { path: string }) => {
-    router.push(item.path).catch(err => {
-        console.error('路由跳转失败:', err)
-    })
 }
 
 // 处理目录节点点击
@@ -557,20 +562,13 @@ const handleAddCatalog = (e: Event) => {
 const handleCategoryConfirm = async () => {
     await loadCategories()
     if (route.path.startsWith('/Category/')) {
-        let currentSno = Number(route.params.sno); // 将 currentSno 转换为 number 类型
-        //判断当前分类是否存在
-        let found = false;
-        categories.value.map((category) => {
-            if (category.sno === currentSno) {
-                found = true
-            }
-        })
-        if(!found){
-            currentSno = categories.value[0].sno
+        let currentSno = Number(route.params.sno)
+        // 判断当前分类是否存在
+        let found = categories.value.some(category => category.sno === currentSno)
+        if (!found) {
+            currentSno = categories.value[0]?.sno || 0 // 确保有默认值
         }
-
-        await router.push('/Category/refresh');
-        await router.replace(`/Category/${currentSno}`);
+        await router.replace(`/Category/${currentSno}`)
     }
 }
 
@@ -579,9 +577,8 @@ const handleCatalogConfirm = async () => {
     await loadCatalogTree()
     // 如果当前路由是/Catalog页面，则重新加载
     if (route.path.startsWith('/Catalog/')) {
-        const currentSno = route.params.sno;
-        await router.push('/Catalog/refresh');
-        await router.replace(`/Catalog/${currentSno}`);
+        const currentSno = route.params.sno
+        await router.replace(`/Catalog/${currentSno}`)
     }
 }
 

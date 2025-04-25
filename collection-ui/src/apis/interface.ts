@@ -127,3 +127,17 @@ export interface Menu {
     redirect: string;
     children: Menu[];
 }
+
+export interface Meta{
+    title: string;
+    icon: string;
+    iconType: string;
+    style: string;
+}
+
+export interface RouteMenu {
+    name: string;
+    path: string;
+    meta: Meta;
+    children: RouteMenu[];
+}
