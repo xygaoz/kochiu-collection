@@ -1,107 +1,113 @@
 <template>
     <div class="upload-dragger">
-        <div class="title">文件上传</div>
-        <!-- 添加分类选择下拉框 -->
-        <div class="category">
-            <div class="select-label">分类</div>
-            <div class="select-container">
-                <el-select v-model="selectedCategory" placeholder="请选择分类">
-                    <el-option
-                        v-for="category in categories"
-                        :key="category.sno"
-                        :label="category.cateName"
-                        :value="category.sno"
-                    />
-                </el-select>
-            </div>
-        </div>
-        <div class="catalog">
-            <div class="select-label">目录</div>
-            <div class="select-container">
-                <div class="select-catalog">
-                    <el-radio-group v-model="autoCreate">
-                        <el-radio :label="true">自动创建日期目录（YYYY/MM/DD）</el-radio>
-                        <el-radio :label="false">选择现有目录</el-radio>
-                    </el-radio-group>
-                </div>
-                <div class="catalog-list">
-                    <el-cascader
-                        v-model="cataId"
-                        :options="catalogTree"
-                        :props="cascaderProps"
-                        placeholder="请选择目录"
-                        :loading="loadingCatalog"
-                        style="width: 100%;"
-                    />
-                </div>
-            </div>
-        </div>
-        <div class="overwrite">
-            <div class="select-label">覆盖</div>
-            <div class="select-container">
-                <el-radio-group v-model="overwrite">
-                    <el-radio :label="true">是</el-radio>
-                    <el-radio :label="false">否</el-radio>
-                </el-radio-group>
-            </div>
-        </div>
-
-        <el-upload
-            class="upload-area"
-            drag
-            action="#"
-            multiple
-            :auto-upload="false"
-            :on-change="handleFileChange"
-            :show-file-list="false"
-        >
-            <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
-            <div class="el-upload__text">
-                拖拽文件到这里，或点击<em>这里</em>上传，支持多文件同时上传
-            </div>
-            <template #tip>
-                <div class="el-upload__tip">
-                    支持格式：图片（JPG/PNG/GIF等）、文档（PDF/DOCX等）、视频（MP4/AVI等）、音频（MP3/WAV等，单文件最大 100MB
+        <el-card shadow="hover">
+            <template #header>
+                <div class="card-header">
+                    <span>文件上传</span>
                 </div>
             </template>
-        </el-upload>
-
-        <div class="upload-actions">
-            <el-button type="primary" @click="uploadFiles" :loading="uploading" :disabled="files.length === 0 || !selectedCategory">
-                开始上传
-            </el-button>
-            <el-button @click="clearFiles" :disabled="uploading || files.length === 0">
-                清空列表
-            </el-button>
-        </div>
-        <!-- 文件预览区域 -->
-        <div class="file-preview-container" v-if="files.length > 0">
-            <div class="file-preview-item" v-for="(file, index) in files" :key="index">
-                <div class="preview-content">
-                    <div class="preview-image" v-if="isImage(file.raw)">
-                        <img :src="getImagePreview(file.raw)" alt="Preview" />
-                    </div>
-                    <div class="preview-icon" v-else>
-                        <i :class="`iconfont ${getFileIcon(file.raw)}`"
-                           :style="getFileIconStyle(file.raw)"></i>
-                    </div>
-                    <div class="file-info">
-                        <div class="file-name">{{ file.name }}</div>
-                        <div class="file-size">{{ formatFileSize(file.size) }}</div>
-                    </div>
-                </div>
-                <el-progress
-                    :percentage="file.progress || 0"
-                    :status="file.status"
-                    v-if="file.progress !== undefined"
-                />
-                <div class="file-actions">
-                    <el-button size="small" type="danger" @click="removeFile(index)" :disabled="uploading">
-                        删除
-                    </el-button>
+            <!-- 添加分类选择下拉框 -->
+            <div class="category">
+                <div class="select-label">分类</div>
+                <div class="select-container">
+                    <el-select v-model="selectedCategory" placeholder="请选择分类">
+                        <el-option
+                            v-for="category in categories"
+                            :key="category.sno"
+                            :label="category.cateName"
+                            :value="category.sno"
+                        />
+                    </el-select>
                 </div>
             </div>
-        </div>
+            <div class="catalog">
+                <div class="select-label">目录</div>
+                <div class="select-container">
+                    <div class="select-catalog">
+                        <el-radio-group v-model="autoCreate">
+                            <el-radio :label="true">自动创建日期目录（YYYY/MM/DD）</el-radio>
+                            <el-radio :label="false">选择现有目录</el-radio>
+                        </el-radio-group>
+                    </div>
+                    <div class="catalog-list">
+                        <el-cascader
+                            v-model="cataId"
+                            :options="catalogTree"
+                            :props="cascaderProps"
+                            placeholder="请选择目录"
+                            :loading="loadingCatalog"
+                            style="width: 100%;"
+                        />
+                    </div>
+                </div>
+            </div>
+            <div class="overwrite">
+                <div class="select-label">覆盖</div>
+                <div class="select-container">
+                    <el-radio-group v-model="overwrite">
+                        <el-radio :label="true">是</el-radio>
+                        <el-radio :label="false">否</el-radio>
+                    </el-radio-group>
+                </div>
+            </div>
+
+            <el-upload
+                class="upload-area"
+                drag
+                action="#"
+                multiple
+                :auto-upload="false"
+                :on-change="handleFileChange"
+                :show-file-list="false"
+            >
+                <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
+                <div class="el-upload__text">
+                    拖拽文件到这里，或点击<em>这里</em>上传，支持多文件同时上传
+                </div>
+                <template #tip>
+                    <div class="el-upload__tip">
+                        支持格式：图片（JPG/PNG/GIF等）、文档（PDF/DOCX等）、视频（MP4/AVI等）、音频（MP3/WAV等，单文件最大 100MB
+                    </div>
+                </template>
+            </el-upload>
+
+            <div class="upload-actions">
+                <el-button type="primary" @click="uploadFiles" :loading="uploading" :disabled="files.length === 0 || !selectedCategory">
+                    开始上传
+                </el-button>
+                <el-button @click="clearFiles" :disabled="uploading || files.length === 0">
+                    清空列表
+                </el-button>
+            </div>
+            <!-- 文件预览区域 -->
+            <div class="file-preview-container" v-if="files.length > 0">
+                <div class="file-preview-item" v-for="(file, index) in files" :key="index">
+                    <div class="preview-content">
+                        <div class="preview-image" v-if="isImage(file.raw)">
+                            <img :src="getImagePreview(file.raw)" alt="Preview" />
+                        </div>
+                        <div class="preview-icon" v-else>
+                            <i :class="`iconfont ${getFileIcon(file.raw)}`"
+                               :style="getFileIconStyle(file.raw)"></i>
+                        </div>
+                        <div class="file-info">
+                            <div class="file-name">{{ file.name }}</div>
+                            <div class="file-size">{{ formatFileSize(file.size) }}</div>
+                        </div>
+                    </div>
+                    <el-progress
+                        :percentage="file.progress || 0"
+                        :status="file.status"
+                        v-if="file.progress !== undefined"
+                    />
+                    <div class="file-actions">
+                        <el-button size="small" type="danger" @click="removeFile(index)" :disabled="uploading">
+                            删除
+                        </el-button>
+                    </div>
+                </div>
+            </div>
+        </el-card>
     </div>
 </template>
 
@@ -324,15 +330,12 @@ onMounted(async () => {
 
 <style scoped>
 .upload-dragger {
-    margin: 30px;
-    padding: 30px;
-    background: white;
-    border-radius: 5px;
+    padding: 20px;
 }
 
-.title {
-    font-size: 21px;
-    margin: 0 0 5px 0;
+.card-header {
+    font-size: 18px;
+    font-weight: bold;
 }
 
 .upload-area {
