@@ -1,13 +1,13 @@
 <template>
     <div class="profile-container">
-        <el-card class="profile-card">
+        <el-card shadow="hover">
             <template #header>
                 <div class="card-header">
-                    <h2>个人信息</h2>
+                    <span>个人信息</span>
                 </div>
             </template>
 
-            <el-form :model="userInfo" label-width="120px" label-position="left">
+            <el-form :model="userInfo" label-width="120px" label-position="right">
                 <!-- 用户编码 - 不可编辑 -->
                 <el-form-item label="用户编码">
                     <el-input v-model="userInfo.userCode" disabled></el-input>
@@ -15,21 +15,14 @@
 
                 <!-- 用户名称 - 可编辑 -->
                 <el-form-item label="用户名称">
-                    <el-input v-model="userInfo.userName" :disabled="!editingName"></el-input>
-                    <el-button
-                        type="primary"
-                        @click="handleEditName"
-                        style="margin-left: 10px;"
-                    >
-                        {{ editingName ? '保存' : '修改' }}
-                    </el-button>
-                    <el-button
-                        v-if="editingName"
-                        @click="cancelEditName"
-                        style="margin-left: 10px;"
-                    >
-                        取消
-                    </el-button>
+                    <el-input v-model="userInfo.userName">
+                        <template #append>
+                            <el-button
+                                type="primary"
+                                @click="handleEditName"
+                            >保存</el-button>
+                        </template>
+                    </el-input>
                 </el-form-item>
 
                 <!-- 策略 - 显示 -->
@@ -39,25 +32,27 @@
 
                 <!-- Key - 可重置 -->
                 <el-form-item label="Key">
-                    <el-input v-model="userInfo.key" disabled></el-input>
-                    <el-button
-                        type="warning"
-                        @click="confirmReset('key')"
-                        style="margin-left: 10px;"
-                    >
-                        重置Key
-                    </el-button>
+                    <el-input v-model="userInfo.key" disabled>
+                        <template #append>
+                            <el-button
+                                type="primary"
+                                @click="confirmReset('key')"
+                            >
+                                重置
+                            </el-button>
+                        </template>
+                    </el-input>
                 </el-form-item>
 
                 <!-- Token - 可重置 -->
                 <el-form-item label="Token">
-                    <el-input v-model="userInfo.token" disabled></el-input>
-                    <el-button
+                    <el-input style="float: left" type="textarea" v-model="userInfo.token" disabled>
+                    </el-input>
+                    <el-button style="float: left; margin: 5px 0 0 0;"
                         type="warning"
                         @click="confirmReset('token')"
-                        style="margin-left: 10px;"
                     >
-                        重置Token
+                        重置
                     </el-button>
                 </el-form-item>
 
@@ -90,7 +85,8 @@
             :title="`确认重置${resetType === 'key' ? 'Key' : 'Token'}?`"
             width="30%"
         >
-            <span>重置{{ resetType === 'key' ? '加密密钥' : 'Api Token' }}可能会影响相关功能的使用，确定要继续吗？</span>
+            <span v-if="resetType === 'key'">重置加密密钥要退出重新登录，确定要继续吗？</span>
+            <span v-else>重置Api Token会影响客户端Api调用用，确定要继续吗？</span>
             <template #footer>
                 <el-button @click="resetDialogVisible = false">取消</el-button>
                 <el-button type="primary" @click="resetItem">确定</el-button>
@@ -99,153 +95,116 @@
     </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue';
-import { ElMessage } from 'element-plus';
-import type { User } from '@/apis/interface';
-import { tokenStore } from '@/apis/system-api';
+<script lang="ts" setup>
+import { ref, onMounted } from 'vue';
+import { ElMessage, ElMessageBox } from "element-plus";
+import { Strategy, User } from "@/apis/interface";
+import { getStrategyList, tokenStore } from "@/apis/system-api";
+import { getMyInfo, logout, resetKey, resetToken, setMyName } from "@/apis/user-api";
+import { useUserStore } from "@/apis/global";
 
-export default defineComponent({
-    name: 'ProfilePage',
-    setup() {
-        // 用户信息 - 初始化为空对象
-        const userInfo = ref<User>({
-            userId: '',
-            userCode: '',
-            userName: '',
-            password: '',
-            strategy: '',
-            key: '',
-            token: '',
-            status: 0,
-            roles: []
-        });
-
-        // 编辑状态
-        const editingName = ref(false);
-        const originalName = ref('');
-
-        // 重置相关状态
-        const resetDialogVisible = ref(false);
-        const resetType = ref<'key' | 'token'>('key');
-
-        // 模拟从存储中获取用户信息
-        const fetchUserInfo = () => {
-            // 这里应该是从API或store获取用户信息的逻辑
-            // 模拟数据
-            userInfo.value = {
-                userId: '123456',
-                userCode: 'USER001',
-                userName: '张三',
-                password: '',
-                strategy: '默认策略',
-                key: 'asdfghjkl123456',
-                token: tokenStore.getToken() || 'no-token',
-                status: 1,
-                roles: [
-                    {
-                        roleId: '1',
-                        roleName: '管理员',
-                        permissions: []
-                    },
-                    {
-                        roleId: '2',
-                        roleName: '编辑',
-                        permissions: []
-                    }
-                ]
-            };
-            originalName.value = userInfo.value.userName;
-        };
-
-        // 编辑用户名
-        const handleEditName = () => {
-            if (editingName.value) {
-                // 保存逻辑
-                if (!userInfo.value.userName.trim()) {
-                    ElMessage.error('用户名不能为空');
-                    return;
-                }
-
-                // 这里应该是调用API更新用户名的逻辑
-                ElMessage.success('用户名修改成功');
-                originalName.value = userInfo.value.userName;
-                editingName.value = false;
-            } else {
-                editingName.value = true;
-            }
-        };
-
-        // 取消编辑用户名
-        const cancelEditName = () => {
-            userInfo.value.userName = originalName.value;
-            editingName.value = false;
-        };
-
-        // 确认重置
-        const confirmReset = (type: 'key' | 'token') => {
-            resetType.value = type;
-            resetDialogVisible.value = true;
-        };
-
-        // 执行重置
-        const resetItem = () => {
-            resetDialogVisible.value = false;
-
-            // 这里应该是调用API重置key或token的逻辑
-            if (resetType.value === 'key') {
-                // 模拟重置key
-                userInfo.value.key = 'new-key-' + Math.random().toString(36).substring(2, 10);
-                ElMessage.success('Key重置成功');
-            } else {
-                // 模拟重置token
-                const newToken = 'new-token-' + Math.random().toString(36).substring(2, 10);
-                userInfo.value.token = newToken;
-                tokenStore.setToken(newToken, 3600); // 假设有效期1小时
-                ElMessage.success('Token重置成功');
-            }
-        };
-
-        onMounted(() => {
-            fetchUserInfo();
-        });
-
-        return {
-            userInfo,
-            editingName,
-            originalName,
-            resetDialogVisible,
-            resetType,
-            handleEditName,
-            cancelEditName,
-            confirmReset,
-            resetItem
-        };
-    }
+// 用户信息 - 初始化为空对象
+const userInfo = ref<User>({
+    userId: '',
+    userCode: '',
+    userName: '',
+    password: '',
+    strategy: '',
+    key: '',
+    token: '',
+    status: 0,
+    roles: []
 });
+const strategyList = ref<Strategy[]>([])
+const userStore = useUserStore();
+
+// 重置相关状态
+const resetDialogVisible = ref(false);
+const resetType = ref<'key' | 'token'>('key');
+
+// 模拟从存储中获取用户信息
+const fetchUserInfo = async () => {
+
+    strategyList.value = await getStrategyList();
+    await refreshUser();
+};
+
+const getStrategyName = (strategyCode: string) => {
+    const strategy = strategyList.value.find(s => s.strategyCode === strategyCode);
+    return strategy ? strategy.strategyName : strategyCode;
+}
+
+// 编辑用户名
+const handleEditName = async () => {
+    // 保存逻辑
+    if (!userInfo.value.userName.trim()) {
+        ElMessage.error('用户名不能为空');
+        return;
+    }
+
+    if (await setMyName(userInfo.value.userName)) {
+        ElMessage.success('用户名修改成功');
+        await refreshUser();
+    }
+};
+
+const refreshUser = async () => {
+    const user = await getMyInfo();
+    if(user){
+        userStore.setUsername(user.userName)
+        userInfo.value = user;
+        user.strategy = getStrategyName(user.strategy);
+    }
+}
+
+// 确认重置
+const confirmReset = (type: 'key' | 'token') => {
+    resetType.value = type;
+    resetDialogVisible.value = true;
+};
+
+// 执行重置
+const resetItem = async () => {
+    resetDialogVisible.value = false;
+
+    if (resetType.value === 'key') {
+        if(await resetKey()) {
+            ElMessageBox.alert('Key重置成功，请重新登录', '提示', {
+                confirmButtonText: '确定',
+                type: 'warning',
+                callback: () => {
+                    logout()
+                }
+            })
+        }
+    } else {
+        if(await resetToken()) {
+            ElMessage.success('Token重置成功');
+            await refreshUser();
+        }
+    }
+};
+
+onMounted(() => {
+    fetchUserInfo();
+});
+
 </script>
 
 <style scoped>
 .profile-container {
-    max-width: 800px;
-    margin: 20px auto;
-    padding: 0 20px;
-}
-
-.profile-card {
-    border-radius: 8px;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+    padding: 20px;
 }
 
 .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    font-size: 18px;
+    font-weight: bold;
 }
 
 .role-tags {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    margin: 4px 0 0 0;
 }
 </style>

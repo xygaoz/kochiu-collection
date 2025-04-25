@@ -92,4 +92,35 @@ public class SysUserController {
 
         return DefaultResult.ok(userService.getMyMenu(CheckPermitAspect.USER_INFO.get()));
     }
+
+    @CheckPermit
+    @GetMapping("/my-info")
+    public DefaultResult<UserVo> getMyInfo() throws CollectionException {
+
+        return DefaultResult.ok(userService.getMyInfo(CheckPermitAspect.USER_INFO.get()));
+    }
+
+    @CheckPermit
+    @PostMapping("/set-my-name")
+    public DefaultResult<Boolean> setMyName(@Validated EditMyNameBo editMyNameBo) throws CollectionException {
+
+        userService.updateUser(CheckPermitAspect.USER_INFO.get(), editMyNameBo);
+        return DefaultResult.ok(true);
+    }
+
+    @CheckPermit
+    @GetMapping("/reset-key")
+    public DefaultResult<Boolean> resetKey() throws CollectionException {
+
+        userService.resetKey(CheckPermitAspect.USER_INFO.get());
+        return DefaultResult.ok(true);
+    }
+
+    @CheckPermit
+    @GetMapping("/reset-token")
+    public DefaultResult<Boolean> resetToken() throws CollectionException {
+
+        userService.resetToken(CheckPermitAspect.USER_INFO.get());
+        return DefaultResult.ok(true);
+    }
 }

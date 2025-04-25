@@ -1,5 +1,8 @@
 import { Menu, PageInfo, Strategy, User } from "@/apis/interface";
 import httpInstance from "@/apis/utils";
+import { tokenStore } from "@/apis/system-api";
+import Cookies from "js-cookie";
+import { useUserStore } from "@/apis/global";
 
 const userApi = "/user";
 export const listUsers = (params: any): Promise<PageInfo<User>> => {
@@ -79,14 +82,75 @@ export const enableOrDisable = (params: any): Promise<boolean> => {
 }
 
 export const getMyMenu = async (): Promise<Menu[]> => {
-    return httpInstance.get(userApi + "/my-menu").then((model) => {
+    return httpInstance.get(userApi + "/my-menu").then((model: any) => {
         if (model) {
             // 确保返回值始终是 Menu[]
-            return Array.isArray(model) ? model : [];
+            return model as Menu[];
         }
         return [];
     }).catch((error) => {
-        console.error("获取资源类型失败:", error);
+        console.error("获取用户菜单失败:", error);
         return [];
+    });
+}
+
+export const getMyInfo = async (): Promise<User | null> => {
+    return httpInstance.get(userApi + "/my-info").then((model: any) => {
+        if (model) {
+            return model as User;
+        }
+        return null;
+    }).catch((error) => {
+        console.error("获取用户失败:", error);
+        return null;
+    });
+}
+
+export const setMyName = async (name: string): Promise<boolean> => {
+    return httpInstance.post(userApi + "/set-my-name", {
+        userName: name
+    }).then((model: any) => {
+        if (model) {
+            return model as boolean;
+        }
+        return false;
+    }).catch((error) => {
+        console.error("获取用户失败:", error);
+        return false;
+    });
+}
+
+export const logout = () => {
+    // 清除token和用户状态
+    tokenStore.removeToken()
+    Cookies.remove('refresh_token')
+    const userStore = useUserStore()
+    userStore.clearCurrentUser()
+
+    // 跳转到登录页
+    window.location.href = '/login' // 使用完整刷新确保状态清除
+}
+
+export const resetKey = async (): Promise<boolean> => {
+    return httpInstance.get(userApi + "/reset-key").then((model: any) => {
+        if (model) {
+            return model as boolean;
+        }
+        return false;
+    }).catch((error) => {
+        console.error("获取重置key失败:", error);
+        return false;
+    });
+}
+
+export const resetToken = async (): Promise<boolean> => {
+    return httpInstance.get(userApi + "/reset-token").then((model: any) => {
+        if (model) {
+            return model as boolean;
+        }
+        return false;
+    }).catch((error) => {
+        console.error("获取重置token失败:", error);
+        return false;
     });
 }

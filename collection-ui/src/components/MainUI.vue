@@ -334,7 +334,7 @@
                                         src="/images/user.gif"
                                         class="user-avatar"
                                     />
-                                    <span class="username">{{ userStore.getUsername() }}</span>
+                                    <span class="username">{{ username }}</span>
                                     <el-icon class="dropdown-icon"><ArrowDown /></el-icon>
                                 </div>
                                 <template #dropdown>
@@ -380,10 +380,9 @@ import { Catalog, Category, Menu, ResourceType, RouteMenu, Tag } from "@/apis/in
 import CategoryDialog from "@/components/category/CategoryDialog.vue";
 import CatalogDialog from "@/components/catalog/CatalogDialog.vue";
 import { useRoute, useRouter } from "vue-router";
-import { getMyMenu } from "@/apis/user-api";
+import { getMyMenu, logout } from "@/apis/user-api";
 import { useUserStore } from "@/apis/global";
-import { tokenStore } from '@/apis/system-api'
-import Cookies from "js-cookie";
+import { storeToRefs } from "pinia";
 
 // 状态管理
 const showCatalogMenu = ref(false)
@@ -401,6 +400,7 @@ const router = useRouter()
 const showCategoryActions = ref<number | null>(null)
 const dynamicMenus = ref<RouteMenu[]>([])
 const userStore = useUserStore()
+const { username } = storeToRefs(userStore)
 
 // 计算属性：获取特定菜单项（资源、系统管理、帮助）
 const fixedMenuItems = computed(() => {
@@ -424,14 +424,7 @@ onMounted(async () => {
 })
 
 const handleLogout = () => {
-    // 清除token和用户状态
-    tokenStore.removeToken()
-    Cookies.remove('refresh_token')
-    const userStore = useUserStore()
-    userStore.clearCurrentUser()
-
-    // 跳转到登录页
-    window.location.href = '/login' // 使用完整刷新确保状态清除
+    logout()
 }
 
 // 加载数据

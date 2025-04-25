@@ -41,6 +41,8 @@ import static com.keem.kochiu.collection.enums.ErrorCodeEnum.SYS_ERROR;
 @Service
 public class SysUserService {
 
+    public static final String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
+
     private final SysUserRepository userRepository;
     private final SysSecurityRepository securityRepository;
     private final TokenService tokenService;
@@ -222,7 +224,7 @@ public class SysUserService {
                 .userName(userInfoBo.getUserName())
                 .password(SHA256Util.encryptBySHA256(password))
                 .strategy(userInfoBo.getStrategy())
-                .key(RandomStringUtils.random(8, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?"))
+                .key(RandomStringUtils.random(8, chars))
                 .build();
         userRepository.save(user);
         Integer userId = userRepository.getBaseMapper().selectLastInsertId();
@@ -427,5 +429,48 @@ public class SysUserService {
         menuVo.setStyle(module.getStyle());
         menuVo.setRedirect(module.getRedirect());
         return menuVo;
+    }
+
+    // 获取用户信息
+    public UserVo getMyInfo(UserDto userDto) throws CollectionException {
+        SysUser user = userRepository.getUser(userDto);
+
+        return UserVo.builder()
+                .userCode(user.getUserCode())
+                .userName(user.getUserName())
+                .token(user.getToken())
+                .key(user.getKey())
+                .strategy(user.getStrategy())
+                .status(user.getStatus())
+                .build();
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void updateUser(UserDto userDto, EditMyNameBo userInfoBo) throws CollectionException {
+
+        SysUser user = userRepository.getUser(userDto);
+        user.setUserName(userInfoBo.getUserName());
+        userRepository.updateById(user);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void resetKey(UserDto userDto) throws CollectionException {
+        SysUser user = userRepository.getUser(userDto);
+        user.setKey(RandomStringUtils.random(8, chars));
+        userRepository.updateById(user);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void resetToken(UserDto userDto) throws CollectionException {
+        SysUser user = userRepository.getUser(userDto);
+        Map<String, Object> claims = Map.of(
+                TOKEN_API_FLAG, PermitEnum.API.name(),
+                TOKEN_TYPE_FLAG, TOKEN_TYPE_ACCESS
+        );
+        String token = tokenService.createToken(user,
+                claims,
+                -1);
+        user.setToken(token);
+        userRepository.updateById(user);
     }
 }

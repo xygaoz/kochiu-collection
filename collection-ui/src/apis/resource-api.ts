@@ -9,16 +9,18 @@ export const uploadFile = (
     file: File,
     categoryId: number,
     overwrite: string,
-    cataId: number,
-    autoCreate: string,
+    cataId: number | null,
+    autoCreate: boolean,
     onProgress?: (progressEvent: AxiosProgressEvent) => void // 使用 AxiosProgressEvent
 ): Promise<any> => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('categoryId', categoryId+"");
     formData.append('overwrite', overwrite);
-    formData.append('cataId', cataId+"");
-    formData.append('autoCreate', autoCreate);
+    if(cataId) {
+        formData.append('cataId', cataId + "");
+    }
+    formData.append('autoCreate', autoCreate + '');
 
     const ld = loading("上传中");
     return httpInstance.post(resourceApi + "/upload", formData, {
