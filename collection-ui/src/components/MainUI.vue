@@ -8,7 +8,7 @@
                         KoChiu Collection
                     </div>
                 </div>
-                <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; padding: 0 0 20px 0;">
+                <div class="menu-area">
                     <!-- 顶部切换区域：分类/目录 -->
                     <div style="flex-shrink: 0;">
                         <!-- 目录菜单 -->
@@ -732,5 +732,13 @@ const handleDeleteCategory = (category: Category) => {
 
 .content-area{
     background-color: rgb(243, 244, 246);
+}
+
+.menu-area{
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 0 0 20px 0;
 }
 </style>
