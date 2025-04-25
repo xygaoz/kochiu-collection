@@ -1,5 +1,5 @@
 <template>
-    <div style="height: calc(100vh); overflow: hidden; background-color: rgb(243 244 246);">
+    <div style="height: calc(100vh); overflow: hidden;">
         <el-container style="height: 100%; overflow: hidden">
             <el-aside style="width: 250px; display: flex; flex-direction: column;">
                 <div class="el-menu-box">
@@ -8,7 +8,7 @@
                         KoChiu Collection
                     </div>
                 </div>
-                <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column;">
+                <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; padding: 0 0 20px 0;">
                     <!-- 顶部切换区域：分类/目录 -->
                     <div style="flex-shrink: 0;">
                         <!-- 目录菜单 -->
@@ -172,6 +172,80 @@
                         </el-sub-menu>
 
                         <!-- 动态生成特定菜单项 -->
+                        <template v-for="menu in fixedMenuItems" :key="menu.path">
+                            <!-- 有子菜单的情况（资源、系统管理） -->
+                            <el-sub-menu
+                                v-if="menu.children && menu.children.length > 0"
+                                :index="menu.path"
+                            >
+                                <template #title>
+                                    <div class="menu-icon">
+                                        <template v-if="menu.meta?.iconType === 'iconfont'">
+                                            <i
+                                                :class="`iconfont ${menu.meta?.icon}`"
+                                                :style="menu.meta?.style as StyleValue"
+                                            ></i>
+                                        </template>
+                                        <template v-else>
+                                            <el-icon :style="menu.meta?.style as StyleValue">
+                                                <component :is="menu.meta?.icon" />
+                                            </el-icon>
+                                        </template>
+                                    </div>
+                                    <div class="menu-label">{{ menu.meta?.title }}</div>
+                                </template>
+
+                                <el-menu-item
+                                    v-for="child in menu.children"
+                                    :key="child.path"
+                                    :index="child.path"
+                                    @click="menuItemClick({path: child.path})"
+                                >
+                                    <template #title>
+                                        <div class="menu-icon">
+                                            <template v-if="child.meta?.iconType === 'iconfont'">
+                                                <i
+                                                    :class="`iconfont ${child.meta?.icon}`"
+                                                    :style="child.meta?.style as StyleValue"
+                                                ></i>
+                                            </template>
+                                            <template v-else>
+                                                <el-icon :style="child.meta?.style">
+                                                    <component :is="child.meta?.icon" />
+                                                </el-icon>
+                                            </template>
+                                        </div>
+                                        <div class="menu-label">{{ child.meta?.title }}</div>
+                                    </template>
+                                </el-menu-item>
+                            </el-sub-menu>
+
+                            <!-- 没有子菜单的情况（帮助） -->
+                            <el-menu-item
+                                v-else
+                                :index="menu.path"
+                                @click="menuItemClick({path: menu.path})"
+                            >
+                                <template #title>
+                                    <div class="menu-icon">
+                                        <template v-if="menu.meta?.iconType === 'iconfont'">
+                                            <i
+                                                :class="`iconfont ${menu.meta?.icon}`"
+                                                :style="menu.meta?.style as StyleValue"
+                                            ></i>
+                                        </template>
+                                        <template v-else>
+                                            <el-icon :style="menu.meta?.style">
+                                                <component :is="menu.meta?.icon" />
+                                            </el-icon>
+                                        </template>
+                                    </div>
+                                    <div class="menu-label">{{ menu.meta?.title }}</div>
+                                </template>
+                            </el-menu-item>
+                        </template>
+
+                        <!-- 动态生成特定菜单项 -->
                         <template v-for="menu in dynamicMenus" :key="menu.path">
                             <!-- 有子菜单的情况 -->
                             <el-sub-menu
@@ -248,7 +322,7 @@
                 </div>
             </el-aside>
 
-            <el-container>
+            <el-container class="content-area">
                 <el-header class="headerCss">
                     <div style="display: flex; height: 100%; align-items: center">
                         <div style="text-align: left; width: 33%; font-size: 18px; display: flex;"></div>
@@ -305,6 +379,16 @@ const route = useRoute()
 const router = useRouter()
 const showCategoryActions = ref<number | null>(null)
 const dynamicMenus = ref<Menu[]>([])
+
+// 计算属性：获取特定菜单项（资源、系统管理、帮助）
+const fixedMenuItems = computed(() => {
+    // 固定菜单项
+    const fixedRoutes = router.options.routes.filter(route =>
+        ['/My', '/Help'].includes(route.path)
+    )
+
+    return fixedRoutes
+})
 
 // 初始化数据
 onMounted(async () => {
@@ -644,5 +728,9 @@ const handleDeleteCategory = (category: Category) => {
 
 .action-icon:hover {
     color: #409EFF;
+}
+
+.content-area{
+    background-color: rgb(243, 244, 246);
 }
 </style>

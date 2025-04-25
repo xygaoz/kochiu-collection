@@ -63,25 +63,6 @@ routes.push(
             },
         ]
     },
-    {
-        path: '/System',
-        name: 'system',
-        meta: { title: '系统管理', icon: 'icon-col-shezhi', iconType: 'iconfont', style: 'font-size: 21px; color: rgb(59,130,246)' },
-        children: [
-            {
-                path: '/User',
-                name: 'user',
-                component: () => import('@/components/sys/UserView.vue'),
-                meta: { title: '用户管理', icon: 'icon-col-yonghu', iconType: 'iconfont', style: 'font-size: 24px; margin: 0 0 0 -6px; color: rgb(59,130,246);' },
-            },
-            {
-                path: '/Role',
-                name: 'role',
-                component: () => import('@/components/sys/RoleView.vue'),
-                meta: { title: '角色管理', icon: 'icon-col-jiaoseguanli1', iconType: 'iconfont', style: 'font-size: 21px; color: rgb(59,130,246)' },
-            },
-        ]
-    },
     // router.ts 中添加动态路由规则
     {
         path: '/Category/:cateId',  // 动态参数（注意大小写统一）
