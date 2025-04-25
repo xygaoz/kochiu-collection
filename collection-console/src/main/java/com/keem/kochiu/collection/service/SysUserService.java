@@ -435,6 +435,7 @@ public class SysUserService {
     public UserVo getMyInfo(UserDto userDto) throws CollectionException {
         SysUser user = userRepository.getUser(userDto);
 
+        List<SysRole> roles = roleService.selectUserRole(user.getUserId());
         return UserVo.builder()
                 .userCode(user.getUserCode())
                 .userName(user.getUserName())
@@ -442,6 +443,10 @@ public class SysUserService {
                 .key(user.getKey())
                 .strategy(user.getStrategy())
                 .status(user.getStatus())
+                .roles(roles.stream().map(role -> RoleVo.builder()
+                        .roleId(role.getRoleId())
+                        .roleName(role.getRoleName())
+                        .build()).toList())
                 .build();
     }
 
