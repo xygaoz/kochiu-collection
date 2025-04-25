@@ -99,7 +99,8 @@ public class SysUserService {
         TokenDto tokenDto = genToken(loginBo, PermitEnum.UI, 30 * 60 * 1000);
         String refreshToken = tokenService.createToken(tokenDto.getUser(), tokenDto.getClaims(), 7 * 24 * 3600 * 1000);
         return LoginDto.builder()
-                .username(loginBo.getUsername())
+                .userCode(loginBo.getUsername())
+                .userName(loginBo.getNikeName())
                 .token(tokenDto.getToken())
                 .refreshToken(refreshToken)
                 .expirySeconds(30 * 60)
@@ -118,6 +119,7 @@ public class SysUserService {
         try {
             SysUser user = userRepository.getOne(lambdaQueryWrapper);
             if(user != null){
+                loginBo.setNikeName(user.getUserName());
                 String loginPwd = RsaHexUtil.decrypt(loginBo.getPassword(), securityRepository.getPrivateKey());
                 loginPwd = SHA256Util.encryptBySHA256(loginPwd);
                 if(loginPwd.equals(user.getPassword())){

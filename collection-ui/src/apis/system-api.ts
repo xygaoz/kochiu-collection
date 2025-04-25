@@ -1,6 +1,6 @@
 import httpInstance from "@/apis/utils"; // 导入httpInstance
 import { loading } from "@/apis/utils";
-import { ResourceType, Strategy } from "@/apis/interface";
+import { LoginInfo, ResourceType, Strategy } from "@/apis/interface";
 
 const sysApi = "/sys";
 export const tokenStore = {
@@ -43,13 +43,14 @@ export const getPublicKey = async(): Promise<string | null> => {
 };
 
 // 登录
-export const loginService = (loginForm: any) => {
+export const loginService = (loginForm: any): Promise<LoginInfo | null> => {
     const ld = loading("登录中");
-    return httpInstance.post(sysApi + "/login", loginForm).then((model) => {
+    return httpInstance.post(sysApi + "/login", loginForm).then((model: any) => {
         if (model) {
             console.log("登录成功，获取token:", model);
-            return model;
+            return model as LoginInfo;
         }
+        return null;
     }).catch((error) => {
         console.error("登录失败:", error);
         throw error; // 抛出错误以便调用者处理

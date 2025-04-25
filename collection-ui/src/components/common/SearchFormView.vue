@@ -129,7 +129,7 @@ import { Category, PathVo, ResourceType, SearchForm } from "@/apis/interface";
 import { getAllCategory } from "@/apis/category-api";
 import TagSelector from "@/components/common/TagSelector.vue";
 import { getCatalogPath } from "@/apis/catalog-api";
-import { useGlobalStore } from "@/apis/global";
+import { useUserStore } from "@/apis/global";
 import { storeToRefs } from 'pinia'
 
 const searchFormRef = ref();
@@ -143,8 +143,8 @@ const categories = ref<Category[]>([])
 const showTagSelector = ref(true);
 const shouldCloseTagSelector = ref(false);
 const tagSelectorRef = ref();
-const globalStore = useGlobalStore()
-const { include_sub_dir } = storeToRefs(globalStore)
+const userStore = useUserStore()
+const { include_sub_dir } = storeToRefs(userStore)
 
 const emit = defineEmits(['expand-change', 'search']);
 
@@ -328,10 +328,7 @@ watch(isExpanded, (newVal) => {
 
 // 监听 include 变化
 watch(() => searchForm.include, (newVal) => {
-    console.log('searchForm.include changed:', newVal)
-    console.log('Before update - globalStore:', globalStore.include_sub_dir)
-    globalStore.setIncludeSubDir(newVal)
-    console.log('After update - globalStore:', globalStore.include_sub_dir)
+    userStore.setIncludeSubDir(newVal)
     emit('search', { ...searchForm, include: newVal })
 }, { immediate: true })
 </script>

@@ -1,3 +1,11 @@
+export interface LoginInfo{
+    userCode: string
+    userName: string
+    token: string
+    refreshToken: string
+    expirySeconds: number
+}
+
 export interface Category {
     sno: number;
     cateName: string;
@@ -133,6 +141,7 @@ export interface Meta{
     icon: string;
     iconType: string;
     style: string;
+    requiresAuth: boolean;
 }
 
 export interface RouteMenu {

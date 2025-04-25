@@ -324,13 +324,32 @@
 
             <el-container class="content-area">
                 <el-header class="headerCss">
-                    <div style="display: flex; height: 100%; align-items: center">
-                        <div style="text-align: left; width: 33%; font-size: 18px; display: flex;"></div>
-                        <div style="text-align: right; width: 67%; display: flex; justify-content: right; cursor: pointer;">
-                            <div style="width: 28px; height: 28px;">
-                                <el-avatar :size="32" src="/images/user.gif" />
-                            </div>
-                            <div style="padding-left: 9px; padding-top: 6px">gaozhao</div>
+                    <div style="display: flex; height: 100%; align-items: center; justify-content: space-between;">
+                        <div style="width: 33%;"></div> <!-- 左侧占位 -->
+                        <div class="user-dropdown-container">
+                            <el-dropdown>
+                                <div class="user-avatar-wrapper">
+                                    <el-avatar
+                                        :size="32"
+                                        src="/images/user.gif"
+                                        class="user-avatar"
+                                    />
+                                    <span class="username">{{ userStore.currentUserCode }}</span>
+                                    <el-icon class="dropdown-icon"><ArrowDown /></el-icon>
+                                </div>
+                                <template #dropdown>
+                                    <el-dropdown-menu class="user-dropdown-menu">
+                                        <el-dropdown-item @click="showProfile">
+                                            <el-icon><User /></el-icon>
+                                            <span>个人资料</span>
+                                        </el-dropdown-item>
+                                        <el-dropdown-item divided @click="handleLogout">
+                                            <el-icon><SwitchButton /></el-icon>
+                                            <span>退出登录</span>
+                                        </el-dropdown-item>
+                                    </el-dropdown-menu>
+                                </template>
+                            </el-dropdown>
                         </div>
                     </div>
                 </el-header>
@@ -351,7 +370,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, StyleValue } from "vue";
-import { Delete, Edit, Plus, Switch } from "@element-plus/icons-vue";
+import { ArrowDown, Delete, Edit, Plus, Switch, SwitchButton, User } from "@element-plus/icons-vue";
 import { listCategory } from "@/apis/category-api";
 import { listTag } from "@/apis/tag-api";
 import { getResourceTypes } from "@/apis/system-api";
@@ -362,7 +381,9 @@ import CategoryDialog from "@/components/category/CategoryDialog.vue";
 import CatalogDialog from "@/components/catalog/CatalogDialog.vue";
 import { useRoute, useRouter } from "vue-router";
 import { getMyMenu } from "@/apis/user-api";
-
+import { useUserStore } from "@/apis/global";
+import { tokenStore } from '@/apis/system-api'
+import Cookies from "js-cookie";
 
 // 状态管理
 const showCatalogMenu = ref(false)
@@ -379,6 +400,7 @@ const route = useRoute()
 const router = useRouter()
 const showCategoryActions = ref<number | null>(null)
 const dynamicMenus = ref<RouteMenu[]>([])
+const userStore = useUserStore()
 
 // 计算属性：获取特定菜单项（资源、系统管理、帮助）
 const fixedMenuItems = computed(() => {
@@ -388,6 +410,10 @@ const fixedMenuItems = computed(() => {
     )
 })
 
+const showProfile = () => {
+    router.push('/profile')
+}
+
 // 初始化数据
 onMounted(async () => {
     await loadCategories()
@@ -396,6 +422,17 @@ onMounted(async () => {
     await loadDynamicMenus() // 加载动态菜单
     updateActiveMenu()
 })
+
+const handleLogout = () => {
+    // 清除token和用户状态
+    tokenStore.removeToken()
+    Cookies.remove('refresh_token')
+    const userStore = useUserStore()
+    userStore.clearCurrentUser()
+
+    // 跳转到登录页
+    window.location.href = '/login' // 使用完整刷新确保状态清除
+}
 
 // 加载数据
 const loadCategories = async () => {
@@ -441,7 +478,8 @@ const loadDynamicMenus = async () => {
                 title: menu.title,
                 icon: menu.icon,
                 iconType: menu.iconType,
-                style: menu.style
+                style: menu.style,
+                requiresAuth: true
             },
             children: menu.children?.map(child => ({
                 path: child.path,
@@ -450,7 +488,8 @@ const loadDynamicMenus = async () => {
                     title: child.title,
                     icon: child.icon,
                     iconType: child.iconType,
-                    style: child.style
+                    style: child.style,
+                    requiresAuth: true
                 }
             })) || []
         } as RouteMenu))
@@ -465,7 +504,8 @@ const loadDynamicMenus = async () => {
                         title: menu.title,
                         icon: menu.icon,
                         iconType: menu.iconType,
-                        style: menu.style
+                        style: menu.style,
+                        requiresAuth: true
                     },
                     children: []
                 })
@@ -479,7 +519,8 @@ const loadDynamicMenus = async () => {
                             title: child.title,
                             icon: child.icon,
                             iconType: child.iconType,
-                            style: child.style
+                            style: child.style,
+                            requiresAuth: true
                         }
                     })
                 })
@@ -492,7 +533,8 @@ const loadDynamicMenus = async () => {
                         title: menu.title,
                         icon: menu.icon,
                         iconType: menu.iconType,
-                        style: menu.style
+                        style: menu.style,
+                        requiresAuth: true
                     }
                 })
             }
@@ -737,5 +779,69 @@ const handleDeleteCategory = (category: Category) => {
     display: flex;
     flex-direction: column;
     padding: 0 0 20px 0;
+}
+
+.user-dropdown-container {
+    display: flex;
+    justify-content: flex-end;
+    width: 67%;
+    height: 100%;
+    align-items: center;
+}
+
+.user-avatar-wrapper {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 0 10px;
+    height: 100%;
+}
+
+.user-avatar {
+    border: none;
+    outline: none;
+}
+
+.user-avatar:focus, .user-avatar:hover {
+    outline: none;
+    box-shadow: none;
+}
+
+.username {
+    margin-left: 8px;
+    font-size: 14px;
+    color: #d2d2d2;
+}
+
+.dropdown-icon {
+    margin-left: 4px;
+    transition: transform 0.3s;
+}
+
+.user-dropdown-menu {
+    margin-top: 5px;
+    min-width: 120px;
+}
+
+.user-dropdown-menu .el-dropdown-menu__item {
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+}
+
+.user-dropdown-menu .el-icon {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.el-dropdown-menu {
+    min-width: 120px;
+}
+.el-dropdown-menu__item {
+    display: flex;
+    align-items: center;
+}
+.el-dropdown-menu__item .el-icon {
+    margin-right: 8px;
 }
 </style>

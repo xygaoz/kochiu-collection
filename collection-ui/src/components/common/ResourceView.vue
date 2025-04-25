@@ -113,6 +113,7 @@ const layoutRef = ref<{
     selectAll: () => void
 } | null>(null);
 const searchData = ref<SearchForm>({
+    cateId: '',
     keyword: '',
     types: [],
     tags: [],

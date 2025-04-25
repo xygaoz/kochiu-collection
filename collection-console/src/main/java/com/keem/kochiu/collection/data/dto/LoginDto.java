@@ -6,7 +6,8 @@ import lombok.Data;
 @Builder
 @Data
 public class LoginDto {
-    private String username;
+    private String userCode;
+    private String userName;
     private String token;
     private String refreshToken;
     private int expirySeconds;

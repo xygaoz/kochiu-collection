@@ -1,6 +1,6 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
-import Help from '@/components/HelpPage.vue';
 import { reactive } from "vue";
+import { tokenStore } from "@/apis/system-api";
 
 export const routes: RouteRecordRaw[] = reactive([]);
 
@@ -14,7 +14,7 @@ routes.push(
                 path: '/AllCategory',
                 name: 'allCategory',
                 component: () => import('@/components/category/AllCategory.vue'),
-                meta: { title: '所有分类', icon: 'icon-col-fenlei2', iconType: 'iconfont', style: 'font-size: 21px; color: rgb(59,130,246' },
+                meta: { title: '所有分类', icon: 'icon-col-fenlei2', iconType: 'iconfont', style: 'font-size: 21px; color: rgb(59,130,246', requiresAuth: true },
             },
         ]
     },
@@ -27,7 +27,7 @@ routes.push(
                 path: '/AllTag',
                 name: 'allTag',
                 component: () => import('@/components/tag/AllTag.vue'),
-                meta: { title: '所有标签', icon: 'icon-col-24gl-tags4', iconType: 'iconfont', style: 'font-size: 17px; color: rgb(59,130,246' },
+                meta: { title: '所有标签', icon: 'icon-col-24gl-tags4', iconType: 'iconfont', style: 'font-size: 17px; color: rgb(59,130,246', requiresAuth: true },
             },
         ]
     },
@@ -47,19 +47,25 @@ routes.push(
                 path: '/Upload',
                 name: 'upload',
                 component: () => import('@/components/my/FileUploader.vue'),
-                meta: { title: '上传文件', icon: 'UploadFilled', iconType: 'icons-vue', style: 'color: rgb(59,130,246)' },
+                meta: { title: '上传文件', icon: 'UploadFilled', iconType: 'icons-vue', style: 'color: rgb(59,130,246)', requiresAuth: true },
             },
             {
                 path: '/BatchImport',
                 name: 'batch-import',
                 component: () => import('@/components/my/BatchImport.vue'),
-                meta: { title: '批量导入', icon: 'icon-col-piliangdaoru1', iconType: 'iconfont', style: 'font-size: 18px; color: rgb(59,130,246); margin: 0 3px 0 0' },
+                meta: { title: '批量导入', icon: 'icon-col-piliangdaoru1', iconType: 'iconfont', style: 'font-size: 18px; color: rgb(59,130,246); margin: 0 3px 0 0', requiresAuth: true },
+            },
+            {
+                path: '/profile',
+                name: 'Profile',
+                component: () => import('@/components/my/Profile.vue'),
+                meta: { title: '个人资料', icon: 'icon-col-gerenziliao', iconType: 'iconfont', style: 'font-size: 18px; color: rgb(59,130,246); margin: 0 2px 0 0', requiresAuth: true }
             },
             {
                 path: '/Recycle',
                 name: 'recycle',
                 component: () => import('@/components/my/RecycleResource.vue'),
-                meta: { title: '回收站', icon: 'icon-col-huishouzhanx', iconType: 'iconfont', style: 'font-size: 22px; color: rgb(59,130,246); margin: 0 1px 0 0' },
+                meta: { title: '回收站', icon: 'icon-col-huishouzhanx', iconType: 'iconfont', style: 'font-size: 22px; color: rgb(59,130,246); margin: 0 1px 0 0', requiresAuth: true },
             },
         ]
     },
@@ -68,28 +74,28 @@ routes.push(
         path: '/Category/:cateId',  // 动态参数（注意大小写统一）
         name: 'category-detail',    // 固定名称
         component: () => import('@/components/category/CategoryResource.vue'),
-        meta: { showInMenu: false },
+        meta: { showInMenu: false, requiresAuth: true },
         props: true  // 将路由参数自动作为props传递
     },
     {
         path: '/Tag/:tagId',  // 动态参数（注意大小写统一）
         name: 'tag-detail',    // 固定名称
         component: () => import('@/components/tag/TagResource.vue'),
-        meta: { showInMenu: false },
+        meta: { showInMenu: false, requiresAuth: true },
         props: true  // 将路由参数自动作为props传递
     },
     {
         path: '/Type/:typeName',  // 动态参数（注意大小写统一）
         name: 'type-detail',    // 固定名称
         component: () => import('@/components/type/TypeResource.vue'),
-        meta: { showInMenu: false },
+        meta: { showInMenu: false, requiresAuth: true },
         props: true  // 将路由参数自动作为props传递
     },
     {
         path: '/Catalog/:sno',  // 动态参数
         name: 'catalog-detail',
         component: () => import('@/components/catalog/CatalogResource.vue'),
-        meta: { showInMenu: false },
+        meta: { showInMenu: false, requiresAuth: true },
         props: true
     },
     {
@@ -103,7 +109,7 @@ routes.push(
         redirect: to => {
             return { path: to.query.redirect as string || '/' }
         }
-    }
+    },
 )
 
 //创建路由，并且暴露出去
@@ -112,4 +118,12 @@ const router = createRouter({
     //history:createWebHistory(), //正式环境
     routes
 })
+
+//路由守卫
+router.beforeEach((to) => {
+    if (to.meta.requiresAuth && !tokenStore.getToken()) {
+        return '/login'
+    }
+})
+
 export default router

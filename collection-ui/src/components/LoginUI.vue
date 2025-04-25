@@ -59,6 +59,7 @@ import { useRouter } from "vue-router"; // 导入useRouter
 import { getPublicKey, loginService, tokenStore } from "@/apis/system-api"; // 导入getPublicKey方法
 import Cookies from 'js-cookie';
 import { encryptPassword } from "@/apis/utils";
+import { useUserStore } from "@/apis/global";
 
 const loginForm = ref({
     username: "",
@@ -96,6 +97,9 @@ const login = async () => {
             }
             const res = await loginService({ ...loginForm.value, password: encryptedPassword });
             if (res) {
+                // 登录成功后初始化用户状态
+                const userStore = useUserStore();
+                userStore.initializeUser(res.userCode, res.userName);
                 if(res.token) {
                     tokenStore.setToken(res.token, res.expirySeconds); // 保存token
                 }
