@@ -116,3 +116,14 @@ export interface Action {
     actionCode: string;
     selected: boolean;
 }
+
+export interface Menu {
+    name: string;
+    path: string;
+    title: string;
+    icon: string;
+    iconType: string;
+    style: string;
+    redirect: string;
+    children: Menu[];
+}

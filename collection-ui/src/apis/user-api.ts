@@ -1,4 +1,4 @@
-import { PageInfo, User } from "@/apis/interface";
+import { Menu, PageInfo, Strategy, User } from "@/apis/interface";
 import httpInstance from "@/apis/utils";
 
 const userApi = "/user";
@@ -75,5 +75,18 @@ export const enableOrDisable = (params: any): Promise<boolean> => {
         return false;
     }).catch((error) => {
         return false;
+    });
+}
+
+export const getMyMenu = async (): Promise<Menu[]> => {
+    return httpInstance.get(userApi + "/my-menu").then((model) => {
+        if (model) {
+            // 确保返回值始终是 Menu[]
+            return Array.isArray(model) ? model : [];
+        }
+        return [];
+    }).catch((error) => {
+        console.error("获取资源类型失败:", error);
+        return [];
     });
 }

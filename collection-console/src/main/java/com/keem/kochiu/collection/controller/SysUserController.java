@@ -6,12 +6,16 @@ import com.keem.kochiu.collection.annotation.Edit;
 import com.keem.kochiu.collection.annotation.Module;
 import com.keem.kochiu.collection.data.DefaultResult;
 import com.keem.kochiu.collection.data.bo.*;
+import com.keem.kochiu.collection.data.vo.MenuVo;
 import com.keem.kochiu.collection.data.vo.PageVo;
 import com.keem.kochiu.collection.data.vo.UserVo;
 import com.keem.kochiu.collection.exception.CollectionException;
+import com.keem.kochiu.collection.service.CheckPermitAspect;
 import com.keem.kochiu.collection.service.SysUserService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Set;
 
 import static com.keem.kochiu.collection.Constant.PUBLIC_URL;
 
@@ -80,5 +84,12 @@ public class SysUserController {
 
         userService.enableOrDisable(userStatusBo);
         return DefaultResult.ok(true);
+    }
+
+    @CheckPermit
+    @GetMapping("/my-menu")
+    public DefaultResult<Set<MenuVo>> getMyMenu() throws CollectionException {
+
+        return DefaultResult.ok(userService.getMyMenu(CheckPermitAspect.USER_INFO.get()));
     }
 }

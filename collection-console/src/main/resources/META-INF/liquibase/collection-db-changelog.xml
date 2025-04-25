@@ -715,6 +715,7 @@
             <column name="module_url" type="VARCHAR(200)" remarks="模块url">
                 <constraints nullable="false"/>
             </column>
+            <column name="redirect" type="VARCHAR(200)" remarks="重定向地址"/>
             <column name="parent_id" type="INTEGER" remarks="父模块ID"/>
             <column name="icon" type="VARCHAR(20)" remarks="模块图标"/>
             <column name="icon_type" type="VARCHAR(30)" remarks="图标类型"/>
@@ -773,6 +774,22 @@
             <column name="module_code" value="user"/>
             <column name="module_name" value="用户管理"/>
             <column name="module_url" value="/System/User"/>
+            <column name="redirect" value="@/components/sys/UserView.vue"/>
+            <column name="parent_id" value="1"/>
+            <column name="icon" value="UserFilled"/>
+            <column name="icon_type" value="icons-vue"/>
+            <column name="sort" value="1"/>
+            <column name="style" value="color: rgb(59,130,246);"/>
+            <column name="CREATE_TIME" valueComputed="datetime('now')"/>
+            <column name="CREATE_BY" value="sys"/>
+            <column name="DB_VERSION" value="1"/>
+        </insert>
+        <insert tableName="sys_module">
+            <column name="module_id" value="3"/>
+            <column name="module_code" value="role"/>
+            <column name="module_name" value="角色管理"/>
+            <column name="module_url" value="/System/Role"/>
+            <column name="redirect" value="@/components/sys/RoleView.vue"/>
             <column name="parent_id" value="1"/>
             <column name="icon" value="UserFilled"/>
             <column name="icon_type" value="icons-vue"/>
@@ -832,6 +849,7 @@
         <createIndex
                 indexName="sys_module_action_idx1"
                 tableName="sys_module_action" unique="true">
+            <column name="module_id"/>
             <column name="action_code"/>
         </createIndex>
     </changeSet>
@@ -886,6 +904,36 @@
             <column name="action_code" value="enable-disable"/>
             <column name="action_name" value="停用/启用"/>
             <column name="action_url" value="/api/v1/user/resetpwd"/>
+            <column name="CREATE_TIME" valueComputed="datetime('now')"/>
+            <column name="CREATE_BY" value="sys"/>
+            <column name="DB_VERSION" value="1"/>
+        </insert>
+        <insert tableName="sys_module_action">
+            <column name="action_id" value="6"/>
+            <column name="module_id" value="3"/>
+            <column name="action_code" value="add"/>
+            <column name="action_name" value="新增"/>
+            <column name="action_url" value="/api/v1/role/add"/>
+            <column name="CREATE_TIME" valueComputed="datetime('now')"/>
+            <column name="CREATE_BY" value="sys"/>
+            <column name="DB_VERSION" value="1"/>
+        </insert>
+        <insert tableName="sys_module_action">
+            <column name="action_id" value="7"/>
+            <column name="module_id" value="3"/>
+            <column name="action_code" value="edit"/>
+            <column name="action_name" value="修改"/>
+            <column name="action_url" value="/api/v1/role/update"/>
+            <column name="CREATE_TIME" valueComputed="datetime('now')"/>
+            <column name="CREATE_BY" value="sys"/>
+            <column name="DB_VERSION" value="1"/>
+        </insert>
+        <insert tableName="sys_module_action">
+            <column name="action_id" value="8"/>
+            <column name="module_id" value="3"/>
+            <column name="action_code" value="delete"/>
+            <column name="action_name" value="删除"/>
+            <column name="action_url" value="/api/v1/role/delete"/>
             <column name="CREATE_TIME" valueComputed="datetime('now')"/>
             <column name="CREATE_BY" value="sys"/>
             <column name="DB_VERSION" value="1"/>
@@ -988,6 +1036,33 @@
             <column name="role_id" value="1"/>
             <column name="module_id" value="2"/>
             <column name="action_id" value="5"/>
+            <column name="CREATE_TIME" valueComputed="datetime('now')"/>
+            <column name="CREATE_BY" value="sys"/>
+            <column name="DB_VERSION" value="1"/>
+        </insert>
+        <insert tableName="user_permission">
+            <column name="permission_id" value="6"/>
+            <column name="role_id" value="1"/>
+            <column name="module_id" value="3"/>
+            <column name="action_id" value="6"/>
+            <column name="CREATE_TIME" valueComputed="datetime('now')"/>
+            <column name="CREATE_BY" value="sys"/>
+            <column name="DB_VERSION" value="1"/>
+        </insert>
+        <insert tableName="user_permission">
+            <column name="permission_id" value="7"/>
+            <column name="role_id" value="1"/>
+            <column name="module_id" value="3"/>
+            <column name="action_id" value="7"/>
+            <column name="CREATE_TIME" valueComputed="datetime('now')"/>
+            <column name="CREATE_BY" value="sys"/>
+            <column name="DB_VERSION" value="1"/>
+        </insert>
+        <insert tableName="user_permission">
+            <column name="permission_id" value="8"/>
+            <column name="role_id" value="1"/>
+            <column name="module_id" value="3"/>
+            <column name="action_id" value="8"/>
             <column name="CREATE_TIME" valueComputed="datetime('now')"/>
             <column name="CREATE_BY" value="sys"/>
             <column name="DB_VERSION" value="1"/>

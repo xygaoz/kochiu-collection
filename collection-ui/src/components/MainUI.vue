@@ -172,27 +172,27 @@
                         </el-sub-menu>
 
                         <!-- 动态生成特定菜单项 -->
-                        <template v-for="menu in fixedMenuItems" :key="menu.path">
-                            <!-- 有子菜单的情况（资源、系统管理） -->
+                        <template v-for="menu in dynamicMenus" :key="menu.path">
+                            <!-- 有子菜单的情况 -->
                             <el-sub-menu
                                 v-if="menu.children && menu.children.length > 0"
                                 :index="menu.path"
                             >
                                 <template #title>
                                     <div class="menu-icon">
-                                        <template v-if="menu.meta?.iconType === 'iconfont'">
+                                        <template v-if="menu.meta.iconType === 'iconfont'">
                                             <i
-                                                :class="`iconfont ${menu.meta?.icon}`"
-                                                :style="menu.meta?.style as StyleValue"
+                                                :class="`iconfont ${menu.meta.icon}`"
+                                                :style="menu.meta.style"
                                             ></i>
                                         </template>
                                         <template v-else>
-                                            <el-icon :style="menu.meta?.style as StyleValue">
-                                                <component :is="menu.meta?.icon" />
+                                            <el-icon :style="menu.meta.style">
+                                                <component :is="menu.meta.icon" />
                                             </el-icon>
                                         </template>
                                     </div>
-                                    <div class="menu-label">{{ menu.meta?.title }}</div>
+                                    <div class="menu-label">{{ menu.meta.title }}</div>
                                 </template>
 
                                 <el-menu-item
@@ -203,24 +203,24 @@
                                 >
                                     <template #title>
                                         <div class="menu-icon">
-                                            <template v-if="child.meta?.iconType === 'iconfont'">
+                                            <template v-if="child.meta.iconType === 'iconfont'">
                                                 <i
-                                                    :class="`iconfont ${child.meta?.icon}`"
-                                                    :style="child.meta?.style as StyleValue"
+                                                    :class="`iconfont ${child.meta.icon}`"
+                                                    :style="child.meta.style"
                                                 ></i>
                                             </template>
                                             <template v-else>
-                                                <el-icon :style="child.meta?.style">
-                                                    <component :is="child.meta?.icon" />
+                                                <el-icon :style="child.meta.style">
+                                                    <component :is="child.meta.icon" />
                                                 </el-icon>
                                             </template>
                                         </div>
-                                        <div class="menu-label">{{ child.meta?.title }}</div>
+                                        <div class="menu-label">{{ child.meta.title }}</div>
                                     </template>
                                 </el-menu-item>
                             </el-sub-menu>
 
-                            <!-- 没有子菜单的情况（帮助） -->
+                            <!-- 没有子菜单的情况 -->
                             <el-menu-item
                                 v-else
                                 :index="menu.path"
@@ -228,19 +228,19 @@
                             >
                                 <template #title>
                                     <div class="menu-icon">
-                                        <template v-if="menu.meta?.iconType === 'iconfont'">
+                                        <template v-if="menu.meta.iconType === 'iconfont'">
                                             <i
-                                                :class="`iconfont ${menu.meta?.icon}`"
-                                                :style="menu.meta?.style as StyleValue"
+                                                :class="`iconfont ${menu.meta.icon}`"
+                                                :style="menu.meta.style"
                                             ></i>
                                         </template>
                                         <template v-else>
-                                            <el-icon :style="menu.meta?.style">
-                                                <component :is="menu.meta?.icon" />
+                                            <el-icon :style="menu.meta.style">
+                                                <component :is="menu.meta.icon" />
                                             </el-icon>
                                         </template>
                                     </div>
-                                    <div class="menu-label">{{ menu.meta?.title }}</div>
+                                    <div class="menu-label">{{ menu.meta.title }}</div>
                                 </template>
                             </el-menu-item>
                         </template>
@@ -283,10 +283,12 @@ import { listTag} from '@/apis/tag-api'
 import { getResourceTypes } from '@/apis/system-api'
 import { getCatalogTree } from '@/apis/catalog-api'
 import CatalogMenuItem from '@/components/catalog/CatalogMenuItem.vue'
-import { Catalog, Category, ResourceType, Tag } from "@/apis/interface";
+import { Catalog, Category, Menu, ResourceType, Tag } from "@/apis/interface";
 import CategoryDialog from "@/components/category/CategoryDialog.vue";
 import CatalogDialog from "@/components/catalog/CatalogDialog.vue";
 import { useRoute, useRouter } from 'vue-router'
+import { getMyMenu } from '@/apis/user-api'
+
 
 // 状态管理
 const showCatalogMenu = ref(false)
@@ -302,19 +304,14 @@ const currentCatalog = ref<Catalog | null>(null);
 const route = useRoute()
 const router = useRouter()
 const showCategoryActions = ref<number | null>(null)
-
-// 计算属性：获取特定菜单项（资源、系统管理、帮助）
-const fixedMenuItems = computed(() => {
-    return router.options.routes.filter(route =>
-        ['/My', '/System', '/Help'].includes(route.path)
-    )
-})
+const dynamicMenus = ref<Menu[]>([])
 
 // 初始化数据
 onMounted(async () => {
     await loadCategories()
     await loadTags()
     await loadResourceTypes()
+    await loadDynamicMenus() // 加载动态菜单
     updateActiveMenu()
 })
 
@@ -349,6 +346,91 @@ const loadCatalogTree = async () => {
     } catch (error) {
         console.error('加载目录树失败:', error)
     }
+}
+
+// 加载动态菜单
+const loadDynamicMenus = async () => {
+    try {
+        const menus = await getMyMenu()
+        dynamicMenus.value = menus.map(menu => ({
+            path: menu.path,
+            name: menu.name,
+            meta: {
+                title: menu.title,
+                icon: menu.icon,
+                iconType: menu.iconType,
+                style: menu.style
+            },
+            children: menu.children?.map(child => ({
+                path: child.path,
+                name: child.name,
+                meta: {
+                    title: child.title,
+                    icon: child.icon,
+                    iconType: child.iconType,
+                    style: child.style
+                }
+            })) || []
+        }))
+
+        // 动态添加路由
+        menus.forEach(menu => {
+            if (menu.children && menu.children.length > 0) {
+                router.addRoute({
+                    path: menu.path,
+                    name: menu.name,
+                    meta: {
+                        title: menu.title,
+                        icon: menu.icon,
+                        iconType: menu.iconType,
+                        style: menu.style
+                    },
+                    children: []
+                })
+
+                menu.children.forEach(child => {
+                    router.addRoute(menu.name, {
+                        path: child.path,
+                        name: child.name,
+                        component: () => resolveComponent(child.name),
+                        meta: {
+                            title: child.title,
+                            icon: child.icon,
+                            iconType: child.iconType,
+                            style: child.style
+                        }
+                    })
+                })
+            } else {
+                router.addRoute({
+                    path: menu.path,
+                    name: menu.name,
+                    component: () => resolveComponent(menu.name),
+                    meta: {
+                        title: menu.title,
+                        icon: menu.icon,
+                        iconType: menu.iconType,
+                        style: menu.style
+                    }
+                })
+            }
+        })
+    } catch (error) {
+        console.error('加载动态菜单失败:', error)
+    }
+}
+
+// 解析组件路径
+const resolveComponent = (name: string) => {
+    // 根据菜单名称映射到不同位置的组件
+    if (name.toLowerCase().includes('user')) {
+        return import('@/components/sys/UserView.vue')
+    } else if (name.toLowerCase().includes('role')) {
+        return import('@/components/sys/RoleView.vue')
+    }
+    // 默认尝试从sys目录加载
+    return import(`@/components/sys/${name}View.vue`)
+        .catch(() => import(`@/components/${name.toLowerCase()}/${name}.vue`))
 }
 
 // 切换目录菜单显示

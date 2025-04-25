@@ -1,6 +1,7 @@
 package com.keem.kochiu.collection.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.keem.kochiu.collection.entity.SysModule;
 import com.keem.kochiu.collection.entity.UserPermission;
 import org.apache.ibatis.annotations.Param;
 
@@ -17,4 +18,6 @@ public interface UserPermissionMapper extends BaseMapper<UserPermission> {
     List<UserPermission> getRolePermission(@Param("roleId") Long roleId);
 
     int deleteUserPermission(@Param("userId") int userId);
+
+    List<SysModule> selectUserModule(@Param("userId") int userId);
 }

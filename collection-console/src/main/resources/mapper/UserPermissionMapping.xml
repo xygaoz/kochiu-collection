@@ -33,4 +33,35 @@
               AND user_role.user_id = #{userId}
         )
     </delete>
+
+    <select id="selectUserModule" resultType="com.keem.kochiu.collection.entity.SysModule">
+        WITH RECURSIVE
+            -- 获取用户直接有权限的模块
+            UserPermittedModules AS (
+                SELECT DISTINCT m.module_id, m.module_name, m.module_code, m.parent_id, m.sort, m.module_url, m.redirect, m.icon, m.icon_type, m.style
+                FROM user_permission up
+                         JOIN sys_module m ON up.module_id = m.module_id
+                         JOIN user_role ur ON up.role_id = ur.role_id
+                WHERE ur.user_id = #{userId}
+            ),
+
+            -- 递归获取所有父模块
+            PermittedWithParents AS (
+                -- 基础查询：用户直接有权限的模块
+                SELECT module_id, module_name, module_code, parent_id, sort, module_url, redirect, icon, icon_type, style
+                FROM UserPermittedModules
+
+                UNION
+
+                -- 递归查询：向上查找父模块
+                SELECT m.module_id, m.module_name, m.module_code, m.parent_id, m.sort, m.module_url, m.redirect, m.icon, m.icon_type, m.style
+                FROM sys_module m
+                         JOIN PermittedWithParents p ON m.module_id = p.parent_id
+            )
+
+            -- 最终结果
+        SELECT DISTINCT module_id, module_name, module_code, parent_id, sort, module_url, redirect, icon, icon_type, style
+        FROM PermittedWithParents
+        ORDER BY parent_id, sort
+    </select>
 </mapper>

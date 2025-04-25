@@ -1,6 +1,7 @@
 package com.keem.kochiu.collection.repository;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.keem.kochiu.collection.entity.SysModule;
 import com.keem.kochiu.collection.entity.UserPermission;
 import com.keem.kochiu.collection.mapper.UserPermissionMapper;
 import org.springframework.stereotype.Service;
@@ -21,4 +22,9 @@ public class UserPermissionRepository extends ServiceImpl<UserPermissionMapper, 
     public int deleteUserPermission(Integer userId) {
         return getBaseMapper().deleteUserPermission(userId);
     }
+
+    public List<SysModule> selectUserModule(int userId){
+        return baseMapper.selectUserModule(userId);
+    }
+
 }

@@ -7,10 +7,13 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.keem.kochiu.collection.data.bo.SearchUserBo;
 import com.keem.kochiu.collection.data.dto.UserDto;
+import com.keem.kochiu.collection.entity.SysModule;
 import com.keem.kochiu.collection.entity.SysUser;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.mapper.SysUserMapper;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 import static com.keem.kochiu.collection.enums.ErrorCodeEnum.ILLEGAL_REQUEST;
 

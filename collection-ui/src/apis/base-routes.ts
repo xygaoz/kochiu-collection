@@ -82,12 +82,6 @@ routes.push(
             },
         ]
     },
-    {
-        path: '/Help',
-        component: Help,
-        name: "help",
-        meta: { title: '帮助', icon: 'Help', iconType: 'icons-vue', style: 'color: rgb(59,130,246)' },
-    },
     // router.ts 中添加动态路由规则
     {
         path: '/Category/:cateId',  // 动态参数（注意大小写统一）

@@ -5,6 +5,8 @@ import com.github.pagehelper.PageInfo;
 import com.keem.kochiu.collection.data.bo.*;
 import com.keem.kochiu.collection.data.dto.LoginDto;
 import com.keem.kochiu.collection.data.dto.TokenDto;
+import com.keem.kochiu.collection.data.dto.UserDto;
+import com.keem.kochiu.collection.data.vo.MenuVo;
 import com.keem.kochiu.collection.data.vo.PageVo;
 import com.keem.kochiu.collection.data.vo.RoleVo;
 import com.keem.kochiu.collection.data.vo.UserVo;
@@ -28,9 +30,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.keem.kochiu.collection.Constant.*;
 import static com.keem.kochiu.collection.enums.ErrorCodeEnum.INVALID_USERNAME_OR_PASSWORD;
@@ -312,6 +313,7 @@ public class SysUserService {
         userRepository.updateById(user);
     }
 
+    //启用禁用用户
     @Transactional(rollbackFor = Exception.class)
     public void enableOrDisable(UserStatusBo userStatusBo) throws CollectionException {
 
@@ -328,5 +330,100 @@ public class SysUserService {
             user.setStatus(userStatusEnum.getCode());
             userRepository.updateById(user);
         }
+    }
+
+    //获取用户菜单
+    public Set<MenuVo> getMyMenu(UserDto userDto) throws CollectionException {
+        // 1. 获取用户信息
+        SysUser user = userRepository.getUser(userDto);
+        if (user == null) {
+            throw new CollectionException("用户不存在");
+        }
+
+        // 2. 获取用户有权限的模块
+        List<SysModule> modules = userPermissionRepository.selectUserModule(user.getUserId());
+        if (modules == null || modules.isEmpty()) {
+            return new HashSet<>();
+        }
+
+        // 3. 构建模块映射表（以module_code为key）
+        Map<String, SysModule> moduleMap = modules.stream()
+                .collect(Collectors.toMap(SysModule::getModuleCode, m -> m));
+
+        // 4. 构建父子关系映射
+        Map<String, List<SysModule>> parentChildMap = new HashMap<>();
+        for (SysModule module : modules) {
+            String parentCode = getParentModuleCode(module.getModuleUrl());
+            parentChildMap.computeIfAbsent(parentCode, k -> new ArrayList<>()).add(module);
+        }
+
+        // 5. 找出所有顶级菜单（没有父模块或父模块不在权限列表中的）
+        Set<MenuVo> menuVos = new HashSet<>();
+        for (SysModule module : modules) {
+            String parentCode = getParentModuleCode(module.getModuleUrl());
+            if (parentCode == null || !moduleMap.containsKey(parentCode)) {
+                MenuVo menuVo = convertToMenuVo(module);
+                buildMenuTree(menuVo, moduleMap, parentChildMap, new HashSet<>());
+                menuVos.add(menuVo);
+            }
+        }
+
+        return menuVos;
+    }
+
+    /**
+     * 从模块路径中提取父模块code
+     */
+    private String getParentModuleCode(String path) {
+        if (path == null || path.isEmpty()) {
+            return null;
+        }
+        String normalizedPath = path.replaceAll("^/+|/+$", "").toLowerCase();
+        String[] parts = normalizedPath.split("/");
+        if (parts.length > 1) {
+            return parts[parts.length - 2]; // 返回倒数第二部分作为父模块code
+        }
+        return null;
+    }
+
+    /**
+     * 构建菜单树
+     */
+    private void buildMenuTree(MenuVo currentMenu,
+                               Map<String, SysModule> moduleMap,
+                               Map<String, List<SysModule>> parentChildMap,
+                               Set<String> processedCodes) {
+        String currentCode = currentMenu.getName(); // name存储的是module_code
+        if (processedCodes.contains(currentCode)) {
+            return; // 防止循环引用
+        }
+        processedCodes.add(currentCode);
+
+        // 获取当前模块的所有子模块
+        List<SysModule> children = parentChildMap.getOrDefault(currentCode, Collections.emptyList());
+        if (!children.isEmpty()) {
+            List<MenuVo> childMenus = new ArrayList<>();
+            for (SysModule child : children) {
+                MenuVo childMenu = convertToMenuVo(child);
+                buildMenuTree(childMenu, moduleMap, parentChildMap, new HashSet<>(processedCodes));
+                childMenus.add(childMenu);
+            }
+            currentMenu.setChildren(childMenus);
+        }
+    }
+
+    /**
+     * 将SysModule转换为MenuVo
+     */
+    private MenuVo convertToMenuVo(SysModule module) {
+        MenuVo menuVo = new MenuVo();
+        menuVo.setName(module.getModuleCode()); // 使用module_code作为唯一标识
+        menuVo.setPath(module.getModuleUrl());
+        menuVo.setTitle(module.getModuleName());
+        menuVo.setIcon(module.getIcon());
+        menuVo.setIconType(module.getIconType());
+        menuVo.setStyle(module.getStyle());
+        menuVo.setRedirect(module.getRedirect());
+        return menuVo;
     }
 }

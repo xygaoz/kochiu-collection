@@ -60,7 +60,7 @@
                             :default-expand-all="true"
                             :check-strictly="false"
                         >
-                            <template #default="{ node, data }">
+                            <template #default="{ data }">
                     <span>
                         <!-- 显示模块或动作名称 -->
                         {{ data.moduleName || data.actionName }}
