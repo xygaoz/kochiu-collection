@@ -5,6 +5,7 @@ import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.keem.kochiu.collection.data.dto.ResourceDto;
 import com.keem.kochiu.collection.enums.FileTypeEnum;
+import com.keem.kochiu.collection.enums.JodconverterModeEnum;
 import com.keem.kochiu.collection.properties.CollectionProperties;
 import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.extractor.WordExtractor;
@@ -12,18 +13,22 @@ import org.jodconverter.core.office.OfficeManager;
 import org.jodconverter.local.LocalConverter;
 import org.jodconverter.local.office.LocalOfficeManager;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
 @Service("doc")
-public class DocFileStrategy implements FileStrategy{
+public class DocFileStrategy extends OfficeFileStrategy implements FileStrategy{
 
     protected final CollectionProperties properties;
     protected final PdfFileStrategy pdfFileStrategy;
 
-    public DocFileStrategy(CollectionProperties properties, PdfFileStrategy pdfFileStrategy) {
+    public DocFileStrategy(CollectionProperties properties,
+                           PdfFileStrategy pdfFileStrategy,
+                           RestTemplate restTemplate) {
+        super(properties, restTemplate);
         this.properties = properties;
         this.pdfFileStrategy = pdfFileStrategy;
     }
@@ -48,7 +53,7 @@ public class DocFileStrategy implements FileStrategy{
         String pdfPath = thumbFilePath.substring(0, thumbFilePath.lastIndexOf("_thumb.png")) + ".pdf";
 
         // Step 1: Convert Word to HTML
-        if(properties.getOfficeHome() != null && new File(properties.getOfficeHome()).exists()){
+        if (properties.getJodconverter().isEnabled()) {
             convertDocToPdfOfJodconverter(file, pdfPath);
         }
         else {
@@ -86,22 +91,39 @@ public class DocFileStrategy implements FileStrategy{
     }
 
     protected void convertDocToPdfOfJodconverter(File wordFile, String outputPath) throws Exception{
-        // 启动 LibreOffice 服务
-        OfficeManager officeManager = LocalOfficeManager.builder()
-                .officeHome(properties.getOfficeHome())  // 修改为你的 LibreOffice 路径
-                .install()
-                .build();
-        try {
-            officeManager.start();
-            LocalConverter.make()
-                    .convert(wordFile)
-                    .to(new File(outputPath))
-                    .execute();
-            System.out.println("PDF 转换成功！");
-        } catch (Exception e) {
-            System.err.println("转换失败：" + e.getMessage());
-        } finally {
-            officeManager.stop();
+
+        if(properties.getJodconverter().getMode() == JodconverterModeEnum.LOCAL) {
+            if (properties.getJodconverter().getLocal().getOfficeHome() != null && new File(properties.getJodconverter().getLocal().getOfficeHome()).exists()) {
+
+                // 启动 LibreOffice 服务
+                OfficeManager officeManager = LocalOfficeManager.builder()
+                        .officeHome(properties.getJodconverter().getLocal().getOfficeHome())  // 修改为你的 LibreOffice 路径
+                        .install()
+                        .build();
+                try {
+                    officeManager.start();
+                    LocalConverter.make()
+                            .convert(wordFile)
+                            .to(new File(outputPath))
+                            .execute();
+                    System.out.println("PDF 转换成功！");
+                } catch (Exception e) {
+                    System.err.println("转换失败：" + e.getMessage());
+                } finally {
+                    officeManager.stop();
+                }
+            }
+            else {
+                convertDocToPdf(wordFile, outputPath);
+            }
+        }
+        else if(properties.getJodconverter().getMode() == JodconverterModeEnum.REMOTE) {
+            if(properties.getJodconverter().getRemote().getApiUrl() == null) {
+                convertDocToPdf(wordFile, outputPath);
+            }
+            else {
+                remoteConvertToPdf(wordFile, new File(outputPath));
+            }
         }
     }
 }

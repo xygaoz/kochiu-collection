@@ -6,6 +6,7 @@ import com.keem.kochiu.collection.properties.CollectionProperties;
 import org.docx4j.Docx4J;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -14,8 +15,9 @@ import java.io.FileOutputStream;
 public class DocxFileStrategy extends DocFileStrategy{
 
     public DocxFileStrategy(CollectionProperties properties,
-                            PdfFileStrategy pdfFileStrategy) {
-        super(properties, pdfFileStrategy);
+                            PdfFileStrategy pdfFileStrategy,
+                            RestTemplate restTemplate) {
+        super(properties, pdfFileStrategy, restTemplate);
     }
 
     /**
@@ -38,7 +40,7 @@ public class DocxFileStrategy extends DocFileStrategy{
         String pdfPath = thumbFilePath.substring(0, thumbFilePath.lastIndexOf("_thumb.png")) + ".pdf";
 
         // Step 1: Convert Word to HTML
-        if(properties.getOfficeHome() != null && new File(properties.getOfficeHome()).exists()){
+        if (properties.getJodconverter().isEnabled()) {
             convertDocToPdfOfJodconverter(wordFile, pdfPath);
         }
         else {

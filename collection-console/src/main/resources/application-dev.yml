@@ -1,3 +1,12 @@
 collection:
-  office-home: /Applications/LibreOffice.app/Contents
+  jodconverter:
+    enabled: true
+    mode: remote
+    remote:
+      username: admin
+      password: 123456
+      api-url: http://localhost:8080/lool/convert-to/pdf #就只设置转dpf接口
+      timeout: 300000 #单位：毫秒(5分钟)
+    local:
+      office-home: /Applications/LibreOffice.app/Contents
   ffmpeg-path: /opt/homebrew/Cellar/ffmpeg/7.1.1_1/bin

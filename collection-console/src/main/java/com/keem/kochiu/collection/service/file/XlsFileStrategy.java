@@ -2,6 +2,7 @@ package com.keem.kochiu.collection.service.file;
 
 import com.keem.kochiu.collection.data.dto.ResourceDto;
 import com.keem.kochiu.collection.enums.FileTypeEnum;
+import com.keem.kochiu.collection.enums.JodconverterModeEnum;
 import com.keem.kochiu.collection.properties.CollectionProperties;
 import com.keem.kochiu.collection.util.ImageUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +13,7 @@ import org.jodconverter.core.office.OfficeManager;
 import org.jodconverter.local.LocalConverter;
 import org.jodconverter.local.office.LocalOfficeManager;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.awt.Color;
 import java.awt.*;
@@ -22,12 +24,15 @@ import java.io.IOException;
 
 @Slf4j
 @Service("xls")
-public class XlsFileStrategy implements FileStrategy{
+public class XlsFileStrategy extends OfficeFileStrategy implements FileStrategy{
 
     protected final CollectionProperties properties;
     protected final PdfFileStrategy pdfFileStrategy;
 
-    public XlsFileStrategy(CollectionProperties properties, PdfFileStrategy pdfFileStrategy) {
+    public XlsFileStrategy(CollectionProperties properties,
+                           PdfFileStrategy pdfFileStrategy,
+                           RestTemplate restTemplate) {
+        super(properties, restTemplate);
         this.properties = properties;
         this.pdfFileStrategy = pdfFileStrategy;
     }
@@ -50,13 +55,38 @@ public class XlsFileStrategy implements FileStrategy{
                                   ResourceDto resourceDto) throws Exception {
 
         String thumbRatio;
-        if(properties.getOfficeHome() != null && new File(properties.getOfficeHome()).exists()) {
+        if (properties.getJodconverter().isEnabled()) {
             String pdfPath = thumbFilePath.substring(0, thumbFilePath.lastIndexOf("_thumb.png")) + ".pdf";
 
-            convertExcelToPdfOfJodconverter(excelFile, pdfPath);
+            if(properties.getJodconverter().getMode() == JodconverterModeEnum.LOCAL) {
+                if (properties.getJodconverter().getLocal().getOfficeHome() != null && new File(properties.getJodconverter().getLocal().getOfficeHome()).exists()) {
+                    convertExcelToPdfOfJodconverter(excelFile, pdfPath);
 
-            thumbRatio = pdfFileStrategy.createThumbnail(new File(pdfPath), thumbFilePath, thumbUrl, fileType, resourceDto);
-            resourceDto.setPreviewUrl(thumbUrl.replace("_thumb.png", ".pdf"));
+                    thumbRatio = pdfFileStrategy.createThumbnail(new File(pdfPath), thumbFilePath, thumbUrl, fileType, resourceDto);
+                    resourceDto.setPreviewUrl(thumbUrl.replace("_thumb.png", ".pdf"));
+                } else {
+                    thumbRatio = convertExcelToImageOfDraw(excelFile, thumbFilePath);
+                }
+            }
+            else if(properties.getJodconverter().getMode() == JodconverterModeEnum.REMOTE){
+                if(properties.getJodconverter().getRemote().getApiUrl() == null) {
+                    thumbRatio = convertExcelToImageOfDraw(excelFile, thumbFilePath);
+                }
+                else {
+                    try {
+                        remoteConvertToPdf(excelFile, new File(pdfPath));
+
+                        thumbRatio = pdfFileStrategy.createThumbnail(new File(pdfPath), thumbFilePath, thumbUrl, fileType, resourceDto);
+                        resourceDto.setPreviewUrl(thumbUrl.replace("_thumb.png", ".pdf"));
+                    } catch (Exception e) {
+                        log.error("远程转换excel文件为pdf文件失败", e);
+                        thumbRatio = convertExcelToImageOfDraw(excelFile, thumbFilePath);
+                    }
+                }
+            }
+            else{
+                thumbRatio = convertExcelToImageOfDraw(excelFile, thumbFilePath);
+            }
         }
         else{
             thumbRatio = convertExcelToImageOfDraw(excelFile, thumbFilePath);
@@ -145,7 +175,7 @@ public class XlsFileStrategy implements FileStrategy{
     private void convertExcelToPdfOfJodconverter(File excelFile, String outputPath) throws Exception{
         // 启动 LibreOffice 服务
         OfficeManager officeManager = LocalOfficeManager.builder()
-                .officeHome(properties.getOfficeHome())  // 修改为你的 LibreOffice 路径
+                .officeHome(properties.getJodconverter().getLocal().getOfficeHome())  // 修改为你的 LibreOffice 路径
                 .install()
                 .build();
         try {

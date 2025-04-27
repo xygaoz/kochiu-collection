@@ -1,5 +1,6 @@
 package com.keem.kochiu.collection.properties;
 
+import com.keem.kochiu.collection.enums.JodconverterModeEnum;
 import com.keem.kochiu.collection.enums.ResourceTypeEnum;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -13,8 +14,7 @@ import java.util.*;
 public class CollectionProperties {
 
     private Map<String, List<String>> uploadType;
-    // office安装目录
-    private String officeHome;
+    private Jodconverter jodconverter = new Jodconverter();
     // ffmpeg安装目录
     private String ffmpegPath;
 
@@ -33,5 +33,30 @@ public class CollectionProperties {
             }
         }
         return ResourceTypeEnum.OTHER;
+    }
+
+    @Data
+    public static class Jodconverter {
+        private boolean enabled;
+        private String mode;
+        private Local local;
+        private Remote remote;
+
+        public JodconverterModeEnum getMode() {
+            return JodconverterModeEnum.getByMode(mode);
+        }
+    }
+
+    @Data
+    public static class Local {
+        private String officeHome;
+    }
+
+    @Data
+    public static class Remote {
+        private String username;
+        private String password = "";
+        private String apiUrl;
+        private int timeout = 300000;
     }
 }
