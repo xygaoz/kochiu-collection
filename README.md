@@ -12,8 +12,7 @@
     - Windows: 从 [LibreOffice](https://www.libreoffice.org/)官网 下载安装，默认路径为 C:\Program Files\LibreOffice。
     - Linux: sudo apt install libreoffice (Ubuntu/Debian) 或 sudo yum install libreoffice (CentOS)。
     - macOS: 通过 Homebrew 安装：brew install --cask libreoffice。
-    - docker:
-      - arm64架构<br>
+    - docker:<br>
         docker run -d \
         -p 8080:8080 \
         --name jodconverter \
@@ -36,11 +35,7 @@
         | 普通DOCX | 2分钟 | 1GB |
         | 含图PPTX | 5分钟 | 2GB |
         | 大型XLSX | 10分钟 | 4GB |
-
-      - x86_64架构<br>
-      
-
-    - 
+    
       <br><br>
 - 安装ffmpeg(可选)<br>
   从 [FFmpeg](https://ffmpeg.org/)官网下载安装。安装之后可以从视频截帧生成缩略图，否则会使用默认的图标代替缩略图。<br>
