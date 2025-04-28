@@ -497,7 +497,7 @@ watch(() => props.file, (newVal: Resource) => {
 .file-detail {
     width: 100%;
     height: 100%;
-    background-color: #f9f9f9;
+    background-color: var(--el-bg-color-view);
 }
 
 .preview-container {
@@ -506,9 +506,9 @@ watch(() => props.file, (newVal: Resource) => {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #f5f5f5;
-    border-bottom: 1px solid #eee;
     overflow: hidden;
+    background-color: var(--el-bg-color);
+    border-bottom: 1px solid var(--el-border-color-light);
 }
 
 .preview-content {
@@ -535,7 +535,7 @@ watch(() => props.file, (newVal: Resource) => {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: #999;
+    color: var(--el-text-color-secondary);
     font-size: 14px;
     width: 100%;
     height: 100%;
@@ -545,13 +545,6 @@ watch(() => props.file, (newVal: Resource) => {
 .unsupported-file .el-icon {
     font-size: 48px;
     margin-bottom: 10px;
-}
-
-.detail-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 16px 0;
 }
 
 .detail-content {
@@ -566,7 +559,7 @@ watch(() => props.file, (newVal: Resource) => {
 
 .detail-label {
     width: 80px;
-    color: #666;
+    color: var(--el-text-color-secondary);
     padding-right: 12px;
 }
 
@@ -607,10 +600,13 @@ watch(() => props.file, (newVal: Resource) => {
 
 .el-tag {
     cursor: default;
+    background-color: var(--el-tag-bg-color);
+    color: var(--el-tag-text-color);
+    border-color: var(--el-border-color-light);
 }
 
 .empty-value {
-    color: #999;
+    color: var(--el-text-color-placeholder);
     font-style: italic;
 }
 
@@ -623,7 +619,7 @@ watch(() => props.file, (newVal: Resource) => {
 }
 
 .editable-field:hover {
-    background-color: #f0f0f0;
+    background-color: var(--el-fill-color-light);
 }
 
 .is-loading {

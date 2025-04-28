@@ -250,6 +250,7 @@ const handleRestore = (resources: Resource[]) => {
     display: flex;
     height: calc(100vh - 60px);
     overflow: hidden;
+    background-color: var(--el-bg-color-view);
 }
 
 .main-container {
@@ -258,7 +259,7 @@ const handleRestore = (resources: Resource[]) => {
 }
 
 .search-header {
-    padding: 5px 18px;
+    padding: 5px 0;
     position: relative;
     overflow: visible;
     transition: height 0.3s ease;
@@ -276,8 +277,8 @@ const handleRestore = (resources: Resource[]) => {
 
 .detail-aside {
     width: 280px;
-    background-color: #fff;
-    border-left: 1px solid #e6e6e6;
+    background-color: var(--el-bg-color-view);
+    border-left: 1px solid var(--el-border-color-light);
     overflow-y: auto;
     height: 100%;
     flex-shrink: 0;
@@ -287,6 +288,6 @@ const handleRestore = (resources: Resource[]) => {
 .loading, .empty {
     text-align: center;
     padding: 50px;
-    color: #999;
+    color: var(--el-text-color-secondary);
 }
 </style>

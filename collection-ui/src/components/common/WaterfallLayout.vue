@@ -45,9 +45,8 @@
                             >
                                 <template #error>
                                     <div class="image-error">
-                                        <img
+                                        <img class="default-thumbnail"
                                             src="/images/default-thumbnail.jpg"
-                                            style="width:100%;height:100%;object-fit:contain;background-color:#f5f5f5;"
                                             alt=""
                                         >
                                     </div>
@@ -371,7 +370,7 @@ onBeforeUnmount(() => {
 .waterfall-image {
     object-fit: contain;
     transition: transform 0.3s ease;
-    border-bottom: solid 1px #f2f2f2;
+    border-bottom: 1px solid var(--el-border-color-light);
 }
 
 .waterfall-image:hover {
@@ -384,7 +383,7 @@ onBeforeUnmount(() => {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #f5f5f5;
+    background-color: var(--el-bg-color);
 }
 
 .el-card {
@@ -393,7 +392,8 @@ onBeforeUnmount(() => {
     transition: all 0.3s ease;
     border-radius: 5px;
     overflow: hidden;
-    border: 1px solid #ebeef5;
+    border: 1px solid var(--el-card-border-color);
+    background-color: var(--el-bg-color);
     display: flex;
     flex-direction: column;
     position: relative;
@@ -413,7 +413,7 @@ onBeforeUnmount(() => {
     flex-grow: 1; /* 确保图片区域占据剩余空间 */
     overflow: hidden;
     border-radius: 4px 4px 0 0;
-    background-color: #f5f5f5;
+    background-color: var(--el-color-primary-light-9);
     position: relative;
     display: flex;
     justify-content: center;
@@ -421,7 +421,7 @@ onBeforeUnmount(() => {
 }
 
 .selected-card {
-    border: 1px solid #409EFF !important;
+    border: 1px solid var(--el-color-primary) !important;
 }
 
 .selected-card:hover {
@@ -432,7 +432,6 @@ onBeforeUnmount(() => {
     position: absolute;
     top: 2px;
     right: 10px;
-    z-index: 100;
     opacity: 0;
     transition: opacity 0.2s;
 }
@@ -451,8 +450,24 @@ onBeforeUnmount(() => {
     justify-content: space-between;
     align-items: center;
     padding: 8px;
-    background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
-    color: #fff;
+    background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.3),
+        rgba(0, 0, 0, 0.1) 70%,
+        transparent
+    );
+    color: var(--el-item-text-color);
+    backdrop-filter: blur(2px); /* 可选：添加毛玻璃效果 */
+}
+
+/* 暗黑主题微调 */
+html.dark .image-info {
+    background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.6),  /* 暗黑模式下减少黑色浓度 */
+        rgba(0, 0, 0, 0.2) 70%,
+        transparent
+    );
 }
 
 .image-title {
@@ -480,6 +495,14 @@ onBeforeUnmount(() => {
     opacity: 1;
     color: var(--el-color-primary);
 }
+
+.default-thumbnail{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    background-color: var(--el-color-primary-light-9);
+}
+
 /* 响应式调整 */
 @media (max-width: 768px) {
     .waterfall-row {

@@ -34,19 +34,19 @@
                     @keyup.enter="login"
                 >登录</el-button
                 >
-                <div style="text-align: right; transform: translate(0, 30px)">
-                    <el-link
-                        type="danger"
-                        @click="changeUrl('/forget')"
-                        style="margin-right: 140px"
-                    >
-                        忘记密码？
-                    </el-link>
+<!--                <div style="text-align: right; transform: translate(0, 30px)">-->
+<!--                    <el-link-->
+<!--                        type="danger"-->
+<!--                        @click="changeUrl('/forget')"-->
+<!--                        style="margin-right: 140px"-->
+<!--                    >-->
+<!--                        忘记密码？-->
+<!--                    </el-link>-->
 
-                    <el-link type="warning" @click="changeUrl('/register')"
-                    >没有账号？去注册</el-link
-                    >
-                </div>
+<!--                    <el-link type="warning" @click="changeUrl('/register')"-->
+<!--                    >没有账号？去注册</el-link-->
+<!--                    >-->
+<!--                </div>-->
             </el-form>
         </div>
     </div>
@@ -177,5 +177,9 @@ h2 {
     width: 80px;
     height: 40px;
     font-size: 15px;
+}
+
+:deep(.el-input__inner){
+    color: #4e4e4e !important;
 }
 </style>

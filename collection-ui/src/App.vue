@@ -50,17 +50,46 @@ const handleLoginSuccess = async () => {
 }
 
 :root {
-    --el-menu-bg-color: #ffffff;
-    --el-menu-text-color: #333333;
-    --el-menu-active-color: var(--el-color-primary);
-    --el-icon-color: var(--el-color-primary);
+    /* Light 主题变量 */
+    --el-text-color-master: #6e6e6e;
+    --el-bg-color-page: #f5f7fa;
+    --el-bg-color-view: #f5f7fa;
+    --el-bg-color-header: #eeeeee;
+    --el-border-color-light: #e4e7ed;
+    --el-border-color-bottom: #dcdfe6;
+    --el-card-border-color: #ebeef5;
+    --el-text-color-regular: #606266;
+    --el-text-color-secondary: #909399;
+    --el-color-primary: #409EFF;
+    --el-tag-bg-color: #f0f2f5;
+    --el-tag-text-color: #606266;
+    --el-box-shadow-light: 0 0 8px rgba(0, 0, 0, 0.1);
+    --el-box-shadow-dark: 0 0 8px rgba(0, 0, 0, 0.5);
+    --el-menu-hover-bg-color: #f5f7fa;
+    --el-item-text-color: #2b2b2b;
 }
 
 html.dark {
-    --el-menu-bg-color: #141414;
-    --el-menu-text-color: #e5eaf3;
-    --el-menu-active-color: var(--el-color-primary);
-    --el-icon-color: var(--el-color-primary);
+    /* Dark 主题变量 */
+    --el-text-color-master: #ececec;
+    --el-bg-color-page: #141414;
+    --el-bg-color-view: #2b2b2b;
+    --el-bg-color-header: rgb(51, 51, 51);
+    --el-border-color-light: #4c4d4f;
+    --el-border-color-bottom: #333;
+    --el-card-border-color: #333;
+    --el-text-color-regular: #CFD3DC;
+    --el-text-color-secondary: #909399;
+    --el-color-primary: #409EFF;
+    --el-tag-bg-color: #1D1E1F;
+    --el-tag-text-color: #CFD3DC;
+    --el-box-shadow: var(--el-box-shadow-dark);
+    --el-menu-hover-bg-color: #141414;
+    --el-item-text-color: #f5f7fa;
+}
+
+html:not(.dark) {
+    --el-box-shadow: var(--el-box-shadow-light);
 }
 
 body {

@@ -335,6 +335,7 @@ watch(() => searchForm.include, (newVal) => {
 
 <style scoped>
 .search-form-wrapper {
+    padding: 0 18px;
     height: 36px;
     overflow: hidden;
     position: relative;
@@ -343,7 +344,8 @@ watch(() => searchForm.include, (newVal) => {
         background-color 0.3s ease;
     width: 100%;
     box-sizing: border-box;
-    background-color: #f5f7fa;
+    background-color: var(--el-bg-color-view);
+    border-bottom: 1px solid var(--el-border-color-bottom);
 }
 
 .search-form-wrapper.expanded {
@@ -355,8 +357,8 @@ watch(() => searchForm.include, (newVal) => {
     z-index: 100;
     padding: 5px 18px 3px 18px;
     width: 100%;
-    border-bottom: 1px solid #e9e9e9;
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid var(--el-border-color-bottom);
+    box-shadow: var(--el-box-shadow);
 }
 
 .search-form-container {
@@ -388,6 +390,7 @@ watch(() => searchForm.include, (newVal) => {
     margin-bottom: 0;
     height: 32px;
     flex-shrink: 0;
+    background-color: var(--el-bg-color-view);
 }
 
 .keyword-input {
@@ -441,7 +444,7 @@ watch(() => searchForm.include, (newVal) => {
     display: flex;
     align-items: center;
     padding: 5px 20px 0 0;
-    color: #fe8686;
+    color: var(--el-color-primary);
 }
 
 .path-segment {
@@ -455,15 +458,15 @@ watch(() => searchForm.include, (newVal) => {
 }
 
 .path-link {
-    color: #409EFF;
+    color: var(--el-color-primary);
     padding: 0 3px;
     border-radius: 3px;
     transition: all 0.3s;
     text-decoration: none;
 }
+
 .path-link:hover {
-    background: #ecf5ff;
+    background: var(--el-color-primary-light-9);
     text-decoration: none;
 }
-
 </style>

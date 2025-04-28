@@ -131,11 +131,11 @@ defineExpose({
     height: 24px;
     line-height: 22px;
     border: 0;
-    background-color: #f5f7fa;
 }
 
 .tag-selector-trigger:hover {
-    border-color: #c0c4cc;
+    border-color: var(--el-border-color-light);
+    background-color: transparent;
 }
 
 .selected-tag {
@@ -166,19 +166,19 @@ defineExpose({
 
 .tag-item {
     cursor: pointer;
-    background-color: #f5f7fa;
-    border: 1px dashed #5a5a5a;
-    color: #606266;
+    background-color: var(--el-fill-color-light);
+    border: 1px dashed var(--el-border-color-light);
+    color: var(--el-text-color-regular);
 }
 
 .tag-item.selected {
-    background-color: #ecf5ff;
-    border: 1px solid #409eff;
-    color: #409eff;
+    background-color: var(--el-color-primary-light-9);
+    border: 1px solid var(--el-color-primary);
+    color: var(--el-color-primary);
 }
 
 .tag-select-label{
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--el-border-color-light);
     padding: 0 6px;
     border-radius: 5px;
 }

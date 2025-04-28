@@ -466,12 +466,15 @@ watch(() => props.selectedFiles, (newVal) => {
     padding: 16px;
     display: flex;
     flex-direction: column;
+    background-color: var(--el-bg-color-view);
+    color: var(--el-text-color-regular);
 }
 
 .edit-form {
     flex: 1;  /* 表单区域填满剩余空间 */
     display: flex;
     flex-direction: column;
+    background-color: var(--el-bg-color-page);
 }
 
 .full-width-input {
@@ -484,18 +487,6 @@ watch(() => props.selectedFiles, (newVal) => {
     gap: 8px;
     align-items: center;
     transition: all 0.3s ease; /* 新增：容器过渡 */
-}
-
-.el-tag {
-    transition:
-        all 0.3s ease,
-        transform 0.2s ease; /* 包含变形动画 */
-}
-
-.dashed-tag {
-    transition:
-        border 0.3s ease,
-        background-color 0.3s ease;
 }
 
 .tag-input {
@@ -542,7 +533,7 @@ watch(() => props.selectedFiles, (newVal) => {
 
 .action-item:hover {
     color: #000000;
-    background-color: #b4d5ff;
+    background-color: var(--el-color-primary-light-9);
     transform: scale(1.1);
 }
 
@@ -567,23 +558,36 @@ watch(() => props.selectedFiles, (newVal) => {
 
 /* 标签文字 */
 .tag-label {
-    color: #666;
+    color: var(--el-text-color-secondary);
     padding-right: 5px;
     height: 32px;
     line-height: 32px;
     flex-shrink: 0;
 }
 
+
+.el-tag {
+    background-color: var(--el-tag-bg-color);
+    color: var(--el-tag-text-color);
+    border-color: var(--el-border-color-light);
+    transition:
+        all 0.3s ease,
+        transform 0.2s ease; /* 包含变形动画 */
+}
+
 .dashed-tag {
-    border: dashed 1px rgb(198, 198, 198);
+    border: dashed 1px var(--el-border-color-light);
+    background-color: var(--el-tag-bg-color);
+    color: var(--el-text-color-secondary);
+    transition:
+        border 0.3s ease,
+        background-color 0.3s ease;
     cursor: pointer;
-    background-color: #f2f2f2;
-    color: #9e9e9e;
 }
 
 .dashed-tag:hover {
-    background-color: #f0f9eb; /* 悬停效果 */
-    border-color: #c2e7b0;
+    background-color: var(--el-color-primary-light-9);
+    border-color: var(--el-color-primary-light-7);
 }
 
 .dashed-tag-dis{

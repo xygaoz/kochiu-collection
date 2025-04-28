@@ -16,8 +16,7 @@
                             v-if="showCatalogMenu"
                             class="catalog-menu"
                             :default-active="activeMenu"
-                            :background-color="themeStore.isDark ? 'var(--el-menu-bg-color)' : 'var(--el-menu-bg-color)'"
-                            :text-color="themeStore.isDark ? 'var(--el-menu-text-color)' : 'var(--el-menu-text-color)'"
+                            :text-color="'var(--el-menu-text-color)'"
                             :active-text-color="'var(--el-color-primary)'"
                             :default-openeds="['catalog-group']"
                         >
@@ -39,8 +38,7 @@
                             v-else
                             class="category-menu"
                             :default-active="activeMenu"
-                            :background-color="themeStore.isDark ? 'var(--el-menu-bg-color)' : 'var(--el-menu-bg-color)'"
-                            :text-color="themeStore.isDark ? 'var(--el-menu-text-color)' : 'var(--el-menu-text-color)'"
+                            :text-color="'var(--el-menu-text-color)'"
                             :active-text-color="'var(--el-color-primary)'"
                             :default-openeds="['category-group']"
                         >
@@ -112,8 +110,7 @@
                     <el-menu
                         class="fixed-menu"
                         :default-active="activeMenu"
-                        :background-color="themeStore.isDark ? 'var(--el-menu-bg-color)' : 'var(--el-menu-bg-color)'"
-                        :text-color="themeStore.isDark ? 'var(--el-menu-text-color)' : 'var(--el-menu-text-color)'"
+                        :text-color="'var(--el-menu-text-color)'"
                         :active-text-color="'var(--el-color-primary)'"
                         :default-openeds="defaultOpeneds"
                     >
@@ -653,8 +650,8 @@ const handleDeleteCategory = (category: Category) => {
     align-items: center;
     height: 58px;
     flex-shrink: 0;
-    background-color: var(--el-bg-color-page);
-    color: var(--el-text-color-primary);
+    background-color: var(--el-bg-color-header);
+    color: var(--el-text-color-master);
 }
 
 .el-main {
@@ -669,8 +666,8 @@ const handleDeleteCategory = (category: Category) => {
     justify-content: right;
     align-items: center;
     height: 58px;
-    background-color: var(--el-bg-color-page);
-    color: var(--el-text-color-primary);
+    background-color: var(--el-bg-color-header);
+    color: var(--el-text-color-master);
 }
 
 .logo-image {
@@ -695,6 +692,12 @@ const handleDeleteCategory = (category: Category) => {
 html.dark .el-menu-box,
 html.dark .el-menu {
     border-right: none !important;
+}
+
+/* 统一菜单项悬停背景色 */
+.el-menu-item:hover,
+.el-sub-menu__title:hover {
+    background-color: var(--el-menu-hover-bg-color) !important;
 }
 
 .menu-icon{
@@ -772,7 +775,6 @@ html.dark .el-menu {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    //padding: 0 0 20px 0;
 }
 
 .user-dropdown-container {
@@ -804,7 +806,7 @@ html.dark .el-menu {
 .username {
     margin-left: 8px;
     font-size: 14px;
-    color: #d2d2d2;
+    color: var(--el-text-color-master);
 }
 
 .dropdown-icon {
