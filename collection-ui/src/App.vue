@@ -50,13 +50,17 @@ const handleLoginSuccess = async () => {
 }
 
 :root {
-    --el-bg-color-page: #f5f7fa; /* light模式背景色 */
-    --el-box-shadow-light: #00152914;
+    --el-menu-bg-color: #ffffff;
+    --el-menu-text-color: #333333;
+    --el-menu-active-color: var(--el-color-primary);
+    --el-icon-color: var(--el-color-primary);
 }
 
 html.dark {
-    --el-bg-color-page: #141414; /* dark模式背景色 */
-    --el-box-shadow-light: #00000080;
+    --el-menu-bg-color: #141414;
+    --el-menu-text-color: #e5eaf3;
+    --el-menu-active-color: var(--el-color-primary);
+    --el-icon-color: var(--el-color-primary);
 }
 
 body {
