@@ -90,6 +90,7 @@ export interface User {
     key: string
     token: string
     status: number
+    theme: string
     roles: Role[]
 }
 

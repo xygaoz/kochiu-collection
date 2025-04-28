@@ -1,5 +1,5 @@
 <template>
-    <div style="height: calc(100vh); overflow: hidden;">
+    <div :class="[route.meta.theme || themeStore.currentTheme]" style="height: calc(100vh); overflow: hidden;">
         <el-container style="height: 100%; overflow: hidden">
             <el-aside style="width: 250px; display: flex; flex-direction: column;">
                 <div class="el-menu-box">
@@ -383,6 +383,7 @@ import { useRoute, useRouter } from "vue-router";
 import { getMyMenu, logout } from "@/apis/user-api";
 import { useUserStore } from "@/apis/global";
 import { storeToRefs } from "pinia";
+import { useThemeStore } from '@/apis/themeStore';
 
 // 状态管理
 const showCatalogMenu = ref(false)
@@ -401,6 +402,7 @@ const showCategoryActions = ref<number | null>(null)
 const dynamicMenus = ref<RouteMenu[]>([])
 const userStore = useUserStore()
 const { username } = storeToRefs(userStore)
+const themeStore = useThemeStore();
 
 // 计算属性：获取特定菜单项（资源、系统管理、帮助）
 const fixedMenuItems = computed(() => {
@@ -659,11 +661,11 @@ const handleDeleteCategory = (category: Category) => {
     padding-left: 25px;
     align-items: center;
     height: 58px;
-    box-shadow: 0 1px 4px #00152914;
-    border: 1px solid #00152914;
-    color: white;
-    background-color: rgb(75 85 99);
     flex-shrink: 0;
+    background-color: var(--el-bg-color-page);
+    border: 1px solid var(--el-border-color-light);
+    box-shadow: 0 1px 4px var(--el-box-shadow-light);
+    color: var(--el-text-color-primary);
 }
 
 .el-main {
@@ -675,13 +677,13 @@ const handleDeleteCategory = (category: Category) => {
 
 .headerCss {
     font-size: 12px;
-    border: 1px solid #00152914;
-    box-shadow: 1px 2px 4px #00152914;
     justify-content: right;
     align-items: center;
     height: 60px;
-    color: white;
-    background-color: rgb(55 65 81);
+    background-color: var(--el-bg-color-page);
+    border: 1px solid var(--el-border-color-light);
+    box-shadow: 1px 2px 4px var(--el-box-shadow-light);
+    color: var(--el-text-color-primary);
 }
 
 .logo-image {
@@ -763,7 +765,7 @@ const handleDeleteCategory = (category: Category) => {
 }
 
 .content-area{
-    background-color: rgb(243, 244, 246);
+    background-color: var(--el-bg-color);
 }
 
 .menu-area{

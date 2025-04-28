@@ -6,74 +6,84 @@
     </div>
 </template>
 
-<script lang="ts">
-import { Options, Vue } from 'vue-class-component';
+<script lang="ts" setup>
 import MainUI from './components/MainUI.vue';
-import { reactive } from 'vue';
+import { onMounted, reactive } from "vue";
 import LoginUI from "@/components/LoginUI.vue";
 import { tokenStore } from "@/apis/system-api";
 import { refreshAccessToken } from "@/apis/utils";
 
 let isRefreshing = false;
+const state = reactive({ isShow: 0 });
 
-@Options({
-    components: {
-        LoginUI,
-        MainUI,
-    },
-})
+onMounted(async () => {
+    state.isShow = 0;
 
-export default class App extends Vue {
-    state = reactive({
-        isShow: 0
-    });
-
-    async mounted() {
-        // 初始状态设置为等待
-        this.state.isShow = 0;
-
-        if (!isRefreshing) {
-            isRefreshing = true;
-
-            try {
-                // 先检查本地token
-                const token = tokenStore.getToken();
-                if (token) {
-                    this.state.isShow = 2;
-                    return;
-                }
-
-                // 如果没有token，尝试刷新
-                const newToken = await refreshAccessToken();
-                if (newToken) {
-                    this.state.isShow = 2;
-                } else {
-                    this.state.isShow = 1;
-                }
-            } catch (error) {
-                console.error('Failed to refresh access token:', error);
-                this.state.isShow = 1;
-            } finally {
-                isRefreshing = false;
+    if (!isRefreshing) {
+        isRefreshing = true;
+        try {
+            const token = tokenStore.getToken();
+            if (token) {
+                state.isShow = 2;
+                return;
             }
+
+            const newToken = await refreshAccessToken();
+            state.isShow = newToken ? 2 : 1;
+        } catch (error) {
+            console.error('Failed to refresh access token:', error);
+            state.isShow = 1;
+        } finally {
+            isRefreshing = false;
         }
     }
+})
 
-    handleLoginSuccess() {
-        this.state.isShow = 2;
-    }
+const handleLoginSuccess = async () => {
+    state.isShow = 2;
 }
 </script>
 
 <style>
+#app {
+    transition: background-color 0.3s, color 0.3s;
+}
+
+:root {
+    --el-bg-color-page: #f5f7fa; /* light模式背景色 */
+    --el-box-shadow-light: #00152914;
+}
+
+html.dark {
+    --el-bg-color-page: #141414; /* dark模式背景色 */
+    --el-box-shadow-light: #00000080;
+}
+
 body {
     margin: 0;
+    transition: background-color 0.3s;
 }
+
+/* 确保Element Plus组件能响应主题变化 */
+.el-switch.is-dark .el-switch__core {
+    background-color: var(--el-switch-on-color);
+}
+
 .waiting-message {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    font-size: 24px;
+    font-size: 21px;
+}
+
+.el-switch {
+    --el-switch-on-color: var(--el-color-primary);
+    --el-switch-off-color: var(--el-border-color-light);
+}
+
+/* 暗黑模式开关特殊处理 */
+html.dark .el-switch.is-dark .el-switch__core {
+    background-color: var(--el-switch-on-color) !important;
 }
 </style>

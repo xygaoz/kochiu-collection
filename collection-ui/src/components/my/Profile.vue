@@ -63,6 +63,16 @@
                     </el-tag>
                 </el-form-item>
 
+                <!-- 主题切换 -->
+                <el-form-item label="界面主题">
+                    <el-switch
+                        v-model="isDarkMode"
+                        active-text="暗黑模式"
+                        inactive-text="明亮模式"
+                        @change="toggleTheme"
+                    />
+                </el-form-item>
+
                 <!-- 角色 - 显示标签 -->
                 <el-form-item label="角色">
                     <div class="role-tags">
@@ -96,14 +106,18 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed, watch } from "vue";
+import { storeToRefs } from 'pinia';
 import { ElMessage, ElMessageBox } from "element-plus";
 import { Strategy, User } from "@/apis/interface";
-import { getStrategyList, tokenStore } from "@/apis/system-api";
+import { getStrategyList } from "@/apis/system-api";
 import { getMyInfo, logout, resetKey, resetToken, setMyName } from "@/apis/user-api";
 import { useUserStore } from "@/apis/global";
+import { useThemeStore } from "@/apis/themeStore";
 
-// 用户信息 - 初始化为空对象
+const themeStore = useThemeStore();
+const { currentTheme, isDark } = storeToRefs(themeStore);
+
 const userInfo = ref<User>({
     userId: '',
     userCode: '',
@@ -113,6 +127,7 @@ const userInfo = ref<User>({
     key: '',
     token: '',
     status: 0,
+    theme: currentTheme.value, // 使用响应式引用
     roles: []
 });
 const strategyList = ref<Strategy[]>([])
@@ -124,7 +139,6 @@ const resetType = ref<'key' | 'token'>('key');
 
 // 模拟从存储中获取用户信息
 const fetchUserInfo = async () => {
-
     strategyList.value = await getStrategyList();
     await refreshUser();
 };
@@ -134,9 +148,23 @@ const getStrategyName = (strategyCode: string) => {
     return strategy ? strategy.strategyName : strategyCode;
 }
 
+// 确保开关状态同步
+const isDarkMode = computed(() => isDark.value);
+
+const toggleTheme = async () => {
+    const newTheme = currentTheme.value === 'light' ? 'dark' : 'light';
+    await themeStore.applyTheme(newTheme);
+    userInfo.value.theme = newTheme;
+};
+
+
+// 监听主题变化，确保UI同步
+watch(() => themeStore.currentTheme, (newTheme) => {
+    isDarkMode.value = newTheme === 'dark';
+});
+
 // 编辑用户名
 const handleEditName = async () => {
-    // 保存逻辑
     if (!userInfo.value.userName.trim()) {
         ElMessage.error('用户名不能为空');
         return;
