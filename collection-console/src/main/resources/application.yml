@@ -24,6 +24,9 @@ spring:
       max-file-size: 100MB
       #请求总上传大小
       max-request-size: 1000MB
+  web:
+    resources:
+      static-locations: classpath:/static/
   jackson:
     default-property-inclusion: non_null
 

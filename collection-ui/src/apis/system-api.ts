@@ -84,7 +84,7 @@ export const getResourceType = async (typeName: string): Promise<ResourceType> =
     });
 }
 
-export const testServerPath = async (path: string, importMethod: string): Promise<boolean> => {
+export const testServerPath = async (path: string, importMethod: number): Promise<boolean> => {
     const params = {
         path: path,
         importMethod: importMethod

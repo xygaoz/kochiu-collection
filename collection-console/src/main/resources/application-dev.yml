@@ -1,7 +1,7 @@
 collection:
   jodconverter:
     enabled: true
-    mode: remote
+    mode: local
     remote:
       username: admin
       password: 123456

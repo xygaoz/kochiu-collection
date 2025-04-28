@@ -2,6 +2,7 @@ const { defineConfig } = require("@vue/cli-service");
 const webpack = require("webpack"); // 导入 webpack 模块
 
 module.exports = defineConfig({
+    publicPath: process.env.VUE_APP_CONTEXT_PATH + '/',
     transpileDependencies: true,
     devServer: {
         proxy: {

@@ -26,7 +26,6 @@
                         clearable
                         filterable
                         style="width: 100%"
-                        @change="handleCategoryChange"
                     >
                         <el-option
                             v-for="category in categoryList"
@@ -250,8 +249,19 @@ const startImport = async () => {
         console.log("Task ID:", taskId); // 调试日志
         form.value.taskId = taskId;
 
-        // 2. 动态获取 WebSocket URL
-        const wsUrl = `${import.meta.env.VUE_WS_TARGET_URL}/ws/import-progress?task-id=${taskId}`;
+        // 动态生成 WebSocket URL（兼容生产/开发环境）
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const host = window.location.host;
+
+        // 优先使用环境变量中的 Context Path，若无则默认为空
+        const contextPath = import.meta.env.VUE_APP_CONTEXT_PATH || '';
+
+        // 拼接完整 URL（注意处理路径首尾斜杠）
+        const wsBaseUrl = import.meta.env.VUE_WS_TARGET_URL ||
+            `${protocol}//${host}${contextPath}`.replace(/\/+/g, '/');
+
+        const wsUrl = `${wsBaseUrl}/ws/import-progress?task-id=${taskId}`;
+        // const wsUrl = `${import.meta.env.VUE_WS_TARGET_URL}/ws/import-progress?task-id=${taskId}`;
         console.log("WebSocket URL:", wsUrl); // 调试日志
 
         // 3. 建立 WebSocket 连接
@@ -284,6 +294,7 @@ const startImport = async () => {
                 progressStatus.value = 'success';
                 ws.close();
                 form.value = {
+                    taskId: '',
                     sourcePath: '',
                     categoryId: null,
                     catalogId: null,
