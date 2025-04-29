@@ -282,8 +282,12 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
             return;
         }
 
+        String fileName = file.getName();
+        String extension = FilenameUtils.getExtension(fileName).toLowerCase();
+
         response.setHeader("Content-Length", String.valueOf(file.length()));
-        response.setContentType(FileTypeEnum.getByValue(resource.getResourceType()).getMimeType());
+        response.setContentType(FileTypeEnum.getByValue(extension).getMimeType());
+        log.debug("下载文件：{}, mimeType: {}", url, FileTypeEnum.getByValue(extension).getMimeType());
         if(url.equals(resource.getResourceUrl())){
             if(HttpMethod.POST.name().equalsIgnoreCase(request.getMethod())){
                 response.setHeader("Content-Disposition", "attachment;filename=" +

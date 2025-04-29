@@ -7,19 +7,17 @@ import com.keem.kochiu.collection.annotation.Remove;
 import com.keem.kochiu.collection.data.DefaultResult;
 import com.keem.kochiu.collection.data.bo.*;
 import com.keem.kochiu.collection.data.dto.TagDto;
-import com.keem.kochiu.collection.data.vo.FileVo;
 import com.keem.kochiu.collection.data.vo.PageVo;
 import com.keem.kochiu.collection.data.vo.ResourceVo;
-import com.keem.kochiu.collection.enums.PermitEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.service.CheckPermitAspect;
 import com.keem.kochiu.collection.service.UserResourceService;
 import com.keem.kochiu.collection.service.UserResourceTagService;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import static com.keem.kochiu.collection.Constant.PUBLIC_URL;

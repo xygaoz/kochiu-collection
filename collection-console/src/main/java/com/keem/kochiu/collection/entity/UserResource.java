@@ -25,7 +25,7 @@ public class UserResource extends BaseEntity implements Cloneable{
     private String filePath;
     private Integer saveType;
     private String resourceUrl;
-    private String resourceType;
+    private Integer resourceType;
     private String thumbUrl;
     private String previewUrl;
     private Integer deleted;

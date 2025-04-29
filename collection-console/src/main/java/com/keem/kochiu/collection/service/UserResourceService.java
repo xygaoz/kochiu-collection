@@ -20,6 +20,7 @@ import com.keem.kochiu.collection.service.store.ResourceStoreStrategy;
 import com.keem.kochiu.collection.service.store.ResourceStrategyFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +32,9 @@ import static com.keem.kochiu.collection.enums.ErrorCodeEnum.CONTENT_CANNOT_BE_E
 @Slf4j
 @Service
 public class UserResourceService {
+
+    @Value("${server.servlet.context-path}")
+    private String contextPath = "";
 
     private final ResourceStrategyFactory resourceStrategyFactory;
     private final SysUserRepository userRepository;
@@ -95,7 +99,7 @@ public class UserResourceService {
     private String buildResourceUrl(SysUser user, UserResource resource){
 
         if(SaveTypeEnum.getByCode(resource.getSaveType()) != SaveTypeEnum.NETWORK){
-            return "/resource/" + resource.getResourceId() + "/" + resource.getResourceUrl().replace("/" + user.getUserCode() + "/", "");
+            return contextPath + "/resource/" + resource.getResourceId() + "/" + resource.getResourceUrl().replace("/" + user.getUserCode() + "/", "");
         }
         return resource.getThumbUrl();
     }
@@ -176,8 +180,8 @@ public class UserResourceService {
                             return ResourceVo.builder()
                                     .resourceId(resource.getResourceId())
                                     .resourceUrl(buildResourceUrl(user, resource))
-                                    .thumbnailUrl(StringUtils.isNotBlank(resource.getThumbUrl()) ? "/resource/" + resource.getResourceId() + "/" + resource.getThumbUrl().replace("/" + user.getUserCode() + "/", "") : null)
-                                    .previewUrl(StringUtils.isNotBlank(resource.getPreviewUrl()) ? "/resource/" + resource.getResourceId() + "/" + resource.getPreviewUrl().replace("/" + user.getUserCode() + "/", "") : null)
+                                    .thumbnailUrl(StringUtils.isNotBlank(resource.getThumbUrl()) ? contextPath + "/resource/" + resource.getResourceId() + "/" + resource.getThumbUrl().replace("/" + user.getUserCode() + "/", "") : null)
+                                    .previewUrl(StringUtils.isNotBlank(resource.getPreviewUrl()) ? contextPath + "/resource/" + resource.getResourceId() + "/" + resource.getPreviewUrl().replace("/" + user.getUserCode() + "/", "") : null)
                                     .title(resource.getTitle())
                                     .description(resource.getDescription())
                                     .sourceFileName(resource.getSourceFileName())

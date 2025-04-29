@@ -1,6 +1,5 @@
 package com.keem.kochiu.collection.service;
 
-import cn.hutool.core.io.FileUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.keem.kochiu.collection.data.bo.BatchImportBo;
@@ -14,7 +13,6 @@ import com.keem.kochiu.collection.entity.UserResource;
 import com.keem.kochiu.collection.enums.ErrorCodeEnum;
 import com.keem.kochiu.collection.enums.FileTypeEnum;
 import com.keem.kochiu.collection.enums.ImportMethodEnum;
-import com.keem.kochiu.collection.enums.SaveTypeEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.handler.ImportProgressWebSocketHandler;
 import com.keem.kochiu.collection.repository.SysUserRepository;
@@ -28,7 +26,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;

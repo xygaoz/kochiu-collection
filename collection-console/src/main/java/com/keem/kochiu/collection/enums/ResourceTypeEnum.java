@@ -13,17 +13,17 @@ public enum ResourceTypeEnum {
     UNKNOWN(0, "未知"),
     ;
 
-    final int i;
+    final int code;
     final String label;
 
     ResourceTypeEnum(int i, String label) {
-        this.i = i;
+        this.code = i;
         this.label = label;
     }
 
     public static ResourceTypeEnum getByValue(int i) {
         for (ResourceTypeEnum resourceTypeEnum : values()) {
-            if (resourceTypeEnum.i == i) {
+            if (resourceTypeEnum.code == i) {
                 return resourceTypeEnum;
             }
         }

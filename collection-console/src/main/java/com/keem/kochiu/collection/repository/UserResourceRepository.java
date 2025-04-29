@@ -16,6 +16,7 @@ import com.keem.kochiu.collection.enums.ResourceTypeEnum;
 import com.keem.kochiu.collection.enums.SaveTypeEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.mapper.UserResourceMapper;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +41,8 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
      */
     public Long saveResource(ResourceDto resourceDto) {
 
+        String extension = FilenameUtils.getExtension(resourceDto.getSourceFileName()).toLowerCase();
+
         UserResource userResource = new UserResource();
         userResource.setUserId(resourceDto.getUserId());
         userResource.setCateId(resourceDto.getCateId());
@@ -55,6 +58,7 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
         userResource.setThumbRatio(resourceDto.getThumbRatio());
         userResource.setPreviewUrl(resourceDto.getPreviewUrl());
         userResource.setMd5(resourceDto.getMd5());
+        userResource.setResourceType(FileTypeEnum.getByValue(extension).getDesc().getCode());
         if (this.save(userResource)) {
             // 获取最后插入的行ID
             Long resourceId = baseMapper.selectLastInsertId();

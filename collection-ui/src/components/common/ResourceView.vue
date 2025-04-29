@@ -64,10 +64,10 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, defineProps, defineEmits } from "vue";
+import { computed, defineEmits, defineProps, ref } from "vue";
 import SearchFormView from "@/components/common/SearchFormView.vue";
-import { SearchForm } from "@/apis/interface";
 import type { Resource } from "@/apis/interface";
+import { SearchForm } from "@/apis/interface";
 import WaterfallLayout from "@/components/common/WaterfallLayout.vue";
 import FileDetailView from "@/components/common/FileDetailView.vue";
 import BatchEditView from "@/components/common/BatchEditView.vue";
@@ -156,7 +156,12 @@ const handleShowDoc = (resource: Resource) => {
         ElMessage.warning('该文件不支持预览');
         return;
     }
-    pdfPreviewUrl.value = resource.previewUrl;
+
+    const protocol = window.location.protocol;
+    const host = window.location.host;
+    pdfPreviewUrl.value = process.env.NODE_ENV === 'production'
+        ? `${protocol}//${host}${resource.previewUrl}`
+        : resource.previewUrl;
     pdfDialogVisible.value = true;
 };
 

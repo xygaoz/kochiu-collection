@@ -141,7 +141,7 @@ export const refreshAccessToken = async () => {
         if (refreshToken.value === '') {
             return null;
         }
-        const response = await axios.post('/api/v1/sys/refresh', {}, {
+        const response = await axios.post(process.env.VUE_APP_CONTEXT_PATH + '/api/v1/sys/refresh', {}, {
             headers: {
                 'Authorization': refreshToken.value // 提取ref的值
             }
