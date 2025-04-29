@@ -157,12 +157,6 @@ const toggleTheme = async () => {
     userInfo.value.theme = newTheme;
 };
 
-
-// 监听主题变化，确保UI同步
-watch(() => themeStore.currentTheme, (newTheme) => {
-    isDarkMode.value = newTheme === 'dark';
-});
-
 // 编辑用户名
 const handleEditName = async () => {
     if (!userInfo.value.userName.trim()) {

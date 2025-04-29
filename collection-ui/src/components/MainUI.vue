@@ -322,13 +322,18 @@
             <el-container class="content-area">
                 <el-header class="headerCss">
                     <div style="display: flex; height: 100%; align-items: center; justify-content: space-between;">
-                        <div style="width: 33%;"></div> <!-- 左侧占位 -->
+                        <div style="width: 33%;">
+                            <i class="iconfont icon-col-zhutise theme" @click="toggleTheme"
+                               :style="isDark ? 'color: #fff': 'color: #000'"
+                               :title="isDark ? '切换到明亮主题' : '切换到暗黑主题'"
+                            />
+                        </div> <!-- 左侧占位 -->
                         <div class="user-dropdown-container">
                             <el-dropdown>
                                 <div class="user-avatar-wrapper">
                                     <el-avatar
                                         :size="32"
-                                        src="/images/user.gif"
+                                        :src="userAvatar"
                                         class="user-avatar"
                                     />
                                     <span class="username">{{ username }}</span>
@@ -381,6 +386,7 @@ import { getMyMenu, logout } from "@/apis/user-api";
 import { useUserStore } from "@/apis/global";
 import { storeToRefs } from "pinia";
 import { useThemeStore } from '@/apis/themeStore';
+import userAvatar from '../assets/imgs/user.gif';
 
 // 状态管理
 const showCatalogMenu = ref(false)
@@ -400,6 +406,7 @@ const dynamicMenus = ref<RouteMenu[]>([])
 const userStore = useUserStore()
 const { username } = storeToRefs(userStore)
 const themeStore = useThemeStore();
+const { currentTheme, isDark } = storeToRefs(themeStore);
 
 // 计算属性：获取特定菜单项（资源、系统管理、帮助）
 const fixedMenuItems = computed(() => {
@@ -412,6 +419,11 @@ const fixedMenuItems = computed(() => {
 const showProfile = () => {
     router.push('/profile')
 }
+
+const toggleTheme = async () => {
+    const newTheme = currentTheme.value === 'light' ? 'dark' : 'light';
+    await themeStore.applyTheme(newTheme);
+};
 
 // 初始化数据
 onMounted(async () => {
@@ -798,7 +810,8 @@ html.dark .el-menu {
     outline: none;
 }
 
-.user-avatar:focus, .user-avatar:hover {
+.user-avatar:focus, .user-avatar:hover, .user-avatar-wrapper:hover,
+.user-dropdown-container:hover{
     outline: none;
     box-shadow: none;
 }
@@ -839,5 +852,9 @@ html.dark .el-menu {
 }
 .el-dropdown-menu__item .el-icon {
     margin-right: 8px;
+}
+
+.theme{
+    cursor: pointer;
 }
 </style>

@@ -46,7 +46,7 @@
                                 <template #error>
                                     <div class="image-error">
                                         <img class="default-thumbnail"
-                                            src="/images/default-thumbnail.jpg"
+                                            :src="defaultThumbnail"
                                             alt=""
                                         >
                                     </div>
@@ -96,6 +96,7 @@ import {
 import type { Resource } from "@/apis/interface";
 import { Connection, Delete, Download } from "@element-plus/icons-vue";
 import { downloadFile } from "@/apis/utils";
+import defaultThumbnail from '@/assets/imgs/default-thumbnail.jpg';
 
 // 使用 TypeScript 类型定义 props
 const props = defineProps<{

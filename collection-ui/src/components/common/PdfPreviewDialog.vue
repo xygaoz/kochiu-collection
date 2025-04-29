@@ -49,7 +49,7 @@ export default {
     emits: ['update:modelValue'],
     setup(props) {
         const iframeSrc = computed(() => {
-            return `/pdfjs/web/viewer.html?file=${encodeURIComponent(props.url)}`
+            return process.env.VUE_APP_CONTEXT_PATH + `/pdfjs/web/viewer.html?file=${encodeURIComponent(props.url)}`
         })
 
         return {

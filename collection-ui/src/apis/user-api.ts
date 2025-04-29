@@ -128,7 +128,7 @@ export const logout = () => {
     userStore.clearCurrentUser()
 
     // 跳转到登录页
-    window.location.href = '/login' // 使用完整刷新确保状态清除
+    window.location.href = process.env.VUE_APP_CONTEXT_PATH + '/login' // 使用完整刷新确保状态清除
 }
 
 export const resetKey = async (): Promise<boolean> => {
