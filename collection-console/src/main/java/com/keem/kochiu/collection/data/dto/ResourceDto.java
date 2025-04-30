@@ -8,6 +8,7 @@ import lombok.Data;
 @Data
 public class ResourceDto {
 
+    private Long resourceId;
     private int userId;
     private long cateId;
     private String sourceFileName;

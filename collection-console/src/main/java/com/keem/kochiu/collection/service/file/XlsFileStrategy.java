@@ -56,6 +56,7 @@ public class XlsFileStrategy extends OfficeFileStrategy implements FileStrategy{
 
         String thumbRatio;
         if (properties.getJodconverter().isEnabled()) {
+            log.info("使用jodconverter转换ppt文件");
             String pdfPath = thumbFilePath.substring(0, thumbFilePath.lastIndexOf("_thumb.png")) + ".pdf";
 
             if(properties.getJodconverter().getMode() == JodconverterModeEnum.LOCAL) {

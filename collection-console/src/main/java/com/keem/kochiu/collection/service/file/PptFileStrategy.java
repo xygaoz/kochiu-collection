@@ -55,7 +55,7 @@ public class PptFileStrategy extends OfficeFileStrategy implements FileStrategy{
 
         String thumbRatio;
         if (properties.getJodconverter().isEnabled()) {
-
+            log.info("使用jodconverter转换ppt文件");
             if(properties.getJodconverter().getMode() == JodconverterModeEnum.LOCAL){
                if(properties.getJodconverter().getLocal().getOfficeHome() != null && new File(properties.getJodconverter().getLocal().getOfficeHome()).exists()){
                    log.info("使用jodconverter转换ppt文件为pdf文件");

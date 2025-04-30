@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpMethod;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -49,18 +50,21 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
     private final FileStrategyFactory fileStrategyFactory;
     private final UserCatalogRepository catalogRepository;
     private final SysStrategy strategy;
+    private final ThumbnailService thumbnailService;
 
     public LocalStoreStrategy(CollectionProperties collectionProperties,
                               UserResourceRepository resourceRepository,
                               SysUserRepository userRepository,
                               FileStrategyFactory fileStrategyFactory,
                               UserCatalogRepository catalogRepository,
-                              SysStrategyRepository strategyRepository) {
+                              SysStrategyRepository strategyRepository,
+                              ThumbnailService thumbnailService) {
         this.collectionProperties = collectionProperties;
         this.resourceRepository = resourceRepository;
         this.userRepository = userRepository;
         this.fileStrategyFactory = fileStrategyFactory;
         this.catalogRepository = catalogRepository;
+        this.thumbnailService = thumbnailService;
 
         try {
             strategy = strategyRepository.getOne(new LambdaQueryWrapper<SysStrategy>()
@@ -128,21 +132,17 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
                 .md5(md5)
                 .saveType(SaveTypeEnum.LOCAL)
                .build();
-        //生成缩略图
-        try {
-            createThumbnail(resourceDto, fileType, filePath);
-        }
-        catch (Exception e) {
-            log.error("生成缩略图失败", e);
-        }
 
         Long resId = resourceRepository.saveResource(resourceDto);
 
-        String thumbUrl = resourceDto.getThumbUrl();
-        if(thumbUrl != null){
-            thumbUrl = thumbUrl.replace("/" + userCode + "/", "");
-            thumbUrl = "/" + resId + "/" + thumbUrl;
-        }
+        //异步生成缩略图
+        resourceDto.setResourceId(resId);
+        thumbnailService.asyncCreateThumbnail(resourceDto, fileType, filePath);
+
+        //拼接缩略图url
+        String thumbUrl = resourceDto.getResourceUrl().replace("." + resourceDto.getFileExt(), "_thumb.png");
+        thumbUrl = thumbUrl.replace("/" + userCode + "/", "");
+        thumbUrl = "/" + resId + "/" + thumbUrl;
 
         return FileVo.builder()
                 .url("/" + resId + returnUrl)
@@ -207,31 +207,6 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
         createThumbnail(resourceDto, fileType, file.getAbsolutePath(), recFilePathDir + resourceUrl);
 
         resourceRepository.saveResource(resourceDto);
-    }
-
-    /**
-     * 生成缩略图
-     * @param resourceDto
-     * @param fileType
-     * @param filePath
-     */
-    private void createThumbnail(ResourceDto resourceDto, FileTypeEnum fileType, String filePath){
-
-        //判断文件是否需要生成缩略图
-        String thumbFilePath = filePath.replace("." + resourceDto.getFileExt(), "_thumb.png");
-        String thumbUrl = resourceDto.getResourceUrl().replace("." + resourceDto.getFileExt(), "_thumb.png");
-
-        FileStrategy fileStrategy = fileStrategyFactory.getStrategy(fileType);
-        try {
-            if(fileType.isThumb()) {
-                fileStrategy.createThumbnail(new File(filePath), thumbFilePath, thumbUrl, fileType, resourceDto);
-            }
-            else{
-                fileStrategy.defaultThumbnail(thumbFilePath, thumbUrl, fileType, resourceDto);
-            }
-        } catch (Exception e) {
-            log.error("缩略图生成失败", e);
-        }
     }
 
     private void createThumbnail(ResourceDto resourceDto, FileTypeEnum fileType, String sourceFile, String thumbFilePath){

@@ -29,6 +29,13 @@ spring:
       static-locations: classpath:/static/
   jackson:
     default-property-inclusion: non_null
+  task:
+    execution:
+      pool:
+        core-size: 5
+        max-size: 10
+        queue-capacity: 100
+      thread-name-prefix: thumbnail-task-
 
 #指定mybatis-config.xml的位置
 mybatis-plus:

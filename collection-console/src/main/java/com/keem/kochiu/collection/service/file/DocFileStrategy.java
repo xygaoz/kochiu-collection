@@ -7,6 +7,7 @@ import com.keem.kochiu.collection.data.dto.ResourceDto;
 import com.keem.kochiu.collection.enums.FileTypeEnum;
 import com.keem.kochiu.collection.enums.JodconverterModeEnum;
 import com.keem.kochiu.collection.properties.CollectionProperties;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.extractor.WordExtractor;
 import org.jodconverter.core.office.OfficeManager;
@@ -19,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
+@Slf4j
 @Service("doc")
 public class DocFileStrategy extends OfficeFileStrategy implements FileStrategy{
 
@@ -54,6 +56,7 @@ public class DocFileStrategy extends OfficeFileStrategy implements FileStrategy{
 
         // Step 1: Convert Word to HTML
         if (properties.getJodconverter().isEnabled()) {
+            log.info("使用jodconverter转换ppt文件");
             convertDocToPdfOfJodconverter(file, pdfPath);
         }
         else {
