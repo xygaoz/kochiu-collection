@@ -21,9 +21,9 @@ spring:
   servlet:
     multipart:
       # 上传文件大小
-      max-file-size: 100MB
+      max-file-size: 1GB
       #请求总上传大小
-      max-request-size: 1000MB
+      max-request-size: 10GB
   web:
     resources:
       static-locations: classpath:/static/

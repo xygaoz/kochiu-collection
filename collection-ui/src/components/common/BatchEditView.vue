@@ -474,7 +474,6 @@ watch(() => props.selectedFiles, (newVal) => {
     flex: 1;  /* 表单区域填满剩余空间 */
     display: flex;
     flex-direction: column;
-    background-color: var(--el-bg-color-page);
 }
 
 .full-width-input {

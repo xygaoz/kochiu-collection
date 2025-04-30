@@ -52,6 +52,12 @@
                                     </div>
                                 </template>
                             </el-image>
+                            <div v-if="isVideoOrAudio(item.image)" class="play-icon-overlay">
+                                <el-icon class="play-icon">
+                                    <VideoPlay v-if="isVideoType(item.image)" />
+                                    <Headset v-else />
+                                </el-icon>
+                            </div>
                         </div>
                         <div class="image-info">
                             <div class="image-title">{{ item.image.title || item.image.sourceFileName }}</div>
@@ -94,7 +100,7 @@ import {
     watch
 } from "vue";
 import type { Resource } from "@/apis/interface";
-import { Connection, Delete, Download } from "@element-plus/icons-vue";
+import { Connection, Delete, Download, Headset, VideoPlay } from "@element-plus/icons-vue";
 import { downloadFile } from "@/apis/utils";
 import defaultThumbnail from '@/assets/imgs/default-thumbnail.jpg';
 
@@ -131,6 +137,21 @@ interface LayoutItem {
 interface ComputedRow {
     items: LayoutItem[];
 }
+
+// 判断是否是视频或音频
+const isVideoOrAudio = (file: Resource) => {
+    return isVideoType(file) || isAudioType(file);
+};
+
+const isVideoType = (file: Resource) => {
+    return file.typeName === 'video' ||
+        (file.mimeType && file.mimeType.startsWith('video/'));
+};
+
+const isAudioType = (file: Resource) => {
+    return file.typeName === 'audio' ||
+        (file.mimeType && file.mimeType.startsWith('audio/'));
+};
 
 const handlePreview = async (image: Resource) => {
     forceRender.value++;
@@ -502,6 +523,26 @@ html.dark .image-info {
     height:100%;
     object-fit:contain;
     background-color: var(--el-color-primary-light-9);
+}
+
+.play-icon-overlay {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.3);
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+}
+
+.resource-wrapper:hover .play-icon-overlay {
+    opacity: 1;
+}
+
+.play-icon {
+    font-size: 36px;
+    color: white;
+    filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.5));
 }
 
 /* 响应式调整 */

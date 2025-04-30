@@ -10,7 +10,11 @@
             <div class="category">
                 <div class="select-label">分类</div>
                 <div class="select-container">
-                    <el-select v-model="selectedCategory" placeholder="请选择分类">
+                    <el-select
+                        v-model="selectedCategory"
+                        placeholder="请选择分类"
+                        :disabled="uploading"
+                    >
                         <el-option
                             v-for="category in categories"
                             :key="category.sno"
@@ -24,7 +28,7 @@
                 <div class="select-label">目录</div>
                 <div class="select-container">
                     <div class="select-catalog">
-                        <el-radio-group v-model="autoCreate">
+                        <el-radio-group v-model="autoCreate" :disabled="uploading">
                             <el-radio :label="true">自动创建日期目录（YYYY/MM/DD）</el-radio>
                             <el-radio :label="false">选择现有目录</el-radio>
                         </el-radio-group>
@@ -36,6 +40,7 @@
                             :props="cascaderProps"
                             placeholder="请选择目录"
                             :loading="loadingCatalog"
+                            :disabled="uploading"
                             style="width: 100%;"
                         />
                     </div>
@@ -44,7 +49,7 @@
             <div class="overwrite">
                 <div class="select-label">覆盖</div>
                 <div class="select-container">
-                    <el-radio-group v-model="overwrite">
+                    <el-radio-group v-model="overwrite" :disabled="uploading">
                         <el-radio :label="true">是</el-radio>
                         <el-radio :label="false">否</el-radio>
                     </el-radio-group>
@@ -59,6 +64,7 @@
                 :auto-upload="false"
                 :on-change="handleFileChange"
                 :show-file-list="false"
+                :disabled="uploading"
             >
                 <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
                 <div class="el-upload__text">
@@ -66,16 +72,24 @@
                 </div>
                 <template #tip>
                     <div class="el-upload__tip">
-                        支持格式：图片（JPG/PNG/GIF等）、文档（PDF/DOCX等）、视频（MP4/AVI等）、音频（MP3/WAV等，单文件最大 100MB
+                        支持格式：图片（JPG/PNG/GIF等）、文档（PDF/DOCX等）、视频（MP4/AVI等）、音频（MP3/WAV等，单文件最大 1GB
                     </div>
                 </template>
             </el-upload>
 
             <div class="upload-actions">
-                <el-button type="primary" @click="uploadFiles" :loading="uploading" :disabled="files.length === 0 || !selectedCategory">
+                <el-button
+                    type="primary"
+                    @click="uploadFiles"
+                    :loading="uploading"
+                    :disabled="files.length === 0 || !selectedCategory || uploading"
+                >
                     开始上传
                 </el-button>
-                <el-button @click="clearFiles" :disabled="uploading || files.length === 0">
+                <el-button
+                    @click="clearFiles"
+                    :disabled="uploading || files.length === 0"
+                >
                     清空列表
                 </el-button>
             </div>
@@ -101,7 +115,12 @@
                         v-if="file.progress !== undefined"
                     />
                     <div class="file-actions">
-                        <el-button size="small" type="danger" @click="removeFile(index)" :disabled="uploading">
+                        <el-button
+                            size="small"
+                            type="danger"
+                            @click="removeFile(index)"
+                            :disabled="uploading"
+                        >
                             删除
                         </el-button>
                     </div>
@@ -138,7 +157,7 @@ const allowedTypes = [
     'application/pdf', 'text/plain', 'video/mp4', 'video/avi', 'video/wmv', 'video/quicktime',
     'video/x-matroska', 'audio/mpeg', 'audio/wav', 'audio/flac'
 ];
-const maxSize = 100 * 1024 * 1024; // 100MB in bytes
+const maxSize = 1024 * 1024 * 1024; // 1GB in bytes
 
 // 分类相关
 const categories = reactive<Category[]>([])

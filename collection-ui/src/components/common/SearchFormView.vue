@@ -390,7 +390,6 @@ watch(() => searchForm.include, (newVal) => {
     margin-bottom: 0;
     height: 32px;
     flex-shrink: 0;
-    background-color: var(--el-bg-color-view);
 }
 
 .keyword-input {

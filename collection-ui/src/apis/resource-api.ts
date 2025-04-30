@@ -22,7 +22,6 @@ export const uploadFile = (
     }
     formData.append('autoCreate', autoCreate + '');
 
-    const ld = loading("上传中");
     return httpInstance.post(resourceApi + "/upload", formData, {
         onUploadProgress: (progressEvent: AxiosProgressEvent) => { // 使用 AxiosProgressEvent
             if (onProgress) {
@@ -38,8 +37,6 @@ export const uploadFile = (
     }).catch((error) => {
         console.error("文件上传失败:", error);
         throw error;
-    }).finally(() => {
-        ld.close();
     });
 };
 
