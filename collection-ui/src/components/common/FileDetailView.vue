@@ -24,10 +24,10 @@
                 v-else-if="isVideoType"
                 controls
                 class="preview-content"
-                :poster="file.thumbnailUrl"
+                :poster="videoThumbnailUrl"
                 @click.stop="handlePlayVideo"
             >
-                <source :src="file.resourceUrl" :type="file.fileType">
+                <source :src="videoFileUrl" :type="videoMimeType">
                 您的浏览器不支持视频播放
             </video>
 
@@ -37,7 +37,7 @@
                 controls
                 class="preview-content audio-preview"
             >
-                <source :src="file.resourceUrl" :type="file.fileType">
+                <source :src="audioFileUrl" :type="audioMimeType">
                 您的浏览器不支持音频播放
             </audio>
 
@@ -288,6 +288,59 @@ const isOfficeType = computed<boolean>(() => {
 });
 const isPdfType = computed<boolean>(() => props.file.fileType === 'application/pdf' && !!props.file.previewUrl);
 const isRecycleBin = computed(() => props.dataType === 'recycle');
+
+const audioFileUrl = computed(() => {
+    return props.file.resourceUrl.startsWith('http')
+        ? props.file.resourceUrl
+        : `${window.location.origin}${props.file.resourceUrl}`;
+});
+
+const audioMimeType = computed(() => {
+    // 根据文件扩展名返回正确的 MIME 类型
+    const ext = props.file.resourceUrl.split('.').pop()?.toLowerCase();
+    switch(ext) {
+        case 'flac': return 'audio/flac';
+        case 'mp3': return 'audio/mpeg';
+        case 'wav': return 'audio/wav';
+        case 'ogg': return 'audio/ogg';
+        default: return 'audio/*';
+    }
+});
+
+// 视频文件URL（处理相对路径）
+const videoFileUrl = computed(() => {
+    if (!props.file.resourceUrl) return '';
+    return props.file.resourceUrl.startsWith('http')
+        ? props.file.resourceUrl
+        : `${window.location.origin}${props.file.resourceUrl}`;
+});
+
+// 视频缩略图URL（处理相对路径）
+const videoThumbnailUrl = computed(() => {
+    if (!props.file.thumbnailUrl) return undefined;
+    return props.file.thumbnailUrl.startsWith('http')
+        ? props.file.thumbnailUrl
+        : `${window.location.origin}${props.file.thumbnailUrl}`;
+});
+
+// 视频MIME类型
+const videoMimeType = computed(() => {
+    // 优先使用后端返回的mimeType
+    if (props.file.mimeType && props.file.mimeType.includes('/')) {
+        return props.file.mimeType;
+    }
+
+    // 根据文件扩展名推断
+    const ext = props.file.resourceUrl?.split('.').pop()?.toLowerCase();
+    switch(ext) {
+        case 'mp4': return 'video/mp4';
+        case 'webm': return 'video/webm';
+        case 'ogg': return 'video/ogg';
+        case 'mov': return 'video/quicktime';
+        case 'avi': return 'video/x-msvideo';
+        default: return 'video/*';
+    }
+});
 
 const imageStyle = computed(() => {
     if (!props.file.width || !props.file.height) return {};
