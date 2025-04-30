@@ -671,6 +671,7 @@ const handleDeleteCategory = (category: Category) => {
     padding-left: 1px;
     padding-right: 1px;
     margin: 0;
+    overflow: hidden;
 }
 
 .headerCss {

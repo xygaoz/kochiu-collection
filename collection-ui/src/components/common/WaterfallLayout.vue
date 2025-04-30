@@ -46,7 +46,7 @@
                                 <template #error>
                                     <div class="image-error">
                                         <img class="default-thumbnail"
-                                            :src="defaultThumbnail"
+                                            :src="getDefaultThumbnail(item.image)"
                                             alt=""
                                         >
                                     </div>
@@ -102,7 +102,11 @@ import {
 import type { Resource } from "@/apis/interface";
 import { Connection, Delete, Download, Headset, VideoPlay } from "@element-plus/icons-vue";
 import { downloadFile } from "@/apis/utils";
-import defaultThumbnail from '@/assets/imgs/default-thumbnail.jpg';
+import imageThumbnail from '@/assets/imgs/type/image.png';
+import videoThumbnail from '@/assets/imgs/type/video.png';
+import documentThumbnail from '@/assets/imgs/type/document.png';
+import audioThumbnail from '@/assets/imgs/type/audio.png';
+import unknownThumbnail from '@/assets/imgs/type/unknown.png';
 
 // 使用 TypeScript 类型定义 props
 const props = defineProps<{
@@ -151,6 +155,38 @@ const isVideoType = (file: Resource) => {
 const isAudioType = (file: Resource) => {
     return file.typeName === 'audio' ||
         (file.mimeType && file.mimeType.startsWith('audio/'));
+};
+const isImageType = (file: Resource) => {
+    return file.typeName === 'image' ||
+        (file.mimeType && file.mimeType.startsWith('image/'));
+};
+const isDocumentType = (file: Resource) => {
+    const officeTypes = [
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'application/pdf',
+        'text/plain'
+    ];
+    return file.typeName === 'document' ||
+        (file.mimeType && officeTypes.includes(file.mimeType));
+};
+
+const getDefaultThumbnail = (file: Resource) => {
+    if (isVideoType(file)) {
+        return videoThumbnail;
+    } else if (isAudioType(file)) {
+        return audioThumbnail;
+    } else if (isImageType(file)) {
+        return imageThumbnail;
+    } else if (isDocumentType(file)) {
+        return documentThumbnail;
+    } else {
+        return unknownThumbnail;
+    }
 };
 
 const handlePreview = async (image: Resource) => {

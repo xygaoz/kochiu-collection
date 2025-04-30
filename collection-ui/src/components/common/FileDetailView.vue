@@ -559,9 +559,8 @@ watch(() => props.file, (newVal: Resource) => {
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
-    background-color: var(--el-bg-color);
     border-bottom: 1px solid var(--el-border-color-light);
+    overflow: hidden;
 }
 
 .preview-content {
@@ -626,7 +625,7 @@ watch(() => props.file, (newVal: Resource) => {
 
 /* 标签文字 */
 .tag-label {
-    color: #666;
+    color: var(--el-item-text-color);
     padding-right: 5px;
     height: 32px;
     line-height: 32px;
@@ -653,9 +652,6 @@ watch(() => props.file, (newVal: Resource) => {
 
 .el-tag {
     cursor: default;
-    background-color: var(--el-tag-bg-color);
-    color: var(--el-tag-text-color);
-    border-color: var(--el-border-color-light);
 }
 
 .empty-value {
