@@ -339,9 +339,6 @@ watch(() => searchForm.include, (newVal) => {
     height: 36px;
     overflow: hidden;
     position: relative;
-    transition:
-        height 0.3s ease,
-        background-color 0.3s ease;
     width: 100%;
     box-sizing: border-box;
     background-color: var(--el-bg-color-view);
