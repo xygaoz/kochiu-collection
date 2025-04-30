@@ -25,21 +25,6 @@ public class UnknownFileStrategy implements FileStrategy{
                                   FileTypeEnum fileType,
                                   ResourceDto resourceDto) throws Exception {
 
-        Resource resource = new ClassPathResource("/images/unknown.png");
-        if (resource.exists()) {
-            try {
-                FileUtil.copyFile(resource.getInputStream(), new File(thumbFilePath), StandardCopyOption.REPLACE_EXISTING);
-                resourceDto.setThumbUrl(thumbUrl);
-                BufferedImage image = ImageIO.read(resource.getInputStream());
-                resourceDto.setThumbRatio(image.getWidth() + "x" + image.getHeight());
-                resourceDto.setThumbUrl(thumbUrl);
-
-                return resourceDto.getThumbRatio();
-            } catch (IOException e) {
-                log.error("缩略图生成失败", e);
-            }
-        }
-
-        return null;
+        return defaultThumbnail(thumbFilePath, thumbUrl, fileType, resourceDto);
     }
 }

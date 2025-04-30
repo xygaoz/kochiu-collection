@@ -1,23 +1,16 @@
 package com.keem.kochiu.collection.service.file;
 
-import cn.hutool.core.io.FileUtil;
 import com.keem.kochiu.collection.data.dto.ResourceDto;
 import com.keem.kochiu.collection.enums.FileTypeEnum;
 import com.keem.kochiu.collection.properties.CollectionProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.StandardCopyOption;
 
 @Slf4j
 @Service("mp4")
@@ -87,21 +80,7 @@ public class Mp4FileStrategy implements FileStrategy{
             return resourceDto.getThumbRatio();
         }
         else {
-            Resource resource = new ClassPathResource("/images/" + fileType.name() + ".png");
-            if (resource.exists()) {
-                try {
-                    FileUtil.copyFile(resource.getInputStream(), new File(thumbFilePath), StandardCopyOption.REPLACE_EXISTING);
-                    resourceDto.setThumbUrl(thumbUrl);
-                    BufferedImage image = ImageIO.read(resource.getInputStream());
-                    resourceDto.setThumbRatio(image.getWidth() + "x" + image.getHeight());
-                    resourceDto.setThumbUrl(thumbUrl);
-
-                    return resourceDto.getThumbRatio();
-                } catch (IOException e) {
-                    log.error("缩略图生成失败", e);
-                }
-            }
+            return defaultThumbnail(thumbFilePath, thumbUrl, fileType, resourceDto);
         }
-        return null;
     }
 }

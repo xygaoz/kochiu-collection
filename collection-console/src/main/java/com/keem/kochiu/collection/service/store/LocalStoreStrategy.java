@@ -129,7 +129,12 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
                 .saveType(SaveTypeEnum.LOCAL)
                .build();
         //生成缩略图
-        createThumbnail(resourceDto, fileType, filePath);
+        try {
+            createThumbnail(resourceDto, fileType, filePath);
+        }
+        catch (Exception e) {
+            log.error("生成缩略图失败", e);
+        }
 
         Long resId = resourceRepository.saveResource(resourceDto);
 
@@ -213,16 +218,19 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
     private void createThumbnail(ResourceDto resourceDto, FileTypeEnum fileType, String filePath){
 
         //判断文件是否需要生成缩略图
-        if(fileType.isThumb()) {
-            String thumbFilePath = filePath.replace("." + resourceDto.getFileExt(), "_thumb.png");
-            String thumbUrl = resourceDto.getResourceUrl().replace("." + resourceDto.getFileExt(), "_thumb.png");
+        String thumbFilePath = filePath.replace("." + resourceDto.getFileExt(), "_thumb.png");
+        String thumbUrl = resourceDto.getResourceUrl().replace("." + resourceDto.getFileExt(), "_thumb.png");
 
-            FileStrategy fileStrategy = fileStrategyFactory.getStrategy(fileType);
-            try {
+        FileStrategy fileStrategy = fileStrategyFactory.getStrategy(fileType);
+        try {
+            if(fileType.isThumb()) {
                 fileStrategy.createThumbnail(new File(filePath), thumbFilePath, thumbUrl, fileType, resourceDto);
-            } catch (Exception e) {
-                log.error("缩略图生成失败", e);
             }
+            else{
+                fileStrategy.defaultThumbnail(thumbFilePath, thumbUrl, fileType, resourceDto);
+            }
+        } catch (Exception e) {
+            log.error("缩略图生成失败", e);
         }
     }
 

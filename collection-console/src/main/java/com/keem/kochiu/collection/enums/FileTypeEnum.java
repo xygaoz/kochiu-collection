@@ -33,6 +33,7 @@ public enum FileTypeEnum {
     unknown(false, false, "application/octet-stream", UNKNOWN),
     ;
 
+    // 是否生成缩略图，否的话，使用系统默认的
     final boolean thumb;
     final boolean resolutionRatio;
     final String mimeType;
