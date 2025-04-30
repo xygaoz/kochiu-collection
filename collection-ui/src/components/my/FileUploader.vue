@@ -386,7 +386,7 @@ onMounted(async () => {
 
 .file-preview-container {
     margin-top: 20px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--el-border-color);
     padding-top: 20px;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -396,9 +396,9 @@ onMounted(async () => {
 
 .file-preview-item {
     padding: 15px;
-    border: 1px solid #eee;
+    border: 1px solid var(--el-border-color);
     border-radius: 5px;
-    background: #f9f9f9;
+    background: var(--el-bg-color);
     display: flex;
     flex-direction: column;
     min-height: 180px;
@@ -412,11 +412,12 @@ onMounted(async () => {
 }
 
 .preview-image, .preview-icon {
-    width: 100%;
+    width: 100%;  /* 改为100%宽度 */
     height: 120px;
-    margin-right: 0;
-    margin-bottom: 10px;
-    border: 1px solid #f2f2f2;
+    display: flex;
+    align-items: center;
+    justify-content: center;  /* 添加水平居中 */
+    margin: 0 auto;  /* 自动外边距确保居中 */
 }
 
 .preview-image img {
@@ -437,7 +438,6 @@ onMounted(async () => {
     font-size: 80px; /* 比容器稍小 */
     line-height: 1;
     display: inline-block;
-    transform: scale(1); /* 确保不缩放 */
 }
 
 .file-info {
