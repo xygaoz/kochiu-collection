@@ -156,8 +156,7 @@ defineExpose({
 
 .form-item{
     cursor: pointer;
-    background-color: #f5f7fa;
-    color: #606266;
+    color: var(--el-text-color-regular);
 }
 
 .form-item :deep(.el-form-item__label) {

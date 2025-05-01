@@ -31,14 +31,14 @@
             </video>
 
             <!-- 音频预览 -->
-            <audio
-                v-else-if="isAudioType"
-                controls
-                class="preview-content audio-preview"
-            >
-                <source :src="audioFileUrl" :type="audioMimeType">
-                您的浏览器不支持音频播放
-            </audio>
+            <div v-else-if="isAudioType" class="audio-preview-container">
+                <AudioPlayer
+                    :src="audioFileUrl"
+                    :autoplay="false"
+                    :loop="false"
+                    @error="handleAudioError"
+                />
+            </div>
 
             <!-- 文档预览 -->
             <div v-else-if="isOfficeType || isPdfType" class="office-preview">
@@ -244,6 +244,7 @@ import { Document, Picture, Loading } from "@element-plus/icons-vue";
 import { ElMessage, ElInput } from "element-plus";
 import { addResourceTag, removeResourceTag, updateResource } from "@/apis/resource-api";
 import type { Resource, Tag } from '@/apis/interface';
+import AudioPlayer from "@/components/common/AudioPlayer.vue";
 
 type EditableField = 'title' | 'description' | 'tags';
 
@@ -294,17 +295,10 @@ const audioFileUrl = computed(() => {
         : `${window.location.origin}${props.file.resourceUrl}`;
 });
 
-const audioMimeType = computed(() => {
-    // 根据文件扩展名返回正确的 MIME 类型
-    const ext = props.file.resourceUrl.split('.').pop()?.toLowerCase();
-    switch(ext) {
-        case 'flac': return 'audio/flac';
-        case 'mp3': return 'audio/mpeg';
-        case 'wav': return 'audio/wav';
-        case 'ogg': return 'audio/ogg';
-        default: return 'audio/*';
-    }
-});
+const handleAudioError = (error: Event) => {
+    console.error('音频播放失败:', error);
+    ElMessage.error('音频播放失败，请检查文件格式或网络连接');
+};
 
 // 视频文件URL（处理相对路径）
 const videoFileUrl = computed(() => {
@@ -611,9 +605,13 @@ watch(() => props.file, (newVal: Resource) => {
     height: 100%;
 }
 
-.audio-preview {
+.audio-preview-container {
     width: 100%;
+    height: 100%;
     padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .preview-error .el-icon,
@@ -623,7 +621,7 @@ watch(() => props.file, (newVal: Resource) => {
 }
 
 .detail-content {
-    padding: 5px 16px 10px 16px;
+    padding: 15px 16px 10px 16px;
 }
 
 .detail-row {
