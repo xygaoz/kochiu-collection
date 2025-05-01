@@ -667,11 +667,8 @@ const handleDeleteCategory = (category: Category) => {
 }
 
 .el-main {
-    padding-top: 0;
-    padding-left: 1px;
-    padding-right: 1px;
+    padding: 0;
     margin: 0;
-    overflow: hidden;
 }
 
 .headerCss {

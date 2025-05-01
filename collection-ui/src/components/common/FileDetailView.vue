@@ -6,7 +6,6 @@
                 v-if="isImageType"
                 :src="file.resourceUrl"
                 :preview-src-list="[file.resourceUrl]"
-                :style="imageStyle"
                 fit="contain"
                 class="preview-content"
                 hide-on-click-modal
@@ -351,7 +350,6 @@ const imageStyle = computed(() => {
     return {
         width: isPortrait ? 'auto' : '100%',
         height: isPortrait ? '100%' : 'auto',
-        'object-fit': 'contain'
     };
 });
 
@@ -572,13 +570,33 @@ watch(() => props.file, (newVal: Resource) => {
     cursor: pointer;
 }
 
-.preview-content .el-image__inner{
-    max-height: 280px!important;
+/* Specific styles for el-image elements */
+.preview-container :deep(.el-image) {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
 }
 
-.audio-preview {
-    width: 100%;
-    padding: 0 20px;
+.preview-container :deep(.el-image__inner) {
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    width: auto;
+    height: auto;
+}
+
+/* For portrait images */
+.preview-container :deep(.el-image__inner[style*="height: 100%"]) {
+    height: auto !important;
+    max-height: 300px;
+}
+
+/* For landscape images */
+.preview-container :deep(.el-image__inner[style*="width: 100%"]) {
+    width: 100% !important;
+    height: auto !important;
 }
 
 .preview-error,
@@ -591,6 +609,11 @@ watch(() => props.file, (newVal: Resource) => {
     font-size: 14px;
     width: 100%;
     height: 100%;
+}
+
+.audio-preview {
+    width: 100%;
+    padding: 0 20px;
 }
 
 .preview-error .el-icon,

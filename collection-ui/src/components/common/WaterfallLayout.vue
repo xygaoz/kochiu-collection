@@ -566,6 +566,7 @@ html.dark .image-info {
     display: flex;
     justify-content: center;
     align-items: center;
+    border-radius: 22px;
     background-color: rgba(0, 0, 0, 0.3);
     opacity: 0.5;
     transition: opacity 0.3s ease;
