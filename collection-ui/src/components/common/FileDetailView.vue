@@ -19,16 +19,16 @@
             </el-image>
 
             <!-- 视频预览 -->
-            <video
-                v-else-if="isVideoType"
-                controls
-                class="preview-content"
-                :poster="videoThumbnailUrl"
-                @click.stop="handlePlayVideo"
-            >
-                <source :src="videoFileUrl" :type="videoMimeType">
-                您的浏览器不支持视频播放
-            </video>
+            <div v-else-if="isVideoType" class="video-preview-container">
+                <VideoPlayer
+                    ref="videoPlayer"
+                    :src="videoFileUrl"
+                    :poster="videoThumbnailUrl"
+                    :mimeType="videoMimeType"
+                    @play="handleVideoPlay"
+                    @pause="handleVideoPause"
+                />
+            </div>
 
             <!-- 音频预览 -->
             <div v-else-if="isAudioType" class="audio-preview-container">
@@ -219,32 +219,17 @@
                 </div>
             </div>
         </div>
-
-        <!-- 视频弹窗 -->
-        <el-dialog
-            v-model="localVideoDialogVisible"
-            title="视频播放"
-            width="70%"
-            top="5vh"
-            destroy-on-close
-        >
-            <video
-                controls
-                autoplay
-                style="width: 100%"
-                :src="localCurrentVideoUrl"
-            ></video>
-        </el-dialog>
     </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick, watch, defineProps, defineEmits } from "vue";
-import { Document, Picture, Loading } from "@element-plus/icons-vue";
+import { Document, Picture, Loading, FullScreen, VideoPlay } from "@element-plus/icons-vue";
 import { ElMessage, ElInput } from "element-plus";
 import { addResourceTag, removeResourceTag, updateResource } from "@/apis/resource-api";
 import type { Resource, Tag } from '@/apis/interface';
 import AudioPlayer from "@/components/common/AudioPlayer.vue";
+import VideoPlayer from '@/components/common/VideoPlayer.vue';
 
 type EditableField = 'title' | 'description' | 'tags';
 
@@ -288,6 +273,16 @@ const isOfficeType = computed<boolean>(() => {
 });
 const isPdfType = computed<boolean>(() => props.file.fileType === 'application/pdf' && !!props.file.previewUrl);
 const isRecycleBin = computed(() => props.dataType === 'recycle');
+const videoPlayer = ref<InstanceType<typeof VideoPlayer> | null>(null);
+const isVideoPlaying = ref(false);
+
+const handleVideoPlay = () => {
+    isVideoPlaying.value = true;
+};
+
+const handleVideoPause = () => {
+    isVideoPlaying.value = false;
+};
 
 const audioFileUrl = computed(() => {
     return props.file.resourceUrl.startsWith('http')
@@ -334,24 +329,6 @@ const videoMimeType = computed(() => {
         default: return 'video/*';
     }
 });
-
-const imageStyle = computed(() => {
-    if (!props.file.width || !props.file.height) return {};
-
-    const aspectRatio = props.file.width / props.file.height;
-    const isPortrait = aspectRatio < 1;
-
-    return {
-        width: isPortrait ? 'auto' : '100%',
-        height: isPortrait ? '100%' : 'auto',
-    };
-});
-
-// 方法定义
-const handlePlayVideo = (): void => {
-    localCurrentVideoUrl.value = props.file.resourceUrl;
-    localVideoDialogVisible.value = true;
-};
 
 const formatSize = (bytes: number): string => {
     if (!bytes) return '未知';
@@ -703,5 +680,14 @@ watch(() => props.file, (newVal: Resource) => {
     to {
         transform: rotate(360deg);
     }
+}
+
+.video-preview-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 </style>
