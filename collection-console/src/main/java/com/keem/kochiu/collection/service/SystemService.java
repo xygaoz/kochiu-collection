@@ -1,8 +1,11 @@
 package com.keem.kochiu.collection.service;
 
 import com.keem.kochiu.collection.data.bo.PathBo;
-import com.keem.kochiu.collection.data.vo.StrategyVo;
+import com.keem.kochiu.collection.data.dto.StrategyDto;
+import com.keem.kochiu.collection.entity.SysStrategy;
+import com.keem.kochiu.collection.enums.ErrorCodeEnum;
 import com.keem.kochiu.collection.enums.ImportMethodEnum;
+import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.repository.SysStrategyRepository;
 import org.springframework.stereotype.Service;
 import java.io.File;
@@ -12,6 +15,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static com.keem.kochiu.collection.enums.ErrorCodeEnum.*;
 
 @Service
 public class SystemService {
@@ -135,15 +140,33 @@ public class SystemService {
     }
 
     // 获取系统策略列表
-    public List<StrategyVo> getStrategyList() {
+    public List<StrategyDto> getStrategyList() {
         return strategyRepository
                 .list()
                 .stream()
                 .map(strategy ->
-                        StrategyVo.builder()
+                        StrategyDto.builder()
+                                .strategyId(strategy.getStrategyId())
                                 .strategyCode(strategy.getStrategyCode())
                                 .strategyName(strategy.getStrategyName())
+                                .serverUrl(strategy.getServerUrl())
+                                .username(strategy.getUsername())
+                                .password(strategy.getPassword())
+                                .otherConfig(strategy.getOtherConfig())
                                 .build())
                 .toList();
+    }
+
+    public void updateStrategy(StrategyDto strategyDto) throws CollectionException {
+
+        SysStrategy  sysStrategy = strategyRepository.getById(strategyDto.getStrategyId());
+        if(sysStrategy == null){
+            throw new CollectionException(ErrorCodeEnum.STRATEGY_IS_NOT_EXIST);
+        }
+        sysStrategy.setServerUrl(strategyDto.getServerUrl());
+        sysStrategy.setUsername(strategyDto.getUsername());
+        sysStrategy.setPassword(strategyDto.getPassword());
+        sysStrategy.setOtherConfig(strategyDto.getOtherConfig());
+        strategyRepository.updateById(sysStrategy);
     }
 }

@@ -1,11 +1,15 @@
 package com.keem.kochiu.collection.controller;
 
+import com.keem.kochiu.collection.annotation.CheckPermit;
+import com.keem.kochiu.collection.annotation.Module;
 import com.keem.kochiu.collection.data.DefaultResult;
 import com.keem.kochiu.collection.data.bo.PathBo;
 import com.keem.kochiu.collection.data.vo.ResourceTypeVo;
-import com.keem.kochiu.collection.data.vo.StrategyVo;
+import com.keem.kochiu.collection.data.dto.StrategyDto;
 import com.keem.kochiu.collection.enums.ResourceTypeEnum;
+import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.service.SystemService;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -52,8 +56,18 @@ public class SystemController {
         return DefaultResult.ok(systemService.testServerPath(pathBo));
     }
 
+    @CheckPermit
     @GetMapping("/strategy/list")
-    public DefaultResult<List<StrategyVo>> getStrategyList() {
+    public DefaultResult<List<StrategyDto>> getStrategyList() {
         return DefaultResult.ok(systemService.getStrategyList());
+    }
+
+    @CheckPermit(modules = {
+            @Module(modeCode = "strategy", byAction = {"update"})
+    })
+    @PostMapping("/strategy/update")
+    public DefaultResult<Boolean> updateStrategy(@Validated StrategyDto strategyDto) throws CollectionException {
+        systemService.updateStrategy(strategyDto);
+        return DefaultResult.ok(true);
     }
 }

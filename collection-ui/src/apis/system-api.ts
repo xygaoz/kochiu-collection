@@ -112,3 +112,15 @@ export const getStrategyList = async (): Promise<Strategy[]> => {
         return [];
     });
 }
+
+export const updateStrategy = async (params: any): Promise<boolean> => {
+    return httpInstance.post(sysApi + "/strategy/update", params).then((model: any) => {
+        if (model) {
+            return model as boolean;
+        }
+        return false;
+    }).catch((error) => {
+        console.error("更新策略失败:", error);
+        return false;
+    });
+}

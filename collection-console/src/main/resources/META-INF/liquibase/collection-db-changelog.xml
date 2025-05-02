@@ -791,10 +791,25 @@
             <column name="module_url" value="/System/Role"/>
             <column name="redirect" value="@/components/sys/RoleView.vue"/>
             <column name="parent_id" value="1"/>
-            <column name="icon" value="UserFilled"/>
-            <column name="icon_type" value="icons-vue"/>
-            <column name="sort" value="1"/>
-            <column name="style" value="color: rgb(59,130,246);"/>
+            <column name="icon" value="icon-col-jiaoseguanli1"/>
+            <column name="icon_type" value="iconfont"/>
+            <column name="sort" value="2"/>
+            <column name="style" value="font-size: 21px; color: rgb(59,130,246)"/>
+            <column name="CREATE_TIME" valueComputed="datetime('now')"/>
+            <column name="CREATE_BY" value="sys"/>
+            <column name="DB_VERSION" value="1"/>
+        </insert>
+        <insert tableName="sys_module">
+            <column name="module_id" value="4"/>
+            <column name="module_code" value="strategy"/>
+            <column name="module_name" value="存储策略"/>
+            <column name="module_url" value="/System/Strategy"/>
+            <column name="redirect" value="@/components/sys/StrategyView.vue"/>
+            <column name="parent_id" value="1"/>
+            <column name="icon" value="icon-col-cunchucelve"/>
+            <column name="icon_type" value="iconfont"/>
+            <column name="sort" value="3"/>
+            <column name="style" value="font-size: 21px; color: rgb(59,130,246)"/>
             <column name="CREATE_TIME" valueComputed="datetime('now')"/>
             <column name="CREATE_BY" value="sys"/>
             <column name="DB_VERSION" value="1"/>
@@ -938,6 +953,16 @@
             <column name="CREATE_BY" value="sys"/>
             <column name="DB_VERSION" value="1"/>
         </insert>
+        <insert tableName="sys_module_action">
+            <column name="action_id" value="9"/>
+            <column name="module_id" value="4"/>
+            <column name="action_code" value="update"/>
+            <column name="action_name" value="保存"/>
+            <column name="action_url" value="/api/v1/sys/strategy/update"/>
+            <column name="CREATE_TIME" valueComputed="datetime('now')"/>
+            <column name="CREATE_BY" value="sys"/>
+            <column name="DB_VERSION" value="1"/>
+        </insert>
     </changeSet>
 
     <changeSet id="kcdb_36" author="kochiu" runOnChange="true">
@@ -1063,6 +1088,15 @@
             <column name="role_id" value="1"/>
             <column name="module_id" value="3"/>
             <column name="action_id" value="8"/>
+            <column name="CREATE_TIME" valueComputed="datetime('now')"/>
+            <column name="CREATE_BY" value="sys"/>
+            <column name="DB_VERSION" value="1"/>
+        </insert>
+        <insert tableName="user_permission">
+            <column name="permission_id" value="9"/>
+            <column name="role_id" value="1"/>
+            <column name="module_id" value="4"/>
+            <column name="action_id" value="9"/>
             <column name="CREATE_TIME" valueComputed="datetime('now')"/>
             <column name="CREATE_BY" value="sys"/>
             <column name="DB_VERSION" value="1"/>

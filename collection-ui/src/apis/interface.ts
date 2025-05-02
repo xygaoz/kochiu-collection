@@ -107,8 +107,13 @@ export interface Permission {
 }
 
 export interface Strategy {
-    strategyCode: string
-    strategyName: string
+    strategyId: number;
+    strategyCode: string;
+    strategyName: string;
+    serverUrl: string;
+    username: string;
+    password: string;
+    otherConfig: string;
 }
 
 export interface Module {
