@@ -207,25 +207,68 @@ const handleMoveSuccess = () => {
 };
 
 const handleMoveToRecycle = (resources: Resource[], isDelete: boolean) => {
-    ElMessageBox.confirm(
-        isDelete ? '您将彻底删除选择的资源，还要继续吗？' : '您需要将选择资源删除吗？以后还能通过回收站恢复。',
-        '警告',
-        {
-            confirmButtonText: '确认',
-            cancelButtonText: '取消',
-            type: 'warning',
-        }
-    ).then(async () => {
-        const resourceIds = resources.map(r => r.resourceId);
-        let result = await moveToRecycle(resourceIds, {
-            deleted: isDelete
+    if (isDelete) {
+        // Directly show delete confirmation if isDelete=true
+        ElMessageBox.confirm(
+            '您将彻底删除选择的资源，还要继续吗？',
+            '警告',
+            {
+                confirmButtonText: '确认',
+                cancelButtonText: '取消',
+                type: 'warning',
+            }
+        ).then(async () => {
+            await performMoveToRecycle(resources, true);
         });
-        if (result) {
-            ElMessage.success('删除成功');
-            handleClearSelection();
-            emit('filter-data', searchData);
-        }
+    } else {
+        // Show option dialog when isDelete=false
+        ElMessageBox({
+            title: '删除选项',
+            message: '请选择删除方式',
+            showCancelButton: true,
+            confirmButtonText: '放入回收站',
+            cancelButtonText: '彻底删除',
+            distinguishCancelAndClose: true,
+            closeOnClickModal: false,
+            beforeClose: async (action, instance, done) => {
+                if (action === 'confirm') {
+                    // Move to recycle bin
+                    await performMoveToRecycle(resources, false);
+                    done();
+                } else if (action === 'cancel') {
+                    // Delete permanently
+                    ElMessageBox.confirm(
+                        '您将彻底删除选择的资源，还要继续吗？',
+                        '警告',
+                        {
+                            confirmButtonText: '确认',
+                            cancelButtonText: '取消',
+                            type: 'warning',
+                        }
+                    ).then(async () => {
+                        await performMoveToRecycle(resources, true);
+                        done();
+                    }).catch(() => {
+                        done(false);
+                    });
+                } else {
+                    done(); // Just close the dialog
+                }
+            }
+        });
+    }
+};
+
+const performMoveToRecycle = async (resources: Resource[], isDelete: boolean) => {
+    const resourceIds = resources.map(r => r.resourceId);
+    let result = await moveToRecycle(resourceIds, {
+        deleted: isDelete
     });
+    if (result) {
+        ElMessage.success(isDelete ? '删除成功' : '已移动到回收站');
+        handleClearSelection();
+        emit('filter-data', searchData);
+    }
 };
 
 const handleRestore = (resources: Resource[]) => {
