@@ -518,7 +518,7 @@ const loadDynamicMenus = async () => {
                     router.addRoute(menu.name, {
                         path: child.path,
                         name: child.name,
-                        component: () => resolveComponent(child.name, child.redirect),
+                        component: () => resolveComponent(child.name),
                         meta: {
                             title: child.title,
                             icon: child.icon,
