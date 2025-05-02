@@ -249,7 +249,7 @@ const handleMoveToRecycle = (resources: Resource[], isDelete: boolean) => {
                         await performMoveToRecycle(resources, true);
                         done();
                     }).catch(() => {
-                        done(false);
+                        done();
                     });
                 } else {
                     done(); // Just close the dialog
