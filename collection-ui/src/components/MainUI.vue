@@ -518,7 +518,7 @@ const loadDynamicMenus = async () => {
                     router.addRoute(menu.name, {
                         path: child.path,
                         name: child.name,
-                        component: () => resolveComponent(child.name),
+                        component: () => resolveComponent(child.name, child.redirect),
                         meta: {
                             title: child.title,
                             icon: child.icon,
@@ -556,6 +556,8 @@ const resolveComponent = (name: string) => {
             return import('@/components/sys/UserView.vue')
         } else if (name.toLowerCase().includes('role')) {
             return import('@/components/sys/RoleView.vue')
+        } else if (name.toLowerCase().includes('strategy')) {
+            return import('@/components/sys/StrategyView.vue')
         }
         // 默认尝试从sys目录加载
         return import('@/components/sys/' + name + 'View.vue')
