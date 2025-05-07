@@ -2,7 +2,6 @@ package com.keem.kochiu.collection.repository;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.keem.kochiu.collection.entity.UserResourceTag;
 import com.keem.kochiu.collection.entity.UserTag;
 import com.keem.kochiu.collection.enums.TagByEnum;
 import com.keem.kochiu.collection.mapper.UserTagMapper;

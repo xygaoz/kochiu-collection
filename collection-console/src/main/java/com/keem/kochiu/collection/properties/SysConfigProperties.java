@@ -5,9 +5,6 @@ import com.keem.kochiu.collection.enums.CategoryByEnum;
 import com.keem.kochiu.collection.enums.TagByEnum;
 import com.keem.kochiu.collection.repository.SysConfigRepository;
 import lombok.Data;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

@@ -29,8 +29,6 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
 
     /**
      * 保存资源，返回资源id
-     * @param resourceDto
-     * @return
      */
     public Long saveResource(ResourceDto resourceDto) {
 
@@ -64,12 +62,8 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
 
     /**
      * 获取分类下资源列表
-     * @param userId
-     * @param cateId
-     * @return
-     * @throws CollectionException
      */
-    public PageInfo<UserResource> getResourceListByCate(int userId, long cateId, FilterResourceBo filterResourceBo) throws CollectionException {
+    public PageInfo<UserResource> getResourceListByCate(int userId, long cateId, FilterResourceBo filterResourceBo) {
 
         try(Page<UserResource> ignored = PageHelper.startPage(filterResourceBo.getPageNum(), filterResourceBo.getPageSize())) {
 
@@ -89,11 +83,8 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
 
     /**
      * 获取分类下资源列表
-     * @param userId
-     * @return
-     * @throws CollectionException
      */
-    public PageInfo<UserResource> getAllCateResourceList(int userId, FilterResourceBo filterResourceBo) throws CollectionException {
+    public PageInfo<UserResource> getAllCateResourceList(int userId, FilterResourceBo filterResourceBo) {
 
         try(Page<UserResource> ignored = PageHelper.startPage(filterResourceBo.getPageNum(), filterResourceBo.getPageSize())) {
 
@@ -113,9 +104,6 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
 
     /**
      * 根据md5查询文件是否存在
-     * @param userId
-     * @param md5
-     * @return
      */
     public List<UserResource> countFileMd5(int userId, String md5){
 
@@ -127,8 +115,6 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
 
     /**
      * 更新资源信息
-     * @param userId
-     * @param resourceInfo
      */
     public void updateResourceInfo(int userId, ResInfoBo resourceInfo) {
 
@@ -148,9 +134,6 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
 
     /**
      * 获取标签下资源列表
-     * @param userId
-     * @param tagId
-     * @return
      */
     public PageInfo<UserResource> getResourceListByTag(int userId, int tagId, FilterResourceBo filterResourceBo) {
 
@@ -172,8 +155,6 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
 
     /**
      * 获取文件类型下资源列表
-     * @param userId
-     * @return
      */
     public PageInfo<UserResource> getResourceListByType(int userId, FilterResourceBo filterResourceBo) {
 
@@ -195,8 +176,6 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
 
     /**
      * 移动资源到分类
-     * @param userId
-     * @param moveToBo
      */
     public void moveToCategory(Integer userId, MoveToBo moveToBo) {
 
@@ -212,8 +191,6 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
 
     /**
      * 移动资源到回收站
-     * @param userId
-     * @param moveToBo
      */
     public void moveToRecycle(Integer userId, MoveToBo moveToBo){
 
@@ -230,8 +207,6 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
 
     /**
      * 恢复资源
-     * @param userId
-     * @param moveToBo
      */
     public void restoreFormRecycle(Integer userId, MoveToBo moveToBo) {
 
@@ -248,9 +223,6 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
 
     /**
      * 删除资源
-     * @param userId
-     * @param resourceId
-     * @return
      */
     public boolean deleteResource(Integer userId, Long resourceId) {
 
@@ -262,8 +234,6 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
 
     /**
      * 获取文件类型下资源列表
-     * @param userId
-     * @return
      */
     public PageInfo<UserResource> getResourceListByRecycle(int userId, FilterResourceBo filterResourceBo) {
 
@@ -285,8 +255,6 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
 
     /**
      * 获取目录下资源列表
-     * @param userId
-     * @return
      */
     public PageInfo<UserResource> getCatalogResource(int userId, FilterResourceBo filterResourceBo) {
 
@@ -322,9 +290,6 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
 
     /**
      * 获取目录下资源列表
-     * @param userId
-     * @param cateId
-     * @return
      */
     public List<UserResource> getResources(Integer userId, Long cateId) {
 

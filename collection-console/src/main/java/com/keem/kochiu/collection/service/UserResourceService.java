@@ -63,10 +63,6 @@ public class UserResourceService {
 
     /**
      * 获取用户分类资源列表
-     * @param userDto
-     * @param cateId
-     * @return
-     * @throws CollectionException
      */
     public PageVo<ResourceVo> getResourceListByCate(UserDto userDto,
                                                     Long cateId,
@@ -79,9 +75,6 @@ public class UserResourceService {
 
     /**
      * 获取用户所有分类资源列表
-     * @param userDto
-     * @return
-     * @throws CollectionException
      */
     public PageVo<ResourceVo> getAllResourceList(UserDto userDto, FilterResourceBo filterResourceBo) throws CollectionException {
 
@@ -92,9 +85,6 @@ public class UserResourceService {
 
     /**
      * 构建url
-     * @param user
-     * @param resource
-     * @return
      */
     private String buildResourceUrl(SysUser user, UserResource resource){
 
@@ -106,8 +96,6 @@ public class UserResourceService {
 
     /**
      * 更新资源信息
-     * @param userDto
-     * @param resourceInfo
      */
     @Transactional(rollbackFor = Exception.class)
     public void updateResourceInfo(UserDto userDto, ResInfoBo resourceInfo) throws CollectionException {
@@ -123,10 +111,6 @@ public class UserResourceService {
 
     /**
      * 获取用户标签资源列表
-     * @param userDto
-     * @param tagId
-     * @return
-     * @throws CollectionException
      */
     public PageVo<ResourceVo> getResourceListByTag(UserDto userDto,
                                                    int tagId,
@@ -139,9 +123,6 @@ public class UserResourceService {
 
     /**
      * 获取文件类型签资源列表
-     * @param userDto
-     * @return
-     * @throws CollectionException
      */
     public PageVo<ResourceVo> getResourceListByType(UserDto userDto,
                                                    FilterResourceBo filterResourceBo) throws CollectionException {
@@ -153,9 +134,6 @@ public class UserResourceService {
 
     /**
      * 构建资源列表
-     * @param user
-     * @param resourceList
-     * @return
      */
     private PageVo<ResourceVo> buildResourceList(SysUser user, PageInfo<UserResource> resourceList) {
         List<ResourceVo> datas = resourceList
@@ -217,9 +195,6 @@ public class UserResourceService {
 
     /**
      * 批量更新
-     * @param userDto
-     * @param batchUpdateBo
-     * @throws CollectionException
      */
     @Transactional(rollbackFor = Exception.class)
     public void batchUpdate(UserDto userDto, BatchUpdateBo batchUpdateBo) throws CollectionException {
@@ -238,9 +213,6 @@ public class UserResourceService {
 
     /**
      * 批量移动到分类
-     * @param userDto
-     * @param moveToBo
-     * @throws CollectionException
      */
     @Transactional(rollbackFor = Exception.class)
     public void moveToCategory(UserDto userDto, MoveToBo moveToBo) throws CollectionException {
@@ -253,9 +225,6 @@ public class UserResourceService {
 
     /**
      * 批量移动到回收站
-     * @param userDto
-     * @param moveToBo
-     * @throws CollectionException
      */
     @Transactional(rollbackFor = Exception.class)
     public void moveToRecycle(UserDto userDto, MoveToBo moveToBo) throws CollectionException {
@@ -274,9 +243,6 @@ public class UserResourceService {
 
     /**
      * 批量从回收站恢复
-     * @param userDto
-     * @param moveToBo
-     * @throws CollectionException
      */
     @Transactional(rollbackFor = Exception.class)
     public void restoreFormRecycle(UserDto userDto, MoveToBo moveToBo) throws CollectionException {
@@ -286,9 +252,6 @@ public class UserResourceService {
 
     /**
      * 获取文件类型签资源列表
-     * @param userDto
-     * @return
-     * @throws CollectionException
      */
     public PageVo<ResourceVo> getResourceListByRecycle(UserDto userDto,
                                                     FilterResourceBo filterResourceBo) throws CollectionException {
@@ -300,9 +263,6 @@ public class UserResourceService {
 
     /**
      * 获取目录下资源列表
-     * @param userDto
-     * @return
-     * @throws CollectionException
      */
     public PageVo<ResourceVo> getResourceListByCatalog(UserDto userDto,
                                                        FilterResourceBo filterResourceBo) throws CollectionException {
@@ -314,9 +274,6 @@ public class UserResourceService {
 
     /**
      * 批量移动到目录
-     * @param userDto
-     * @param moveToBo
-     * @throws CollectionException
      */
     @Transactional(rollbackFor = Exception.class)
     public void moveToCatalog(UserDto userDto, MoveToCataBo moveToBo) throws CollectionException {

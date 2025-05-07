@@ -2,6 +2,7 @@ package com.keem.kochiu.collection.config;
 
 import com.keem.kochiu.collection.enums.AutoCreateRuleEnum;
 import com.keem.kochiu.collection.enums.ImportMethodEnum;
+import com.keem.kochiu.collection.enums.RemoveEnum;
 import com.keem.kochiu.collection.enums.RemoveUserOptionEnum;
 import com.keem.kochiu.collection.properties.CollectionProperties;
 import org.apache.http.client.config.RequestConfig;
@@ -21,7 +22,6 @@ import org.springframework.lang.Nullable;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import com.keem.kochiu.collection.enums.RemoveEnum;
 
 @Configuration
 public class WebConfiguration implements WebMvcConfigurer {

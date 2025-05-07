@@ -8,6 +8,7 @@ import com.keem.kochiu.collection.enums.ImportMethodEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.repository.SysStrategyRepository;
 import org.springframework.stereotype.Service;
+
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,8 +16,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import static com.keem.kochiu.collection.enums.ErrorCodeEnum.*;
 
 @Service
 public class SystemService {

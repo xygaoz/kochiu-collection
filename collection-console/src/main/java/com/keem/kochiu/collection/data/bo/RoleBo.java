@@ -1,6 +1,5 @@
 package com.keem.kochiu.collection.data.bo;
 
-import com.keem.kochiu.collection.annotation.Add;
 import com.keem.kochiu.collection.annotation.Edit;
 import lombok.Data;
 
