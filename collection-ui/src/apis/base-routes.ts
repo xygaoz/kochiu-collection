@@ -41,7 +41,7 @@ routes.push(
     {
         path: '/My',
         name: "my",
-        meta: { title: '我的', icon: 'Collection', iconType: 'icons-vue', style: 'color: rgb(59,130,246); margin: 0 -1px 0 0;' },
+        meta: { title: '我的', icon: 'Collection', iconType: 'icons-vue', style: 'color: rgb(59,130,246); margin: 0 -1px 0 0;', group: 'my-group' },
         children: [
             {
                 path: '/Upload',

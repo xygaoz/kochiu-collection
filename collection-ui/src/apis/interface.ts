@@ -148,6 +148,7 @@ export interface Meta{
     iconType: string;
     style: string;
     requiresAuth: boolean;
+    group?: string;
 }
 
 export interface RouteMenu {

@@ -4,3 +4,4 @@
 *.log
 .uuid
 /.node/
+/collection-console/.node/

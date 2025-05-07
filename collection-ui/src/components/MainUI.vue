@@ -18,7 +18,7 @@
                             :default-active="activeMenu"
                             :text-color="'var(--el-menu-text-color)'"
                             :active-text-color="'var(--el-color-primary)'"
-                            :default-openeds="['catalog-group']"
+                            :default-openeds="defaultOpeneds"
                         >
                             <catalog-menu-item
                                 index="catalog-group"
@@ -40,12 +40,13 @@
                             :default-active="activeMenu"
                             :text-color="'var(--el-menu-text-color)'"
                             :active-text-color="'var(--el-color-primary)'"
-                            :default-openeds="['category-group']"
+                            :default-openeds="defaultOpeneds"
                         >
                             <el-sub-menu index="category-group">
                                 <template #title>
                                     <div class="menu-icon">
-                                        <i class="iconfont icon-col-fenlei" style="font-size: 21px; color: rgb(59,130,246)"></i>
+                                        <i class="iconfont icon-col-fenlei"
+                                           style="font-size: 21px; color: rgb(59,130,246)"></i>
                                     </div>
                                     <div class="menu-label">分类</div>
                                     <div class="action-button">
@@ -70,7 +71,8 @@
                                             @mouseleave="showCategoryActions = null"
                                         >
                                             <div class="menu-icon">
-                                                <i class="iconfont icon-col-fenlei3" style="font-size: 18px; color: rgb(59,130,246)"></i>
+                                                <i class="iconfont icon-col-fenlei3"
+                                                   style="font-size: 18px; color: rgb(59,130,246)"></i>
                                             </div>
                                             <div class="menu-label">
                                                 {{ category.cateName }}
@@ -97,7 +99,8 @@
                                 <el-menu-item index="/AllCategory" @click="menuItemClick({path: '/AllCategory'})">
                                     <template #title>
                                         <div class="menu-icon">
-                                            <i class="iconfont icon-col-fenlei2" style="font-size: 21px; color: rgb(59,130,246)"></i>
+                                            <i class="iconfont icon-col-fenlei2"
+                                               style="font-size: 21px; color: rgb(59,130,246)"></i>
                                         </div>
                                         <div class="menu-label">所有分类</div>
                                     </template>
@@ -118,7 +121,8 @@
                         <el-sub-menu index="tag-group">
                             <template #title>
                                 <div class="menu-icon">
-                                    <i class="iconfont icon-col-biaoqian1" style="font-size: 20px; color: rgb(59,130,246); margin: 0 1px 0 0;"></i>
+                                    <i class="iconfont icon-col-biaoqian1"
+                                       style="font-size: 20px; color: rgb(59,130,246); margin: 0 1px 0 0;"></i>
                                 </div>
                                 <div class="menu-label">标签</div>
                             </template>
@@ -130,7 +134,8 @@
                             >
                                 <template #title>
                                     <div class="menu-icon">
-                                        <i class="iconfont icon-col-biaoqian" style="font-size: 18px; color: rgb(59,130,246)"></i>
+                                        <i class="iconfont icon-col-biaoqian"
+                                           style="font-size: 18px; color: rgb(59,130,246)"></i>
                                     </div>
                                     <div class="menu-label">{{ tag.tagName }}</div>
                                 </template>
@@ -138,7 +143,8 @@
                             <el-menu-item index="/AllTag" @click="menuItemClick({path: '/AllTag'})">
                                 <template #title>
                                     <div class="menu-icon">
-                                        <i class="iconfont icon-col-24gl-tags4" style="font-size: 17px; color: rgb(59,130,246)"></i>
+                                        <i class="iconfont icon-col-24gl-tags4"
+                                           style="font-size: 17px; color: rgb(59,130,246)"></i>
                                     </div>
                                     <div class="menu-label">所有标签</div>
                                 </template>
@@ -149,7 +155,8 @@
                         <el-sub-menu index="type-group">
                             <template #title>
                                 <div class="menu-icon">
-                                    <i class="iconfont icon-col-duomeitiicon-" style="font-size: 20px; color: rgb(59,130,246); margin: 0 1px 0 0;"></i>
+                                    <i class="iconfont icon-col-duomeitiicon-"
+                                       style="font-size: 20px; color: rgb(59,130,246); margin: 0 1px 0 0;"></i>
                                 </div>
                                 <div class="menu-label">文件类型</div>
                             </template>
@@ -161,7 +168,8 @@
                             >
                                 <template #title>
                                     <div class="menu-icon">
-                                        <i :class="`iconfont icon-col-${type.value}`" style="font-size: 21px; color: rgb(59,130,246)"></i>
+                                        <i :class="`iconfont icon-col-${type.value}`"
+                                           style="font-size: 21px; color: rgb(59,130,246)"></i>
                                     </div>
                                     <div class="menu-label">{{ type.label }}</div>
                                 </template>
@@ -173,7 +181,7 @@
                             <!-- 有子菜单的情况（资源、系统管理） -->
                             <el-sub-menu
                                 v-if="menu.children && menu.children.length > 0"
-                                :index="menu.path"
+                                :index="menu.meta?.group"
                             >
                                 <template #title>
                                     <div class="menu-icon">
@@ -247,7 +255,7 @@
                             <!-- 有子菜单的情况 -->
                             <el-sub-menu
                                 v-if="menu.children && menu.children.length > 0"
-                                :index="menu.path"
+                                :index="menu.meta.group"
                             >
                                 <template #title>
                                     <div class="menu-icon">
@@ -266,6 +274,7 @@
                                     <div class="menu-label">{{ menu.meta.title }}</div>
                                 </template>
 
+                                <!-- 子菜单项 -->
                                 <el-menu-item
                                     v-for="child in menu.children"
                                     :key="child.path"
@@ -337,16 +346,22 @@
                                         class="user-avatar"
                                     />
                                     <span class="username">{{ username }}</span>
-                                    <el-icon class="dropdown-icon"><ArrowDown /></el-icon>
+                                    <el-icon class="dropdown-icon">
+                                        <ArrowDown />
+                                    </el-icon>
                                 </div>
                                 <template #dropdown>
                                     <el-dropdown-menu class="user-dropdown-menu">
                                         <el-dropdown-item @click="showProfile">
-                                            <el-icon><User /></el-icon>
+                                            <el-icon>
+                                                <User />
+                                            </el-icon>
                                             <span>个人资料</span>
                                         </el-dropdown-item>
                                         <el-dropdown-item divided @click="handleLogout">
-                                            <el-icon><SwitchButton /></el-icon>
+                                            <el-icon>
+                                                <SwitchButton />
+                                            </el-icon>
                                             <span>退出登录</span>
                                         </el-dropdown-item>
                                     </el-dropdown-menu>
@@ -371,7 +386,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, StyleValue } from "vue";
+import { computed, onMounted, ref, StyleValue, watch } from "vue";
 import { ArrowDown, Delete, Edit, Plus, Switch, SwitchButton, User } from "@element-plus/icons-vue";
 import { listCategory } from "@/apis/category-api";
 import { listTag } from "@/apis/tag-api";
@@ -385,26 +400,26 @@ import { useRoute, useRouter } from "vue-router";
 import { getMyMenu, logout } from "@/apis/user-api";
 import { useUserStore } from "@/apis/global";
 import { storeToRefs } from "pinia";
-import { useThemeStore } from '@/apis/themeStore';
-import userAvatar from '../assets/imgs/user.gif';
+import { useThemeStore } from "@/apis/themeStore";
+import userAvatar from "../assets/imgs/user.gif";
 
 // 状态管理
-const showCatalogMenu = ref(false)
-const activeMenu = ref('')
-const defaultOpeneds = ref(['tag-group'])
-const catalogTreeData = ref<Catalog[]>([])
-const categories = ref<Category[]>([])
-const tags = ref<Tag[]>([])
-const resourceTypes = ref<ResourceType[]>([])
-const categoryDialog = ref<InstanceType<typeof CategoryDialog>>()
-const catalogDialog = ref<InstanceType<typeof CatalogDialog>>()
+const showCatalogMenu = ref(false);
+const activeMenu = ref("");
+const defaultOpeneds = ref(["tag-group"]);
+const catalogTreeData = ref<Catalog[]>([]);
+const categories = ref<Category[]>([]);
+const tags = ref<Tag[]>([]);
+const resourceTypes = ref<ResourceType[]>([]);
+const categoryDialog = ref<InstanceType<typeof CategoryDialog>>();
+const catalogDialog = ref<InstanceType<typeof CatalogDialog>>();
 const currentCatalog = ref<Catalog | null>(null);
-const route = useRoute()
-const router = useRouter()
-const showCategoryActions = ref<number | null>(null)
-const dynamicMenus = ref<RouteMenu[]>([])
-const userStore = useUserStore()
-const { username } = storeToRefs(userStore)
+const route = useRoute();
+const router = useRouter();
+const showCategoryActions = ref<number | null>(null);
+const dynamicMenus = ref<RouteMenu[]>([]);
+const userStore = useUserStore();
+const { username } = storeToRefs(userStore);
 const themeStore = useThemeStore();
 const { currentTheme, isDark } = storeToRefs(themeStore);
 
@@ -412,69 +427,69 @@ const { currentTheme, isDark } = storeToRefs(themeStore);
 const fixedMenuItems = computed(() => {
     // 固定菜单项
     return router.options.routes.filter(route =>
-        ['/My', '/Help'].includes(route.path)
-    )
-})
+        ["/My", "/Help"].includes(route.path)
+    );
+});
 
 const showProfile = () => {
-    router.push('/profile')
-}
+    router.push("/profile");
+};
 
 const toggleTheme = async () => {
-    const newTheme = currentTheme.value === 'light' ? 'dark' : 'light';
+    const newTheme = currentTheme.value === "light" ? "dark" : "light";
     await themeStore.applyTheme(newTheme);
 };
 
 // 初始化数据
 onMounted(async () => {
-    await loadCategories()
-    await loadTags()
-    await loadResourceTypes()
-    await loadDynamicMenus() // 加载动态菜单
-    updateActiveMenu()
-})
+    await loadCategories();
+    await loadTags();
+    await loadResourceTypes();
+    await loadDynamicMenus(); // 加载动态菜单
+    updateActiveMenu();
+});
 
 const handleLogout = () => {
-    logout()
-}
+    logout();
+};
 
 // 加载数据
 const loadCategories = async () => {
     try {
-        categories.value = await listCategory()
+        categories.value = await listCategory();
     } catch (error) {
-        console.error('加载分类失败:', error)
+        console.error("加载分类失败:", error);
     }
-}
+};
 
 const loadTags = async () => {
     try {
-        tags.value = await listTag()
+        tags.value = await listTag();
     } catch (error) {
-        console.error('加载标签失败:', error)
+        console.error("加载标签失败:", error);
     }
-}
+};
 
 const loadResourceTypes = async () => {
     try {
-        resourceTypes.value = await getResourceTypes()
+        resourceTypes.value = await getResourceTypes();
     } catch (error) {
-        console.error('加载资源类型失败:', error)
+        console.error("加载资源类型失败:", error);
     }
-}
+};
 
 const loadCatalogTree = async () => {
     try {
-        catalogTreeData.value = await getCatalogTree()
+        catalogTreeData.value = await getCatalogTree();
     } catch (error) {
-        console.error('加载目录树失败:', error)
+        console.error("加载目录树失败:", error);
     }
-}
+};
 
 // 加载动态菜单
 const loadDynamicMenus = async () => {
     try {
-        const menus = await getMyMenu()
+        const menus = await getMyMenu();
         dynamicMenus.value = menus.map((menu: Menu) => ({
             path: menu.path,
             name: menu.name,
@@ -483,7 +498,8 @@ const loadDynamicMenus = async () => {
                 icon: menu.icon,
                 iconType: menu.iconType,
                 style: menu.style,
-                requiresAuth: true
+                requiresAuth: true,
+                group: `${menu.name}-group`
             },
             children: menu.children?.map(child => ({
                 path: child.path,
@@ -496,7 +512,7 @@ const loadDynamicMenus = async () => {
                     requiresAuth: true
                 }
             })) || []
-        } as RouteMenu))
+        } as RouteMenu));
 
         // 动态添加路由
         menus.forEach(menu => {
@@ -512,7 +528,7 @@ const loadDynamicMenus = async () => {
                         requiresAuth: true
                     },
                     children: []
-                })
+                });
 
                 menu.children.forEach(child => {
                     router.addRoute(menu.name, {
@@ -526,8 +542,8 @@ const loadDynamicMenus = async () => {
                             style: child.style,
                             requiresAuth: true
                         }
-                    })
-                })
+                    });
+                });
             } else {
                 router.addRoute({
                     path: menu.path,
@@ -540,65 +556,78 @@ const loadDynamicMenus = async () => {
                         style: menu.style,
                         requiresAuth: true
                     }
-                })
+                });
             }
-        })
+        });
+
+        router.afterEach((to) => {
+            // 检查是否是动态菜单路径
+            const isDynamicMenu = dynamicMenus.value.some(menu =>
+                menu.path === to.path ||
+                (menu.children && menu.children.some(child => child.path === to.path))
+            );
+
+            if (isDynamicMenu) {
+                activeMenu.value = to.path;
+                // 可以添加特定菜单组的处理逻辑
+            }
+        });
     } catch (error) {
-        console.error('加载动态菜单失败:', error)
+        console.error("加载动态菜单失败:", error);
     }
-}
+};
 
 // 解析组件路径
 const resolveComponent = (name: string) => {
     try {
         // 根据菜单名称映射到不同位置的组件
-        if (name.toLowerCase().includes('user')) {
-            return import('@/components/sys/UserView.vue')
-        } else if (name.toLowerCase().includes('role')) {
-            return import('@/components/sys/RoleView.vue')
-        } else if (name.toLowerCase().includes('strategy')) {
-            return import('@/components/sys/StrategyView.vue')
+        if (name.toLowerCase().includes("user")) {
+            return import("@/components/sys/UserView.vue");
+        } else if (name.toLowerCase().includes("role")) {
+            return import("@/components/sys/RoleView.vue");
+        } else if (name.toLowerCase().includes("strategy")) {
+            return import("@/components/sys/StrategyView.vue");
         }
         // 默认尝试从sys目录加载
-        return import('@/components/sys/' + name + 'View.vue')
-            .catch(() => import('@/components/' + name.toLowerCase() + '/' + name +'.vue'))
+        return import("@/components/sys/" + name + "View.vue")
+            .catch(() => import("@/components/" + name.toLowerCase() + "/" + name + ".vue"));
     } catch (error) {
-        console.error('组件加载失败:', error)
-        return import('@/components/NotFound.vue') // 提供一个默认的NotFound组件
+        console.error("组件加载失败:", error);
+        return import("@/components/NotFound.vue"); // 提供一个默认的NotFound组件
     }
-}
+};
 
 // 处理菜单点击
 const menuItemClick = (item: { path: string }) => {
     if (router.currentRoute.value.path !== item.path) {
         router.push(item.path).catch(err => {
-            console.error('路由跳转失败:', err)
-        })
+            console.error("路由跳转失败:", err);
+        });
     }
-}
+};
 
 // 切换目录菜单显示
 const toggleCatalogMenu = async (e: Event) => {
-    e.stopPropagation()
-    showCatalogMenu.value = !showCatalogMenu.value
+    e.stopPropagation();
+    showCatalogMenu.value = !showCatalogMenu.value;
     if (showCatalogMenu.value) {
-        await loadCatalogTree()
+        await loadCatalogTree();
     }
-}
+};
 
 // 处理目录节点点击
 const handleNodeClick = (data: Catalog) => {
     currentCatalog.value = data; // 保存当前选中的目录
     router.push(`/Catalog/${data.sno}`).catch(err => {
-        console.error('路由跳转失败:', err);
+        console.error("路由跳转失败:", err);
     });
 };
 
 // 添加分类
 const handleAddCategory = (e: Event) => {
-    e.stopPropagation()
-    categoryDialog.value?.open(null as unknown as Category)
-}
+    e.stopPropagation();
+    categoryDialog.value?.open(null as unknown as Category);
+};
 
 // 添加目录
 const handleAddCatalog = (e: Event) => {
@@ -608,32 +637,32 @@ const handleAddCatalog = (e: Event) => {
 
 // 处理分类确认
 const handleCategoryConfirm = async () => {
-    await loadCategories()
-    if (route.path.startsWith('/Category/')) {
-        let currentSno = Number(route.params.sno)
+    await loadCategories();
+    if (route.path.startsWith("/Category/")) {
+        let currentSno = Number(route.params.sno);
         // 判断当前分类是否存在
-        let found = categories.value.some(category => category.sno === currentSno)
+        let found = categories.value.some(category => category.sno === currentSno);
         if (!found) {
-            currentSno = categories.value[0]?.sno || 0 // 确保有默认值
+            currentSno = categories.value[0]?.sno || 0; // 确保有默认值
         }
-        await router.replace(`/Category/${currentSno}`)
+        await router.replace(`/Category/${currentSno}`);
     }
-}
+};
 
 // 处理目录确认
 const handleCatalogConfirm = async () => {
-    await loadCatalogTree()
+    await loadCatalogTree();
     // 如果当前路由是/Catalog页面，则重新加载
-    if (route.path.startsWith('/Catalog/')) {
-        const currentSno = route.params.sno
-        await router.replace(`/Catalog/${currentSno}`)
+    if (route.path.startsWith("/Catalog/")) {
+        const currentSno = route.params.sno;
+        await router.replace(`/Catalog/${currentSno}`);
     }
-}
+};
 
 // 更新当前激活菜单
 const updateActiveMenu = () => {
-    activeMenu.value = router.currentRoute.value.path
-}
+    activeMenu.value = router.currentRoute.value.path;
+};
 
 const handleEditCatalog = (catalog: Catalog) => {
     catalogDialog.value?.open(catalog.parentId, catalog);
@@ -644,12 +673,33 @@ const handleDeleteCatalog = (catalog: Catalog) => {
 };
 
 const handleEditCategory = (category: Category) => {
-    categoryDialog.value?.open(category)
-}
+    categoryDialog.value?.open(category);
+};
 
 const handleDeleteCategory = (category: Category) => {
-    categoryDialog.value?.openForDelete(category)
-}
+    categoryDialog.value?.openForDelete(category);
+};
+
+// 监听路由变化
+watch(() => route.path, (newPath) => {
+    activeMenu.value = newPath;
+
+    // 根据当前路由更新默认打开的菜单组
+    if (newPath.startsWith("/Catalog")) {
+        defaultOpeneds.value = ["catalog-group"];
+    } else if (newPath.startsWith("/Category")) {
+        defaultOpeneds.value = ["category-group"];
+    } else if (newPath.startsWith("/Tag")) {
+        defaultOpeneds.value = ["tag-group"];
+    } else if (newPath.startsWith("/Type")) {
+        defaultOpeneds.value = ["type-group"];
+    } else if (newPath.startsWith("/My")) {
+        defaultOpeneds.value = ["my-group"];
+    } else if (newPath.startsWith("/System")) {
+        defaultOpeneds.value = ["system-group"];
+    }
+    // 动态菜单部分可以根据需要添加更多判断
+}, { immediate: true });
 </script>
 
 <style scoped>
@@ -712,29 +762,29 @@ html.dark .el-menu {
     background-color: var(--el-menu-hover-bg-color) !important;
 }
 
-.menu-icon{
+.menu-icon {
     width: 32px;
     float: left;
     text-align: center;
 }
 
-.menu-label{
+.menu-label {
     float: left;
     width: 100%;
     margin: 0 0 0 5px;
 }
 
-.new-level{
+.new-level {
     cursor: pointer;
     margin-left: auto;
-    font-size: 15px!important;
+    font-size: 15px !important;
 }
 
-.new-level:hover{
+.new-level:hover {
     color: #409EFF;
 }
 
-.action-button{
+.action-button {
     float: right;
 }
 
@@ -748,7 +798,7 @@ html.dark .el-menu {
 .menu-icon {
     width: 32px;
     text-align: center;
-    color: rgb(59,130,246);
+    color: rgb(59, 130, 246);
     flex-shrink: 0;
 }
 
@@ -778,11 +828,11 @@ html.dark .el-menu {
     color: #409EFF;
 }
 
-.content-area{
+.content-area {
     background-color: var(--el-bg-color);
 }
 
-.menu-area{
+.menu-area {
     flex: 1;
     overflow-y: auto;
     display: flex;
@@ -811,7 +861,7 @@ html.dark .el-menu {
 }
 
 .user-avatar:focus, .user-avatar:hover, .user-avatar-wrapper:hover,
-.user-dropdown-container:hover{
+.user-dropdown-container:hover {
     outline: none;
     box-shadow: none;
 }
@@ -846,15 +896,26 @@ html.dark .el-menu {
 .el-dropdown-menu {
     min-width: 120px;
 }
+
 .el-dropdown-menu__item {
     display: flex;
     align-items: center;
 }
+
 .el-dropdown-menu__item .el-icon {
     margin-right: 8px;
 }
 
-.theme{
+.theme {
     cursor: pointer;
+}
+
+.el-menu-item.is-active {
+    color: var(--el-color-primary) !important;
+    background-color: var(--el-menu-hover-bg-color) !important;
+}
+
+.el-menu-item.is-active .menu-icon {
+    color: var(--el-color-primary) !important;
 }
 </style>
