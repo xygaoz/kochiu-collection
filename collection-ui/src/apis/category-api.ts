@@ -26,8 +26,8 @@ export const getAllCategory = (): Promise<Category[]> => {
     });
 }
 
-export const getCategory = (sno: number): Promise<Category> => {
-    return httpInstance.get(categoryApi + "/get/" + sno).then((model: any) => {
+export const getCategory = (id: string): Promise<Category> => {
+    return httpInstance.get(categoryApi + "/get/" + id).then((model: any) => {
         if (model) {
             return model as Category;
         }

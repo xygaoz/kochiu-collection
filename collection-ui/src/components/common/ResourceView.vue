@@ -19,6 +19,7 @@
                     :is="currentComponent"
                     :files="props.files"
                     :data-type="props.dataType"
+                    :has-more="props.hasMore"
                     :selectedResources="selectedResources"
                     :selectedResource="selectedResource"
                     @preview="handlePreview"
@@ -26,6 +27,7 @@
                     @move-to-category="handleMoveTo"
                     @move-to-recycle="handleMoveToRecycle"
                     @restore="handleRestore"
+                    @load-more="handleLoadMore"
                 />
 
             </el-main>
@@ -99,6 +101,10 @@ const props = defineProps({
     currentSelect:{
         type: String,
         default: ''
+    },
+    hasMore:{
+        type: Boolean,
+        default: false
     }
 });
 const currentComponent = WaterfallLayout;
@@ -110,8 +116,9 @@ const moveToCategoryDialog = ref();
 const moveToCatalogDialog = ref();
 const layoutRef = ref<{
     clearSelection: () => void,
-    selectAll: () => void
+    selectAll: () => void,
 } | null>(null);
+
 const searchData = ref<SearchForm>({
     cateId: '',
     keyword: '',
@@ -120,7 +127,7 @@ const searchData = ref<SearchForm>({
     include: false
 });
 
-const emit = defineEmits(['update-file', 'filter-data']);
+const emit = defineEmits(['update-file', 'filter-data', 'load-more']);
 
 // 数据列表
 const loading = ref(false)
@@ -291,6 +298,16 @@ const handleRestore = (resources: Resource[]) => {
     });
 
 }
+
+// 处理加载更多
+const handleLoadMore = async () => {
+    try {
+        // 调用父组件的方法加载更多数据
+        emit('load-more', searchData);
+    } catch (error) {
+        console.error('加载更多失败:', error);
+    }
+};
 </script>
 
 <style scoped>

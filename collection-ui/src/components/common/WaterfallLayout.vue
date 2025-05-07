@@ -4,85 +4,102 @@
         class="waterfall-container"
         ref="waterfallContainer"
     >
+        <!-- 滚动容器 -->
         <div
-            v-for="(row, rowIndex) in computedRows"
-            :key="rowIndex"
-            class="waterfall-row"
+            class="waterfall-scroll-container"
+            ref="scrollContainer"
         >
             <div
-                v-for="(item, index) in row.items"
-                :key="index"
-                class="waterfall-item"
-                :style="getItemStyle(item)"
+                v-for="(row, rowIndex) in computedRows"
+                :key="rowIndex"
+                class="waterfall-row"
             >
-                <el-card
-                    shadow="hover"
-                    :body-style="{ padding: '0px' }"
-                    :class="{ 'selected-card': selectedImage?.resourceId === item.image.resourceId
-                         || isMultipleSelect(item.image),
-                         'show-checkbox': hasAnySelection || isMultipleSelect(item.image)}"
+                <div
+                    v-for="(item, index) in row.items"
+                    :key="index"
+                    class="waterfall-item"
+                    :style="getItemStyle(item)"
                 >
-                    <div class="image-select" v-if="props.dataType !=='public'">
-                        <el-checkbox
-                            :key="'checkbox-' + item.image.resourceId + forceRender"
-                            :checked="isMultipleSelect(item.image)"
-                            @change="(val: boolean) => handleMultipleSelect(val, item.image)"
-                        />
-                    </div>
-                    <div class="resource-wrapper"
-                         @click="handlePreview(item.image)"
+                    <el-card
+                        shadow="hover"
+                        :body-style="{ padding: '0px' }"
+                        :class="{ 'selected-card': selectedImage?.resourceId === item.image.resourceId
+                             || isMultipleSelect(item.image),
+                             'show-checkbox': hasAnySelection || isMultipleSelect(item.image)}"
                     >
-                        <div
-                            class="image-wrapper"
-                            :style="{ height: `${item.displayHeight}px` }"
+                        <div class="image-select" v-if="props.dataType !=='public'">
+                            <el-checkbox
+                                :key="'checkbox-' + item.image.resourceId + forceRender"
+                                :checked="isMultipleSelect(item.image)"
+                                @change="(val: boolean) => handleMultipleSelect(val, item.image)"
+                            />
+                        </div>
+                        <div class="resource-wrapper"
+                             @click="handlePreview(item.image)"
                         >
-                            <el-image
-                                :src="item.image.thumbnailUrl"
-                                fit="contain"
-                                loading="lazy"
-                                class="waterfall-image"
-                                :style="getImageStyle(item)"
+                            <div
+                                class="image-wrapper"
+                                :style="{ height: `${item.displayHeight}px` }"
                             >
-                                <template #error>
-                                    <div class="image-error">
-                                        <img class="default-thumbnail"
-                                            :src="getDefaultThumbnail(item.image)"
-                                            alt=""
-                                        >
-                                    </div>
-                                </template>
-                            </el-image>
-                            <div v-if="isVideoOrAudio(item.image)" class="play-icon-overlay">
-                                <el-icon class="play-icon">
-                                    <VideoPlay v-if="isVideoType(item.image)" />
-                                    <Headset v-else />
-                                </el-icon>
+                                <el-image
+                                    :src="item.image.thumbnailUrl"
+                                    fit="contain"
+                                    loading="lazy"
+                                    class="waterfall-image"
+                                    :style="getImageStyle(item)"
+                                >
+                                    <template #error>
+                                        <div class="image-error">
+                                            <img class="default-thumbnail"
+                                                :src="getDefaultThumbnail(item.image)"
+                                                alt=""
+                                            >
+                                        </div>
+                                    </template>
+                                </el-image>
+                                <div v-if="isVideoOrAudio(item.image)" class="play-icon-overlay">
+                                    <el-icon class="play-icon">
+                                        <VideoPlay v-if="isVideoType(item.image)" />
+                                        <Headset v-else />
+                                    </el-icon>
+                                </div>
+                            </div>
+                            <div class="image-info" v-if="props.dataType !=='public'">
+                                <div class="image-title">{{ item.image.title || item.image.sourceFileName }}</div>
+                                <div class="image-actions">
+                                    <el-icon class="action-icon" @click.stop="handleDownload(item.image)" title="下载">
+                                        <Download />
+                                    </el-icon>
+                                    <el-icon class="action-icon" @click.stop="handleToRecycle(item.image)" title="删除">
+                                        <Delete />
+                                    </el-icon>
+                                    <el-icon class="action-icon"
+                                             v-if="props.dataType !== 'recycle'"
+                                             @click.stop="handleMove(item.image)" title="移动">
+                                        <Connection />
+                                    </el-icon>
+                                    <i v-if="props.dataType === 'recycle'"
+                                       class="action-icon iconfont icon-col-huanyuan"
+                                       title="还原"
+                                       @click.stop="handleRestore(item.image)"
+                                    />
+                                </div>
                             </div>
                         </div>
-                        <div class="image-info" v-if="props.dataType !=='public'">
-                            <div class="image-title">{{ item.image.title || item.image.sourceFileName }}</div>
-                            <div class="image-actions">
-                                <el-icon class="action-icon" @click.stop="handleDownload(item.image)" title="下载">
-                                    <Download />
-                                </el-icon>
-                                <el-icon class="action-icon" @click.stop="handleToRecycle(item.image)" title="删除">
-                                    <Delete />
-                                </el-icon>
-                                <el-icon class="action-icon"
-                                         v-if="props.dataType !== 'recycle'"
-                                         @click.stop="handleMove(item.image)" title="移动">
-                                    <Connection />
-                                </el-icon>
-                                <i v-if="props.dataType === 'recycle'"
-                                   class="action-icon iconfont icon-col-huanyuan"
-                                   title="还原"
-                                   @click.stop="handleRestore(item.image)"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </el-card>
+                    </el-card>
+                </div>
             </div>
+
+            <!-- 加载更多提示 -->
+            <div v-if="isLoadingMore" class="loading-more">
+                <el-icon class="is-loading"><Loading /></el-icon>
+                加载中...
+            </div>
+            <div v-else-if="!props.hasMore && props.files.length > 0" class="no-more">
+                没有更多数据了
+            </div>
+            <!-- 添加哨兵元素 -->
+            <div ref="sentinel" style="height: 1px; width: 100%;"></div>
         </div>
     </div>
 </template>
@@ -100,8 +117,9 @@ import {
     watch
 } from "vue";
 import type { Resource } from "@/apis/interface";
-import { Connection, Delete, Download, Headset, VideoPlay } from "@element-plus/icons-vue";
+import { Connection, Delete, Download, Headset, Loading, VideoPlay } from "@element-plus/icons-vue";
 import { downloadFile } from "@/apis/utils";
+import { debounce } from 'lodash';
 import imageThumbnail from '@/assets/imgs/type/image.png';
 import videoThumbnail from '@/assets/imgs/type/video.png';
 import documentThumbnail from '@/assets/imgs/type/document.png';
@@ -112,6 +130,7 @@ import unknownThumbnail from '@/assets/imgs/type/unknown.png';
 const props = defineProps<{
     files: Resource[];
     dataType: string;
+    hasMore?: boolean; // 是否有更多数据的标志
 }>();
 
 // 定义并实际使用 emit
@@ -121,6 +140,7 @@ const emit = defineEmits<{
     (e: 'move-to-category', images: Resource[]): void;
     (e: 'move-to-recycle', images: Resource[], deleted: boolean): void;
     (e: 'restore', images: Resource[]): void;
+    (e: 'load-more'): void; // 加载更多事件
 }>();
 
 const waterfallContainer = ref<HTMLElement | null>(null);
@@ -130,6 +150,11 @@ const maxHeight = ref(200);
 const selectedImage = ref<Resource>();
 const multipleSelected = ref<Resource[]>([]);
 const forceRender = ref(0);
+
+const isLoadingMore = ref(false);
+const scrollContainer = ref<HTMLElement | null>(null);
+const observer = ref<IntersectionObserver | null>(null);
+const sentinel = ref<HTMLElement | null>(null);
 
 interface LayoutItem {
     image: Resource;
@@ -384,25 +409,103 @@ const handleRestore = (image: Resource) => {
     emit('restore', [image])
 };
 
+// 初始化 IntersectionObserver
+const initObserver = () => {
+    if (!sentinel.value || !props.hasMore) return;
+
+    // 先断开旧的观察者
+    if (observer.value) {
+        observer.value.disconnect();
+    }
+
+    observer.value = new IntersectionObserver(
+        (entries) => {
+            if (entries[0].isIntersecting && !isLoadingMore.value && props.hasMore) {
+                loadMore();
+            }
+        },
+        {
+            root: scrollContainer.value,
+            rootMargin: '100px', // 提前100px触发
+            threshold: 0.01 // 更敏感的触发阈值
+        }
+    );
+
+    observer.value.observe(sentinel.value);
+};
+
+// 检查是否滚动到底部
+const checkScroll = () => {
+    if (!scrollContainer.value || isLoadingMore.value || !props.hasMore) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = scrollContainer.value;
+    const threshold = 100; // 距离底部100px时触发加载
+
+    // 添加更宽松的触发条件
+    if (scrollHeight - (scrollTop + clientHeight) < threshold ||
+        scrollTop + clientHeight >= scrollHeight - 1) {
+        loadMore();
+    }
+};
+
+// 加载更多数据
+const loadMore = debounce(() => {
+    if (isLoadingMore.value || !props.hasMore) return;
+
+    isLoadingMore.value = true;
+    emit('load-more');
+
+    // 3秒后自动重置状态（防止卡死）
+    const timeout = setTimeout(() => {
+        isLoadingMore.value = false;
+    }, 3000);
+
+    // 暴露清除方法
+    return () => clearTimeout(timeout);
+}, 200);
+
 defineExpose({
-    clearSelection, selectAll
+    clearSelection, selectAll, isLoadingMore
 })
 
 // 添加对 files 的监听
 watch(() => props.files, (newFiles, oldFiles) => {
-    // 当 files 发生变化时清空多选
-    if (newFiles !== oldFiles) {
-        clearSelection();
+    // 当有新数据加载完成时，重置加载状态
+    if (newFiles.length > oldFiles.length) {
+        isLoadingMore.value = false;
+    }
+    // 清空多选
+    clearSelection();
+});
+
+// 监听 hasMore 变化
+watch(() => props.hasMore, (newVal) => {
+    if (newVal && sentinel.value && !observer.value) {
+        initObserver();
     }
 });
 
 onMounted(() => {
     updateContainerWidth();
     window.addEventListener('resize', updateContainerWidth);
+    // 监听滚动
+    if (scrollContainer.value) {
+        scrollContainer.value.addEventListener('scroll', checkScroll);
+    }
+    // 初始化 IntersectionObserver
+    nextTick(() => {
+        initObserver();
+    });
 });
 
 onBeforeUnmount(() => {
     window.removeEventListener('resize', updateContainerWidth);
+    if (scrollContainer.value) {
+        scrollContainer.value.removeEventListener('scroll', checkScroll);
+    }
+    if (observer.value) {
+        observer.value.disconnect();
+    }
 });
 </script>
 
@@ -580,6 +683,55 @@ html.dark .image-info {
     font-size: 36px;
     color: white;
     filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.5));
+}
+
+.waterfall-scroll-container {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%;
+    width: 100%; /* 确保宽度正确 */
+    padding-right: 8px;
+    -webkit-overflow-scrolling: touch;
+    contain: strict; /* 改善性能 */
+    will-change: scroll-position;
+}
+
+.waterfall-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    position: relative; /* 确保正确计算高度 */
+}
+
+.waterfall-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: nowrap; /* 防止换行导致横向溢出 */
+}
+
+.loading-more,
+.no-more {
+    text-align: center;
+    padding: 16px;
+    color: var(--el-text-color-secondary);
+    font-size: 14px;
+}
+
+.loading-more .el-icon {
+    margin-right: 8px;
+    animation: rotating 2s linear infinite;
+}
+
+@keyframes rotating {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* 响应式调整 */

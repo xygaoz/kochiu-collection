@@ -26,7 +26,7 @@ export const getAllTag = (): Promise<Tag[]> => {
     });
 }
 
-export const getTag = (tagId: number): Promise<Tag> => {
+export const getTag = (tagId: string): Promise<Tag> => {
     return httpInstance.get(tagApi + "/get/" + tagId).then((model: any) => {
         if (model) {
             return model as Tag;

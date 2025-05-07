@@ -5,15 +5,17 @@
         :data-type="dataType"
         :id="typeName"
         :current-select="typeLabel"
+        :has-more="hasMore"
         @update-file="handleFileUpdate"
         @filter-data="handleSearch"
+        @load-more="loadMore"
     />
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { listTagFiles, listTypeFiles } from "@/apis/resource-api";
+import { listTypeFiles } from "@/apis/resource-api";
 import { Resource, SearchForm } from "@/apis/interface";
 import ResourceView from "@/components/common/ResourceView.vue";
 import { getResourceType } from "@/apis/system-api";
@@ -22,11 +24,12 @@ const route = useRoute();
 const files = ref<Resource[]>([]);
 const loading = ref(true);
 const currentPage = ref(1);
-const pageSize = ref(500);
+const pageSize = ref(100);
 const total = ref(0);
 const typeName = ref("")
 const typeLabel = ref("未知")
 const dataType = ref("type")
+const hasMore = ref(false);
 
 watch(
     () => route.params.typeName,
@@ -41,6 +44,7 @@ watch(
                 files.value = data.list;
                 total.value = data.total;
                 currentPage.value = data.pageNum;
+                hasMore.value = data.pages > currentPage.value;
 
                 const type = await getResourceType(id);
                 if(type){
@@ -76,8 +80,30 @@ const handleSearch = async (searchForm: SearchForm) => {
         files.value = data.list;
         total.value = data.total;
         currentPage.value = data.pageNum;
+        hasMore.value = data.pages > currentPage.value;
     } catch (error) {
         console.error("加载失败:", error);
+    } finally {
+        loading.value = false;
+    }
+};
+
+const loadMore = async (searchForm: SearchForm) => {
+    if (loading.value) return;
+
+    try {
+        loading.value = true;
+        currentPage.value += 1;
+        const data = await listTypeFiles(typeName.value, currentPage.value, pageSize.value, searchForm);
+
+        // 追加新数据而不是替换
+        files.value = [...files.value, ...data.list];
+        currentPage.value = data.pageNum;
+        total.value = data.total;
+        hasMore.value = data.pages > currentPage.value;
+    } catch (error) {
+        console.error("加载更多失败:", error);
+        currentPage.value -= 1; // 回退页码
     } finally {
         loading.value = false;
     }
