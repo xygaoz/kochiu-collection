@@ -56,16 +56,22 @@ routes.push(
                 meta: { title: '批量导入', icon: 'icon-col-piliangdaoru1', iconType: 'iconfont', style: 'font-size: 18px; color: rgb(59,130,246); margin: 0 3px 0 0', requiresAuth: true },
             },
             {
-                path: '/profile',
-                name: 'Profile',
-                component: () => import('@/components/my/Profile.vue'),
-                meta: { title: '个人资料', icon: 'icon-col-gerenziliao', iconType: 'iconfont', style: 'font-size: 18px; color: rgb(59,130,246); margin: 0 2px 0 0', requiresAuth: true }
+                path: '/Public',
+                name: 'public',
+                component: () => import('@/components/my/PublicResource.vue'),
+                meta: { title: '公共资源', icon: 'icon-col-gonggongziyuan', iconType: 'iconfont', style: 'font-size: 18px; color: rgb(59,130,246); margin: 0 1px 0 0', requiresAuth: true },
             },
             {
                 path: '/Recycle',
                 name: 'recycle',
                 component: () => import('@/components/my/RecycleResource.vue'),
-                meta: { title: '回收站', icon: 'icon-col-huishouzhanx', iconType: 'iconfont', style: 'font-size: 22px; color: rgb(59,130,246); margin: 0 1px 0 0', requiresAuth: true },
+                meta: { title: '回收站', icon: 'icon-col-huishouzhanx', iconType: 'iconfont', style: 'font-size: 25px; color: rgb(59,130,246); margin: 0 1px 0 0', requiresAuth: true },
+            },
+            {
+                path: '/profile',
+                name: 'Profile',
+                component: () => import('@/components/my/Profile.vue'),
+                meta: { title: '个人资料', icon: 'icon-col-gerenziliao', iconType: 'iconfont', style: 'font-size: 18px; color: rgb(59,130,246); margin: 0 2px 0 0', requiresAuth: true }
             },
         ]
     },

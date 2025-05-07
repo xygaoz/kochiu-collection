@@ -38,7 +38,7 @@ public interface UserResourceMapper extends BaseMapper<UserResource> {
             @Param("tagNames") String[] tagNames
     );
 
-    List<UserResource> selectAllResource(
+    List<UserResource> selectAllCateResource(
             @Param("userId") int userId,
             @Param("cateId") Long cateId,
             @Param("keyword") String keyword,
@@ -59,6 +59,13 @@ public interface UserResourceMapper extends BaseMapper<UserResource> {
             @Param("userId") int userId,
             @Param("cataSno") Integer cataSno,
             @Param("cateId") Long cateId,
+            @Param("keyword") String keyword,
+            @Param("types") String[] types,
+            @Param("tagNames") String[] tagNames
+    );
+
+    List<UserResource> selectPublicResource(
+            @Param("userId") int userId,
             @Param("keyword") String keyword,
             @Param("types") String[] types,
             @Param("tagNames") String[] tagNames

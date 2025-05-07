@@ -15,4 +15,5 @@ public class ResInfoBo {
     private String description;
     private Integer star;
     private String tagName;
+    private Boolean share;
 }

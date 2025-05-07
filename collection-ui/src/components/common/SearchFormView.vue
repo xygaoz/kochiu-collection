@@ -34,6 +34,9 @@
                 <div class="cata-header" v-if="dataType === 'all-tag'">
                     <span style="margin: 0 10px 0 0;">所有标签</span>
                 </div>
+                <div class="cata-header" v-if="dataType === 'public'">
+                    <span style="margin: 0 10px 0 0;">公共资源</span>
+                </div>
                 <div class="cata-header" v-if="dataType === 'catalog'">
                     <span style="margin: 0 10px 0 0;">目录:</span>
                     <span class="path-segment" v-for="(segment, index) in processedPath" :key="index">
@@ -93,7 +96,7 @@
 
                 <TagSelector
                     v-model="searchForm.tags"
-                    v-if="props.dataType != 'tag' && showTagSelector"
+                    v-if="props.dataType != 'tag' && props.dataType != 'public' && showTagSelector"
                     :force-close="shouldCloseTagSelector || isCollapsing"
                     ref="tagSelectorRef"
                 />

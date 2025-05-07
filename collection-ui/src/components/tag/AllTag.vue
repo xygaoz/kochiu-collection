@@ -10,7 +10,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { listAllFiles } from "@/apis/resource-api";
+import { listAllCateFiles } from "@/apis/resource-api";
 import { Resource, SearchForm } from "@/apis/interface";
 import ResourceView from "@/components/common/ResourceView.vue";
 
@@ -41,7 +41,7 @@ const handleSearch = async (searchForm: SearchForm) => {
     try {
         loading.value = true;
         currentPage.value = 1
-        const data = await listAllFiles(currentPage.value, pageSize.value, searchForm);
+        const data = await listAllCateFiles(currentPage.value, pageSize.value, searchForm);
         files.value = data.list;
         total.value = data.total;
         currentPage.value = data.pageNum;

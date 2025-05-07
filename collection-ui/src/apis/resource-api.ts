@@ -217,7 +217,7 @@ export const listRecycleFiles = (page: number, size: number, params: any): Promi
     });
 }
 
-export const listAllFiles = (page: number, size: number, params: any): Promise<PageInfo<Resource>> => {
+export const listAllCateFiles = (page: number, size: number, params: any): Promise<PageInfo<Resource>> => {
     const ld = loading("加载中")
     // 合并分页参数和其他参数
     const requestParams: { [key: string]: any } = {
@@ -227,7 +227,7 @@ export const listAllFiles = (page: number, size: number, params: any): Promise<P
     Object.keys(params).forEach(key => {
         requestParams[key] = params[key];
     });
-    return httpInstance.post(resourceApi + "/all", requestParams).then((model: any) => {
+    return httpInstance.post(resourceApi + "/all-category", requestParams).then((model: any) => {
         if (model) {
             console.log("获取文件列表成功:", model);
             return model as PageInfo<Resource>;
@@ -290,6 +290,47 @@ export const startBatchImport = (params: any): Promise<string | null> => {
 
 export const cancelBatchImport = (taskId: string): Promise<boolean> => {
     return httpInstance.get(resourceApi + "/cancelImport/" + taskId).then((model: any) => {
+        return model as boolean;
+    });
+}
+
+export const listPublicFiles = (page: number, size: number, params: any): Promise<PageInfo<Resource>> => {
+    const ld = loading("加载中")
+    // 合并分页参数和其他参数
+    const requestParams: { [key: string]: any } = {
+        pageNum: page,
+        pageSize: size
+    };
+    Object.keys(params).forEach(key => {
+        requestParams[key] = params[key];
+    });
+    return httpInstance.post(resourceApi + "/public", requestParams).then((model: any) => {
+        if (model) {
+            console.log("获取文件列表成功:", model);
+            return model as PageInfo<Resource>;
+        }
+        return { pageNum: 0, pageSize: 0, total: 0, pages: 0, list: [] };
+    }).catch((error) => {
+        console.error("获取文件列表失败:", error);
+        return { pageNum: 0, pageSize: 0, total: 0, pages: 0, list: [] };
+    }).finally(() => {
+        ld.close();
+    });
+}
+
+export const setResourcePublic = (resourceId: number, isPublic: boolean): Promise<boolean> => {
+    return httpInstance.post(resourceApi + "/set-public/" + resourceId, {
+        isPublic: isPublic
+    }).then((model: any) => {
+        return model as boolean;
+    });
+}
+
+export const batchShareResources = (resourceIds: number[], isPublic: boolean): Promise<boolean> => {
+    return httpInstance.post(resourceApi + "/batch-share", {
+        resourceIds: resourceIds,
+        share: isPublic
+    }).then((model: any) => {
         return model as boolean;
     });
 }

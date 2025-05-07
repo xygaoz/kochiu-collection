@@ -72,7 +72,7 @@
                 </div>
                 <template #tip>
                     <div class="el-upload__tip">
-                        支持格式：图片（JPG/PNG/GIF等）、文档（PDF/DOCX等）、视频（MP4/AVI等）、音频（MP3/WAV等，单文件最大 1GB
+                        支持格式：图片（JPG/PNG/GIF等）、文档（PDF/DOCX等）、视频（MP4/AVI等）、音频（MP3/WAV等），单文件最大 1GB
                     </div>
                 </template>
             </el-upload>

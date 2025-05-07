@@ -14,4 +14,5 @@ public class BatchUpdateBo {
     private List<Long> resourceIds;
     private String title;
     private String description;
+    private Boolean share;
 }

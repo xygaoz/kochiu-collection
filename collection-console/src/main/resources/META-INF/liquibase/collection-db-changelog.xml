@@ -284,7 +284,7 @@
             <column name="size" remarks="文件大小" type="INTEGER" defaultValue="0">
                 <constraints nullable="false"/>
             </column>
-            <column name="is_public" remarks="公开" type="INTEGER" defaultValue="0">
+            <column name="share" remarks="共享" type="INTEGER" defaultValue="0">
                 <constraints nullable="false"/>
             </column>
             <column name="star" remarks="星级" type="INTEGER" defaultValue="0"/>

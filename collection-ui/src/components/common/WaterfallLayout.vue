@@ -22,7 +22,7 @@
                          || isMultipleSelect(item.image),
                          'show-checkbox': hasAnySelection || isMultipleSelect(item.image)}"
                 >
-                    <div class="image-select">
+                    <div class="image-select" v-if="props.dataType !=='public'">
                         <el-checkbox
                             :key="'checkbox-' + item.image.resourceId + forceRender"
                             :checked="isMultipleSelect(item.image)"
@@ -59,7 +59,7 @@
                                 </el-icon>
                             </div>
                         </div>
-                        <div class="image-info">
+                        <div class="image-info" v-if="props.dataType !=='public'">
                             <div class="image-title">{{ item.image.title || item.image.sourceFileName }}</div>
                             <div class="image-actions">
                                 <el-icon class="action-icon" @click.stop="handleDownload(item.image)" title="下载">

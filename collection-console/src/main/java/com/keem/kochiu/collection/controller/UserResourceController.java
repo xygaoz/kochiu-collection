@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import static com.keem.kochiu.collection.Constant.PUBLIC_URL;
 
@@ -163,7 +164,7 @@ public class UserResourceController {
     }
 
     @CheckPermit
-    @PostMapping(RESOURCE_PATH + "/all")
+    @PostMapping(RESOURCE_PATH + "/all-category")
     public DefaultResult<PageVo<ResourceVo>> getAllResourceList(FilterResourceBo filterResourceBo) throws CollectionException {
         return DefaultResult.ok(resourceService.getAllResourceList(CheckPermitAspect.USER_INFO.get(), filterResourceBo));
     }
@@ -180,5 +181,24 @@ public class UserResourceController {
                                                                   FilterResourceBo filterResourceBo) throws CollectionException {
         filterResourceBo.setCataSno(sno);
         return DefaultResult.ok(resourceService.getResourceListByCatalog(CheckPermitAspect.USER_INFO.get(), filterResourceBo));
+    }
+
+    @CheckPermit
+    @PostMapping(RESOURCE_PATH + "/public")
+    public DefaultResult<PageVo<ResourceVo>> getPublicResourceList(FilterResourceBo filterResourceBo) throws CollectionException {
+        return DefaultResult.ok(resourceService.getPublicResourceList(CheckPermitAspect.USER_INFO.get(), filterResourceBo));
+    }
+
+    @CheckPermit
+    @PostMapping(RESOURCE_PATH + "/set-public/{resourceId}")
+    public void setResourcePublic(@NotNull @PathVariable Long resourceId, boolean isPublic) throws CollectionException {
+        resourceService.setResourcePublic(CheckPermitAspect.USER_INFO.get(), resourceId, isPublic);
+    }
+
+    @CheckPermit
+    @PostMapping(RESOURCE_PATH + "/batch-share")
+    public DefaultResult<Boolean> batchShareResources(@Validated BatchUpdateBo batchUpdateBo) throws CollectionException {
+        resourceService.batchUpdate(CheckPermitAspect.USER_INFO.get(), batchUpdateBo);
+        return DefaultResult.ok(true);
     }
 }

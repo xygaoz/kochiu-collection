@@ -86,7 +86,7 @@ public class UserResourceService {
     public PageVo<ResourceVo> getAllResourceList(UserDto userDto, FilterResourceBo filterResourceBo) throws CollectionException {
 
         SysUser user = userRepository.getUser(userDto);
-        PageInfo<UserResource> resourceList = resourceRepository.getAllResourceList(user.getUserId(), filterResourceBo);
+        PageInfo<UserResource> resourceList = resourceRepository.getAllCateResourceList(user.getUserId(), filterResourceBo);
         return buildResourceList(user, resourceList);
     }
 
@@ -196,6 +196,7 @@ public class UserResourceService {
                                     .resolutionRatio(resource.getResolutionRatio())
                                     .createTime(resource.getCreateTime())
                                     .updateTime(resource.getUpdateTime())
+                                    .share(resource.getShare() == 1)
                                     .star(resource.getStar())
                                     .tags(tags.stream().map(tag -> TagDto.builder()
                                             .tagId(tag.getTagId())
@@ -229,6 +230,7 @@ public class UserResourceService {
                     .resourceId(resourceId)
                     .title(batchUpdateBo.getTitle())
                     .description(batchUpdateBo.getDescription())
+                    .share(batchUpdateBo.getShare())
                     .build();
             resourceRepository.updateResourceInfo(user.getUserId(), resourceInfo);
         });
@@ -339,4 +341,27 @@ public class UserResourceService {
         }
     }
 
+    //获取公开资源列表
+    public PageVo<ResourceVo> getPublicResourceList(UserDto userDto, FilterResourceBo filterResourceBo) throws CollectionException {
+
+        SysUser user = userRepository.getUser(userDto);
+        PageInfo<UserResource> resourceList = resourceRepository.getPublicResourceList(user.getUserId(), filterResourceBo);
+        return buildResourceList(user, resourceList);
+    }
+
+    //设置是否公开
+    @Transactional(rollbackFor = Exception.class)
+    public void setResourcePublic(UserDto userDto, Long resourceId, boolean isPublic) throws CollectionException {
+        SysUser user = userRepository.getUser(userDto);
+        UserResource resource = resourceRepository.getById(resourceId);
+        if(resource == null){
+            throw new CollectionException(ErrorCodeEnum.RESOURCE_NOT_EXIST);
+        }
+        else if(!resource.getUserId().equals(user.getUserId())){
+            throw new CollectionException(ErrorCodeEnum.RESOURCE_NOT_EXIST);
+        }
+
+        resource.setShare(isPublic ? 1 : 0);
+        resourceRepository.updateById(resource);
+    }
 }

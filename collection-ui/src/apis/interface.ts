@@ -36,7 +36,7 @@ export interface Resource {
     cataPath: string;
     resolutionRatio: string;
     size: number;
-    isPublic: number;
+    share: boolean;
     star: number;
     tags: Tag[];
     createTime: string;
@@ -59,7 +59,7 @@ export interface SearchForm {
     keyword: string;
     types: string[];
     tags: string[];
-    include: boolean;
+    include: boolean; // 包含子目录
 }
 
 export interface Catalog {

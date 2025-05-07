@@ -33,7 +33,7 @@ public class UserResource extends BaseEntity implements Cloneable{
     private String resolutionRatio;
     private String thumbRatio;
     private Long size;
-    private Integer isPublic;
+    private Integer share;
     private Integer star;
     private String md5;
     private LocalDateTime deleteTime;

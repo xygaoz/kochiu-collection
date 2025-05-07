@@ -111,7 +111,7 @@
         ORDER BY r.delete_time DESC
     </select>
 
-    <select id="selectAllResource" resultType="com.keem.kochiu.collection.entity.UserResource">
+    <select id="selectAllCateResource" resultType="com.keem.kochiu.collection.entity.UserResource">
         SELECT DISTINCT r.*, c.CATE_NAME, a.cata_path
             FROM user_resource r
             join user_category c on r.CATE_ID=c.CATE_ID
@@ -241,4 +241,33 @@
             </if>
             ORDER BY r.CREATE_TIME DESC
     </select>
+
+
+    <select id="selectPublicResource" resultType="com.keem.kochiu.collection.entity.UserResource">
+        SELECT DISTINCT r.*
+        FROM user_resource r
+        left JOIN user_resource_tag t ON r.RESOURCE_ID = t.RESOURCE_ID AND r.USER_ID = t.USER_ID
+        left JOIN user_tag g ON t.TAG_ID = g.TAG_ID AND t.USER_ID = g.USER_ID
+        left join user_catalog a on a.CATA_ID=r.cata_id
+        WHERE r.USER_ID = #{userId}
+        AND r.DELETED = 0 and r.share=1
+        <if test="keyword != null and keyword != ''">
+            <bind name="pattern" value="'%' + keyword + '%'"/>
+            AND (r.TITLE LIKE #{pattern} OR r.DESCRIPTION LIKE #{pattern} OR r.SOURCE_FILE_NAME LIKE #{pattern})
+        </if>
+        <if test="types != null and types.length > 0">
+            AND r.FILE_EXT IN
+            <foreach collection="types" item="type" open="(" separator="," close=")">
+                #{type}
+            </foreach>
+        </if>
+        <if test="tagNames != null and tagNames.length > 0">
+            AND g.tag_name IN
+            <foreach collection="tagNames" item="tagName" open="(" separator="," close=")">
+                #{tagName}
+            </foreach>
+        </if>
+        ORDER BY r.CREATE_TIME DESC
+    </select>
+
 </mapper>

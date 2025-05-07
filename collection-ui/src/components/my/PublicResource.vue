@@ -10,21 +10,19 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import { listAllCateFiles } from "@/apis/resource-api";
+import { ref, watch } from "vue";
+import { useRoute } from "vue-router";
+import { listPublicFiles, listTagFiles, listTypeFiles } from "@/apis/resource-api";
 import { Resource, SearchForm } from "@/apis/interface";
 import ResourceView from "@/components/common/ResourceView.vue";
+import { getResourceType } from "@/apis/system-api";
 
 const files = ref<Resource[]>([]);
 const loading = ref(true);
 const currentPage = ref(1);
 const pageSize = ref(500);
 const total = ref(0);
-const dataType = ref("all-category")
-
-onMounted(() =>
-    handleSearch({ cateId: '', keyword: "", types: [], tags: [], include: true })
-);
+const dataType = ref("public")
 
 // 处理文件更新
 const handleFileUpdate = (params: Resource): void => {
@@ -42,7 +40,7 @@ const handleSearch = async (searchForm: SearchForm) => {
     try {
         loading.value = true;
         currentPage.value = 1
-        const data = await listAllCateFiles(currentPage.value, pageSize.value, searchForm);
+        const data = await listPublicFiles(currentPage.value, pageSize.value, searchForm);
         files.value = data.list;
         total.value = data.total;
         currentPage.value = data.pageNum;

@@ -132,11 +132,11 @@
                     </div>
                 </div>
             </div>
-            <div class="detail-row">
+            <div class="detail-row" v-if="props.dataType !== 'public'">
                 <div class="detail-label">分类</div>
                 <div class="detail-value">{{ file.cateName }}</div>
             </div>
-            <div class="detail-row">
+            <div class="detail-row" v-if="props.dataType !== 'public'">
                 <div class="detail-label">目录路径</div>
                 <div class="detail-value" style="margin: 3px 0 0 0;">{{ file.cataPath }}</div>
             </div>
@@ -156,6 +156,16 @@
                 <div class="detail-label">文件大小</div>
                 <div class="detail-value">{{ formatSize(file.size) }}</div>
             </div>
+            <div class="detail-row" v-if="props.dataType != 'public'">
+                <div class="detail-label">是否公开</div>
+                <div class="detail-value">
+                    <el-switch
+                        v-model="localFile.share"
+                        :disabled="saving || isReadOnly"
+                        @change="handlePublicChange"
+                    />
+                </div>
+            </div>
             <div class="detail-row">
                 <div class="detail-label">创建时间</div>
                 <div class="detail-value">{{ formatTime(file.createTime) }}</div>
@@ -170,7 +180,7 @@
                     <el-rate
                         v-model="localFile.star"
                         @change="handleRateChange"
-                        :disabled="saving || isRecycleBin"
+                        :disabled="saving || isReadOnly"
                         show-score
                         text-color="#ff9900"
                         score-template="{value} 分"
@@ -184,13 +194,13 @@
                 </div>
             </div>
 
-            <div class="detail-row">
+            <div class="detail-row" v-if="props.dataType !== 'public'">
                 <div class="tags">
                     <div class="tag-label">标签</div>
                     <el-tag
                         v-for="tag in localFile.tags"
                         :key="tag.tagId"
-                        :closable="!isRecycleBin"
+                        :closable="!isReadOnly"
                         :disable-transitions="false"
                         @close="handleTagClose(tag)"
                         @click.stop
@@ -208,7 +218,7 @@
                         @click.stop
                     />
                     <el-button
-                        v-else-if="!isRecycleBin"
+                        v-else-if="!isReadOnly"
                         class="button-new-tag"
                         size="small"
                         @click="showTagInput"
@@ -226,7 +236,7 @@
 import { ref, computed, onMounted, onUnmounted, nextTick, watch, defineProps, defineEmits } from "vue";
 import { Document, Picture, Loading, FullScreen, VideoPlay } from "@element-plus/icons-vue";
 import { ElMessage, ElInput } from "element-plus";
-import { addResourceTag, removeResourceTag, updateResource } from "@/apis/resource-api";
+import { addResourceTag, removeResourceTag, setResourcePublic, updateResource } from "@/apis/resource-api";
 import type { Resource, Tag } from '@/apis/interface';
 import AudioPlayer from "@/components/common/AudioPlayer.vue";
 import VideoPlayer from '@/components/common/VideoPlayer.vue';
@@ -244,11 +254,9 @@ const emit = defineEmits<{
 }>();
 
 // 状态定义
-const localCurrentVideoUrl = ref<string>('');
-const localVideoDialogVisible = ref<boolean>(false);
 const localFile = ref<Resource>({...props.file});
 const editingField = ref<EditableField | ''>('');
-const originalValue = ref<string | Tag[] | undefined>();
+const originalValue = ref<string | boolean | number | Tag[] | undefined>();
 const saving = ref<boolean>(false);
 const titleInput = ref<InstanceType<typeof ElInput> | null>(null);
 const descInput = ref<InstanceType<typeof ElInput> | null>(null);
@@ -272,7 +280,7 @@ const isOfficeType = computed<boolean>(() => {
     return officeTypes.includes(props.file.mimeType) && !!props.file.previewUrl;
 });
 const isPdfType = computed<boolean>(() => props.file.fileType === 'application/pdf' && !!props.file.previewUrl);
-const isRecycleBin = computed(() => props.dataType === 'recycle');
+const isReadOnly = computed(() => props.dataType === 'recycle' || props.dataType === 'public');
 const videoPlayer = ref<InstanceType<typeof VideoPlayer> | null>(null);
 const isVideoPlaying = ref(false);
 
@@ -347,7 +355,7 @@ const formatTime = (timeStr: string): string => {
 };
 
 const startEditing = async (field: EditableField): Promise<void> => {
-    if(isRecycleBin.value){
+    if(isReadOnly.value){
         return
     }
     editingField.value = field;
@@ -475,7 +483,7 @@ const handleTagInputConfirm = async () => {
 };
 
 const handleTagClose = async (tag: Tag) => {
-    if (isRecycleBin.value) return;
+    if (isReadOnly.value) return;
 
     try {
         saving.value = true;
@@ -495,6 +503,27 @@ const handleTagClose = async (tag: Tag) => {
         ElMessage.error(`移除标签失败: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
         saving.value = false;
+    }
+};
+
+const handlePublicChange = async (share: boolean) => {
+    saving.value = true;
+    try {
+        await setResourcePublic(localFile.value.resourceId, share);
+
+        const updatedFile: Resource = {
+            ...props.file,
+            share: share
+        };
+
+        emit('update-file', updatedFile);
+        localFile.value = updatedFile;
+    } catch (error) {
+        localFile.value["share"] = originalValue.value as boolean;
+        ElMessage.error(`更新失败: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+        saving.value = false;
+        editingField.value = '';
     }
 };
 
@@ -617,8 +646,9 @@ watch(() => props.file, (newVal: Resource) => {
     flex: 1;
 }
 
-.el-rate{
+:deep(.el-rate){
     height: 21px!important;
+    --el-rate-disabled-void-color: var(--el-rate-disabled-color)
 }
 
 /* 标签文字 */
@@ -689,5 +719,9 @@ watch(() => props.file, (newVal: Resource) => {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+:deep(.el-switch){
+    height: 20px;
 }
 </style>

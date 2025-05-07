@@ -64,6 +64,15 @@
             </el-form>
         </div>
         <div class="detail-row">
+            <el-checkbox
+                v-model="checkAll"
+                :indeterminate="isIndeterminate"
+                @change="handleBatchShare"
+            >
+                公开
+            </el-checkbox>
+        </div>
+        <div class="detail-row">
             <TransitionGroup name="tag" tag="div" class="tags">
                 <div class="tag-label">标签</div>
                 <!-- 实线标签（可删除） -->
@@ -110,10 +119,10 @@
 
 <script setup lang="ts">
 import { ref, computed, nextTick, defineProps, defineEmits, watch, reactive, onMounted } from "vue";
-import { ElMessage } from 'element-plus';
+import { ElMessage } from "element-plus";
 import type { Resource, Tag } from '@/apis/interface';
 import { CircleCheck, CloseBold, Connection, Delete } from "@element-plus/icons-vue";
-import { batchAddTag, batchRemoveTag, bacthUpdateResource } from "@/apis/resource-api";
+import { batchAddTag, batchRemoveTag, bacthUpdateResource, batchShareResources } from "@/apis/resource-api";
 
 interface Props {
     selectedFiles: Resource[];
@@ -127,6 +136,9 @@ const tagInputVisible = ref(false);
 const tagInputValue = ref('');
 const tagInputRef = ref();
 const saving = ref(false);
+
+const checkAll = ref(false)
+const isIndeterminate = ref(true)
 
 const selectedCount = computed(() => props.selectedFiles.length);
 const isRecycleBin = computed(() => props.dataType === 'recycle');
@@ -191,8 +203,10 @@ onMounted(() => {
         localSelectedFiles.value = [];
     }
     updateTagClassification();
+    shareClassification();
 });
 
+// 判断标签是否属于所有文件
 const updateTagClassification = () => {
     try {
         if (!localSelectedFiles.value || !Array.isArray(localSelectedFiles.value)) {
@@ -228,6 +242,22 @@ const updateTagClassification = () => {
         tagState.partialTags = [];
     }
 };
+
+const shareClassification = () => {
+    let isShare = true;
+    let isNotShare = true;
+    localSelectedFiles.value.forEach((file: Resource) => {
+        if(!file.share){
+            isShare = false;
+        }
+        else{
+            isNotShare = false;
+        }
+    });
+    isIndeterminate.value = !isShare && !isNotShare;
+    checkAll.value = isShare;
+}
+
 // 显示标签输入框
 const showTagInput = () => {
     tagInputVisible.value = true;
@@ -454,9 +484,44 @@ const getErrorMessage = (error: unknown) => {
     return String(error);
 };
 
+// 批量共享
+const handleBatchShare = async (val: boolean) => {
+    if (props.selectedFiles.length === 0) {
+        ElMessage.warning('请先选择文件');
+        return;
+    }
+
+    try {
+        saving.value = true;
+        isIndeterminate.value = false
+
+        const resourceIds = props.selectedFiles.map(file => file.resourceId);
+        const success = await batchShareResources(resourceIds, val);
+
+        if (success) {
+            // 当API只返回布尔值时，直接构建更新后的数组
+            const updatedFiles: Resource[] = props.selectedFiles.map(file => ({
+                ...file,
+                share: val,
+            }));
+
+            emit('update-success', updatedFiles);
+            ElMessage.success(`成功更新 ${updatedFiles.length} 个资源`);
+        } else {
+            ElMessage.warning('更新操作未执行');
+        }
+    } catch (error) {
+        console.error('批量更新失败:', error);
+        ElMessage.error(`批量更新失败: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+        saving.value = false;
+    }
+};
+
 watch(() => props.selectedFiles, (newVal) => {
     localSelectedFiles.value = newVal ? [...newVal] : [];
     updateTagClassification();
+    shareClassification();
 }, { immediate: true, deep: true });
 
 </script>

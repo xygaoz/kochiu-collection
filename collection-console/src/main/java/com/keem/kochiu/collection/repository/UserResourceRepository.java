@@ -13,7 +13,6 @@ import com.keem.kochiu.collection.data.dto.ResourceDto;
 import com.keem.kochiu.collection.entity.UserResource;
 import com.keem.kochiu.collection.enums.FileTypeEnum;
 import com.keem.kochiu.collection.enums.ResourceTypeEnum;
-import com.keem.kochiu.collection.enums.SaveTypeEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.mapper.UserResourceMapper;
 import org.apache.commons.io.FilenameUtils;
@@ -100,7 +99,7 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
      * @return
      * @throws CollectionException
      */
-    public PageInfo<UserResource> getAllResourceList(int userId, FilterResourceBo filterResourceBo) throws CollectionException {
+    public PageInfo<UserResource> getAllCateResourceList(int userId, FilterResourceBo filterResourceBo) throws CollectionException {
 
         try(Page<UserResource> page = PageHelper.startPage(filterResourceBo.getPageNum(), filterResourceBo.getPageSize())) {
 
@@ -110,7 +109,7 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
                     fileExtList.addAll(FileTypeEnum.getNames(ResourceTypeEnum.getByValue(type)));
                 }
             }
-            return new PageInfo<>(baseMapper.selectAllResource(userId,
+            return new PageInfo<>(baseMapper.selectAllCateResource(userId,
                     filterResourceBo.getCateId(),
                     filterResourceBo.getKeyword(),
                     fileExtList.toArray(new String[0]),
@@ -140,13 +139,14 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
     public void updateResourceInfo(int userId, ResInfoBo resourceInfo) {
 
         if(!(StringUtils.isBlank(resourceInfo.getTitle()) && StringUtils.isBlank(resourceInfo.getDescription())
-                && resourceInfo.getStar() == null)) {
+                && resourceInfo.getStar() == null && resourceInfo.getShare() == null)) {
             LambdaUpdateWrapper<UserResource> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
             lambdaUpdateWrapper.eq(UserResource::getUserId, userId);
             lambdaUpdateWrapper.eq(UserResource::getResourceId, resourceInfo.getResourceId());
             lambdaUpdateWrapper.set(StringUtils.isNotBlank(resourceInfo.getTitle()), UserResource::getTitle, resourceInfo.getTitle());
             lambdaUpdateWrapper.set(StringUtils.isNotBlank(resourceInfo.getDescription()), UserResource::getDescription, resourceInfo.getDescription());
             lambdaUpdateWrapper.set(resourceInfo.getStar() != null, UserResource::getStar, resourceInfo.getStar());
+            lambdaUpdateWrapper.set(resourceInfo.getShare() != null, UserResource::getShare, resourceInfo.getShare());
 
             baseMapper.update(null, lambdaUpdateWrapper);
         }
@@ -338,5 +338,23 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
                 .eq(UserResource::getUserId, userId)
                 .eq(UserResource::getCataId, cateId);
         return list(lambdaQueryWrapper);
+    }
+
+    // 获取公开资源列表
+    public PageInfo<UserResource> getPublicResourceList(int userId, FilterResourceBo filterResourceBo) throws CollectionException {
+
+        try(Page<UserResource> page = PageHelper.startPage(filterResourceBo.getPageNum(), filterResourceBo.getPageSize())) {
+
+            Set<String> fileExtList = new HashSet<>();
+            if(filterResourceBo.getTypes() != null) {
+                for (String type : filterResourceBo.getTypes()) {
+                    fileExtList.addAll(FileTypeEnum.getNames(ResourceTypeEnum.getByValue(type)));
+                }
+            }
+            return new PageInfo<>(baseMapper.selectPublicResource(userId,
+                    filterResourceBo.getKeyword(),
+                    fileExtList.toArray(new String[0]),
+                    filterResourceBo.getTags()));
+        }
     }
 }
