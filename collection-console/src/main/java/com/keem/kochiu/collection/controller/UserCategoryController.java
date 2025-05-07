@@ -70,9 +70,9 @@ public class UserCategoryController {
     }
 
     @CheckPermit
-    @GetMapping("/get/{cateSno}")
-    public DefaultResult<CategoryVo> getCategoryInfo(@PathVariable int cateSno) throws CollectionException {
+    @GetMapping("/get/{cateId}")
+    public DefaultResult<CategoryVo> getCategoryInfo(@PathVariable long cateId) throws CollectionException {
 
-        return DefaultResult.ok(userCategoryService.getCategoryInfo(CheckPermitAspect.USER_INFO.get(), cateSno));
+        return DefaultResult.ok(userCategoryService.getCategoryInfo(CheckPermitAspect.USER_INFO.get(), cateId));
     }
 }

@@ -64,16 +64,16 @@ public class UserResourceService {
     /**
      * 获取用户分类资源列表
      * @param userDto
-     * @param cateSno
+     * @param cateId
      * @return
      * @throws CollectionException
      */
     public PageVo<ResourceVo> getResourceListByCate(UserDto userDto,
-                                                    int cateSno,
+                                                    Long cateId,
                                                     FilterResourceBo filterResourceBo) throws CollectionException {
 
         SysUser user = userRepository.getUser(userDto);
-        PageInfo<UserResource> resourceList = resourceRepository.getResourceListByCate(user.getUserId(), cateSno, filterResourceBo);
+        PageInfo<UserResource> resourceList = resourceRepository.getResourceListByCate(user.getUserId(), cateId, filterResourceBo);
         return buildResourceList(user, resourceList);
     }
 
@@ -329,8 +329,17 @@ public class UserResourceService {
         //先克隆资源对象，因为后面先变数据库再变文件
         List<UserResource> resources = new ArrayList<>();
         for(Long resourceId : moveToBo.getResourceIds()) {
-            resources.add(resourceRepository.getById(resourceId).clone());
+            //假如目录相同，跳过
+            UserResource resource = resourceRepository.getById(resourceId);
+            if(resource.getCataId().equals(moveToBo.getCataId())){
+                continue;
+            }
+            resources.add(resource.clone());
         }
+        if(resources.isEmpty()){
+            return;
+        }
+
         ResourceStoreStrategy resourceStoreStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
         //更新数据库
         resourceStoreStrategy.updateResourcesPath(user.getUserId(), moveToBo.getCataId(), moveToBo.getResourceIds());

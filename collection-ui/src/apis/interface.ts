@@ -7,7 +7,6 @@ export interface LoginInfo{
 }
 
 export interface Category {
-    sno: number;
     cateName: string;
     cateId: number
 }
@@ -66,7 +65,6 @@ export interface Catalog {
     id: number;
     label: string;
     level: number;
-    sno: number;
     parentId: number;
     children: Catalog[];
 }
@@ -77,7 +75,7 @@ export interface PathVo {
 }
 
 export interface PathInfo{
-    sno: number;
+    id: number;
     cataName: string;
 }
 

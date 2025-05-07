@@ -12,8 +12,8 @@
             :rules="isDeleteMode ? {} : rules"
         >
             <template v-if="!isDeleteMode">
-                <el-form-item label="分类编号" prop="sno">
-                    <span>{{ form.sno }}</span>
+                <el-form-item label="分类ID" prop="cateId">
+                    <span>{{ form.cateId }}</span>
                 </el-form-item>
                 <el-form-item label="分类名称" prop="cateName">
                     <el-input
@@ -81,7 +81,6 @@ const categories = ref<any[]>([])
 
 const form = reactive({
     cateName: '',
-    sno: null as number | null,
     cateId: null as number | null,
     removeType: '1',
     targetCateId: null as number | null
@@ -109,11 +108,9 @@ const open = async (category: Category) => {
     if (category) {
         form.cateName = category.cateName || ''
         form.cateId = category.cateId || 0
-        form.sno = category.sno || null
     }
     else{
         form.cateName = ''
-        form.sno = null
         form.cateId = null
     }
 
@@ -157,7 +154,6 @@ const loadCategories = async () => {
 // 重置表单
 const resetForm = () => {
     form.cateName = ''
-    form.sno = 1
     form.cateId = 0
     form.removeType = '1'
     form.targetCateId = null
@@ -210,7 +206,6 @@ const submitForm = async () => {
             const params = {
                 cateId: form.cateId,
                 cateName: form.cateName,
-                sno: form.sno
             }
 
             let result;

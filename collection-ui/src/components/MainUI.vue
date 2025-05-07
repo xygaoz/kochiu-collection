@@ -60,14 +60,14 @@
                                 </template>
                                 <el-menu-item
                                     v-for="category in categories"
-                                    :key="category.sno"
-                                    :index="`/Category/${category.sno}`"
-                                    @click="menuItemClick({path: `/Category/${category.sno}`})"
+                                    :key="category.cateId"
+                                    :index="`/Category/${category.cateId}`"
+                                    @click="menuItemClick({path: `/Category/${category.cateId}`})"
                                 >
                                     <template #title>
                                         <div
                                             class="menu-item-content"
-                                            @mouseenter="showCategoryActions = category.sno"
+                                            @mouseenter="showCategoryActions = category.cateId"
                                             @mouseleave="showCategoryActions = null"
                                         >
                                             <div class="menu-icon">
@@ -77,7 +77,7 @@
                                             <div class="menu-label">
                                                 {{ category.cateName }}
                                             </div>
-                                            <div class="action-buttons" v-if="showCategoryActions === category.sno">
+                                            <div class="action-buttons" v-if="showCategoryActions === category.cateId">
                                                 <el-icon
                                                     @click.stop="handleEditCategory(category)"
                                                     class="action-icon"
@@ -618,7 +618,7 @@ const toggleCatalogMenu = async (e: Event) => {
 // 处理目录节点点击
 const handleNodeClick = (data: Catalog) => {
     currentCatalog.value = data; // 保存当前选中的目录
-    router.push(`/Catalog/${data.sno}`).catch(err => {
+    router.push(`/Catalog/${data.id}`).catch(err => {
         console.error("路由跳转失败:", err);
     });
 };
@@ -639,13 +639,13 @@ const handleAddCatalog = (e: Event) => {
 const handleCategoryConfirm = async () => {
     await loadCategories();
     if (route.path.startsWith("/Category/")) {
-        let currentSno = Number(route.params.sno);
+        let currentId = Number(route.params.cateId);
         // 判断当前分类是否存在
-        let found = categories.value.some(category => category.sno === currentSno);
+        let found = categories.value.some(category => category.cateId === currentId);
         if (!found) {
-            currentSno = categories.value[0]?.sno || 0; // 确保有默认值
+            currentId = categories.value[0]?.cateId || 0; // 确保有默认值
         }
-        await router.replace(`/Category/${currentSno}`);
+        await router.replace(`/Category/${currentId}`);
     }
 };
 
@@ -654,8 +654,8 @@ const handleCatalogConfirm = async () => {
     await loadCatalogTree();
     // 如果当前路由是/Catalog页面，则重新加载
     if (route.path.startsWith("/Catalog/")) {
-        const currentSno = route.params.sno;
-        await router.replace(`/Catalog/${currentSno}`);
+        const currentId = route.params.id;
+        await router.replace(`/Catalog/${currentId}`);
     }
 };
 

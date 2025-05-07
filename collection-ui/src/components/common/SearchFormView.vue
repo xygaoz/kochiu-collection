@@ -41,8 +41,8 @@
                     <span style="margin: 0 10px 0 0;">目录:</span>
                     <span class="path-segment" v-for="(segment, index) in processedPath" :key="index">
                         <router-link
-                            v-if="segment.sno !== undefined"
-                            :to="`/Catalog/${segment.sno}`"
+                            v-if="segment.id !== undefined"
+                            :to="`/Catalog/${segment.id}`"
                             class="path-link"
                         >
                             {{ segment.name }}
@@ -188,7 +188,7 @@ const processedPath = computed(() => {
     if (pathInfo.length > 0) {
         return pathInfo.map(info => ({
             name: info.cataName,
-            sno: info.sno
+            id: info.id
         }));
     }
 
@@ -197,12 +197,12 @@ const processedPath = computed(() => {
     if (segments.length > 0) {
         return segments.map(segment => ({
             name: segment,
-            sno: undefined
+            id: undefined
         }));
     }
 
-    // 默认返回当前目录 - 修改这里，直接使用 props.id 而不是 props.id.value
-    return [{ name: '当前目录', sno: props.id }];
+    // 默认返回当前目录
+    return [{ name: '当前目录', id: props.id }];
 });
 
 const checkCollapseNeed = () => {
@@ -270,7 +270,6 @@ const getCategories = async () => {
         // 在获取的分类数组开头插入"全部"选项
         categories.value = [
             {
-                sno: 0,          // 使用0或其他唯一标识
                 cateName: "全部",
                 cateId: 0        // 同样保持唯一
             },
@@ -280,7 +279,6 @@ const getCategories = async () => {
         console.error("加载失败:", error);
         // 即使出错也保证有"全部"选项
         categories.value = [{
-            sno: 0,
             cateName: "全部",
             cateId: 0
         }];

@@ -1,6 +1,6 @@
 <template>
     <el-sub-menu
-        :index="`/Catalog/${item.sno}`"
+        :index="`/Catalog/${item.id}`"
         :key="item.id"
         v-if="item.children && item.children.length > 0 && item.level < 4"
     >
@@ -62,8 +62,8 @@
     </el-sub-menu>
     <el-menu-item
         v-else
-        :index="`/Catalog/${item.sno}`"
-        :key="item.id"
+        :index="`/Catalog/${item.id}`"
+        :key="`${item.id}_${item.level}`"
         @click="handleItemClick(item)"
     >
         <div class="menu-item-content" @mouseenter="showActions = item.level > 0" @mouseleave="showActions = false">

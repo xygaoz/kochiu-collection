@@ -241,7 +241,7 @@ export const listAllCateFiles = (page: number, size: number, params: any): Promi
     });
 }
 
-export const listCatalogFiles = (sno: string, page: number, size: number, params: any): Promise<PageInfo<Resource>> => {
+export const listCatalogFiles = (cataId: string, page: number, size: number, params: any): Promise<PageInfo<Resource>> => {
     const ld = loading("加载中")
     // 合并分页参数和其他参数
     const requestParams: { [key: string]: any } = {
@@ -251,7 +251,7 @@ export const listCatalogFiles = (sno: string, page: number, size: number, params
     Object.keys(params).forEach(key => {
         requestParams[key] = params[key];
     });
-    return httpInstance.post(resourceApi + "/catalog/" + sno, requestParams).then((model: any) => {
+    return httpInstance.post(resourceApi + "/catalog/" + cataId, requestParams).then((model: any) => {
         if (model) {
             console.log("获取文件列表成功:", model);
             return model as PageInfo<Resource>;

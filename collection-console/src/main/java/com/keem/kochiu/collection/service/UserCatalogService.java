@@ -104,17 +104,17 @@ public class UserCatalogService {
     /**
      * 获取目录路径
      * @param userDto
-     * @param sno
+     * @param id
      * @return
      * @throws CollectionException
      */
-    public PathVo getCatalogPath(UserDto userDto, int sno) throws CollectionException {
+    public PathVo getCatalogPath(UserDto userDto, int id) throws CollectionException {
 
         PathVo pathVo = new PathVo();
         SysUser user = userRepository.getUser(userDto);
         UserCatalog userCatalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
                 .eq(UserCatalog::getUserId, user.getUserId())
-                .eq(UserCatalog::getCataSno, sno));
+                .eq(UserCatalog::getCataId, id));
         if(userCatalog == null){
             pathVo.setPath("/我的资源");
             return pathVo;
@@ -128,7 +128,7 @@ public class UserCatalogService {
         }
         List<UserCatalog> catalogList = catalogRepository.selectParentCata(user.getUserId(), userCatalog.getCataId());
         catalogList.forEach(catalog ->
-                pathVo.getPathInfo().add(new PathVo.PathInfo(catalog.getCataSno(), catalog.getCataName()))
+                pathVo.getPathInfo().add(new PathVo.PathInfo(catalog.getCataId(), catalog.getCataName()))
         );
 
         return pathVo;
@@ -231,7 +231,7 @@ public class UserCatalogService {
         SysUser user = userRepository.getUser(userDto);
         UserCatalog userCatalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
                 .eq(UserCatalog::getUserId, user.getUserId())
-                .eq(UserCatalog::getCataId, catalogBo.getCateId()));
+                .eq(UserCatalog::getCataId, catalogBo.getCataId()));
         if(userCatalog == null){
             throw new CollectionException(ErrorCodeEnum.CATALOG_NOT_EXIST);
         }
@@ -262,7 +262,7 @@ public class UserCatalogService {
             // 更新物理文件夹
             ResourceStoreStrategy resourceStoreStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
             //更新数据库
-            resourceStoreStrategy.updateResourcePath(user.getUserId(), catalogBo.getCateId(), catalogBo.getCateId());
+            resourceStoreStrategy.updateResourcePath(user.getUserId(), catalogBo.getCataId(), catalogBo.getCataId());
             if (!resourceStoreStrategy.renameFolder(
                     ("/" + user.getUserCode() + "/" + oldPath).replaceAll("//", "/"),
                     ("/" + user.getUserCode() + "/" + newPath).replaceAll("//", "/"),
@@ -310,7 +310,7 @@ public class UserCatalogService {
 
             ResourceStoreStrategy resourceStoreStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
             //更新数据库
-            resourceStoreStrategy.updateResourcePath(user.getUserId(), targetCataId, catalogBo.getCateId());
+            resourceStoreStrategy.updateResourcePath(user.getUserId(), targetCataId, catalogBo.getCataId());
             // 更新物理文件夹
             if (!resourceStoreStrategy.renameFolder(
                     ("/" + user.getUserCode() + "/" + oldPath).replaceAll("//", "/"),
@@ -328,7 +328,7 @@ public class UserCatalogService {
         SysUser user = userRepository.getUser(userDto);
         UserCatalog userCatalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
                 .eq(UserCatalog::getUserId, user.getUserId())
-                .eq(UserCatalog::getCataId, catalogBo.getCateId()));
+                .eq(UserCatalog::getCataId, catalogBo.getCataId()));
         if(userCatalog == null){
             throw new CollectionException(ErrorCodeEnum.CATALOG_NOT_EXIST);
         }
@@ -373,7 +373,7 @@ public class UserCatalogService {
 
             ResourceStoreStrategy resourceStoreStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
             //更新数据库
-            resourceStoreStrategy.updateResourcePath(user.getUserId(), catalogBo.getParentId(), catalogBo.getCateId());
+            resourceStoreStrategy.updateResourcePath(user.getUserId(), catalogBo.getParentId(), catalogBo.getCataId());
             // 更新物理文件夹
             if (!resourceStoreStrategy.renameFolder(
                     ("/" + user.getUserCode() + "/" + userCatalog.getCataPath()).replaceAll("//", "/"),

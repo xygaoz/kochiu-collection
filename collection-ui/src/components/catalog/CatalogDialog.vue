@@ -8,9 +8,6 @@
         <el-form :model="form" label-width="90px" :rules="isDeleteMode ? {} : rules"
                  ref="formRef"
         >
-            <el-form-item label="目录编号" prop="sno">
-                <span>{{ form.sno }}</span>
-            </el-form-item>
             <el-form-item label="目录名称" v-if="!isDeleteMode" prop="cataName">
                 <el-input v-model="form.cataName" />
             </el-form-item>
@@ -42,24 +39,22 @@
 import { ref, defineEmits, defineExpose } from 'vue';
 import { Catalog } from "@/apis/interface";
 import { addCatalog, updateCatalog, deleteCatalog, getCatalogTree } from "@/apis/catalog-api";
-import { ElMessage, ElMessageBox } from "element-plus";
-import { restoreFormRecycle } from "@/apis/resource-api";
+import { ElMessage, ElMessageBox, FormInstance } from "element-plus";
 
 const visible = ref(false);
 const isDeleteMode = ref(false);
 const dialogTitle = ref('新增目录');
 const currentCatalog = ref<Catalog | null>(null);
 const form = ref({
-    cateId: null as number | null,
+    cataId: null as number | null,
     cataName: '',
     parentId: null as number | null,
     removeType: '1',
-    sno: null as number | null
 });
 const catalogTree = ref<Catalog[]>([]);
 const emit = defineEmits(['confirm']);
 const loading = ref(false);
-const formRef = ref(null); // 添加表单引用
+const formRef = ref<FormInstance | null>(null); // 添加表单引用
 
 const treeProps = {
     value: 'id',
@@ -88,17 +83,17 @@ const open = async (parentId?: number, catalog?: Catalog) => {
         catalogTree.value = await getCatalogTree();
         if (catalog) {
             form.value = {
-                cateId: catalog.id,
+                cataId: catalog.id,
                 cataName: catalog.label,
                 parentId: catalog.parentId || parentId || null,
-                sno: catalog.sno
+                removeType: '1',
             };
         } else {
             form.value = {
-                cateId: null,
+                cataId: null,
                 cataName: '',
                 parentId: parentId || null,
-                sno: null
+                removeType: '1',
             };
         }
     } catch (error) {
@@ -119,11 +114,10 @@ const openForDelete = async (parentId: number | undefined, catalog: Catalog) => 
     try {
         catalogTree.value = await getCatalogTree();
         form.value = {
-            cateId: catalog.id,
+            cataId: catalog.id,
             cataName: catalog.label,
             parentId: parentId || null,
             removeType: '1',
-            sno: catalog.sno
         };
     } catch (error) {
         console.error('加载目录树失败:', error);
@@ -165,9 +159,14 @@ const handleConfirm = async () => {
     } else {
         // 新增/修改操作
         try {
-            formRef.value.validate(async (valid) => {
+            if (!formRef.value) {
+                console.error('表单引用未初始化');
+                return;
+            }
+            
+            formRef.value.validate(async (valid: boolean) => {
                 if (valid) {
-                    if (form.value.cateId) {
+                    if (form.value.cataId) {
                         // 修改
                         if (await updateCatalog(form.value)) {
                             ElMessage.success('目录修改成功');
@@ -188,7 +187,7 @@ const handleConfirm = async () => {
                 }
             });
         } catch (error) {
-            ElMessage.error(form.value.cateId ? '目录修改失败' : '目录添加失败');
+            ElMessage.error(form.value.cataId ? '目录修改失败' : '目录添加失败');
             console.error('操作失败:', error);
         }
     }

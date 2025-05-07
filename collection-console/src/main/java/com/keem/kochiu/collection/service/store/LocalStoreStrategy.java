@@ -25,7 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpMethod;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -459,23 +458,27 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
             //资源路径
             //截取文件名
             String fileName = userResource.getFilePath().substring(userResource.getResourceUrl().lastIndexOf("/") + 1);
-            userResource.setFilePath("/" + user.getUserCode() + parentCatalog.getCataPath() + "/" + fileName);
+            userResource.setFilePath(normPath("/" + user.getUserCode() + parentCatalog.getCataPath() + "/" + fileName));
             if(userResource.getResourceUrl() != null){
                 fileName = userResource.getResourceUrl().substring(userResource.getResourceUrl().lastIndexOf("/") + 1);
-                userResource.setResourceUrl("/" + user.getUserCode() + parentCatalog.getCataPath() + "/" + fileName);
+                userResource.setResourceUrl(normPath("/" + user.getUserCode() + parentCatalog.getCataPath() + "/" + fileName));
             }
             if(userResource.getThumbUrl() != null) {
                 fileName = userResource.getThumbUrl().substring(userResource.getThumbUrl().lastIndexOf("/") + 1);
-                userResource.setThumbUrl("/" + user.getUserCode() + parentCatalog.getCataPath() + "/" + fileName);
+                userResource.setThumbUrl(normPath("/" + user.getUserCode() + parentCatalog.getCataPath() + "/" + fileName));
             }
             if(userResource.getPreviewUrl() != null) {
                 fileName = userResource.getPreviewUrl().substring(userResource.getPreviewUrl().lastIndexOf("/") + 1);
-                userResource.setPreviewUrl("/" + user.getUserCode() + parentCatalog.getCataPath() + "/" + fileName);
+                userResource.setPreviewUrl(normPath("/" + user.getUserCode() + parentCatalog.getCataPath() + "/" + fileName));
             }
             if(!resourceRepository.updateById(userResource)){
                 throw new CollectionException(ErrorCodeEnum.UPDATE_CATALOG_FAIL);
             }
         }
         return false;
+    }
+
+    private String normPath(String path){
+        return path.replaceAll("\\\\", "/").replaceAll("//", "/");
     }
 }

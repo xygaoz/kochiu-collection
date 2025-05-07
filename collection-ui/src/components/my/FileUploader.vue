@@ -17,9 +17,9 @@
                     >
                         <el-option
                             v-for="category in categories"
-                            :key="category.sno"
+                            :key="category.cateId"
                             :label="category.cateName"
-                            :value="category.sno"
+                            :value="category.cateId"
                         />
                     </el-select>
                 </div>
@@ -324,7 +324,6 @@ onMounted(async () => {
         categoriesRes.forEach((item: Category) => {
             categories.push({
                 cateId: item.cateId,
-                sno: item.sno,
                 cateName: item.cateName,
             });
         });

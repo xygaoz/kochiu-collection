@@ -38,7 +38,7 @@ public class UserResourceController {
 
     @CheckPermit
     @PostMapping(RESOURCE_PATH + "/category/{cateId}")
-    public DefaultResult<PageVo<ResourceVo>> getResourceListByCate(@PathVariable int cateId,
+    public DefaultResult<PageVo<ResourceVo>> getResourceListByCate(@PathVariable Long cateId,
                                                                    FilterResourceBo filterResourceBo) throws CollectionException {
         return DefaultResult.ok(resourceService.getResourceListByCate(CheckPermitAspect.USER_INFO.get(), cateId, filterResourceBo));
     }
@@ -176,10 +176,10 @@ public class UserResourceController {
      * @throws CollectionException
      */
     @CheckPermit
-    @PostMapping(RESOURCE_PATH + "/catalog/{sno}")
-    public DefaultResult<PageVo<ResourceVo>> getResourceListByCatalog(@PathVariable int sno,
+    @PostMapping(RESOURCE_PATH + "/catalog/{cataId}")
+    public DefaultResult<PageVo<ResourceVo>> getResourceListByCatalog(@PathVariable long cataId,
                                                                   FilterResourceBo filterResourceBo) throws CollectionException {
-        filterResourceBo.setCataSno(sno);
+        filterResourceBo.setCataId(cataId);
         return DefaultResult.ok(resourceService.getResourceListByCatalog(CheckPermitAspect.USER_INFO.get(), filterResourceBo));
     }
 

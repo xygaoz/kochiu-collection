@@ -14,7 +14,7 @@ export const getCatalogTree = (): Promise<Catalog[]> => {
     });
 }
 
-export const addCatalog = (data: { cataName: string, parentId?: number }): Promise<boolean> => {
+export const addCatalog = (data: any): Promise<boolean> => {
 
     return httpInstance.post(catalogApi + "/add", data).then((model: any) => {
         return !!model;
@@ -24,8 +24,8 @@ export const addCatalog = (data: { cataName: string, parentId?: number }): Promi
     })
 }
 
-export const getCatalogPath = async (sno: string): Promise<PathVo> => {
-    return httpInstance.get(catalogApi + "/path/" + sno).then((model: any) => {
+export const getCatalogPath = async (id: string): Promise<PathVo> => {
+    return httpInstance.get(catalogApi + "/path/" + id).then((model: any) => {
         if (model) {
             return model as PathVo;
         }
@@ -36,7 +36,7 @@ export const getCatalogPath = async (sno: string): Promise<PathVo> => {
     });
 }
 
-export const updateCatalog = (data: { cateId: number; cataName: string; parentId?: number }) => {
+export const updateCatalog = (data: any) => {
     return httpInstance.post(catalogApi + "/update", data).then((model: any) => {
         return !!model;
     }).catch((error) => {
@@ -45,7 +45,7 @@ export const updateCatalog = (data: { cateId: number; cataName: string; parentId
     })
 };
 
-export const deleteCatalog = (data: {cateId: number, newParentId: number, removeType: number}) => {
+export const deleteCatalog = (data: any) => {
     return httpInstance.post(catalogApi + "/remove", data).then((model: any) => {
         return !!model;
     }).catch((error) => {

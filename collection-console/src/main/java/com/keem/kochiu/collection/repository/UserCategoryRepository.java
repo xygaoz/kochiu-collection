@@ -107,7 +107,6 @@ public class UserCategoryRepository extends ServiceImpl<UserCategoryMapper, User
         if(save(userCategory)){
             return CategoryVo.builder()
                     .cateName(cateName)
-                    .sno(userCategory.getSno())
                     .cateId(baseMapper.selectLastInsertId())
                     .build();
         }

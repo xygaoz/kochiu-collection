@@ -53,16 +53,15 @@ public class UserCategoryService {
         return categoryList.stream().map(category -> CategoryVo.builder()
                 .cateId(category.getCateId())
                 .cateName(category.getCateName())
-                .sno(category.getSno())
                 .build()).toList();
     }
 
-    public CategoryVo getCategoryInfo(UserDto userDto, int cateSno) throws CollectionException {
+    public CategoryVo getCategoryInfo(UserDto userDto, long cateId) throws CollectionException {
 
         SysUser user = userRepository.getUser(userDto);
         UserCategory category = userCategoryRepository.getOne(new LambdaQueryWrapper<UserCategory>()
                 .eq(UserCategory::getUserId, user.getUserId())
-                .eq(UserCategory::getSno, cateSno));
+                .eq(UserCategory::getCateId, cateId));
         return CategoryVo.builder()
                 .cateId(category.getCateId())
                 .cateName(category.getCateName())
@@ -82,7 +81,6 @@ public class UserCategoryService {
         return categoryList.stream().map(category -> CategoryVo.builder()
                 .cateId(category.getCateId())
                 .cateName(category.getCateName())
-                .sno(category.getSno())
                 .build()).toList();
     }
 

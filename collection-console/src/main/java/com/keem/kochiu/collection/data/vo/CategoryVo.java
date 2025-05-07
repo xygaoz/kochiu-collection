@@ -7,6 +7,5 @@ import lombok.Data;
 @Data
 public class CategoryVo {
     private Long cateId;
-    private int sno;
     private String cateName;
 }

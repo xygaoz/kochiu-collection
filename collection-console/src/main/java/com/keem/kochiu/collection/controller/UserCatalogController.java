@@ -36,9 +36,9 @@ public class UserCatalogController {
     }
 
     @CheckPermit
-    @GetMapping("/path/{sno}")
-    public DefaultResult<PathVo> getCatalogPath(@PathVariable int sno) throws CollectionException {
-        return DefaultResult.ok(userCatalogService.getCatalogPath(CheckPermitAspect.USER_INFO.get(), sno));
+    @GetMapping("/path/{id}")
+    public DefaultResult<PathVo> getCatalogPath(@PathVariable int id) throws CollectionException {
+        return DefaultResult.ok(userCatalogService.getCatalogPath(CheckPermitAspect.USER_INFO.get(), id));
     }
 
     @CheckPermit

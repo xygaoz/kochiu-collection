@@ -17,6 +17,7 @@ import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.handler.ImportProgressWebSocketHandler;
 import com.keem.kochiu.collection.repository.SysUserRepository;
 import com.keem.kochiu.collection.repository.UserCatalogRepository;
+import com.keem.kochiu.collection.repository.UserCategoryRepository;
 import com.keem.kochiu.collection.repository.UserResourceRepository;
 import com.keem.kochiu.collection.service.store.ResourceStoreStrategy;
 import com.keem.kochiu.collection.service.store.ResourceStrategyFactory;
@@ -53,13 +54,15 @@ public class ResourceFileService {
     private final UserCatalogRepository catalogRepository;
     private final SystemService systemService;
     private final ObjectMapper objectMapper;
+    private final UserCategoryRepository  userCategoryRepository;
 
     public ResourceFileService(ResourceStrategyFactory resourceStrategyFactory,
                                SysUserRepository userRepository,
                                UserResourceRepository resourceRepository,
                                UserCatalogService userCatalogService,
                                UserCatalogRepository catalogRepository,
-                               SystemService systemService, ObjectMapper objectMapper) {
+                               SystemService systemService, ObjectMapper objectMapper,
+                               UserCategoryRepository userCategoryRepository) {
         this.resourceStrategyFactory = resourceStrategyFactory;
         this.userRepository = userRepository;
         this.resourceRepository = resourceRepository;
@@ -67,6 +70,7 @@ public class ResourceFileService {
         this.catalogRepository = catalogRepository;
         this.systemService = systemService;
         this.objectMapper = objectMapper;
+        this.userCategoryRepository = userCategoryRepository;
     }
 
     /**
@@ -95,7 +99,7 @@ public class ResourceFileService {
                         uploadBo.getCategoryId(),
                         uploadBo.getCataId(),
                         uploadBo.isOverwrite(),
-                        uploadBo.isAutoCreate(),
+                        uploadBo.getAutoCreate(),
                         user.getStrategy());
             } catch (IOException e) {
                 log.error("文件保存失败", e);
@@ -136,7 +140,7 @@ public class ResourceFileService {
                               Long categoryId,
                               Long cataId,
                               boolean isOverwrite,
-                              boolean isAutoCreate,
+                              Boolean isAutoCreate,
                               String strategy
                               ) throws CollectionException {
         List<UserResource> resources =resourceRepository.countFileMd5(userDto.getUserId(), md5);
@@ -144,13 +148,13 @@ public class ResourceFileService {
             throw new CollectionException(FILE_IS_EXIST);
         }
 
-        UserCatalog catalog = catalogRepository.getById(cataId);
-        if(catalog == null){
-            throw new CollectionException(ErrorCodeEnum.CATEGORY_NOT_EXIST);
+        if(categoryId != null) {
+            if (userCategoryRepository.getById(categoryId) == null) {
+                throw new CollectionException(ErrorCodeEnum.CATEGORY_NOT_EXIST);
+            }
         }
-        if(!isAutoCreate && (cataId == null || catalogRepository.getById(cataId) == null)){
-            //非自动创建目录，检查目录是否存在
-            throw new CollectionException(ErrorCodeEnum.CATALOG_NOT_EXIST);
+        if(isAutoCreate == null){
+            isAutoCreate = cataId == null;
         }
 
         String savePath;
@@ -167,7 +171,17 @@ public class ResourceFileService {
             }
         }
         else{
-            savePath = "/" + userDto.getUserCode() + "/" + catalog.getCataPath();
+            if(cataId == null){
+                throw new CollectionException(ErrorCodeEnum.CATALOG_NOT_EXIST);
+            }
+            else{
+                //非自动创建目录，检查目录是否存在
+                UserCatalog catalog = catalogRepository.getById(cataId);
+                if(catalog == null){
+                    throw new CollectionException(ErrorCodeEnum.CATALOG_NOT_EXIST);
+                }
+                savePath = "/" + userDto.getUserCode() + "/" + catalog.getCataPath();
+            }
         }
         savePath = savePath.replaceAll("//", "/");
         if(savePath.endsWith("/")){

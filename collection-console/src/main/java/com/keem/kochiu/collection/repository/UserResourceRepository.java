@@ -71,11 +71,11 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
     /**
      * 获取分类下资源列表
      * @param userId
-     * @param cateSno
+     * @param cateId
      * @return
      * @throws CollectionException
      */
-    public PageInfo<UserResource> getResourceListByCate(int userId, int cateSno, FilterResourceBo filterResourceBo) throws CollectionException {
+    public PageInfo<UserResource> getResourceListByCate(int userId, long cateId, FilterResourceBo filterResourceBo) throws CollectionException {
 
         try(Page<UserResource> page = PageHelper.startPage(filterResourceBo.getPageNum(), filterResourceBo.getPageSize())) {
 
@@ -86,7 +86,7 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
                 }
             }
             return new PageInfo<>(baseMapper.selectCategoryResource(userId,
-                    categoryRepository.getCateId(userId, cateSno),
+                    cateId,
                     filterResourceBo.getKeyword(),
                     fileExtList.toArray(new String[0]),
                     filterResourceBo.getTags()));
@@ -307,7 +307,7 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
 
             if(filterResourceBo.isInclude()) {
                 return new PageInfo<>(baseMapper.selectCatalogResourceIncludeSub(userId,
-                        filterResourceBo.getCataSno(),
+                        filterResourceBo.getCataId(),
                         filterResourceBo.getCateId(),
                         filterResourceBo.getKeyword(),
                         fileExtList.toArray(new String[0]),
@@ -316,7 +316,7 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
             }
             else{
                 return new PageInfo<>(baseMapper.selectCatalogResource(userId,
-                        filterResourceBo.getCataSno(),
+                        filterResourceBo.getCataId(),
                         filterResourceBo.getCateId(),
                         filterResourceBo.getKeyword(),
                         fileExtList.toArray(new String[0]),

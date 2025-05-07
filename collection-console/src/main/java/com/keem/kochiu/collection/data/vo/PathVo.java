@@ -11,12 +11,12 @@ import java.util.List;
 @Data
 public class PathVo {
     private String path;
-    private List<PathInfo> pathInfo = new ArrayList();
+    private List<PathInfo> pathInfo = new ArrayList<>();
 
     @AllArgsConstructor
     @Data
     public static class PathInfo{
-        private int sno;
+        private Long id;
         private String cataName;
     }
 }

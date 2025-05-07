@@ -153,7 +153,7 @@
             FROM
                 user_catalog
             WHERE
-                cata_sno = #{cataSno}
+                cata_id = #{cataId}
               AND user_id = #{userId}
 
             UNION ALL
@@ -220,8 +220,8 @@
             <if test="cateId != null and cateId > 0">
                 AND c.CATE_ID = #{cateId}
             </if>
-            <if test="cataSno != null">
-                AND ft.cata_sno = #{cataSno}
+            <if test="cataId != null">
+                AND ft.cata_id = #{cataId}
             </if>
             <if test="keyword != null and keyword != ''">
                 <bind name="pattern" value="'%' + keyword + '%'"/>

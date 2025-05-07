@@ -13,5 +13,5 @@ public class UploadBo {
     private Long categoryId;
     private boolean overwrite;
     private Long cataId;
-    private boolean autoCreate;
+    private Boolean autoCreate;
 }

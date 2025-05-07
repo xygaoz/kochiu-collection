@@ -1,10 +1,10 @@
 <template>
     <ResourceView
-        v-if="cataSno"
+        v-if="cataId"
         v-model:files="files"
         :loading="loading"
         :data-type="dataType"
-        :id="cataSno"
+        :id="cataId"
         @update-file="handleFileUpdate"
         @filter-data="handleSearch"
     />
@@ -28,18 +28,19 @@ const searchData = ref<SearchForm>({
     keyword: '',
     types: [],
     tags: [],
-    include: false
+    include: false,
+    cateId: ''
 });
 
-const cataSno = ref("")
+const cataId = ref("")
 
 watch(
-    () => route.params.sno,
+    () => route.params.id,
     async (newId) => {
         if (newId) {
             try {
                 loading.value = true;
-                cataSno.value = newId as string;
+                cataId.value = newId as string;
                 // 加载文件列表
                 const data = await listCatalogFiles(newId as string, currentPage.value, pageSize.value,
                     searchData.value
@@ -71,7 +72,7 @@ const handleSearch = async (searchForm: SearchForm) => {
     try {
         loading.value = true;
         currentPage.value = 1
-        const data = await listCatalogFiles(cataSno.value, currentPage.value, pageSize.value, searchForm);
+        const data = await listCatalogFiles(cataId.value, currentPage.value, pageSize.value, searchForm);
         files.value = data.list;
         total.value = data.total;
         currentPage.value = data.pageNum;

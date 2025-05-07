@@ -48,7 +48,7 @@ public interface UserResourceMapper extends BaseMapper<UserResource> {
 
     List<UserResource> selectCatalogResourceIncludeSub(
             @Param("userId") int userId,
-            @Param("cataSno") Integer cataSno,
+            @Param("cataId") Long cataId,
             @Param("cateId") Long cateId,
             @Param("keyword") String keyword,
             @Param("types") String[] types,
@@ -57,7 +57,7 @@ public interface UserResourceMapper extends BaseMapper<UserResource> {
 
     List<UserResource> selectCatalogResource(
             @Param("userId") int userId,
-            @Param("cataSno") Integer cataSno,
+            @Param("cataId") Long cataId,
             @Param("cateId") Long cateId,
             @Param("keyword") String keyword,
             @Param("types") String[] types,
