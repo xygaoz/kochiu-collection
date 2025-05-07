@@ -2,15 +2,19 @@ server:
   ## 服务端口（可选，默认9000）
   port: 9000
   servlet:
-  ## 服务上下文（可选，默认/collection）
-    context-path: /collection
+    context-path: /collection ## 服务上下文（可选，默认/collection）
 
 collection:
-  ## 服务端存储路径
-  upload-path: /Volumes/Document/Temp/collection
-  ## LibreOffice安装路径（可选）
-  office-home: /Applications/LibreOffice.app/Contents
-  ## FFmpeg安装路径（可选）
+  jodconverter:
+    enabled: true
+    mode: local #local 或 remote
+    remote: #LibreOffice远程模式
+      username: admin
+      password: 123456
+      api-url: http://localhost:8080/lool/convert-to/pdf #只能设置转dpf接口
+      timeout: 300000 #单位：毫秒(5分钟)
+    local: #LibreOffice本地模式
+      office-home: /Applications/LibreOffice.app/Contents #本地LibreOffice安装路径
   ffmpeg-path: /opt/homebrew/Cellar/ffmpeg/7.1.1_1/bin
   ## 文件上传类型（可选，以下类型已经支持，如要添加，请自行修改，测试未必通过）
   upload-type:

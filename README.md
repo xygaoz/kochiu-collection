@@ -4,7 +4,9 @@
 - 安装 Java v17 或更高版本。
 - 下载或执行maven打包
 - 创建运行环境配置文件 `application-prod.yml`，参考 `application.yml.example`。
-- 运行 `java -jar kochiu-collection-1.0.0.jar -active=prod`。
+- 运行<br>
+  - Windows: 双击run.bat，或者命令窗口运行run.sh。
+  - Linux/MacOs/群晖: 执行run.sh。
 - 访问 `http://localhost:8080`。
 ### 后端依赖
   - 安装 LibreOffice(可选)<br>
@@ -13,20 +15,20 @@
     - Linux: sudo apt install libreoffice (Ubuntu/Debian) 或 sudo yum install libreoffice (CentOS)。
     - macOS: 通过 Homebrew 安装：brew install --cask libreoffice。
     - docker:<br>
-        docker run -d \
-        -p 8080:8080 \
-        --name jodconverter \
-        -v /path/fonts:/usr/share/fonts/chinese \ # 替换为实际中文字体路径
-        -e SPRING_SECURITY_USER_NAME=admin \  # 替换为实际用户名
-        -e SPRING_SECURITY_USER_PASSWORD=123456 \ # 替换为实际密码
-        -e SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE=500MB \ # 最大文件大小
-        -e SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE=500MB \ # 最大请求大小
-        -e JODCONVERTER_TASK_TIMEOUT=300000 \     # 5分钟超时
-        -e JAVA_OPTS="-Xmx2g -Xms1g" \           # 增加JVM内存
-        -e JODCONVERTER_OFFICE_PROCESS_COUNT=2 \  # 启动多个Office进程
-        -e JODCONVERTER_STARTPROCESS_MAXRETRIES=5 \
-        --memory="3g" \                          # 容器内存限制
-        --restart always \
+        docker run -d \ <br>
+        -p 8080:8080 \ <br>
+        --name jodconverter \ <br>
+        -v /path/fonts:/usr/share/fonts/chinese \ # 替换为实际中文字体路径<br>
+        -e SPRING_SECURITY_USER_NAME=admin \  # 替换为实际用户名<br>
+        -e SPRING_SECURITY_USER_PASSWORD=123456 \ # 替换为实际密码<br>
+        -e SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE=500MB \ # 最大文件大小<br>
+        -e SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE=500MB \ # 最大请求大小<br>
+        -e JODCONVERTER_TASK_TIMEOUT=300000 \     # 5分钟超时<br>
+        -e JAVA_OPTS="-Xmx2g -Xms1g" \           # 增加JVM内存<br>
+        -e JODCONVERTER_OFFICE_PROCESS_COUNT=2 \  # 启动多个Office进程<br>
+        -e JODCONVERTER_STARTPROCESS_MAXRETRIES=5 \<br>
+        --memory="3g" \                          # 容器内存限制<br>
+        --restart always \ <br>
         eugenmayer/jodconverter:rest-0.2.0<br><br>
         文档类型基准测试：
       
@@ -42,9 +44,12 @@
 
 ### 客户端
 - PicGo
-  1. 下载并安装[PicGo](https://github.com/Molunerfinn/PicGo)。
-  2. 插件设置，搜索"web-uploader-byzh 1.1.1"安装
-  3. 图床设置->自定义Web图床，填入相关信息，点击保存。
-![img.png](docs/img.png)
-  4. 上传区，选择设置好的图床
+  1. 下载并安装[PicGo](https://github.com/Molunerfinn/PicGo)。<br>
+  2. 插件设置，搜索"web-uploader-byzh 1.1.1"安装<br>
+  3. 图床设置->自定义Web图床，填入相关信息，点击保存。<br>
+  ![img.png](docs/img.png)
+   - 自定义Body可以用json格式，例如：{"categoryId":1}，上传是默认传到某个分类下，分类ID可以通过后台选择某个分类时获取<br>
+  ![img.png](docs/img_2.png)
+   - 自定义请求头用json格式填入，例如：{"Authorization":"xxxx"}，必填项
+  4. 上传区，选择设置好的图床<br>
   ![img_1.png](docs/img_1.png)

@@ -1,0 +1,1 @@
+nohup java -Xms512m -Xmx2048m -Xss256k -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=512m -XX:MaxDirectMemorySize=512m -jar -Dspring.profiles.active=prod kochiu-collection-0.1.0.jar >/dev/null 2>&1 &
