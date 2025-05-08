@@ -2,7 +2,7 @@ package com.keem.kochiu.collection.annotation;
 
 /**
  *
- * @author 高照
+ * @author KoChiu
  * @date 2022/6/22
  */
 public @interface Module {

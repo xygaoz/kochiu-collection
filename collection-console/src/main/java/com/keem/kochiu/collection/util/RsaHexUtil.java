@@ -21,7 +21,7 @@ import java.util.Base64;
  * RSA 工具类。提供加密，解密，生成密钥对等方法。
  * 需要到http://www.bouncycastle.org下载bcprov-jdk14-123.jar。
  *
- * @author kochiu
+ * @author KoChiu
  */
 public class RsaHexUtil {
 

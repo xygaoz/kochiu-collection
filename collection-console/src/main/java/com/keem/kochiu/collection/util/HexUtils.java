@@ -3,7 +3,7 @@ package com.keem.kochiu.collection.util;
 import java.util.Base64;
 
 /**
- * @author gz
+ * @author KoChiu
  */
 public class HexUtils {
 
