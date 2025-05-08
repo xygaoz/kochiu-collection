@@ -340,7 +340,7 @@ public class SysUserService {
         // 1. 获取用户信息
         SysUser user = userRepository.getUser(userDto);
         if (user == null) {
-            throw new CollectionException("用户不存在");
+            throw new CollectionException(ErrorCodeEnum.USER_IS_NOT_EXIST);
         }
 
         // 2. 获取用户有权限的模块

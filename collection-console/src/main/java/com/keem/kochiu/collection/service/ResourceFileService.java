@@ -334,7 +334,7 @@ public class ResourceFileService {
                     new ImportProgressWebSocketHandler.ImportProgress(-1, files.size(), successCount, failCount, "", "error", "系统错误")
             );
             log.error("批量导入失败", e);
-            throw new CollectionException(ErrorCodeEnum.IMPORT_ERROR, "系统错误");
+            throw new CollectionException(ErrorCodeEnum.IMPORT_ERROR);
         }
     }
 

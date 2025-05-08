@@ -36,8 +36,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import static com.keem.kochiu.collection.enums.ErrorCodeEnum.ILLEGAL_REQUEST;
-import static com.keem.kochiu.collection.enums.ErrorCodeEnum.UNSUPPORTED_FILE_TYPES;
+import static com.keem.kochiu.collection.enums.ErrorCodeEnum.*;
 
 @Slf4j
 @Service("local")
@@ -71,10 +70,10 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
                     .last("limit 1")
             );
         } catch (Exception e) {
-            throw new RuntimeException("获取本地存储策略失败");
+            throw new RuntimeException(LOCAL_STRATEGY_IS_INVALID.getMessage());
         }
         if(strategy == null){
-            throw new RuntimeException("获取本地存储策略失败");
+            throw new RuntimeException(LOCAL_STRATEGY_IS_INVALID.getMessage());
         }
     }
 

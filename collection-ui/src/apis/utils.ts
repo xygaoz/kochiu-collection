@@ -154,7 +154,7 @@ export const refreshAccessToken = async () => {
 
         return response.data.token; // 假设返回 { token: 'xxx', expiresIn: 1800 }
     } catch (err) {
-        throw new Error('刷新Token失败');
+        console.error('刷新Token失败');
     }
 };
 
@@ -253,7 +253,10 @@ export const encryptPassword = (publicKey: string, password: string) => {
     }
     // 同步加密（JSEncrypt默认是同步操作）
     const encrypted = encryptor.encrypt(password);
-    if (!encrypted) throw new Error('加密失败');
+    if (!encrypted){
+        ElMessage.error('加密失败');
+        return
+    }
 
     // 执行加密
     return encrypted;

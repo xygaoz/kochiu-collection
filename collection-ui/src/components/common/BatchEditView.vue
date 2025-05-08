@@ -409,7 +409,8 @@ const handleTagInputConfirm = async () => {
 
         // 1. 防御性检查
         if (!localSelectedFiles.value || !Array.isArray(localSelectedFiles.value)) {
-            throw new Error("文件数据未初始化");
+            console.error("文件数据未初始化");
+            return;
         }
 
         // 2. 检查标签是否已存在（不区分大小写）

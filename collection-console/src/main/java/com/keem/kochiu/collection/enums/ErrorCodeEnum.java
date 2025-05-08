@@ -54,6 +54,7 @@ public enum ErrorCodeEnum {
     PERMISSION_IS_INVALID("1052", "无权限访问"),
     ROLE_IS_NOT_EXIST("1053", "角色不存在"),
     STRATEGY_IS_NOT_EXIST("1054", "存储策略不存在"),
+    LOCAL_STRATEGY_IS_INVALID("1055", "获取本地存储策略失败"),
     ;
 
     private final String code;
