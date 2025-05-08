@@ -31,7 +31,7 @@
                 </el-form-item>
 
                 <!-- Key - 可重置 -->
-                <el-form-item label="Key">
+                <el-form-item label="密钥">
                     <el-input v-model="userInfo.key" disabled>
                         <template #append>
                             <el-button
@@ -42,18 +42,41 @@
                             </el-button>
                         </template>
                     </el-input>
+                    <span class="tip">Token加密密钥，请妥善保管</span>
                 </el-form-item>
 
-                <!-- Token - 可重置 -->
+                <!-- Token - 可重置和复制 -->
                 <el-form-item label="Token">
-                    <el-input style="float: left" type="textarea" v-model="userInfo.token" disabled>
-                    </el-input>
-                    <el-button style="float: left; margin: 5px 0 0 0;"
-                        type="warning"
-                        @click="confirmReset('token')"
-                    >
-                        重置
-                    </el-button>
+                    <div class="token-container">
+                        <el-input
+                            type="textarea"
+                            v-model="userInfo.token"
+                            disabled
+                            resize="none"
+                            :rows="4"
+                        ></el-input>
+                        <div class="token-actions">
+                            <el-tooltip content="复制Token" placement="top">
+                                <el-button
+                                    type="primary"
+                                    size="small"
+                                    circle
+                                    @click="copyToken"
+                                    :icon="CopyDocument"
+                                />
+                            </el-tooltip>
+                            <el-tooltip content="重置Token" placement="top">
+                                <el-button
+                                    type="warning"
+                                    size="small"
+                                    circle
+                                    @click="confirmReset('token')"
+                                    :icon="Refresh"
+                                />
+                            </el-tooltip>
+                        </div>
+                    </div>
+                    <span class="tip">第三方客户端调用API使用</span>
                 </el-form-item>
 
                 <!-- 状态 - 显示 -->
@@ -109,6 +132,7 @@
 import { ref, onMounted, computed, watch } from "vue";
 import { storeToRefs } from 'pinia';
 import { ElMessage, ElMessageBox } from "element-plus";
+import { Refresh, CopyDocument } from '@element-plus/icons-vue';
 import { Strategy, User } from "@/apis/interface";
 import { getStrategyList } from "@/apis/system-api";
 import { getMyInfo, logout, resetKey, resetToken, setMyName } from "@/apis/user-api";
@@ -179,6 +203,17 @@ const refreshUser = async () => {
     }
 }
 
+// 复制Token
+const copyToken = async () => {
+    try {
+        await navigator.clipboard.writeText(userInfo.value.token);
+        ElMessage.success('Token已复制到剪贴板');
+    } catch (err) {
+        console.error('复制失败:', err);
+        ElMessage.error('复制失败');
+    }
+};
+
 // 确认重置
 const confirmReset = (type: 'key' | 'token') => {
     resetType.value = type;
@@ -228,5 +263,22 @@ onMounted(() => {
     flex-wrap: wrap;
     align-items: center;
     margin: 4px 0 0 0;
+}
+
+.token-container {
+    position: relative;
+    width: 100%;
+}
+
+.token-actions {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    display: flex;
+    gap: 1px;
+}
+
+.tip{
+    color: var(--el-text-color-secondary);
 }
 </style>

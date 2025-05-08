@@ -85,7 +85,7 @@ html.dark {
     --el-tag-bg-color: #1D1E1F;
     --el-tag-text-color: #CFD3DC;
     --el-box-shadow: var(--el-box-shadow-dark);
-    --el-menu-hover-bg-color: #141414;
+    --el-menu-hover-bg-color: #2e2e2e;
     --el-item-text-color: #f5f7fa;
     --el-rate-disabled-color: #474747;
 }
