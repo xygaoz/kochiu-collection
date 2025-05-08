@@ -200,10 +200,15 @@ public class ResourceFileService {
         if(!resources.isEmpty() && isOverwrite){
             for(UserResource resource : resources){
                 resourceRepository.removeById(resource);
-                //删除文件
-                storeStrategy.deleteFile(userDto.getUserId(), resource);
+                //如果路径和原来一样不删文件
+                if(!resource.getResourceUrl().equals(fileVo.getResourceUrl())){
+                    //删除文件
+                    storeStrategy.deleteFile(userDto.getUserId(), resource);
+                }
             }
         }
+        //不返回给客户端
+        fileVo.setResourceUrl(null);
         return fileVo;
     }
 

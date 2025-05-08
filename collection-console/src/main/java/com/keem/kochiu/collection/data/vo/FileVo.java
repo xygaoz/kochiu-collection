@@ -12,4 +12,5 @@ public class FileVo {
     //kb
     public String size;
     public String mimeType;
+    public String resourceUrl;
 }

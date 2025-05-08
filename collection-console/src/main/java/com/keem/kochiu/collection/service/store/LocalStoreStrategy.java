@@ -146,6 +146,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
         return FileVo.builder()
                 .url("/" + resId + returnUrl)
                 .thumbnailUrl(thumbUrl)
+                .resourceUrl(savePath)
                 .size(DataSizeUtil.format(size))
                 .mimeType(fileType.getMimeType())
                 .build();

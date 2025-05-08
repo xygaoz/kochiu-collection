@@ -73,7 +73,7 @@ public class PptFileStrategy extends OfficeFileStrategy implements FileStrategy{
                                .officeManager(officeManager)
                                .filterChain(
                                        // 设置页码范围（如第1-3页）
-                                       new PagesSelectorFilter(1, 1)
+                                       new PagesSelectorFilter(1, 2, 3)
                                )
                                .build()
                                .convert(pptFile)
