@@ -75,9 +75,6 @@ public class ResourceFileService {
 
     /**
      * 通过策略保存文件
-     * @param uploadBo
-     * @return
-     * @throws CollectionException
      */
     @Transactional(rollbackFor = Exception.class)
     public FileVo saveFile(UploadBo uploadBo, UserDto userDto) throws CollectionException {
@@ -98,7 +95,7 @@ public class ResourceFileService {
                         userDto,
                         uploadBo.getCategoryId(),
                         uploadBo.getCataId(),
-                        uploadBo.isOverwrite(),
+                        uploadBo.getOverwrite(),
                         uploadBo.getAutoCreate(),
                         user.getStrategy());
             } catch (IOException e) {
@@ -122,16 +119,6 @@ public class ResourceFileService {
 
     /**
      * 保存文件
-     * @param inputStream
-     * @param originalFilename
-     * @param userDto
-     * @param categoryId
-     * @param cataId
-     * @param isOverwrite
-     * @param isAutoCreate
-     * @param strategy
-     * @return
-     * @throws CollectionException
      */
     protected FileVo saveFile(InputStream inputStream,
                               String originalFilename,
@@ -139,12 +126,17 @@ public class ResourceFileService {
                               UserDto userDto,
                               Long categoryId,
                               Long cataId,
-                              boolean isOverwrite,
-                              Boolean isAutoCreate,
+                              Boolean overwrite,
+                              Boolean autoCreate,
                               String strategy
                               ) throws CollectionException {
+
+        if(overwrite == null){
+            overwrite = true;
+        }
+
         List<UserResource> resources =resourceRepository.countFileMd5(userDto.getUserId(), md5);
-        if(!resources.isEmpty() && !isOverwrite){
+        if(!resources.isEmpty() && !overwrite){
             throw new CollectionException(FILE_IS_EXIST);
         }
 
@@ -157,12 +149,12 @@ public class ResourceFileService {
                 }
             }
         }
-        if(isAutoCreate == null){
-            isAutoCreate = cataId == null;
+        if(autoCreate == null){
+            autoCreate = cataId == null;
         }
 
         String savePath;
-        if(isAutoCreate) {
+        if(autoCreate) {
             String catalogPath = ResourceStoreStrategy.dateFormat.format(System.currentTimeMillis());
             savePath = "/" + userDto.getUserCode() + "/" + catalogPath;
             //创建目录
@@ -197,7 +189,7 @@ public class ResourceFileService {
                         originalFilename,
                         userDto, md5, savePath, categoryId, cataId);
         //保存成功。删除原有记录
-        if(!resources.isEmpty() && isOverwrite){
+        if(!resources.isEmpty() && overwrite){
             for(UserResource resource : resources){
                 resourceRepository.removeById(resource);
                 //如果路径和原来一样不删文件
@@ -214,9 +206,6 @@ public class ResourceFileService {
 
     /**
      * 通过策略下载文件
-     * @param request
-     * @param response
-     * @param resourceId
      */
     public void download(HttpServletRequest request, HttpServletResponse response, Long resourceId) {
 
@@ -239,17 +228,6 @@ public class ResourceFileService {
 
     /**
      * 批量导入
-     * @param taskId
-     * @param userDto
-     * @param batchImportBo
-     * @throws CollectionException
-     */
-    /**
-     * 批量导入
-     * @param taskId
-     * @param userDto
-     * @param batchImportBo
-     * @throws CollectionException
      */
     public void batchImport(String taskId, UserDto userDto, BatchImportBo batchImportBo) throws CollectionException {
         SysUser user = userRepository.getUser(userDto);

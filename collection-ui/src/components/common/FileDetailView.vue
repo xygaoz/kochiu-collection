@@ -142,7 +142,9 @@
             </div>
             <div class="detail-row">
                 <div class="detail-label">文件名</div>
-                <div class="detail-value">{{ file.sourceFileName }}</div>
+                <div class="detail-value filename">
+                    <span :title="file.sourceFileName">{{ smartTruncateMiddle(file.sourceFileName) }}</span>
+                </div>
             </div>
             <div class="detail-row">
                 <div class="detail-label">文件类型</div>
@@ -234,7 +236,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick, watch, defineProps, defineEmits } from "vue";
-import { Document, Picture, Loading, FullScreen, VideoPlay } from "@element-plus/icons-vue";
+import { Document, Picture, Loading } from "@element-plus/icons-vue";
 import { ElMessage, ElInput } from "element-plus";
 import { addResourceTag, removeResourceTag, setResourcePublic, updateResource } from "@/apis/resource-api";
 import type { Resource, Tag } from '@/apis/interface';
@@ -527,6 +529,67 @@ const handlePublicChange = async (share: boolean) => {
     }
 };
 
+// 计算字符串的显示宽度（中文算2，英文算1）
+const getDisplayWidth = (str: string): number => {
+    return [...str].reduce((width, char) => {
+        return width + (/[\u4e00-\u9fa5]/.test(char) ? 2 : 1);
+    }, 0);
+};
+
+const smartTruncateMiddle = (filename: string): string => {
+    if (!filename) return '';
+
+    const MAX_DISPLAY_WIDTH = 20; // 显示区域最大宽度
+
+    // 如果文件名本身很短，直接返回
+    if (getDisplayWidth(filename) <= MAX_DISPLAY_WIDTH) return filename;
+
+    // 分离文件名和扩展名
+    const lastDotIndex = filename.lastIndexOf('.');
+    let name = filename;
+    let ext = '';
+
+    if (lastDotIndex > 0) {
+        name = filename.substring(0, lastDotIndex);
+        ext = filename.substring(lastDotIndex);
+    }
+
+    const extWidth = getDisplayWidth(ext);
+    const ellipsisWidth = 2; // "……"
+    const availableWidth = MAX_DISPLAY_WIDTH - extWidth - ellipsisWidth;
+
+    // 1. 尝试在中文短语后截断
+    const chinesePhraseEnd = name.search(/[\u4e00-\u9fa5][^\u4e00-\u9fa5]/);
+    if (chinesePhraseEnd > 0) {
+        const frontPart = name.substring(0, chinesePhraseEnd + 1);
+        if (getDisplayWidth(frontPart) <= availableWidth) {
+            const remainingWidth = availableWidth - getDisplayWidth(frontPart);
+            let endPart = '';
+            // 从后往前取剩余宽度
+            for (let i = name.length - 1; i >= 0; i--) {
+                const char = name[i];
+                const charWidth = /[\u4e00-\u9fa5]/.test(char) ? 2 : 1;
+                if (getDisplayWidth(endPart) + charWidth <= remainingWidth) {
+                    endPart = char + endPart;
+                } else break;
+            }
+            return `${frontPart}……${endPart}${ext}`;
+        }
+    }
+
+    // 2. 保底方案：精确宽度截断
+    let frontPart = '';
+    let frontWidth = 0;
+    for (const char of name) {
+        const charWidth = /[\u4e00-\u9fa5]/.test(char) ? 2 : 1;
+        if (frontWidth + charWidth <= availableWidth) {
+            frontPart += char;
+            frontWidth += charWidth;
+        } else break;
+    }
+    return `${frontPart}……${ext}`;
+};
+
 // 生命周期
 onMounted(() => {
     document.addEventListener('click', handleClickOutside);
@@ -723,5 +786,15 @@ watch(() => props.file, (newVal: Resource) => {
 
 :deep(.el-switch){
     height: 20px;
+}
+
+.filename {
+    display: inline-block;
+    max-width: 280px;  /* 根据实际UI调整 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif; /* 中文字体优化 */
 }
 </style>

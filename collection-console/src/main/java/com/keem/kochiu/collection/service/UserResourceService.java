@@ -167,7 +167,7 @@ public class UserResourceService {
                                     .cataPath(resource.getCataPath())
                                     .width(width)
                                     .height(height)
-                                    .fileType(resource.getFileExt() + " / " +fileType.getDesc().getLabel())
+                                    .fileType(resource.getFileExt() + " - " +fileType.getDesc().getLabel())
                                     .typeName(properties.getResourceType(resource.getFileExt()).name().toLowerCase())
                                     .mimeType(fileType.getMimeType())
                                     .size(resource.getSize())
