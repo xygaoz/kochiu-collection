@@ -48,8 +48,13 @@
   2. 插件设置，搜索"web-uploader-byzh 1.1.1"安装<br>
   3. 图床设置->自定义Web图床，填入相关信息，点击保存。<br>
   ![img.png](docs/img.png)
+   - API地址：http(https)://ip(域名):port/collection/api/v1/resource/upload
+   - 图床域名：http(https)://ip(域名):port/collection/resource
+   - POST参数名：file（不能改）
+   - JSON路径：model.thumbnailUrl（上传成功返回的缩略图地址，不能改）
+   - 自定义请求头：用json格式填入token，例如：{"Authorization":"xxxx"}，必填项，token通过后端获取
+  ![img.png](docs/img_3.png)<br><br>
    - 自定义Body可以用json格式，例如：{"categoryId":1}，上传是默认传到某个分类下，分类ID可以通过后台选择某个分类时获取<br>
-  ![img.png](docs/img_2.png)
-   - 自定义请求头用json格式填入，例如：{"Authorization":"xxxx"}，必填项
+    ![img.png](docs/img_2.png)<br><br>
   4. 上传区，选择设置好的图床<br>
   ![img_1.png](docs/img_1.png)
