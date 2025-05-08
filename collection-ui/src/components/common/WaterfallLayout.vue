@@ -456,7 +456,7 @@ const loadMore = debounce(() => {
     emit('load-more');
 
     // 3秒后自动重置状态（防止卡死）
-    const timeout = setTimeout(() => {
+    let timeout = setTimeout(() => {
         isLoadingMore.value = false;
     }, 3000);
 
@@ -465,7 +465,7 @@ const loadMore = debounce(() => {
 }, 200);
 
 defineExpose({
-    clearSelection, selectAll, isLoadingMore
+    clearSelection, selectAll
 })
 
 // 添加对 files 的监听
