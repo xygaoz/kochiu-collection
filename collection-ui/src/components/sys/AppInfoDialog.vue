@@ -33,9 +33,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, defineProps, defineExpose } from 'vue'
 
-const props = defineProps({
+defineProps({
     appName: {
         type: String,
         default: 'KoChiu Collection'

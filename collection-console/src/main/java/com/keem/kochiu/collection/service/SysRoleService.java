@@ -8,6 +8,7 @@ import com.keem.kochiu.collection.entity.SysRole;
 import com.keem.kochiu.collection.entity.UserPermission;
 import com.keem.kochiu.collection.entity.UserRole;
 import com.keem.kochiu.collection.enums.ErrorCodeEnum;
+import com.keem.kochiu.collection.enums.YesNoEnum;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.repository.SysModuleActionRepository;
 import com.keem.kochiu.collection.repository.SysRoleRepository;
@@ -50,6 +51,7 @@ public class SysRoleService {
             return RoleVo.builder()
                     .roleId(role.getRoleId())
                     .roleName(role.getRoleName())
+                    .canDel(role.getCanDel())
                     .permissions(permissions.stream().map(permission -> RoleVo.Permission.builder()
                                     .actionId(permission.getActionId())
                                     .moduleName(permission.getModuleName())
@@ -116,6 +118,9 @@ public class SysRoleService {
         SysRole role = sysRoleRepository.getById(roleId);
         if(role == null){
             throw new CollectionException(ErrorCodeEnum.ROLE_IS_NOT_EXIST);
+        }
+        if(YesNoEnum.getEnum(role.getCanDel()) == YesNoEnum.NO){
+            throw new CollectionException(ErrorCodeEnum.ROLE_IS_NOT_DELETE);
         }
         sysRoleRepository.removeById(roleId);
 

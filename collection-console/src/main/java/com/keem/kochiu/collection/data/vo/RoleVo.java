@@ -11,6 +11,7 @@ public class RoleVo {
 
     private Long roleId;
     private String roleName;
+    private int canDel;
     private List<Permission> permissions;
 
     @Builder

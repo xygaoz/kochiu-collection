@@ -11,10 +11,7 @@ import com.keem.kochiu.collection.data.vo.PageVo;
 import com.keem.kochiu.collection.data.vo.RoleVo;
 import com.keem.kochiu.collection.data.vo.UserVo;
 import com.keem.kochiu.collection.entity.*;
-import com.keem.kochiu.collection.enums.ErrorCodeEnum;
-import com.keem.kochiu.collection.enums.PermitEnum;
-import com.keem.kochiu.collection.enums.RemoveUserOptionEnum;
-import com.keem.kochiu.collection.enums.UserStatusEnum;
+import com.keem.kochiu.collection.enums.*;
 import com.keem.kochiu.collection.exception.CollectionException;
 import com.keem.kochiu.collection.repository.*;
 import com.keem.kochiu.collection.service.store.ResourceStoreStrategy;
@@ -181,6 +178,7 @@ public class SysUserService {
                                     .status(user.getStatus())
                                     .token(user.getToken())
                                     .key("*********")
+                                    .canDel(user.getCanDel())
                                     .strategy(user.getStrategy())
                                     .createTime(user.getCreateTime())
                                     .updateTime(user.getUpdateTime())
@@ -269,6 +267,10 @@ public class SysUserService {
         if(user == null){
             throw new CollectionException(ErrorCodeEnum.USER_IS_NOT_EXIST);
         }
+        if(YesNoEnum.getEnum(user.getCanDel()) == YesNoEnum.NO){
+            throw new CollectionException(ErrorCodeEnum.USER_IS_NOT_DELETE);
+        }
+
         userRepository.removeById(user.getUserId());
         userRoleRepository.remove(new LambdaQueryWrapper<UserRole>().eq(UserRole::getUserId, user.getUserId()));
         userRoleRepository.remove(new LambdaQueryWrapper<UserRole>().eq(UserRole::getUserId, user.getUserId()));
@@ -303,6 +305,9 @@ public class SysUserService {
         if(user == null){
             throw new CollectionException(ErrorCodeEnum.USER_IS_NOT_EXIST);
         }
+        if(YesNoEnum.getEnum(user.getCanDel()) == YesNoEnum.NO){
+            throw new CollectionException(ErrorCodeEnum.USER_IS_NOT_RESET_PASSWORD);
+        }
 
         //密码解密
         String password = HexUtils.base64ToHex(resetPwdBo.getNewPassword());
@@ -329,6 +334,10 @@ public class SysUserService {
         if(userStatusEnum == null){
             throw new CollectionException(ErrorCodeEnum.USER_STATUS_ERROR);
         }
+        if(userStatusEnum == UserStatusEnum.STOP && YesNoEnum.getEnum(user.getCanDel()) == YesNoEnum.NO){
+            throw new CollectionException(ErrorCodeEnum.USER_CANNOT_STOP);
+        }
+
         if(userStatusEnum.getCode() != user.getStatus()) {
             user.setStatus(userStatusEnum.getCode());
             userRepository.updateById(user);

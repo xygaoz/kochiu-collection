@@ -16,4 +16,5 @@ public class SysRole extends BaseEntity {
     @TableId(type = IdType.INPUT)
     private Long roleId;
     private String roleName;
+    private int canDel;
 }

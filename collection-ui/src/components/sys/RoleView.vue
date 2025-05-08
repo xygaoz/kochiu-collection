@@ -31,6 +31,7 @@
                 <template #default="{row}">
                     <el-button size="small" @click="handleEdit(row)">编辑</el-button>
                     <el-button
+                        v-if="row.canDel === 1"
                         size="small"
                         type="danger"
                         @click="handleDelete(row.roleId, row.roleName)"

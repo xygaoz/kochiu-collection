@@ -60,21 +60,22 @@
                 <template #default="{row}">
                     <el-button size="small" @click="handleEdit(row)">编辑</el-button>
                     <el-button
+                        v-if="row.canDel === 1"
                         size="small"
                         type="danger"
                         @click="handleDelete(row.userId, row.userCode)"
-                        v-if="row.userCode !== 'admin'"
                     >
                         删除
                     </el-button>
                     <el-button
+                        v-if="row.canDel === 1"
                         size="small"
                         :type="row.status === 'active' ? 'danger' : 'success'"
                         @click="handleStatusChange(row)"
                     >
                         {{ row.status === 1 ? '停用' : '启用' }}
                     </el-button>
-                    <el-button size="small" type="warning" v-if="row.userCode !== 'admin'" @click="handleResetPassword(row)">重置密码</el-button>
+                    <el-button size="small" type="warning" v-if="row.canDel === 1" @click="handleResetPassword(row)">重置密码</el-button>
                 </template>
             </el-table-column>
         </el-table>

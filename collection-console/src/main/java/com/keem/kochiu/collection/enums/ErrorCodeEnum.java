@@ -55,6 +55,10 @@ public enum ErrorCodeEnum {
     ROLE_IS_NOT_EXIST("1053", "角色不存在"),
     STRATEGY_IS_NOT_EXIST("1054", "存储策略不存在"),
     LOCAL_STRATEGY_IS_INVALID("1055", "获取本地存储策略失败"),
+    USER_CANNOT_STOP("1056", "该用户不能停用"),
+    ROLE_IS_NOT_DELETE("1057", "该角色不能删除"),
+    USER_IS_NOT_DELETE("1058", "该用户不能删除"),
+    USER_IS_NOT_RESET_PASSWORD("1059", "该用户不能重置密码"),
     ;
 
     private final String code;

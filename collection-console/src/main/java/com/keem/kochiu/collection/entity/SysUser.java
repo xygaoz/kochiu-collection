@@ -24,5 +24,6 @@ public class SysUser extends BaseEntity {
     private String token;
     private String key;
     private String strategy;
+    private int canDel;
     private LocalDateTime lastTokenTime;
 }

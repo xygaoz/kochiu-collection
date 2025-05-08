@@ -89,12 +89,14 @@ export interface User {
     token: string
     status: number
     theme: string
+    canDel: number
     roles: Role[]
 }
 
 export interface Role {
     roleId: string
     roleName: string
+    canDel: number
     permissions: Permission[]
 }
 
