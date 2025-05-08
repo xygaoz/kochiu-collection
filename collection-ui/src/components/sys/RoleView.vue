@@ -301,7 +301,7 @@ onMounted(async () => {
 
 <style scoped>
 .role-view {
-    padding: 10px;
+    padding: 20px;
 }
 
 .header {
@@ -312,6 +312,10 @@ onMounted(async () => {
     height: 32px;
 }
 
+.header h2 {
+    font-size: 18px;
+}
+
 .permission-tags {
     display: flex;
     flex-wrap: wrap;
@@ -320,22 +324,6 @@ onMounted(async () => {
 
 .permission-tag {
     margin-right: 4px;
-}
-
-.permission-container {
-    max-height: 400px;
-    overflow-y: auto;
-    border: 1px solid #ebeef5;
-    border-radius: 4px;
-}
-
-.permission-checkbox-group {
-    padding: 10px;
-}
-
-.permission-checkbox {
-    display: block;
-    margin: 8px 0;
 }
 
 </style>

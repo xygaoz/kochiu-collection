@@ -592,7 +592,7 @@ onMounted(async () => {
 
 <style scoped>
 .user-view {
-    padding: 10px;
+    padding: 20px;
 }
 
 .header {
@@ -601,6 +601,10 @@ onMounted(async () => {
     align-items: center;
     margin-bottom: 20px;
     height: 32px;
+}
+
+.header h2 {
+    font-size: 18px;
 }
 
 .search-bar {
