@@ -2,7 +2,7 @@
     <div :class="[route.meta.theme || themeStore.currentTheme]" style="height: calc(100vh); overflow: hidden;">
         <el-container style="height: 100%; overflow: hidden">
             <el-aside style="width: 250px; display: flex; flex-direction: column;">
-                <div class="el-menu-box">
+                <div class="el-menu-box" @click="showAppInfo">
                     <div class="logo-image"></div>
                     <div style="padding-left: 5px; padding-top: 3px">
                         KoChiu Collection
@@ -383,6 +383,7 @@
     <!-- 对话框组件 -->
     <CategoryDialog ref="categoryDialog" @confirm="handleCategoryConfirm" />
     <CatalogDialog ref="catalogDialog" @confirm="handleCatalogConfirm" />
+    <AppInfoDialog ref="appInfoDialog" />
 </template>
 
 <script setup lang="ts">
@@ -402,6 +403,7 @@ import { useUserStore } from "@/apis/global";
 import { storeToRefs } from "pinia";
 import { useThemeStore } from "@/apis/themeStore";
 import userAvatar from "../assets/imgs/user.gif";
+import AppInfoDialog from "@/components/sys/AppInfoDialog.vue";
 
 // 状态管理
 const showCatalogMenu = ref(false);
@@ -413,6 +415,7 @@ const tags = ref<Tag[]>([]);
 const resourceTypes = ref<ResourceType[]>([]);
 const categoryDialog = ref<InstanceType<typeof CategoryDialog>>();
 const catalogDialog = ref<InstanceType<typeof CatalogDialog>>();
+const appInfoDialog = ref<InstanceType<typeof AppInfoDialog>>()
 const currentCatalog = ref<Catalog | null>(null);
 const route = useRoute();
 const router = useRouter();
@@ -439,6 +442,10 @@ const toggleTheme = async () => {
     const newTheme = currentTheme.value === "light" ? "dark" : "light";
     await themeStore.applyTheme(newTheme);
 };
+
+const showAppInfo = () => {
+    appInfoDialog.value?.open()
+}
 
 // 初始化数据
 onMounted(async () => {
@@ -744,6 +751,9 @@ watch(() => route.path, (newPath) => {
     --el-header-height: 45px
 }
 
+.el-menu-box {
+    cursor: pointer;
+}
 /* Light 主题：强制显示右侧边框 */
 .el-menu-box:not(.el-menu--dark),
 .el-menu:not(.el-menu--dark) {
