@@ -150,7 +150,11 @@ public class ResourceFileService {
 
         if(categoryId != null) {
             if (userCategoryRepository.getById(categoryId) == null) {
-                throw new CollectionException(ErrorCodeEnum.CATEGORY_NOT_EXIST);
+                //取默认分类
+                categoryId = userCategoryRepository.getDefaultCategory(userDto.getUserId());
+                if(categoryId == null){
+                    throw new CollectionException(ErrorCodeEnum.CATEGORY_NOT_EXIST);
+                }
             }
         }
         if(isAutoCreate == null){

@@ -1,5 +1,6 @@
 package com.keem.kochiu.collection.repository;
 
+import com.alibaba.fastjson.support.geo.Feature;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.keem.kochiu.collection.data.vo.CategoryVo;
@@ -123,5 +124,21 @@ public class UserCategoryRepository extends ServiceImpl<UserCategoryMapper, User
             return 0;
         }
         return userCategory.getSno();
+    }
+
+    /**
+     * 获取默认分类
+     */
+    public Long getDefaultCategory(int userId) {
+
+        LambdaQueryWrapper<UserCategory> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UserCategory::getUserId, userId);
+        lambdaQueryWrapper.orderByAsc(UserCategory::getSno);
+        lambdaQueryWrapper.last("limit 1");
+        UserCategory userCategory = this.getOne(lambdaQueryWrapper);
+        if(userCategory == null){
+            return null;
+        }
+        return userCategory.getCateId();
     }
 }
