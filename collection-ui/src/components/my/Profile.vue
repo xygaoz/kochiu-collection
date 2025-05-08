@@ -32,7 +32,15 @@
 
                 <!-- Key - 可重置 -->
                 <el-form-item label="密钥">
-                    <el-input v-model="userInfo.key" disabled>
+                    <el-input :type="showKey ? 'text' : 'password'" v-model="userInfo.key" disabled>
+                        <template #suffix>
+                            <el-icon
+                                class="key-toggle-icon"
+                                @click="toggleKeyVisibility"
+                            >
+                                <component :is="showKey ? View : Hide" />
+                            </el-icon>
+                        </template>
                         <template #append>
                             <el-button
                                 type="primary"
@@ -132,7 +140,7 @@
 import { ref, onMounted, computed, watch } from "vue";
 import { storeToRefs } from 'pinia';
 import { ElMessage, ElMessageBox } from "element-plus";
-import { Refresh, CopyDocument } from '@element-plus/icons-vue';
+import { Refresh, CopyDocument, View, Hide } from "@element-plus/icons-vue";
 import { Strategy, User } from "@/apis/interface";
 import { getStrategyList } from "@/apis/system-api";
 import { getMyInfo, logout, resetKey, resetToken, setMyName } from "@/apis/user-api";
@@ -160,6 +168,11 @@ const userStore = useUserStore();
 // 重置相关状态
 const resetDialogVisible = ref(false);
 const resetType = ref<'key' | 'token'>('key');
+const showKey = ref(false)
+
+const toggleKeyVisibility = () => {
+    showKey.value = !showKey.value
+}
 
 // 模拟从存储中获取用户信息
 const fetchUserInfo = async () => {
@@ -280,5 +293,21 @@ onMounted(() => {
 
 .tip{
     color: var(--el-text-color-secondary);
+}
+
+.key-toggle-icon {
+    cursor: pointer;
+    color: var(--el-text-color-secondary);
+    padding: 0 5px;
+    transition: color 0.2s;
+}
+
+.key-toggle-icon:hover {
+    color: var(--el-color-primary);
+}
+
+/* 调整token操作按钮间距 */
+.token-actions {
+    gap: 8px;
 }
 </style>
