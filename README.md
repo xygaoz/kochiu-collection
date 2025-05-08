@@ -1,5 +1,5 @@
 # KoChiu Collection
-一个类似兰空图床的资源管理系统，但是不仅仅是管理图片，还有视频，文档，音频等资源。<br>
+一个类似兰空图床的资源管理系统，但是不仅仅是管理图片，还有视频，文档，音频等资源。<br><br>
 ![img.png](docs/img_5.png)<br><br>
 ![img_1.png](docs/img_6.png)<br><br>
 ![img_2.png](docs/img_7.png)
