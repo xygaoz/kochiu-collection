@@ -1,5 +1,9 @@
 # KoChiu Collection
 一个类似兰空图床的资源管理系统，但是不仅仅是管理图片，还有视频，文档，音频等资源。<br>
+![img.png](docs/img_5.png)<br><br>
+![img_1.png](docs/img_6.png)<br><br>
+![img_2.png](docs/img_7.png)
+
 ## 安装
 - 安装 Java v17 或更高版本。
 - 下载或执行maven打包
@@ -7,7 +11,7 @@
 - 运行<br>
   - Windows: 双击run.bat，或者命令窗口运行run.sh。
   - Linux/MacOs/群晖: 执行run.sh。
-- 访问 `http://localhost:8080`。
+- 访问 `http(https)://ip(域名):port/`，默认端口9000，如：`http://127.0.0.1:9000/`
 ### 后端依赖
   - 安装 LibreOffice(可选)<br>
   如不安装LibreOffice，office文件生成缩略图可能会比较粗糙，且不能预览。
@@ -57,4 +61,6 @@
    - 自定义Body可以用json格式，例如：{"categoryId":1}，上传是默认传到某个分类下，分类ID可以通过后台选择某个分类时获取<br>
     ![img.png](docs/img_2.png)<br><br>
   4. 上传区，选择设置好的图床<br>
-  ![img_1.png](docs/img_1.png)
+  ![img_1.png](docs/img_1.png)<br><br>
+  5. 上传后，如PicGo能看到缩略图，即配置无误<br>
+  ![img.png](docs/img_4.png)
