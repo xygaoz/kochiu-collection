@@ -6,10 +6,7 @@ import com.kochiu.collection.data.bo.*;
 import com.kochiu.collection.data.dto.LoginDto;
 import com.kochiu.collection.data.dto.TokenDto;
 import com.kochiu.collection.data.dto.UserDto;
-import com.kochiu.collection.data.vo.MenuVo;
-import com.kochiu.collection.data.vo.PageVo;
-import com.kochiu.collection.data.vo.RoleVo;
-import com.kochiu.collection.data.vo.UserVo;
+import com.kochiu.collection.data.vo.*;
 import com.kochiu.collection.entity.*;
 import com.kochiu.collection.enums.*;
 import com.kochiu.collection.exception.CollectionException;
@@ -50,6 +47,7 @@ public class SysUserService {
     private final UserCatalogRepository userCatalogRepository;
     private final UserTagRepository userTagRepository;
     private final UserCategoryRepository userCategoryRepository;
+    private final SysModuleService moduleService;
 
     public SysUserService(SysUserRepository userRepository,
                           SysSecurityRepository securityRepository,
@@ -61,7 +59,8 @@ public class SysUserService {
                           UserResourceRepository resourceRepository,
                           UserCatalogRepository userCatalogRepository,
                           UserTagRepository userTagRepository,
-                          UserCategoryRepository userCategoryRepository) {
+                          UserCategoryRepository userCategoryRepository,
+                          SysModuleService moduleService) {
         this.userRepository = userRepository;
         this.securityRepository = securityRepository;
         this.tokenService = tokenService;
@@ -73,6 +72,7 @@ public class SysUserService {
         this.userCatalogRepository = userCatalogRepository;
         this.userTagRepository = userTagRepository;
         this.userCategoryRepository = userCategoryRepository;
+        this.moduleService = moduleService;
     }
 
     /**
@@ -96,6 +96,14 @@ public class SysUserService {
         loginBo.setPassword(HexUtils.base64ToHex(loginBo.getPassword()));
         TokenDto tokenDto = genToken(loginBo, PermitEnum.UI, 30 * 60 * 1000);
         String refreshToken = tokenService.createToken(tokenDto.getUser(), tokenDto.getClaims(), 7 * 24 * 3600 * 1000);
+
+        //获取用户权限
+        Set<ModuleVo> permitModuleList = moduleService.getPermitModuleList(tokenDto.getUser().getUserId(), true);
+        Set<String> permissions = new HashSet<>();
+        for (ModuleVo moduleVo : permitModuleList) {
+            listPermission(moduleVo, permissions);
+        }
+
         return LoginDto.builder()
                 .userId(tokenDto.getUser().getUserId())
                 .userCode(loginBo.getUsername())
@@ -103,7 +111,24 @@ public class SysUserService {
                 .token(tokenDto.getToken())
                 .refreshToken(refreshToken)
                 .expirySeconds(30 * 60)
+                .permissions(permissions)
+                .canDel(tokenDto.getUser().getCanDel())
                 .build();
+    }
+
+    private void listPermission(ModuleVo moduleVo, Set<String> permissions) {
+
+        if (moduleVo.getChildren() != null && !moduleVo.getChildren().isEmpty()) {
+            for (ModuleVo child : moduleVo.getChildren()) {
+                listPermission(child, permissions);
+            }
+        } else {
+            if (moduleVo.getActions() != null && !moduleVo.getActions().isEmpty()) {
+                for (ActionVo action : moduleVo.getActions()) {
+                    permissions.add(moduleVo.getModuleCode() + ":" + action.getActionCode());
+                }
+            }
+        }
     }
 
     /**
@@ -308,6 +333,11 @@ public class SysUserService {
         }
         //自己不能重置自己的密码
         if(userDto.getUserId() == user.getUserId()){
+            throw new CollectionException(ErrorCodeEnum.USER_IS_NOT_RESET_PASSWORD);
+        }
+        //不是管理员不能重置管理员密码
+        SysUser me = userRepository.getById(userDto.getUserId());
+        if(YesNoEnum.getEnum(me.getCanDel()) == YesNoEnum.YES && YesNoEnum.getEnum(user.getCanDel()) == YesNoEnum.NO){
             throw new CollectionException(ErrorCodeEnum.USER_IS_NOT_RESET_PASSWORD);
         }
 

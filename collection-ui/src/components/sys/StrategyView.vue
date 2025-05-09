@@ -56,7 +56,7 @@
                 </el-form-item>
 
                 <el-form-item>
-                    <el-button type="primary" @click="submitForm">保存设置</el-button>
+                    <el-button type="primary" :loading="loading" v-if="userStore.hasPermission('strategy:update')" @click="submitForm">保存设置</el-button>
                 </el-form-item>
             </el-form>
         </el-card>
@@ -69,6 +69,7 @@ import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { getStrategyList, updateStrategy } from '@/apis/system-api'
 import { Strategy } from "@/apis/interface";
+import { useUserStore } from "@/apis/global";
 
 interface StrategyForm {
     strategyId: number | null
@@ -80,6 +81,7 @@ interface StrategyForm {
     otherConfig: string
 }
 
+const loading = ref(false);
 const strategyList = ref<Strategy[]>([])
 const formRef = ref<FormInstance>()
 const form = ref<StrategyForm>({
@@ -91,6 +93,7 @@ const form = ref<StrategyForm>({
     password: '',
     otherConfig: ''
 })
+const userStore = useUserStore();
 
 const rules = ref<FormRules>({
     strategyId: [
@@ -142,6 +145,7 @@ const handleStrategyChange = (strategyId: number) => {
 // 提交表单
 const submitForm = async () => {
     if (!formRef.value) return
+    loading.value = true
     try {
         await formRef.value.validate()
         if(await updateStrategy(form.value)) {
@@ -151,6 +155,8 @@ const submitForm = async () => {
     } catch (error) {
         console.error(error)
         ElMessage.error('保存失败')
+    }finally {
+        loading.value = false
     }
 }
 

@@ -100,6 +100,8 @@ const login = async () => {
                 // 登录成功后初始化用户状态
                 const userStore = useUserStore();
                 userStore.initializeUser(res.userCode, res.userName, res.userId);
+                userStore.setPermissions(res.permissions)
+                userStore.setCanDel(res.canDel);
                 if(res.token) {
                     tokenStore.setToken(res.token, res.expirySeconds); // 保存token
                 }

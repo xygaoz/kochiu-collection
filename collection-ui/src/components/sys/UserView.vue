@@ -3,7 +3,7 @@
         <div class="header">
             <h2>用户管理</h2>
             <div class="action-buttons">
-                <el-button type="primary" @click="handleAdd">新增用户</el-button>
+                <el-button type="primary" v-if="userStore.hasPermission('user:add')" @click="handleAdd">新增用户</el-button>
                 <el-button @click="refreshData">刷新</el-button>
             </div>
         </div>
@@ -58,9 +58,9 @@
             <el-table-column prop="token" label="Api Token" width="250"></el-table-column>
             <el-table-column label="操作" width="300">
                 <template #default="{row}">
-                    <el-button size="small" @click="handleEdit(row)">编辑</el-button>
+                    <el-button size="small" v-if="userStore.hasPermission('user:edit')" @click="handleEdit(row)">编辑</el-button>
                     <el-button
-                        v-if="row.canDel === 1"
+                        v-if="row.canDel === 1 && userStore.hasPermission('user:delete')"
                         size="small"
                         type="danger"
                         @click="handleDelete(row.userId, row.userCode)"
@@ -68,14 +68,16 @@
                         删除
                     </el-button>
                     <el-button
-                        v-if="row.canDel === 1"
+                        v-if="row.canDel === 1 && userStore.hasPermission('user:enable-disable')"
                         size="small"
                         :type="row.status === 'active' ? 'danger' : 'success'"
                         @click="handleStatusChange(row)"
                     >
                         {{ row.status === 1 ? '停用' : '启用' }}
                     </el-button>
-                    <el-button size="small" type="warning" v-if="row.userId !== userStore.getUserid()" @click="handleResetPassword(row)">重置密码</el-button>
+                    <el-button size="small" type="warning"
+                               v-if="canResetPwd(row)"
+                               @click="handleResetPassword(row)">重置密码</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -139,7 +141,7 @@
             <template #footer>
                 <span class="dialog-footer">
                     <el-button @click="dialogVisible = false">取消</el-button>
-                    <el-button type="primary" @click="submitForm">确认</el-button>
+                    <el-button type="primary" :loading="loading" @click="submitForm">确认</el-button>
                 </span>
             </template>
         </el-dialog>
@@ -158,7 +160,7 @@
             <template #footer>
             <span class="dialog-footer">
                 <el-button @click="deleteDialogVisible = false">取消</el-button>
-                <el-button type="primary" @click="confirmDelete">确认</el-button>
+                <el-button type="primary" :loading="loading" @click="confirmDelete">确认</el-button>
             </span>
             </template>
         </el-dialog>
@@ -180,7 +182,7 @@
             <template #footer>
             <span class="dialog-footer">
                 <el-button @click="resetDialogVisible = false">取消</el-button>
-                <el-button type="primary" @click="confirmReset">确认</el-button>
+                <el-button type="primary" :loading="loading" @click="confirmReset">确认</el-button>
             </span>
             </template>
         </el-dialog>
@@ -194,7 +196,7 @@
             <template #footer>
             <span class="dialog-footer">
                 <el-button @click="statusDialogVisible = false">取消</el-button>
-                <el-button type="primary" @click="confirmStatusChange">确认</el-button>
+                <el-button type="primary" :loading="loading" @click="confirmStatusChange">确认</el-button>
             </span>
             </template>
         </el-dialog>
@@ -211,7 +213,6 @@ import { getPublicKey, getStrategyList } from "@/apis/system-api";
 import { listRoles } from "@/apis/role-api";
 import { encryptPassword } from "@/apis/utils";
 import { useUserStore } from "@/apis/global";
-import { storeToRefs } from "pinia";
 
 interface Pagination {
     currentPage: number
@@ -447,6 +448,7 @@ const handleDelete = (userId: string, userCode: string) => {
 };
 
 const confirmDelete = async () => {
+    loading.value = true
     try {
         deleteUserInfo.deleteOption  = deleteOption.value;
         if(await deleteUser(deleteUserInfo)) {
@@ -456,6 +458,8 @@ const confirmDelete = async () => {
         }
     } catch (error: any) {
         ElMessage.error('删除失败: ' + error.message);
+    }finally {
+        loading.value = false
     }
 };
 
@@ -470,6 +474,7 @@ const submitForm = async () => {
     }
     await userFormRef.value.validate()
 
+    loading.value = true;
     try {
         if (isAdd.value) {
 
@@ -487,12 +492,17 @@ const submitForm = async () => {
             if(!await updateUser(userForm)) {
                 return
             }
+            if(userStore.getUserid() === parseInt(userForm.userId)){
+                userStore.setUsername(userForm.userName)
+            }
             ElMessage.success('更新用户成功')
         }
         dialogVisible.value = false
         await fetchUsers()
     } catch (error: any) {
         ElMessage.error('操作失败: ' + error.message)
+    }finally {
+        loading.value = false
     }
 }
 
@@ -524,6 +534,7 @@ const handleResetPassword = (row: User) => {
 };
 
 const confirmReset = async () => {
+    loading.value = true;
     try {
         // 手动检查空值
         if (!resetPwdForm.newPassword || resetPwdForm.newPassword.trim() === '') {
@@ -554,6 +565,8 @@ const confirmReset = async () => {
     } catch (error) {
         console.error('密码重置失败:', error);
         ElMessage.error('密码重置失败');
+    }finally {
+        loading.value = false
     }
 };
 
@@ -566,6 +579,7 @@ const handleStatusChange = (row: User) => {
 };
 
 const confirmStatusChange = async () => {
+    loading.value = true
     try {
         const params = {
             userId: currentUser.userId,
@@ -579,7 +593,17 @@ const confirmStatusChange = async () => {
         }
     } catch (error) {
         ElMessage.error('操作失败');
+    }finally {
+        loading.value = false
     }
+};
+
+const canResetPwd = (row: User) => {
+    if (row.canDel === 0 && userStore.getCanDel() === 1){
+        //不是管理员不能重置管理员密码
+        return false;
+    }
+    return parseInt(row.userId) !== userStore.getUserid() && userStore.hasPermission('user:reset-pwd');
 };
 
 onMounted(async () => {

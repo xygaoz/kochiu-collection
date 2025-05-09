@@ -3,7 +3,7 @@
         <div class="header">
             <h2>角色管理</h2>
             <div class="action-buttons">
-                <el-button type="primary" @click="handleAdd">新增角色</el-button>
+                <el-button type="primary" v-if="userStore.hasPermission('role:add')" @click="handleAdd">新增角色</el-button>
                 <el-button @click="refreshData">刷新</el-button>
             </div>
         </div>
@@ -29,9 +29,9 @@
             </el-table-column>
             <el-table-column label="操作" width="200">
                 <template #default="{row}">
-                    <el-button size="small" @click="handleEdit(row)">编辑</el-button>
+                    <el-button size="small" v-if="userStore.hasPermission('role:edit')" @click="handleEdit(row)">编辑</el-button>
                     <el-button
-                        v-if="row.canDel === 1"
+                        v-if="row.canDel === 1 && userStore.hasPermission('role:delete')"
                         size="small"
                         type="danger"
                         @click="handleDelete(row.roleId, row.roleName)"
@@ -77,7 +77,7 @@
             <template #footer>
                 <span class="dialog-footer">
                     <el-button @click="dialogVisible = false">取消</el-button>
-                    <el-button type="primary" @click="submitForm">确认</el-button>
+                    <el-button type="primary" :loading="loading" @click="submitForm">确认</el-button>
                 </span>
             </template>
         </el-dialog>
@@ -92,7 +92,7 @@
             <template #footer>
                 <span class="dialog-footer">
                     <el-button @click="deleteDialogVisible = false">取消</el-button>
-                    <el-button type="primary" @click="confirmDelete">确认</el-button>
+                    <el-button type="primary" :loading="loading" @click="confirmDelete">确认</el-button>
                 </span>
             </template>
         </el-dialog>
@@ -106,6 +106,7 @@ import { ElMessage } from "element-plus";
 import { Action, Module, Role } from "@/apis/interface";
 import { addRole, deleteRole, listRoles, updateRole } from "@/apis/role-api";
 import { listModulesWithActions } from "@/apis/module-api";
+import { useUserStore } from "@/apis/global";
 
 const roleList = ref<Role[]>([]);
 const loading = ref(false);
@@ -116,6 +117,7 @@ const roleFormRef = ref<FormInstance>();
 const deleteDialogVisible = ref(false);
 const permissionTree = ref();
 const treeRefs = ref<any[]>([]);
+const userStore = useUserStore();
 
 // 修改treeProps定义
 const treeProps = {
@@ -237,6 +239,7 @@ const handleDelete = (roleId: string, roleName: string) => {
 };
 
 const confirmDelete = async () => {
+    loading.value = true;
     try {
         if (await deleteRole(deleteRoleInfo.roleId)) {
             ElMessage.success('删除成功');
@@ -245,6 +248,8 @@ const confirmDelete = async () => {
         }
     } catch (error: any) {
         ElMessage.error('删除失败: ' + error.message);
+    } finally {
+        loading.value = false;
     }
 };
 
@@ -258,6 +263,7 @@ const submitForm = async () => {
 
     await roleFormRef.value.validate();
 
+    loading.value = true;
     try {
         if (isAdd.value) {
             if (await addRole(roleForm)) {
@@ -274,6 +280,8 @@ const submitForm = async () => {
         }
     } catch (error: any) {
         ElMessage.error('操作失败: ' + error.message);
+    } finally {
+        loading.value = false;
     }
 };
 

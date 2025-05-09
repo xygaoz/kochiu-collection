@@ -5,6 +5,8 @@ export interface LoginInfo{
     token: string
     refreshToken: string
     expirySeconds: number
+    permissions: string[]
+    canDel: number
 }
 
 export interface Category {

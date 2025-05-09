@@ -38,9 +38,13 @@ public class SysModuleService {
      * 获取用户下拥有的权限模块列表
      */
     public Set<ModuleVo> getPermitModuleList(UserDto userDto) {
+        return getPermitModuleList(userDto.getUserId(), false);
+    }
+
+    public Set<ModuleVo> getPermitModuleList(int userId, boolean onlySelected) {
         // 1. 获取用户角色
         List<UserRole> roles = userRoleRepository.list(
-                new LambdaQueryWrapper<UserRole>().eq(UserRole::getUserId, userDto.getUserId())
+                new LambdaQueryWrapper<UserRole>().eq(UserRole::getUserId, userId)
         );
 
         // 2. 获取所有顶级模块(parentId=0)
@@ -52,7 +56,7 @@ public class SysModuleService {
 
         // 3. 递归处理每个顶级模块及其子模块
         for (SysModule topModule : topLevelModules) {
-            ModuleVo moduleVo = buildModuleTree(topModule, roles);
+            ModuleVo moduleVo = buildModuleTree(topModule, roles, onlySelected);
             if (moduleVo != null) {
                 result.add(moduleVo);
             }
@@ -64,7 +68,7 @@ public class SysModuleService {
     /**
      * 递归构建模块树
      */
-    private ModuleVo buildModuleTree(SysModule module, List<UserRole> roles) {
+    private ModuleVo buildModuleTree(SysModule module, List<UserRole> roles, boolean onlySelected) {
         // 1. 获取当前模块的所有子模块
         List<SysModule> subModules = moduleRepository.list(
                 new LambdaQueryWrapper<SysModule>().eq(SysModule::getParentId, module.getModuleId())
@@ -81,7 +85,7 @@ public class SysModuleService {
             // 3. 如果有子模块，递归处理子模块
             List<ModuleVo> children = new ArrayList<>();
             for (SysModule subModule : subModules) {
-                ModuleVo child = buildModuleTree(subModule, roles);
+                ModuleVo child = buildModuleTree(subModule, roles, onlySelected);
                 if (child != null) {
                     children.add(child);
                 }
@@ -98,13 +102,28 @@ public class SysModuleService {
                         module.getModuleId()
                 );
 
-                actions.stream()
-                        .map(action -> ActionVo.builder()
+                for (SysModuleAction action : actions) {
+                    if(onlySelected){
+                        if(action.isSelected()) {
+                            actionVos.add(ActionVo.builder()
+                                    .actionId(action.getActionId())
+                                    .actionName(action.getActionName())
+                                    .actionCode(action.getActionCode())
+                                    .selected(action.isSelected())
+                                    .build()
+                            );
+                        }
+                    }
+                    else{
+                        actionVos.add(ActionVo.builder()
                                 .actionId(action.getActionId())
                                 .actionName(action.getActionName())
                                 .actionCode(action.getActionCode())
-                                .build())
-                        .forEach(actionVos::add);
+                                .selected(action.isSelected())
+                                .build()
+                        );
+                    }
+                }
             }
 
             // 去重
