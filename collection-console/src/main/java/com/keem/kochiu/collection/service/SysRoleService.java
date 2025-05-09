@@ -95,11 +95,12 @@ public class SysRoleService {
         role.setRoleName(roleBo.getRoleName());
         sysRoleRepository.updateById(role);
 
-        //先删除权限再添加
-        if(userPermissionRepository.remove(new LambdaQueryWrapper<UserPermission>()
-                .eq(UserPermission::getRoleId, roleBo.getRoleId())
-        )){
-            for(Long actionId : roleBo.getPermissions()){
+        //非超级管理员角色才能改权限
+        if(YesNoEnum.getEnum(role.getCanDel()) == YesNoEnum.YES) {
+            //先删除权限再添加
+            userPermissionRepository.remove(new LambdaQueryWrapper<UserPermission>()
+                    .eq(UserPermission::getRoleId, roleBo.getRoleId()));
+            for (Long actionId : roleBo.getPermissions()) {
 
                 SysModuleAction action = sysModuleActionRepository.getById(actionId);
 
