@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.keem.kochiu.collection.mapper.UserPermissionMapper">
+<mapper namespace="com.kochiu.collection.mapper.UserPermissionMapper">
 
     <select id="selectLastInsertId" resultType="java.lang.Integer">
         SELECT last_insert_rowid() FROM user_permission WHERE rowid = (SELECT last_insert_rowid())
     </select>
 
-    <select id="getUserPermission" resultType="com.keem.kochiu.collection.entity.UserPermission">
+    <select id="getUserPermission" resultType="com.kochiu.collection.entity.UserPermission">
         SELECT p.* FROM user_permission p
                  join sys_module_action a on p.action_id = a.action_id and a.module_id=p.module_id
                  join sys_module m on a.module_id = m.module_id and p.module_id = m.module_id
@@ -18,7 +18,7 @@
                    </if>
     </select>
 
-    <select id="getRolePermission" resultType="com.keem.kochiu.collection.entity.UserPermission">
+    <select id="getRolePermission" resultType="com.kochiu.collection.entity.UserPermission">
         SELECT distinct p.*, m.module_name, a.action_name FROM user_permission p
         join sys_module_action a on p.action_id = a.action_id and a.module_id=p.module_id
         join sys_module m on a.module_id = m.module_id and p.module_id = m.module_id
@@ -34,7 +34,7 @@
         )
     </delete>
 
-    <select id="selectUserModule" resultType="com.keem.kochiu.collection.entity.SysModule">
+    <select id="selectUserModule" resultType="com.kochiu.collection.entity.SysModule">
         WITH RECURSIVE
             -- 获取用户直接有权限的模块
             UserPermittedModules AS (

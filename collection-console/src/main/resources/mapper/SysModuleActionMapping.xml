@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.keem.kochiu.collection.mapper.SysModuleActionMapper">
+<mapper namespace="com.kochiu.collection.mapper.SysModuleActionMapper">
 
     <select id="selectLastInsertId" resultType="java.lang.Integer">
         SELECT last_insert_rowid() FROM sys_module_action WHERE rowid = (SELECT last_insert_rowid())
     </select>
 
-    <select id="selectModuleAction" resultType="com.keem.kochiu.collection.entity.SysModuleAction">
+    <select id="selectModuleAction" resultType="com.kochiu.collection.entity.SysModuleAction">
         SELECT a.* FROM sys_module_action a
             join main.sys_module sm on a.module_id=sm.module_id
             where sm.module_code=#{moduleCode} and a.action_code=#{actionCode}
     </select>
 
-    <select id="getRolePermission" resultType="com.keem.kochiu.collection.entity.SysModuleAction">
+    <select id="getRolePermission" resultType="com.kochiu.collection.entity.SysModuleAction">
         SELECT a.*, case p.permission_id is null when true then 0 else 1 end as selected
         FROM sys_module_action a
                  join sys_module m on a.module_id = m.module_id

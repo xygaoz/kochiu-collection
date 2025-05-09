@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.keem.kochiu.collection.mapper.UserResourceMapper">
+<mapper namespace="com.kochiu.collection.mapper.UserResourceMapper">
 
     <select id="selectLastInsertId" resultType="java.lang.Long">
         SELECT last_insert_rowid() FROM user_resource WHERE rowid = (SELECT last_insert_rowid())
     </select>
 
-    <select id="selectTagResource" resultType="com.keem.kochiu.collection.entity.UserResource">
+    <select id="selectTagResource" resultType="com.kochiu.collection.entity.UserResource">
         select DISTINCT r.*, c.CATE_NAME, a.cata_path from user_resource r
             join user_category c on r.CATE_ID=c.CATE_ID
             join user_resource_tag t on r.RESOURCE_ID=t.RESOURCE_ID and r.USER_ID=t.USER_ID
@@ -26,7 +26,7 @@
         ORDER BY r.CREATE_TIME DESC
     </select>
 
-    <select id="selectCategoryResource" resultType="com.keem.kochiu.collection.entity.UserResource">
+    <select id="selectCategoryResource" resultType="com.kochiu.collection.entity.UserResource">
         SELECT DISTINCT r.*, c.CATE_NAME, a.cata_path
         FROM user_resource r
             join user_category c on r.CATE_ID=c.CATE_ID
@@ -55,7 +55,7 @@
         ORDER BY r.CREATE_TIME DESC
     </select>
 
-    <select id="selectTypeResource" resultType="com.keem.kochiu.collection.entity.UserResource">
+    <select id="selectTypeResource" resultType="com.kochiu.collection.entity.UserResource">
         SELECT DISTINCT r.*, c.CATE_NAME, a.cata_path
             FROM user_resource r
             join user_category c on r.CATE_ID=c.CATE_ID
@@ -83,7 +83,7 @@
         ORDER BY r.CREATE_TIME DESC
     </select>
 
-    <select id="selectRecycleResource" resultType="com.keem.kochiu.collection.entity.UserResource">
+    <select id="selectRecycleResource" resultType="com.kochiu.collection.entity.UserResource">
         SELECT DISTINCT r.*, c.CATE_NAME, a.cata_path
             FROM user_resource r
             join user_category c on r.CATE_ID=c.CATE_ID
@@ -111,7 +111,7 @@
         ORDER BY r.delete_time DESC
     </select>
 
-    <select id="selectAllCateResource" resultType="com.keem.kochiu.collection.entity.UserResource">
+    <select id="selectAllCateResource" resultType="com.kochiu.collection.entity.UserResource">
         SELECT DISTINCT r.*, c.CATE_NAME, a.cata_path
             FROM user_resource r
             join user_category c on r.CATE_ID=c.CATE_ID
@@ -142,7 +142,7 @@
         ORDER BY r.CREATE_TIME DESC
     </select>
 
-    <select id="selectCatalogResourceIncludeSub" resultType="com.keem.kochiu.collection.entity.UserResource">
+    <select id="selectCatalogResourceIncludeSub" resultType="com.kochiu.collection.entity.UserResource">
         WITH RECURSIVE folder_tree AS (
             SELECT
                 cata_id,
@@ -207,7 +207,7 @@
     </select>
 
 
-    <select id="selectCatalogResource" resultType="com.keem.kochiu.collection.entity.UserResource">
+    <select id="selectCatalogResource" resultType="com.kochiu.collection.entity.UserResource">
         SELECT DISTINCT r.*, c.CATE_NAME, ft.cata_path
         FROM user_resource r
             JOIN user_catalog ft ON r.cata_id = ft.cata_id and r.USER_ID=ft.USER_ID
@@ -243,7 +243,7 @@
     </select>
 
 
-    <select id="selectPublicResource" resultType="com.keem.kochiu.collection.entity.UserResource">
+    <select id="selectPublicResource" resultType="com.kochiu.collection.entity.UserResource">
         SELECT DISTINCT r.*
         FROM user_resource r
         left JOIN user_resource_tag t ON r.RESOURCE_ID = t.RESOURCE_ID AND r.USER_ID = t.USER_ID
