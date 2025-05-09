@@ -99,7 +99,7 @@ const login = async () => {
             if (res) {
                 // 登录成功后初始化用户状态
                 const userStore = useUserStore();
-                userStore.initializeUser(res.userCode, res.userName);
+                userStore.initializeUser(res.userCode, res.userName, res.userId);
                 if(res.token) {
                     tokenStore.setToken(res.token, res.expirySeconds); // 保存token
                 }
@@ -153,12 +153,12 @@ onMounted(async () => {
     /*实现块元素百分比下居中*/
     width: 450px;
     padding: 50px;
-    background: rgba(255, 204, 255, 0.5);
+    background: rgba(255, 204, 255, 0.2);
     /*背景颜色为黑色，透明度为0.8*/
     box-sizing: border-box;
     /*box-sizing设置盒子模型的解析模式为怪异盒模型，
       将border和padding划归到width范围内*/
-    box-shadow: 0px 15px 25px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.5);
     /*边框阴影  水平阴影0 垂直阴影15px 模糊25px 颜色黑色透明度0.5*/
     border-radius: 15px;
     /*边框圆角，四个角均为15px*/
@@ -179,7 +179,51 @@ h2 {
     font-size: 15px;
 }
 
-:deep(.el-input__inner){
-    color: #4e4e4e !important;
+:deep(.el-input__wrapper) {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    padding: 0;
 }
+
+/* 可选：添加边框样式使输入框更可见 */
+:deep(.el-input__inner) {
+    background-color: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: #252525 !important;
+    border-radius: 4px;
+    padding: 0 15px;
+    width: 280px;
+    padding-right: 30px !important; /* 为图标留出空间 */
+}
+
+/* 鼠标悬停和聚焦时的样式 */
+:deep(.el-input__wrapper:hover),
+:deep(.el-input__wrapper.is-focus) {
+    box-shadow: none !important;
+    border-color: rgba(255, 255, 255, 0.7) !important;
+}
+
+:deep(.el-form-item__error) {
+    color: red;
+}
+
+:deep(.el-input) {
+    position: relative;
+    width: 280px; /* 与输入框宽度一致 */
+}
+
+:deep(.el-input__clear),
+:deep(.el-input__password) {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+}
+
+/* 调整密码输入框的图标位置 */
+:deep(.el-input__suffix) {
+    right: 5px;
+}
+
 </style>
