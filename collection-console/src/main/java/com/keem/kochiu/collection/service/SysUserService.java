@@ -97,6 +97,7 @@ public class SysUserService {
         TokenDto tokenDto = genToken(loginBo, PermitEnum.UI, 30 * 60 * 1000);
         String refreshToken = tokenService.createToken(tokenDto.getUser(), tokenDto.getClaims(), 7 * 24 * 3600 * 1000);
         return LoginDto.builder()
+                .userId(tokenDto.getUser().getUserId())
                 .userCode(loginBo.getUsername())
                 .userName(loginBo.getNikeName())
                 .token(tokenDto.getToken())
@@ -300,12 +301,13 @@ public class SysUserService {
 
     //重置密码
     @Transactional(rollbackFor = Exception.class)
-    public void resetPassword(ResetPwdBo resetPwdBo) throws CollectionException {
+    public void resetPassword(UserDto userDto, ResetPwdBo resetPwdBo) throws CollectionException {
         SysUser user = userRepository.getById(resetPwdBo.getUserId());
         if(user == null){
             throw new CollectionException(ErrorCodeEnum.USER_IS_NOT_EXIST);
         }
-        if(YesNoEnum.getEnum(user.getCanDel()) == YesNoEnum.NO){
+        //自己不能重置自己的密码
+        if(userDto.getUserId() == user.getUserId()){
             throw new CollectionException(ErrorCodeEnum.USER_IS_NOT_RESET_PASSWORD);
         }
 
@@ -485,5 +487,36 @@ public class SysUserService {
                 -1);
         user.setToken(token);
         userRepository.updateById(user);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void modifyPassword(UserDto userDto, ModifyPwdBo modifyPwdBo) throws CollectionException {
+
+        SysUser user = userRepository.getUser(userDto);
+        if(user == null){
+            throw new CollectionException(ErrorCodeEnum.USER_IS_NOT_EXIST);
+        }
+
+        //密码解密
+        String oldPassword = HexUtils.base64ToHex(modifyPwdBo.getOldPassword());
+        try {
+            oldPassword = RsaHexUtil.decrypt(oldPassword, securityRepository.getPrivateKey());
+        } catch (Exception e) {
+            throw new CollectionException(ErrorCodeEnum.USER_PASSWORD_DECRYPT_ERROR);
+        }
+        String newPassword = HexUtils.base64ToHex(modifyPwdBo.getNewPassword());
+        try {
+            newPassword = RsaHexUtil.decrypt(newPassword, securityRepository.getPrivateKey());
+        } catch (Exception e) {
+            throw new CollectionException(ErrorCodeEnum.USER_PASSWORD_DECRYPT_ERROR);
+        }
+
+        if(!SHA256Util.encryptBySHA256(oldPassword).equals(user.getPassword())){
+            throw new CollectionException(ErrorCodeEnum.USER_OLD_PASSWORD_ERROR);
+        }
+
+        user.setPassword(SHA256Util.encryptBySHA256(newPassword));
+        userRepository.updateById(user);
+
     }
 }

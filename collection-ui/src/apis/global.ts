@@ -5,6 +5,7 @@ import { computed, ref } from "vue";
 interface UserSettings {
     include_sub_dir: boolean;
     username: string;
+    userid: number;
 }
 
 // 添加类型导出（方便其他文件使用）
@@ -18,7 +19,8 @@ export const useUserStore = defineStore('userStore', () => {
     const currentSettings = computed(() =>
             userSettingsMap.value[currentUserCode.value] || {
                 include_sub_dir: false,
-                username: ''
+                username: '',
+                userid: 0
             }
     )
 
@@ -27,11 +29,13 @@ export const useUserStore = defineStore('userStore', () => {
     }
 
     // Actions
-    const initializeUser = (userCode: string, username: string) => {
+    const initializeUser = (userCode: string, username: string, userid: number) => {
         currentUserCode.value = userCode;
-        if (!userSettingsMap.value[userCode]) {
-            userSettingsMap.value[userCode] = { include_sub_dir: false, username };
-        }
+        userSettingsMap.value[userCode] = {
+            ...userSettingsMap.value[userCode], // 保留现有设置
+            username,
+            userid
+        };
     };
 
     const getUsername = () => {
@@ -42,6 +46,10 @@ export const useUserStore = defineStore('userStore', () => {
         if (currentUserCode.value) {
             userSettingsMap.value[currentUserCode.value].username = username;
         }
+    };
+
+    const getUserid = () => {
+        return currentSettings.value.userid;
     };
 
     const setIncludeSubDir = (value: boolean) => {
@@ -60,6 +68,7 @@ export const useUserStore = defineStore('userStore', () => {
         setIncludeSubDir,
         getUsername,
         setUsername,
+        getUserid,
         include_sub_dir: computed({
             get: () => currentSettings.value.include_sub_dir,
             set: (val) => setIncludeSubDir(val)
@@ -67,7 +76,8 @@ export const useUserStore = defineStore('userStore', () => {
         username: computed({
             get: () => currentSettings.value.username,
             set: (val) => setUsername(val)
-        })
+        }),
+        userid: computed(() => currentSettings.value.userid)
     };
 }, {
     persist: {

@@ -75,7 +75,7 @@ public class SysUserController {
     @PostMapping("/resetpwd")
     public DefaultResult<Boolean> resetPwd(ResetPwdBo resetPwdBo) throws CollectionException {
 
-        userService.resetPassword(resetPwdBo);
+        userService.resetPassword(CheckPermitAspect.USER_INFO.get(), resetPwdBo);
         return DefaultResult.ok(true);
     }
 
@@ -124,6 +124,14 @@ public class SysUserController {
     public DefaultResult<Boolean> resetToken() throws CollectionException {
 
         userService.resetToken(CheckPermitAspect.USER_INFO.get());
+        return DefaultResult.ok(true);
+    }
+
+    @CheckPermit
+    @PostMapping("/modify-pwd")
+    public DefaultResult<Boolean> modifyPwd(@Validated ModifyPwdBo modifyPwdBo) throws CollectionException {
+
+        userService.modifyPassword(CheckPermitAspect.USER_INFO.get(), modifyPwdBo);
         return DefaultResult.ok(true);
     }
 }

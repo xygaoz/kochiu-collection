@@ -352,6 +352,12 @@
                                 </div>
                                 <template #dropdown>
                                     <el-dropdown-menu class="user-dropdown-menu">
+                                        <el-dropdown-item @click="modifyPwd">
+                                            <el-icon>
+                                                <Key />
+                                            </el-icon>
+                                            <span>修改密码</span>
+                                        </el-dropdown-item>
                                         <el-dropdown-item @click="showProfile">
                                             <el-icon>
                                                 <User />
@@ -384,11 +390,12 @@
     <CategoryDialog ref="categoryDialog" @confirm="handleCategoryConfirm" />
     <CatalogDialog ref="catalogDialog" @confirm="handleCatalogConfirm" />
     <AppInfoDialog ref="appInfoDialog" />
+    <ModifyPasswordDialog ref="modifyPwdDialog" />
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref, StyleValue, watch } from "vue";
-import { ArrowDown, Delete, Edit, Plus, Switch, SwitchButton, User } from "@element-plus/icons-vue";
+import { ArrowDown, Delete, Edit, Key, Plus, Switch, SwitchButton, User } from "@element-plus/icons-vue";
 import { listCategory } from "@/apis/category-api";
 import { listTag } from "@/apis/tag-api";
 import { getResourceTypes } from "@/apis/system-api";
@@ -404,6 +411,7 @@ import { storeToRefs } from "pinia";
 import { useThemeStore } from "@/apis/themeStore";
 import userAvatar from "../assets/imgs/user.gif";
 import AppInfoDialog from "@/components/sys/AppInfoDialog.vue";
+import ModifyPasswordDialog from "@/components/my/ModifyPasswordDialog.vue";
 
 // 状态管理
 const showCatalogMenu = ref(false);
@@ -416,6 +424,7 @@ const resourceTypes = ref<ResourceType[]>([]);
 const categoryDialog = ref<InstanceType<typeof CategoryDialog>>();
 const catalogDialog = ref<InstanceType<typeof CatalogDialog>>();
 const appInfoDialog = ref<InstanceType<typeof AppInfoDialog>>()
+const modifyPwdDialog = ref<InstanceType<typeof ModifyPasswordDialog>>()
 const currentCatalog = ref<Catalog | null>(null);
 const route = useRoute();
 const router = useRouter();
@@ -686,6 +695,10 @@ const handleEditCategory = (category: Category) => {
 const handleDeleteCategory = (category: Category) => {
     categoryDialog.value?.openForDelete(category);
 };
+
+const modifyPwd = () => {
+    modifyPwdDialog.value?.open();
+}
 
 // 监听路由变化
 watch(() => route.path, (newPath) => {

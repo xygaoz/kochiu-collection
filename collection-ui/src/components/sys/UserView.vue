@@ -75,7 +75,7 @@
                     >
                         {{ row.status === 1 ? '停用' : '启用' }}
                     </el-button>
-                    <el-button size="small" type="warning" v-if="row.canDel === 1" @click="handleResetPassword(row)">重置密码</el-button>
+                    <el-button size="small" type="warning" v-if="row.userId !== userStore.getUserid()" @click="handleResetPassword(row)">重置密码</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -210,6 +210,8 @@ import { addUser, deleteUser, enableOrDisable, listUsers, resetPwd, updateUser }
 import { getPublicKey, getStrategyList } from "@/apis/system-api";
 import { listRoles } from "@/apis/role-api";
 import { encryptPassword } from "@/apis/utils";
+import { useUserStore } from "@/apis/global";
+import { storeToRefs } from "pinia";
 
 interface Pagination {
     currentPage: number
@@ -241,6 +243,7 @@ const resetPwdForm = reactive({
     newPassword: '',
     confirmPassword: ''
 });
+const userStore = useUserStore();
 
 const statusDialogVisible = ref(false);
 const currentUser = reactive({
@@ -313,10 +316,10 @@ const validateConfirmPassword = (rule: any, value: string | undefined, callback:
 
 const resetRules = reactive({
     newPassword: [
-        { required: true, validator: validatePassword, trigger: 'blur' }
+        { required: true, validator: validatePassword, trigger: ['blur', 'change'] }
     ],
     confirmPassword: [
-        { required: true, validator: validateConfirmPassword, trigger: 'blur' }
+        { required: true, validator: validateConfirmPassword, trigger: ['blur', 'change'] }
     ]
 });
 

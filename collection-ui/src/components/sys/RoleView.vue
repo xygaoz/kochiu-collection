@@ -131,7 +131,7 @@ const treeProps = {
     },
     disabled: (data: Module | Action) => {
         // 只有动作可以被选中，模块不可选中
-        return !('actionId' in data);
+        return !('actionId' in data) || roleForm.canDel === 0;
     }
 };
 
@@ -148,12 +148,14 @@ const deleteRoleInfo = reactive<DeleteRoleInfo>({
 interface RoleForm {
     roleId: string;
     roleName: string;
+    canDel: number;
     permissions: number[]; // 存储选中的actionId数组
 }
 
 const roleForm = reactive<RoleForm>({
     roleId: '',
     roleName: '',
+    canDel: 0,
     permissions: []
 });
 
@@ -214,6 +216,7 @@ const handleEdit = (row: Role) => {
     Object.assign(roleForm, {
         roleId: row.roleId,
         roleName: row.roleName,
+        canDel: row.canDel,
         permissions: row.permissions ? row.permissions.map(p => p.actionId) : []
     });
 
@@ -226,7 +229,6 @@ const handleEdit = (row: Role) => {
         }
     });
 };
-
 
 const handleDelete = (roleId: string, roleName: string) => {
     deleteRoleInfo.roleId = roleId;

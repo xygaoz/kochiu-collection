@@ -59,7 +59,7 @@ public enum ErrorCodeEnum {
     ROLE_IS_NOT_DELETE("1057", "该角色不能删除"),
     USER_IS_NOT_DELETE("1058", "该用户不能删除"),
     USER_IS_NOT_RESET_PASSWORD("1059", "该用户不能重置密码"),
-    ;
+    USER_OLD_PASSWORD_ERROR("1060", "旧密码错误");
 
     private final String code;
     private final String message;

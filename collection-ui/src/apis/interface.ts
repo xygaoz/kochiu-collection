@@ -1,4 +1,5 @@
 export interface LoginInfo{
+    userId: number;
     userCode: string
     userName: string
     token: string

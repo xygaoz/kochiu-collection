@@ -154,3 +154,15 @@ export const resetToken = async (): Promise<boolean> => {
         return false;
     });
 }
+
+export const modifyPassword = async (param: any): Promise<boolean | null> => {
+    return httpInstance.post(userApi + "/modify-pwd", param).then((model: any) => {
+        if (model) {
+            return model as boolean;
+        }
+        return null;
+    }).catch((error) => {
+        console.error("修改密码失败:", error);
+        return null;
+    });
+}
