@@ -1,5 +1,6 @@
 package com.kochiu.collection.service.store;
 
+import com.kochiu.collection.enums.StrategyEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,7 +25,7 @@ public class ResourceStrategyFactory {
     public ResourceStoreStrategy getStrategy(String type) {
         ResourceStoreStrategy strategy = strategyMap.get(type);
         if (strategy == null) {
-            return strategyMap.get("local");
+            return strategyMap.get(StrategyEnum.LOCAL.getCode());
         }
         return strategy;
     }

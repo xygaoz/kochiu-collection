@@ -8,6 +8,7 @@ import com.kochiu.collection.data.dto.StrategyDto;
 import com.kochiu.collection.data.vo.ResourceTypeVo;
 import com.kochiu.collection.enums.ResourceTypeEnum;
 import com.kochiu.collection.exception.CollectionException;
+import com.kochiu.collection.service.SysStrategyService;
 import com.kochiu.collection.service.SystemService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -26,9 +27,11 @@ import static com.kochiu.collection.Constant.PUBLIC_URL;
 public class SystemController {
 
     private final SystemService systemService;
+    private final SysStrategyService strategyService;
 
-    public SystemController(SystemService systemService) {
+    public SystemController(SystemService systemService, SysStrategyService strategyService) {
         this.systemService = systemService;
+        this.strategyService = strategyService;
     }
 
     @GetMapping("/resourceTypes")
@@ -59,7 +62,7 @@ public class SystemController {
     @CheckPermit
     @GetMapping("/strategy/list")
     public DefaultResult<List<StrategyDto>> getStrategyList() {
-        return DefaultResult.ok(systemService.getStrategyList());
+        return DefaultResult.ok(strategyService.getStrategyList());
     }
 
     @CheckPermit(modules = {
@@ -67,7 +70,13 @@ public class SystemController {
     })
     @PostMapping("/strategy/update")
     public DefaultResult<Boolean> updateStrategy(@Validated StrategyDto strategyDto) throws CollectionException {
-        systemService.updateStrategy(strategyDto);
+        strategyService.updateStrategy(strategyDto);
         return DefaultResult.ok(true);
+    }
+
+    @CheckPermit
+    @GetMapping("/strategy/check-local")
+    public DefaultResult<Boolean> checkLocalStrategy() {
+        return DefaultResult.ok(strategyService.checkLocalStrategy());
     }
 }

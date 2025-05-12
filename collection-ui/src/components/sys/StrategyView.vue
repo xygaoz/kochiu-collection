@@ -65,9 +65,9 @@
 
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
-import { getStrategyList, updateStrategy } from '@/apis/system-api'
+import { checkServerPath, getStrategyList, testServerPath, updateStrategy } from "@/apis/system-api";
 import { Strategy } from "@/apis/interface";
 import { useUserStore } from "@/apis/global";
 
@@ -93,6 +93,7 @@ const form = ref<StrategyForm>({
     password: '',
     otherConfig: ''
 })
+const oldServiceUrl = ref('')
 const userStore = useUserStore();
 
 const rules = ref<FormRules>({
@@ -134,6 +135,7 @@ const loadStrategyData = (strategyId: number) => {
             password: strategy.password,
             otherConfig: strategy.otherConfig
         }
+        oldServiceUrl.value = strategy.serverUrl
     }
 }
 
@@ -148,9 +150,31 @@ const submitForm = async () => {
     loading.value = true
     try {
         await formRef.value.validate()
-        if(await updateStrategy(form.value)) {
-            ElMessage.success('保存成功')
-            await loadStrategies() // 刷新列表数据
+        if (form.value.serverUrl !== oldServiceUrl.value && form.value.strategyCode === 'local') {
+            const result = await testServerPath(form.value.serverUrl, 2)
+            if(!result) {
+                ElMessage.error('路径不可访问或无法创建')
+                return
+            }
+
+            if (await checkServerPath()) {
+                ElMessageBox.confirm('您旧的存储路径不是空的，保存后将迁移文件到新路径，但迁移有可能会失败，是否继续？', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(async () => {
+                    if (await updateStrategy(form.value)) {
+                        ElMessage.success('保存成功')
+                        await loadStrategies() // 刷新列表数据
+                    }
+                })
+            }
+            else{
+                if(await updateStrategy(form.value)) {
+                    ElMessage.success('保存成功')
+                    await loadStrategies() // 刷新列表数据
+                }
+            }
         }
     } catch (error) {
         console.error(error)

@@ -30,7 +30,7 @@
         -e JODCONVERTER_TASK_TIMEOUT=300000 \     # 5分钟超时<br>
         -e JAVA_OPTS="-Xmx2g -Xms1g" \           # 增加JVM内存<br>
         -e JODCONVERTER_OFFICE_PROCESS_COUNT=2 \  # 启动多个Office进程<br>
-        -e JODCONVERTER_STARTPROCESS_MAXRETRIES=5 \<br>
+        -e JODCONVERTER_STARTPROCESS_MAXRETRIES=5 \ <br>
         --memory="3g" \                          # 容器内存限制<br>
         --restart always \ <br>
         eugenmayer/jodconverter:rest-0.2.0<br><br>
@@ -45,6 +45,10 @@
       <br><br>
 - 安装ffmpeg(可选)<br>
   从 [FFmpeg](https://ffmpeg.org/)官网下载安装。安装之后可以从视频截帧生成缩略图，否则会使用默认的图标代替缩略图。<br>
+  - Linux: sudo apt install ffmpeg。查找安装目录：which ffmpeg
+  - macOS: 通过 Homebrew 安装：brew install ffmpeg。查找安装目录：which ffmpeg
+  - Windows: 从 [FFmpeg](https://ffmpeg.org/)官网下载安装，默认路径为 C:\Program Files\FFmpeg。
+  - 群晖：套件中安装 ffmpeg。（需设置第三方套件来源，如http://packages.synocommunity.com/，https://spk7.imnks.com/ ），查找安装目录：find / -name ffmpeg 2> /dev/null<br>
 
 ### 客户端
 - PicGo

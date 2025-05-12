@@ -634,7 +634,7 @@
             <column name="strategy_id" value="1"/>
             <column name="strategy_code" value="local"/>
             <column name="strategy_name" value="本地存储"/>
-            <column name="server_url" value="/Volumes/Document/Temp/collection"/>
+            <column name="server_url" value="/"/>
             <column name="CREATE_TIME" valueComputed="datetime('now')"/>
             <column name="CREATE_BY" value="sys"/>
             <column name="DB_VERSION" value="1"/>

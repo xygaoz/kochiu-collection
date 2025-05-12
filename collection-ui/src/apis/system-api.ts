@@ -124,3 +124,15 @@ export const updateStrategy = async (params: any): Promise<boolean> => {
         return false;
     });
 }
+
+export const checkServerPath = async (): Promise<boolean> => {
+    return httpInstance.get(sysApi + "/strategy/check-local").then((model: any) => {
+        if (model) {
+            return model as boolean;
+        }
+        return false;
+    }).catch((error) => {
+        console.error("添加策略失败:", error);
+        return false;
+    });
+}

@@ -20,26 +20,20 @@ import java.util.Set;
 @Service
 public class SystemService {
 
-    private final SysStrategyRepository strategyRepository;
-
     // Linux系统敏感目录
     private static final Set<String> LINUX_SENSITIVE_DIRS = new HashSet<>(Arrays.asList(
-            "/bin", "/boot", "/dev", "/etc", "/home", "/lib", "/lib64",
+            "/", "/bin", "/boot", "/dev", "/etc", "/home", "/lib", "/lib64",
             "/lost+found", "/media", "/mnt", "/opt", "/proc", "/root",
             "/run", "/sbin", "/srv", "/sys", "/tmp", "/usr", "/var"
     ));
 
     // Windows系统敏感目录
     private static final Set<String> WINDOWS_SENSITIVE_DIRS = new HashSet<>(Arrays.asList(
-            "C:\\Windows", "C:\\Program Files", "C:\\Program Files (x86)",
+            "/", "C:", "C:\\Windows", "C:\\Program Files", "C:\\Program Files (x86)",
             "C:\\ProgramData", "C:\\System Volume Information", "C:\\$Recycle.Bin",
             "C:\\Users", "C:\\Documents and Settings", "C:\\PerfLogs",
             "C:\\Recovery", "C:\\Config.Msi", "C:\\MSOCache"
     ));
-
-    public SystemService(SysStrategyRepository strategyRepository) {
-        this.strategyRepository = strategyRepository;
-    }
 
     /**
      * 测试服务端路径是否可读写
@@ -108,7 +102,7 @@ public class SystemService {
      * @param path 要检查的路径
      * @return 如果是敏感路径返回true，否则返回false
      */
-    private boolean isSensitivePath(String path) {
+    public boolean isSensitivePath(String path) {
         // 统一转换为小写进行比较
         String lowerPath = path.toLowerCase();
 
@@ -138,34 +132,4 @@ public class SystemService {
         return false;
     }
 
-    // 获取系统策略列表
-    public List<StrategyDto> getStrategyList() {
-        return strategyRepository
-                .list()
-                .stream()
-                .map(strategy ->
-                        StrategyDto.builder()
-                                .strategyId(strategy.getStrategyId())
-                                .strategyCode(strategy.getStrategyCode())
-                                .strategyName(strategy.getStrategyName())
-                                .serverUrl(strategy.getServerUrl())
-                                .username(strategy.getUsername())
-                                .password(strategy.getPassword())
-                                .otherConfig(strategy.getOtherConfig())
-                                .build())
-                .toList();
-    }
-
-    public void updateStrategy(StrategyDto strategyDto) throws CollectionException {
-
-        SysStrategy  sysStrategy = strategyRepository.getById(strategyDto.getStrategyId());
-        if(sysStrategy == null){
-            throw new CollectionException(ErrorCodeEnum.STRATEGY_IS_NOT_EXIST);
-        }
-        sysStrategy.setServerUrl(strategyDto.getServerUrl());
-        sysStrategy.setUsername(strategyDto.getUsername());
-        sysStrategy.setPassword(strategyDto.getPassword());
-        sysStrategy.setOtherConfig(strategyDto.getOtherConfig());
-        strategyRepository.updateById(sysStrategy);
-    }
 }

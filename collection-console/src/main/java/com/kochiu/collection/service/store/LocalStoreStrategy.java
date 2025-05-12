@@ -13,12 +13,14 @@ import com.kochiu.collection.entity.UserResource;
 import com.kochiu.collection.enums.ErrorCodeEnum;
 import com.kochiu.collection.enums.FileTypeEnum;
 import com.kochiu.collection.enums.SaveTypeEnum;
+import com.kochiu.collection.enums.StrategyEnum;
 import com.kochiu.collection.exception.CollectionException;
 import com.kochiu.collection.properties.CollectionProperties;
 import com.kochiu.collection.repository.SysStrategyRepository;
 import com.kochiu.collection.repository.SysUserRepository;
 import com.kochiu.collection.repository.UserCatalogRepository;
 import com.kochiu.collection.repository.UserResourceRepository;
+import com.kochiu.collection.service.SystemService;
 import com.kochiu.collection.service.file.FileStrategy;
 import com.kochiu.collection.service.file.FileStrategyFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +51,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
     private final UserCatalogRepository catalogRepository;
     private final SysStrategy strategy;
     private final ThumbnailService thumbnailService;
+    private final SystemService systemService;
 
     public LocalStoreStrategy(CollectionProperties collectionProperties,
                               UserResourceRepository resourceRepository,
@@ -56,17 +59,19 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
                               FileStrategyFactory fileStrategyFactory,
                               UserCatalogRepository catalogRepository,
                               SysStrategyRepository strategyRepository,
-                              ThumbnailService thumbnailService) {
+                              ThumbnailService thumbnailService,
+                              SystemService systemService) {
         this.collectionProperties = collectionProperties;
         this.resourceRepository = resourceRepository;
         this.userRepository = userRepository;
         this.fileStrategyFactory = fileStrategyFactory;
         this.catalogRepository = catalogRepository;
         this.thumbnailService = thumbnailService;
+        this.systemService = systemService;
 
         try {
             strategy = strategyRepository.getOne(new LambdaQueryWrapper<SysStrategy>()
-                    .eq(SysStrategy::getStrategyCode, "local")
+                    .eq(SysStrategy::getStrategyCode, StrategyEnum.LOCAL.getCode())
                     .last("limit 1")
             );
         } catch (Exception e) {
@@ -102,6 +107,11 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
         //读取文件到本地
         String returnUrl = savePath.substring(("/" + userCode).length());
         String recFilePathDir = strategy.getServerUrl();
+        //检查目标路径
+        if(systemService.isSensitivePath(recFilePathDir)){
+            throw new CollectionException(SENSITIVE_PATH);
+        }
+
         File dir = new File(recFilePathDir + savePath);
         if (!dir.exists()) {
             dir.mkdirs();
