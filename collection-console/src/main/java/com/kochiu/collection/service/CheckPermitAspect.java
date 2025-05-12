@@ -112,7 +112,7 @@ public class CheckPermitAspect {
         if(checkPermit.modules() != null && checkPermit.modules().length > 0) {
             boolean isPermit = false;
             for(Module module : checkPermit.modules()){
-                if(module.byAction() == null){
+                if(module.byAction() == null || module.byAction().length == 0){
                     if(securityService.hasPermission(tokenDto.getUser().getUserId(), module.modeCode(), null)){
                         isPermit = true;
                     }
