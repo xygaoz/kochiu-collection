@@ -20,6 +20,8 @@ public final class Constant {
 
     public static final int ROOT_CATALOG_SNO = 1;
 
+    public static final String ROOT_PATH = "/";
+
     private Constant(){
 
     }

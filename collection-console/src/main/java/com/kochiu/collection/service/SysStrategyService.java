@@ -19,6 +19,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static com.kochiu.collection.Constant.ROOT_PATH;
+
 @Slf4j
 @Service
 public class SysStrategyService {
@@ -76,7 +78,7 @@ public class SysStrategyService {
         strategyRepository.updateById(sysStrategy);
 
         if(sysStrategy.getStrategyCode().equals(StrategyEnum.LOCAL.getCode())
-                && !oldPath.equals(strategyDto.getServerUrl())){
+                && !oldPath.equals(strategyDto.getServerUrl()) && !oldPath.equals(ROOT_PATH)){
             //迁移文件
             Path dir = Paths.get(oldPath);
             if(!dir.toFile().exists()){
@@ -163,6 +165,10 @@ public class SysStrategyService {
     public boolean checkLocalStrategy() {
         SysStrategy sysStrategy = strategyRepository.getOne(new LambdaQueryWrapper<SysStrategy>().eq(SysStrategy::getStrategyCode, StrategyEnum.LOCAL.getCode()));
         if (sysStrategy != null) {
+            if(ROOT_PATH.equals(sysStrategy.getServerUrl())){
+                return false;
+            }
+
             Path dir = Paths.get(sysStrategy.getServerUrl());
             if(!dir.toFile().exists()){
                 return false;
