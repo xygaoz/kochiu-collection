@@ -479,7 +479,7 @@ public class SysUserService {
                 .userCode(user.getUserCode())
                 .userName(user.getUserName())
                 .token(user.getToken())
-                .key(mask(user.getKey(), 3, user.getKey().length() - 3, '*'))
+                .key(mask(user.getKey(), 2, user.getKey().length() - 3, '*'))
                 .strategy(user.getStrategy())
                 .status(user.getStatus())
                 .roles(roles.stream().map(role -> RoleVo.builder()

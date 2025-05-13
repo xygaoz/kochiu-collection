@@ -254,8 +254,8 @@ public class SystemService {
         SysSecurity sysSecurity = securityRepository.getById(1);
         KeyVo keyVo = new KeyVo();
         keyVo.setPublicKey(sysSecurity.getPublicKey());
-        keyVo.setPrivateKey(DesensitizationUtil.mask(sysSecurity.getPrivateKey(), 20, sysSecurity.getPrivateKey().length() - 20, '*'));
-        keyVo.setCommonKey(DesensitizationUtil.mask(sysSecurity.getCommonKey(), 2, sysSecurity.getCommonKey().length() - 2, '*'));
+        keyVo.setPrivateKey(sysSecurity.getPrivateKey().substring(0, 60) + "……～～已隐藏" + (sysSecurity.getPrivateKey().length() - 120) + "字符～～……" + sysSecurity.getPrivateKey().substring(sysSecurity.getPrivateKey().length() - 60));
+        keyVo.setCommonKey(DesensitizationUtil.mask(sysSecurity.getCommonKey(), 2, sysSecurity.getCommonKey().length() - 3, '*'));
         return keyVo;
     }
 

@@ -21,7 +21,7 @@
                 <el-input
                     v-model="currentPublicKey"
                     type="textarea"
-                    :rows="3"
+                    :rows="4"
                     readonly
                     class="key-display"
                     placeholder="加载中..."/>
@@ -219,7 +219,7 @@ onMounted(async () => {
 .config-section {
     margin-bottom: 30px;
     padding-bottom: 20px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--el-border-color);
 }
 
 .config-section:last-child {
