@@ -160,3 +160,9 @@ export interface RouteMenu {
     meta: Meta;
     children: RouteMenu[];
 }
+
+export interface Keys{
+    publicKey: string;
+    privateKey: string;
+    commonKey: string;
+}

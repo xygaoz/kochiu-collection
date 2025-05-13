@@ -5,6 +5,7 @@ import com.kochiu.collection.annotation.Module;
 import com.kochiu.collection.data.DefaultResult;
 import com.kochiu.collection.data.bo.PathBo;
 import com.kochiu.collection.data.dto.StrategyDto;
+import com.kochiu.collection.data.vo.KeyVo;
 import com.kochiu.collection.data.vo.ResourceTypeVo;
 import com.kochiu.collection.enums.ResourceTypeEnum;
 import com.kochiu.collection.exception.CollectionException;
@@ -79,4 +80,40 @@ public class SystemController {
     public DefaultResult<Boolean> checkLocalStrategy() {
         return DefaultResult.ok(strategyService.checkLocalStrategy());
     }
+
+    @CheckPermit(modules = {
+            @Module(modeCode = "config", byAction = {"clear"})
+    })
+    @GetMapping("/test/clear")
+    public DefaultResult<Boolean> clearTest() throws CollectionException {
+        systemService.clear();
+        return DefaultResult.ok(true);
+    }
+
+    @CheckPermit(modules = {
+            @Module(modeCode = "config")
+    })
+    @GetMapping("/load-key")
+    public DefaultResult<KeyVo> loadKeys() throws CollectionException {
+        return DefaultResult.ok(systemService.getKeys());
+    }
+
+    @CheckPermit(modules = {
+            @Module(modeCode = "config", byAction = {"reset-rsa-keys"})
+    })
+    @GetMapping("/reset-rsa-keys")
+    public DefaultResult<Boolean> resetRsaKeys() throws CollectionException {
+        systemService.resetRsaKeys();
+        return DefaultResult.ok(true);
+    }
+
+    @CheckPermit(modules = {
+            @Module(modeCode = "config", byAction = {"reset-key"})
+    })
+    @GetMapping("/reset-key")
+    public DefaultResult<Boolean> resetCommonKey() throws CollectionException {
+        systemService.resetCommonKey();
+        return DefaultResult.ok(true);
+    }
+
 }

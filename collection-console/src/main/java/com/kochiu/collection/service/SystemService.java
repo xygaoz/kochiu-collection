@@ -1,24 +1,48 @@
 package com.kochiu.collection.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.kochiu.collection.data.bo.PathBo;
 import com.kochiu.collection.data.dto.StrategyDto;
-import com.kochiu.collection.entity.SysStrategy;
+import com.kochiu.collection.data.vo.KeyVo;
+import com.kochiu.collection.entity.*;
 import com.kochiu.collection.enums.ErrorCodeEnum;
 import com.kochiu.collection.enums.ImportMethodEnum;
+import com.kochiu.collection.enums.StrategyEnum;
 import com.kochiu.collection.exception.CollectionException;
-import com.kochiu.collection.repository.SysStrategyRepository;
+import com.kochiu.collection.repository.*;
+import com.kochiu.collection.util.DesensitizationUtil;
+import com.kochiu.collection.util.RsaHexUtil;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.IOException;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static com.kochiu.collection.Constant.RANDOM_CHARS;
+
+@Slf4j
 @Service
 public class SystemService {
+
+    private final UserCatalogRepository userCatalogRepository;
+    private final UserCategoryRepository userCategoryRepository;
+    private final UserResourceRepository userResourceRepository;
+    private final SysUserRepository sysUserRepository;
+    private final SysRoleRepository sysRoleRepository;
+    private final UserPermissionRepository userPermissionRepository;
+    private final UserResourceTagRepository userResourceTagRepository;
+    private final UserTagRepository userTagRepository;
+    private final UserRoleRepository userRoleRepository;
+    private final SysStrategyRepository strategyRepository;
+    private final SysSecurityRepository securityRepository;
 
     // Linux系统敏感目录
     private static final Set<String> LINUX_SENSITIVE_DIRS = new HashSet<>(Arrays.asList(
@@ -34,6 +58,30 @@ public class SystemService {
             "C:\\Users", "C:\\Documents and Settings", "C:\\PerfLogs",
             "C:\\Recovery", "C:\\Config.Msi", "C:\\MSOCache"
     ));
+
+    public SystemService(UserCatalogRepository userCatalogRepository,
+                         UserCategoryRepository userCategoryRepository,
+                         UserResourceRepository userResourceRepository,
+                         SysUserRepository sysUserRepository,
+                         SysRoleRepository sysRoleRepository,
+                         UserPermissionRepository userPermissionRepository,
+                         UserResourceTagRepository userResourceTagRepository,
+                         UserTagRepository userTagRepository,
+                         UserRoleRepository userRoleRepository,
+                         SysStrategyRepository strategyRepository,
+                         SysSecurityRepository securityRepository) {
+        this.userCatalogRepository = userCatalogRepository;
+        this.userCategoryRepository = userCategoryRepository;
+        this.userResourceRepository = userResourceRepository;
+        this.sysUserRepository = sysUserRepository;
+        this.sysRoleRepository = sysRoleRepository;
+        this.userPermissionRepository = userPermissionRepository;
+        this.userResourceTagRepository = userResourceTagRepository;
+        this.userTagRepository = userTagRepository;
+        this.userRoleRepository = userRoleRepository;
+        this.strategyRepository = strategyRepository;
+        this.securityRepository = securityRepository;
+    }
 
     /**
      * 测试服务端路径是否可读写
@@ -132,4 +180,107 @@ public class SystemService {
         return false;
     }
 
+    //  清空数据
+    @Transactional(rollbackFor = Exception.class)
+    public void clear() throws CollectionException {
+        //清空标签
+        userResourceTagRepository.remove(null);
+        //清空资源
+        userResourceRepository.remove(null);
+        //清空标签
+        userTagRepository.remove(null);
+        //清空用户
+        sysUserRepository.remove(new LambdaQueryWrapper<SysUser>().eq(SysUser::getCanDel, 1));
+        //清空角色
+        sysRoleRepository.remove(new LambdaQueryWrapper<SysRole>().eq(SysRole::getCanDel, 1));
+        //清空用户角色
+        LambdaQueryWrapper<UserRole> wrapper = new LambdaQueryWrapper<>();
+        wrapper.notInSql(UserRole::getUserId, "SELECT user_id FROM sys_user");
+        userRoleRepository.remove(wrapper);
+        //清空权限
+        LambdaQueryWrapper<UserPermission> wrapper2 = new LambdaQueryWrapper<>();
+        wrapper2.notInSql(UserPermission::getRoleId, "SELECT role_id FROM sys_role");
+        userPermissionRepository.remove(wrapper2);
+        //清空目录
+        LambdaQueryWrapper<UserCatalog> wrapper3 = new LambdaQueryWrapper<>();
+        wrapper3.notInSql(UserCatalog::getUserId, "SELECT user_id FROM sys_user");
+        wrapper3.or(subWrapper -> {
+            subWrapper.inSql(UserCatalog::getUserId, "SELECT user_id FROM sys_user");
+            subWrapper.ne(UserCatalog::getCataLevel, 0);
+        });
+        userCatalogRepository.remove(wrapper3);
+        //清空分类
+        LambdaQueryWrapper<UserCategory> wrapper4 = new LambdaQueryWrapper<>();
+        wrapper4.notInSql(UserCategory::getUserId, "SELECT user_id FROM sys_user");
+        wrapper4.or(subWrapper -> {
+            subWrapper.inSql(UserCategory::getUserId, "SELECT user_id FROM sys_user");
+            subWrapper.ne(UserCategory::getSno, 1);
+        });
+        userCategoryRepository.remove(wrapper4);
+        //删除物理资源
+        try {
+            SysStrategy sysStrategy = strategyRepository.getOne(new LambdaQueryWrapper<SysStrategy>().eq(SysStrategy::getStrategyCode, StrategyEnum.LOCAL.getCode()));
+            if (sysStrategy != null) {
+                Path dir = Paths.get(sysStrategy.getServerUrl());
+                if(!dir.toFile().exists()){
+                    return;
+                }
+                //删除源目录
+                Files.walkFileTree(dir, new SimpleFileVisitor<>() {
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                        Files.delete(file); // 删除文件
+                        return FileVisitResult.CONTINUE;
+                    }
+
+                    @Override
+                    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                        if (exc != null) {
+                            throw exc; // 抛出遍历过程中的异常
+                        }
+                        Files.delete(dir); // 删除目录（此时目录已空）
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+            }
+        } catch (IOException e) {
+            throw new CollectionException(ErrorCodeEnum.CLEAR_FAIL);
+        }
+    }
+
+    // 获取密钥
+    public KeyVo getKeys() {
+
+        SysSecurity sysSecurity = securityRepository.getById(1);
+        KeyVo keyVo = new KeyVo();
+        keyVo.setPublicKey(sysSecurity.getPublicKey());
+        keyVo.setPrivateKey(DesensitizationUtil.mask(sysSecurity.getPrivateKey(), 20, sysSecurity.getPrivateKey().length() - 20, '*'));
+        keyVo.setCommonKey(DesensitizationUtil.mask(sysSecurity.getCommonKey(), 2, sysSecurity.getCommonKey().length() - 2, '*'));
+        return keyVo;
+    }
+
+    public void resetRsaKeys() throws CollectionException {
+        try {
+            String[] keys = RsaHexUtil.genKeyPair();
+            SysSecurity sysSecurity = securityRepository.getById(1);
+            sysSecurity.setPublicKey(keys[0]);
+            sysSecurity.setPrivateKey(keys[1]);
+            securityRepository.updateById(sysSecurity);
+        }
+        catch (Exception e){
+            throw new CollectionException(ErrorCodeEnum.RSA_KEY_GEN_FAIL);
+        }
+    }
+
+    public void resetCommonKey() throws CollectionException {
+        try {
+            String commonKey = RandomStringUtils.random(8, RANDOM_CHARS);
+            SysSecurity sysSecurity = securityRepository.getById(1);
+            sysSecurity.setCommonKey(commonKey);
+            securityRepository.updateById(sysSecurity);
+        }
+        catch (Exception e){
+            throw new CollectionException(ErrorCodeEnum.RSA_KEY_GEN_FAIL);
+        }
+    }
 }

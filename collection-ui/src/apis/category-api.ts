@@ -1,5 +1,5 @@
 import { Category } from "@/apis/interface";
-import httpInstance from "@/apis/utils";
+import httpInstance from "@/utils/utils";
 
 const categoryApi = '/category'
 export const listCategory = (): Promise<Category[]> => {

@@ -211,8 +211,8 @@ import { Role, Strategy, User } from "@/apis/interface";
 import { addUser, deleteUser, enableOrDisable, listUsers, resetPwd, updateUser } from "@/apis/user-api";
 import { getPublicKey, getStrategyList } from "@/apis/system-api";
 import { listRoles } from "@/apis/role-api";
-import { encryptPassword } from "@/apis/utils";
-import { useUserStore } from "@/apis/global";
+import { encryptPassword } from "@/utils/utils";
+import { useUserStore } from "@/utils/global";
 
 interface Pagination {
     currentPage: number

@@ -11,7 +11,7 @@ import MainUI from './components/MainUI.vue';
 import { onMounted, reactive } from "vue";
 import LoginUI from "@/components/LoginUI.vue";
 import { tokenStore } from "@/apis/system-api";
-import { refreshAccessToken } from "@/apis/utils";
+import { refreshAccessToken } from "@/utils/utils";
 
 let isRefreshing = false;
 const state = reactive({ isShow: 0 });

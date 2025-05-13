@@ -28,7 +28,7 @@
 import { ref, defineExpose, reactive, onMounted } from "vue";
 import { ElMessage, ElMessageBox, FormInstance } from "element-plus";
 import { logout, modifyPassword } from "@/apis/user-api";
-import { encryptPassword } from "@/apis/utils";
+import { encryptPassword } from "@/utils/utils";
 import { getPublicKey } from "@/apis/system-api";
 
 const modifyPwdForm = reactive({

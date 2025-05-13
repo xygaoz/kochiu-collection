@@ -58,8 +58,8 @@ import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router"; // 导入useRouter
 import { getPublicKey, loginService, tokenStore } from "@/apis/system-api"; // 导入getPublicKey方法
 import Cookies from 'js-cookie';
-import { encryptPassword } from "@/apis/utils";
-import { useUserStore } from "@/apis/global";
+import { encryptPassword } from "@/utils/utils";
+import { useUserStore } from "@/utils/global";
 
 const loginForm = ref({
     username: "",

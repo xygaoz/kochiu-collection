@@ -144,8 +144,8 @@ import { Refresh, CopyDocument, View, Hide } from "@element-plus/icons-vue";
 import { Strategy, User } from "@/apis/interface";
 import { getStrategyList } from "@/apis/system-api";
 import { getMyInfo, logout, resetKey, resetToken, setMyName } from "@/apis/user-api";
-import { useUserStore } from "@/apis/global";
-import { useThemeStore } from "@/apis/themeStore";
+import { useUserStore } from "@/utils/global";
+import { useThemeStore } from "@/utils/themeStore";
 
 const themeStore = useThemeStore();
 const { currentTheme, isDark } = storeToRefs(themeStore);
@@ -160,7 +160,8 @@ const userInfo = ref<User>({
     token: '',
     status: 0,
     theme: currentTheme.value, // 使用响应式引用
-    roles: []
+    roles: [],
+    canDel: 0
 });
 const strategyList = ref<Strategy[]>([])
 const userStore = useUserStore();
@@ -174,7 +175,6 @@ const toggleKeyVisibility = () => {
     showKey.value = !showKey.value
 }
 
-// 模拟从存储中获取用户信息
 const fetchUserInfo = async () => {
     strategyList.value = await getStrategyList();
     await refreshUser();

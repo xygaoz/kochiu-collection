@@ -1,6 +1,6 @@
 // themeStore.ts
 import { defineStore } from 'pinia';
-import themeConfig from '@/apis/theme-config';
+import themeConfig from '@/utils/theme-config';
 
 export const useThemeStore = defineStore('theme', {
     state: () => ({

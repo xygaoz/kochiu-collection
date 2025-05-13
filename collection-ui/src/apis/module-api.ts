@@ -1,4 +1,4 @@
-import httpInstance from "@/apis/utils";
+import httpInstance from "@/utils/utils";
 import { Module } from "@/apis/interface";
 
 const moduleApi = "/module";

@@ -9,7 +9,7 @@ import './assets/iconfont/iconfont.css'
 import * as Icons from '@element-plus/icons-vue'
 import { createPinia } from "pinia";
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
-import { useThemeStore } from "@/apis/themeStore";
+import { useThemeStore } from "@/utils/themeStore";
 
 const app = createApp(App)
 const pinia = createPinia()

@@ -1,6 +1,6 @@
 
 // 新增上传文件的方法
-import httpInstance, { loading } from "@/apis/utils";
+import httpInstance, { loading } from "@/utils/utils";
 import { PageInfo, Resource, Tag } from "@/apis/interface";
 import type { AxiosProgressEvent } from 'axios'
 

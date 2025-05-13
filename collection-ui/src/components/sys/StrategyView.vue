@@ -69,7 +69,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { checkServerPath, getStrategyList, testServerPath, updateStrategy } from "@/apis/system-api";
 import { Strategy } from "@/apis/interface";
-import { useUserStore } from "@/apis/global";
+import { useUserStore } from "@/utils/global";
 
 interface StrategyForm {
     strategyId: number | null

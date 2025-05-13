@@ -820,6 +820,21 @@
             <column name="CREATE_BY" value="sys"/>
             <column name="DB_VERSION" value="1"/>
         </insert>
+        <insert tableName="sys_module">
+            <column name="module_id" value="5"/>
+            <column name="module_code" value="config"/>
+            <column name="module_name" value="系统配置"/>
+            <column name="module_url" value="/System/Config"/>
+            <column name="redirect" value="@/components/sys/ConfigView.vue"/>
+            <column name="parent_id" value="1"/>
+            <column name="icon" value="icon-col-ceshi"/>
+            <column name="icon_type" value="iconfont"/>
+            <column name="sort" value="3"/>
+            <column name="style" value="font-size: 18px; color: rgb(59,130,246)"/>
+            <column name="CREATE_TIME" valueComputed="datetime('now')"/>
+            <column name="CREATE_BY" value="sys"/>
+            <column name="DB_VERSION" value="1"/>
+        </insert>
     </changeSet>
 
     <changeSet id="kcdb_33" author="kochiu" runOnChange="true">
@@ -969,6 +984,36 @@
             <column name="CREATE_BY" value="sys"/>
             <column name="DB_VERSION" value="1"/>
         </insert>
+        <insert tableName="sys_module_action">
+            <column name="action_id" value="10"/>
+            <column name="module_id" value="5"/>
+            <column name="action_code" value="clear"/>
+            <column name="action_name" value="清空"/>
+            <column name="action_url" value="/api/v1/sys/test/clear"/>
+            <column name="CREATE_TIME" valueComputed="datetime('now')"/>
+            <column name="CREATE_BY" value="sys"/>
+            <column name="DB_VERSION" value="1"/>
+        </insert>
+        <insert tableName="sys_module_action">
+            <column name="action_id" value="11"/>
+            <column name="module_id" value="5"/>
+            <column name="action_code" value="reset-rsa-keys"/>
+            <column name="action_name" value="重置rsa密钥"/>
+            <column name="action_url" value="/api/v1/sys/reset-rsa-keys"/>
+            <column name="CREATE_TIME" valueComputed="datetime('now')"/>
+            <column name="CREATE_BY" value="sys"/>
+            <column name="DB_VERSION" value="1"/>
+        </insert>
+        <insert tableName="sys_module_action">
+            <column name="action_id" value="12"/>
+            <column name="module_id" value="5"/>
+            <column name="action_code" value="reset-key"/>
+            <column name="action_name" value="重置公共密钥"/>
+            <column name="action_url" value="/api/v1/sys/reset-key"/>
+            <column name="CREATE_TIME" valueComputed="datetime('now')"/>
+            <column name="CREATE_BY" value="sys"/>
+            <column name="DB_VERSION" value="1"/>
+        </insert>
     </changeSet>
 
     <changeSet id="kcdb_36" author="kochiu" runOnChange="true">
@@ -1103,6 +1148,33 @@
             <column name="role_id" value="1"/>
             <column name="module_id" value="4"/>
             <column name="action_id" value="9"/>
+            <column name="CREATE_TIME" valueComputed="datetime('now')"/>
+            <column name="CREATE_BY" value="sys"/>
+            <column name="DB_VERSION" value="1"/>
+        </insert>
+        <insert tableName="user_permission">
+            <column name="permission_id" value="10"/>
+            <column name="role_id" value="1"/>
+            <column name="module_id" value="5"/>
+            <column name="action_id" value="10"/>
+            <column name="CREATE_TIME" valueComputed="datetime('now')"/>
+            <column name="CREATE_BY" value="sys"/>
+            <column name="DB_VERSION" value="1"/>
+        </insert>
+        <insert tableName="user_permission">
+            <column name="permission_id" value="11"/>
+            <column name="role_id" value="1"/>
+            <column name="module_id" value="5"/>
+            <column name="action_id" value="11"/>
+            <column name="CREATE_TIME" valueComputed="datetime('now')"/>
+            <column name="CREATE_BY" value="sys"/>
+            <column name="DB_VERSION" value="1"/>
+        </insert>
+        <insert tableName="user_permission">
+            <column name="permission_id" value="12"/>
+            <column name="role_id" value="1"/>
+            <column name="module_id" value="5"/>
+            <column name="action_id" value="12"/>
             <column name="CREATE_TIME" valueComputed="datetime('now')"/>
             <column name="CREATE_BY" value="sys"/>
             <column name="DB_VERSION" value="1"/>

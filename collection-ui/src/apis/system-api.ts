@@ -1,6 +1,6 @@
-import httpInstance from "@/apis/utils"; // 导入httpInstance
-import { loading } from "@/apis/utils";
-import { LoginInfo, ResourceType, Strategy } from "@/apis/interface";
+import httpInstance from "@/utils/utils";
+import { loading } from "@/utils/utils";
+import { Keys, LoginInfo, ResourceType, Strategy } from "@/apis/interface";
 
 const sysApi = "/sys";
 export const tokenStore = {
@@ -134,5 +134,53 @@ export const checkServerPath = async (): Promise<boolean> => {
     }).catch((error) => {
         console.error("添加策略失败:", error);
         return false;
+    });
+}
+
+export const clearAllData = async (): Promise<boolean> => {
+    return httpInstance.get(sysApi + "/test/clear").then((model: any) => {
+        if (model) {
+            return model as boolean;
+        }
+        return false;
+    }).catch((error) => {
+        console.error("添加策略失败:", error);
+        return false;
+    });
+}
+
+export const resetRSAKeys = async (): Promise<boolean> => {
+    return httpInstance.get(sysApi + "/reset-rsa-keys").then((model: any) => {
+        if (model) {
+            return model as boolean;
+        }
+        return false;
+    }).catch((error) => {
+        console.error("添加策略失败:", error);
+        return false;
+    });
+}
+
+export const resetEncryptKey = async (): Promise<boolean> => {
+    return httpInstance.get(sysApi + "/reset-key").then((model: any) => {
+        if (model) {
+            return model as boolean;
+        }
+        return false;
+    }).catch((error) => {
+        console.error("添加策略失败:", error);
+        return false;
+    });
+}
+
+export const loadCurrentKeys = async (): Promise<Keys | null> => {
+    return httpInstance.get(sysApi + "/load-key").then((model: any) => {
+        if (model) {
+            return model as Keys;
+        }
+        return null;
+    }).catch((error) => {
+        console.error("添加策略失败:", error);
+        return null;
     });
 }

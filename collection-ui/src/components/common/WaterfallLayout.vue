@@ -118,7 +118,7 @@ import {
 } from "vue";
 import type { Resource } from "@/apis/interface";
 import { Connection, Delete, Download, Headset, Loading, VideoPlay } from "@element-plus/icons-vue";
-import { downloadFile } from "@/apis/utils";
+import { downloadFile } from "@/utils/utils";
 import { debounce } from 'lodash';
 import imageThumbnail from '@/assets/imgs/type/image.png';
 import videoThumbnail from '@/assets/imgs/type/video.png';

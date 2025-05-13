@@ -29,12 +29,11 @@ import java.util.stream.Collectors;
 import static com.kochiu.collection.Constant.*;
 import static com.kochiu.collection.enums.ErrorCodeEnum.INVALID_USERNAME_OR_PASSWORD;
 import static com.kochiu.collection.enums.ErrorCodeEnum.SYS_ERROR;
+import static com.kochiu.collection.util.DesensitizationUtil.mask;
 
 @Slf4j
 @Service
 public class SysUserService {
-
-    public static final String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
 
     private final SysUserRepository userRepository;
     private final SysSecurityRepository securityRepository;
@@ -247,7 +246,7 @@ public class SysUserService {
                 .userName(userInfoBo.getUserName())
                 .password(SHA256Util.encryptBySHA256(password))
                 .strategy(userInfoBo.getStrategy())
-                .key(RandomStringUtils.random(8, chars))
+                .key(RandomStringUtils.random(8, RANDOM_CHARS))
                 .build();
         userRepository.save(user);
         Integer userId = userRepository.getBaseMapper().selectLastInsertId();
@@ -480,7 +479,7 @@ public class SysUserService {
                 .userCode(user.getUserCode())
                 .userName(user.getUserName())
                 .token(user.getToken())
-                .key(user.getKey())
+                .key(mask(user.getKey(), 3, user.getKey().length() - 3, '*'))
                 .strategy(user.getStrategy())
                 .status(user.getStatus())
                 .roles(roles.stream().map(role -> RoleVo.builder()
@@ -501,7 +500,7 @@ public class SysUserService {
     @Transactional(rollbackFor = Exception.class)
     public void resetKey(UserDto userDto) throws CollectionException {
         SysUser user = userRepository.getUser(userDto);
-        user.setKey(RandomStringUtils.random(8, chars));
+        user.setKey(RandomStringUtils.random(8, RANDOM_CHARS));
         userRepository.updateById(user);
     }
 

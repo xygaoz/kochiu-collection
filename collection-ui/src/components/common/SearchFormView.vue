@@ -132,7 +132,7 @@ import { Category, PathVo, ResourceType, SearchForm } from "@/apis/interface";
 import { getAllCategory } from "@/apis/category-api";
 import TagSelector from "@/components/common/TagSelector.vue";
 import { getCatalogPath } from "@/apis/catalog-api";
-import { useUserStore } from "@/apis/global";
+import { useUserStore } from "@/utils/global";
 import { storeToRefs } from 'pinia'
 
 const searchFormRef = ref();

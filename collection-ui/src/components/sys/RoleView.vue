@@ -106,7 +106,7 @@ import { ElMessage } from "element-plus";
 import { Action, Module, Role } from "@/apis/interface";
 import { addRole, deleteRole, listRoles, updateRole } from "@/apis/role-api";
 import { listModulesWithActions } from "@/apis/module-api";
-import { useUserStore } from "@/apis/global";
+import { useUserStore } from "@/utils/global";
 
 const roleList = ref<Role[]>([]);
 const loading = ref(false);

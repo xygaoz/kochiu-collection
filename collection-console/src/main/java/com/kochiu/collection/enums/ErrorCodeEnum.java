@@ -61,7 +61,10 @@ public enum ErrorCodeEnum {
     USER_IS_NOT_RESET_PASSWORD("1059", "该用户不能重置密码"),
     USER_OLD_PASSWORD_ERROR("1060", "旧密码错误"),
     MIGRATION_FAILED("1061", "文件迁移失败"),
-    SENSITIVE_PATH("1062", "不能保存在敏感目录，请在策略管理里设置目录");
+    SENSITIVE_PATH("1062", "不能保存在敏感目录，请在策略管理里设置目录"),
+    CLEAR_FAIL("1063", "清理失败"),
+    RSA_KEY_GEN_FAIL("1064", "RSA密钥对生成失败"),
+    ;
 
     private final String code;
     private final String message;

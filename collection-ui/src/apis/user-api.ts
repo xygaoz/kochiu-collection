@@ -1,8 +1,8 @@
 import { Menu, PageInfo, Strategy, User } from "@/apis/interface";
-import httpInstance from "@/apis/utils";
+import httpInstance from "@/utils/utils";
 import { tokenStore } from "@/apis/system-api";
 import Cookies from "js-cookie";
-import { useUserStore } from "@/apis/global";
+import { useUserStore } from "@/utils/global";
 
 const userApi = "/user";
 export const listUsers = (params: any): Promise<PageInfo<User>> => {

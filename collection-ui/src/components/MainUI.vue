@@ -394,7 +394,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, StyleValue, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, StyleValue, watch } from "vue";
 import { ArrowDown, Delete, Edit, Key, Plus, Switch, SwitchButton, User } from "@element-plus/icons-vue";
 import { listCategory } from "@/apis/category-api";
 import { listTag } from "@/apis/tag-api";
@@ -406,12 +406,13 @@ import CategoryDialog from "@/components/category/CategoryDialog.vue";
 import CatalogDialog from "@/components/catalog/CatalogDialog.vue";
 import { useRoute, useRouter } from "vue-router";
 import { getMyMenu, logout } from "@/apis/user-api";
-import { useUserStore } from "@/apis/global";
+import { useUserStore } from "@/utils/global";
 import { storeToRefs } from "pinia";
-import { useThemeStore } from "@/apis/themeStore";
+import { useThemeStore } from "@/utils/themeStore";
 import userAvatar from "../assets/imgs/user.gif";
 import AppInfoDialog from "@/components/sys/AppInfoDialog.vue";
 import ModifyPasswordDialog from "@/components/my/ModifyPasswordDialog.vue";
+import emitter from "@/utils/event-bus";
 
 // 状态管理
 const showCatalogMenu = ref(false);
@@ -463,6 +464,17 @@ onMounted(async () => {
     await loadResourceTypes();
     await loadDynamicMenus(); // 加载动态菜单
     updateActiveMenu();
+
+    emitter.on('refresh-data', async () => {
+        await loadCategories();
+        await loadCatalogTree();
+        await loadTags();
+        // 其他需要刷新的数据
+    });
+});
+
+onUnmounted(() => {
+    emitter.off('refresh-data');
 });
 
 const handleLogout = () => {
@@ -603,6 +615,8 @@ const resolveComponent = (name: string) => {
             return import("@/components/sys/RoleView.vue");
         } else if (name.toLowerCase().includes("strategy")) {
             return import("@/components/sys/StrategyView.vue");
+        } else if (name.toLowerCase().includes("config")) {
+            return import("@/components/sys/ConfigView.vue");
         }
         // 默认尝试从sys目录加载
         return import("@/components/sys/" + name + "View.vue")

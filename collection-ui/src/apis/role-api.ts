@@ -1,5 +1,5 @@
 import { Role } from "@/apis/interface";
-import httpInstance from "@/apis/utils";
+import httpInstance from "@/utils/utils";
 
 const roleApi = "/role";
 

@@ -1,5 +1,5 @@
 import { Tag } from "@/apis/interface";
-import httpInstance from "@/apis/utils";
+import httpInstance from "@/utils/utils";
 
 const tagApi = "/tag";
 export const listTag = (): Promise<Tag[]> => {

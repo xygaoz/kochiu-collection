@@ -22,6 +22,8 @@ public final class Constant {
 
     public static final String ROOT_PATH = "/";
 
+    public static final String RANDOM_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
+
     private Constant(){
 
     }

@@ -1,5 +1,5 @@
 import { Catalog, PathVo } from "@/apis/interface";
-import httpInstance from "@/apis/utils";
+import httpInstance from "@/utils/utils";
 
 const catalogApi = '/catalog'
 export const getCatalogTree = (): Promise<Catalog[]> => {
