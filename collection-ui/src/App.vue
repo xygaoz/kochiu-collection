@@ -68,6 +68,7 @@ const handleLoginSuccess = async () => {
     --el-menu-hover-bg-color: #f5f7fa;
     --el-item-text-color: #2b2b2b;
     --el-rate-disabled-color: #858585;
+    --el-menu-button: #000;
 }
 
 html.dark {
@@ -88,6 +89,7 @@ html.dark {
     --el-menu-hover-bg-color: #2e2e2e;
     --el-item-text-color: #f5f7fa;
     --el-rate-disabled-color: #474747;
+    --el-menu-button: #fff;
 }
 
 html:not(.dark) {

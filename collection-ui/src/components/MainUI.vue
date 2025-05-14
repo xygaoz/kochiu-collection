@@ -21,7 +21,6 @@
                             :default-openeds="defaultOpeneds"
                         >
                             <catalog-menu-item
-                                index="catalog-group"
                                 v-for="item in catalogTreeData"
                                 :key="item.id"
                                 :item="item"
@@ -394,7 +393,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, StyleValue, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, StyleValue, watch } from "vue";
 import { ArrowDown, Delete, Edit, Key, Plus, Switch, SwitchButton, User } from "@element-plus/icons-vue";
 import { listCategory } from "@/apis/category-api";
 import { listTag } from "@/apis/tag-api";
@@ -647,10 +646,14 @@ const toggleCatalogMenu = async (e: Event) => {
 
 // 处理目录节点点击
 const handleNodeClick = (data: Catalog) => {
-    currentCatalog.value = data; // 保存当前选中的目录
-    router.push(`/Catalog/${data.id}`).catch(err => {
-        console.error("路由跳转失败:", err);
-    });
+    currentCatalog.value = data;
+    // 确保传递的是字符串类型的ID
+    const targetPath = `/Catalog/${data.id.toString()}`;
+    if (router.currentRoute.value.path !== targetPath) {
+        router.push(targetPath).catch(err => {
+            console.error("路由跳转失败:", err);
+        });
+    }
 };
 
 // 添加分类
@@ -715,8 +718,15 @@ const modifyPwd = () => {
 }
 
 // 监听路由变化
-watch(() => route.path, (newPath) => {
+watch(() => route.path, async (newPath) => {
     activeMenu.value = newPath;
+    if (newPath.startsWith("/Catalog/")) {
+        activeMenu.value = ''; // 先清空
+        await nextTick();
+        activeMenu.value = `/Catalog/${route.params.id}`;
+        console.log("当前activeMenu:", activeMenu.value);
+        console.log("菜单项index示例:", `/Catalog/${catalogTreeData.value[0]?.id}`);
+    }
 
     // 根据当前路由更新默认打开的菜单组
     if (newPath.startsWith("/Catalog")) {
