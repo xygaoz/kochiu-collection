@@ -55,7 +55,6 @@
 <script setup>
 import { ref, defineEmits, onMounted } from "vue"; // 添加onMounted
 import { ElMessage } from "element-plus";
-import { useRouter } from "vue-router"; // 导入useRouter
 import { getPublicKey, loginService, tokenStore } from "@/apis/system-api"; // 导入getPublicKey方法
 import Cookies from 'js-cookie';
 import { encryptPassword } from "@/utils/utils";
@@ -80,7 +79,6 @@ const rules = {
 };
 
 const emit = defineEmits(['login-success']);
-const router = useRouter(); // 使用useRouter
 const loginFormRef = ref(null); // 添加表单引用
 let publicKey = ""; // 用于存储公钥
 

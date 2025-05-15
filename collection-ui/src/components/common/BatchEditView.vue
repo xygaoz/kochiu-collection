@@ -2,11 +2,11 @@
     <div class="batch-edit-view">
         <div class="header">
             <div class="title">
-                批量编辑 ({{ selectedCount }}个文件)
+                选择{{ selectedCount }}个文件
             </div>
             <div class="actions">
                 <el-tooltip
-                    v-for="action in actions.filter(action => action.show())"
+                    v-for="action in actions.filter(_ => _.show())"
                     :key="action.name"
                     :content="action.tooltip"
                     placement="bottom"

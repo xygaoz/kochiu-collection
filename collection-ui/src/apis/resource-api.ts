@@ -5,7 +5,7 @@ import { PageInfo, Resource, Tag } from "@/apis/interface";
 import type { AxiosProgressEvent } from 'axios'
 
 const resourceApi = "/resource";
-export const uploadFile = (
+export const uploadFile = async (
     file: File,
     categoryId: number,
     overwrite: string,
@@ -40,7 +40,7 @@ export const uploadFile = (
     });
 };
 
-export const listCategoryFiles = (cateId: string, page: number, size: number, params: any): Promise<PageInfo<Resource>> => {
+export const listCategoryFiles = async (cateId: string, page: number, size: number, params: any): Promise<PageInfo<Resource>> => {
     const ld = loading("加载中")
     // 合并分页参数和其他参数
     const requestParams: { [key: string]: any } = {
@@ -64,7 +64,7 @@ export const listCategoryFiles = (cateId: string, page: number, size: number, pa
     });
 }
 
-export const updateResource = (resourceId: number, params: any): Promise<boolean> => {
+export const updateResource = async (resourceId: number, params: any): Promise<boolean> => {
     const ld = loading("修改中")
     params["resourceId"] = resourceId;
     return httpInstance.post(resourceApi + "/updateInfo", params).then((model: any) => {
@@ -75,7 +75,7 @@ export const updateResource = (resourceId: number, params: any): Promise<boolean
     });
 }
 
-export const bacthUpdateResource = (resourceIds: number[], params: any): Promise<boolean> => {
+export const bacthUpdateResource = async (resourceIds: number[], params: any): Promise<boolean> => {
     params["resourceIds"] = resourceIds;
     return httpInstance.post(resourceApi + "/batchUpdate", params).then((model: any) => {
         console.log("修改成功:", model);
@@ -83,14 +83,14 @@ export const bacthUpdateResource = (resourceIds: number[], params: any): Promise
     })
 }
 
-export const addResourceTag = (resourceId: number, params: any): Promise<Tag> => {
+export const addResourceTag = async (resourceId: number, params: any): Promise<Tag> => {
     params["resourceId"] = resourceId;
     return httpInstance.post(resourceApi + "/addTag", params).then((model: any) => {
         return model;
     });
 }
 
-export const removeResourceTag = (resourceId: number, params: any): Promise<any> => {
+export const removeResourceTag = async (resourceId: number, params: any): Promise<any> => {
     params["resourceId"] = resourceId;
     return httpInstance.post(resourceApi + "/removeTag", params).then((model: any) => {
         return model;
@@ -98,21 +98,21 @@ export const removeResourceTag = (resourceId: number, params: any): Promise<any>
 }
 
 
-export const batchAddTag = (resourceIds: number[], params: any): Promise<any> => {
+export const batchAddTag = async (resourceIds: number[], params: any): Promise<any> => {
     params["resourceIds"] = resourceIds;
     return httpInstance.post(resourceApi + "/batchAddTag", params).then((model: any) => {
         return model;
     });
 }
 
-export const batchRemoveTag = (resourceIds: number[], params: any): Promise<any> => {
+export const batchRemoveTag = async (resourceIds: number[], params: any): Promise<any> => {
     params["resourceIds"] = resourceIds;
     return httpInstance.post(resourceApi + "/batchRemoveTag", params).then((model: any) => {
         return model;
     });
 }
 
-export const listTagFiles = (tagId: string, page: number, size: number, params: any): Promise<PageInfo<Resource>> => {
+export const listTagFiles = async (tagId: string, page: number, size: number, params: any): Promise<PageInfo<Resource>> => {
     const ld = loading("加载中")
     // 合并分页参数和其他参数
     const requestParams: { [key: string]: any } = {
@@ -136,7 +136,7 @@ export const listTagFiles = (tagId: string, page: number, size: number, params: 
     });
 }
 
-export const listTypeFiles = (typeName: string, page: number, size: number, params: any): Promise<PageInfo<Resource>> => {
+export const listTypeFiles = async (typeName: string, page: number, size: number, params: any): Promise<PageInfo<Resource>> => {
     const ld = loading("加载中")
     // 合并分页参数和其他参数
     const requestParams: { [key: string]: any } = {
@@ -160,7 +160,7 @@ export const listTypeFiles = (typeName: string, page: number, size: number, para
     });
 }
 
-export const moveToCategory = (resourceIds: number[], params: any): Promise<boolean> => {
+export const moveToCategory = async (resourceIds: number[], params: any): Promise<boolean> => {
     const ld = loading("修改中")
     params["resourceIds"] = resourceIds;
     return httpInstance.post(resourceApi + "/moveToCategory", params).then((model: any) => {
@@ -171,7 +171,7 @@ export const moveToCategory = (resourceIds: number[], params: any): Promise<bool
     });
 }
 
-export const moveToRecycle = (resourceIds: number[], params: any): Promise<boolean> => {
+export const moveToRecycle = async (resourceIds: number[], params: any): Promise<boolean> => {
     const ld = loading("移动中")
     params["resourceIds"] = resourceIds;
     return httpInstance.post(resourceApi + "/moveToRecycle", params).then((model: any) => {
@@ -182,7 +182,7 @@ export const moveToRecycle = (resourceIds: number[], params: any): Promise<boole
     });
 }
 
-export const restoreFormRecycle = (resourceIds: number[], params: any): Promise<boolean> => {
+export const restoreFormRecycle = async (resourceIds: number[], params: any): Promise<boolean> => {
     const ld = loading("恢复中")
     params["resourceIds"] = resourceIds;
     return httpInstance.post(resourceApi + "/restore", params).then((model: any) => {
@@ -193,7 +193,7 @@ export const restoreFormRecycle = (resourceIds: number[], params: any): Promise<
     });
 }
 
-export const listRecycleFiles = (page: number, size: number, params: any): Promise<PageInfo<Resource>> => {
+export const listRecycleFiles = async (page: number, size: number, params: any): Promise<PageInfo<Resource>> => {
     const ld = loading("加载中")
     // 合并分页参数和其他参数
     const requestParams: { [key: string]: any } = {
@@ -217,7 +217,7 @@ export const listRecycleFiles = (page: number, size: number, params: any): Promi
     });
 }
 
-export const listAllCateFiles = (page: number, size: number, params: any): Promise<PageInfo<Resource>> => {
+export const listAllCateFiles = async (page: number, size: number, params: any): Promise<PageInfo<Resource>> => {
     const ld = loading("加载中")
     // 合并分页参数和其他参数
     const requestParams: { [key: string]: any } = {
@@ -241,7 +241,7 @@ export const listAllCateFiles = (page: number, size: number, params: any): Promi
     });
 }
 
-export const listCatalogFiles = (cataId: string, page: number, size: number, params: any): Promise<PageInfo<Resource>> => {
+export const listCatalogFiles = async (cataId: string, page: number, size: number, params: any): Promise<PageInfo<Resource>> => {
     const ld = loading("加载中")
     // 合并分页参数和其他参数
     const requestParams: { [key: string]: any } = {
@@ -265,7 +265,7 @@ export const listCatalogFiles = (cataId: string, page: number, size: number, par
     });
 }
 
-export const moveToCatalog = (resourceIds: number[], params: any): Promise<boolean> => {
+export const moveToCatalog = async (resourceIds: number[], params: any): Promise<boolean> => {
     const ld = loading("修改中")
     params["resourceIds"] = resourceIds;
     return httpInstance.post(resourceApi + "/moveToCatalog", params).then((model: any) => {
@@ -276,7 +276,7 @@ export const moveToCatalog = (resourceIds: number[], params: any): Promise<boole
     });
 }
 
-export const startBatchImport = (params: any): Promise<string | null> => {
+export const startBatchImport = async (params: any): Promise<string | null> => {
     const ld = loading("开始导入")
     return httpInstance.post(resourceApi + "/startBatchImport", params).then((model: any) => {
         if(model) {
@@ -288,13 +288,13 @@ export const startBatchImport = (params: any): Promise<string | null> => {
     });
 }
 
-export const cancelBatchImport = (taskId: string): Promise<boolean> => {
+export const cancelBatchImport = async (taskId: string): Promise<boolean> => {
     return httpInstance.get(resourceApi + "/cancelImport/" + taskId).then((model: any) => {
         return model as boolean;
     });
 }
 
-export const listPublicFiles = (page: number, size: number, params: any): Promise<PageInfo<Resource>> => {
+export const listPublicFiles = async (page: number, size: number, params: any): Promise<PageInfo<Resource>> => {
     const ld = loading("加载中")
     // 合并分页参数和其他参数
     const requestParams: { [key: string]: any } = {
@@ -318,7 +318,7 @@ export const listPublicFiles = (page: number, size: number, params: any): Promis
     });
 }
 
-export const setResourcePublic = (resourceId: number, isPublic: boolean): Promise<boolean> => {
+export const setResourcePublic = async (resourceId: number, isPublic: boolean): Promise<boolean> => {
     return httpInstance.post(resourceApi + "/set-public/" + resourceId, {
         isPublic: isPublic
     }).then((model: any) => {
@@ -326,7 +326,7 @@ export const setResourcePublic = (resourceId: number, isPublic: boolean): Promis
     });
 }
 
-export const batchShareResources = (resourceIds: number[], isPublic: boolean): Promise<boolean> => {
+export const batchShareResources = async (resourceIds: number[], isPublic: boolean): Promise<boolean> => {
     return httpInstance.post(resourceApi + "/batch-share", {
         resourceIds: resourceIds,
         share: isPublic

@@ -4,6 +4,7 @@
         :loading="loading"
         :data-type="dataType"
         id="0"
+        :total="total"
         :has-more="hasMore"
         @update-file="handleFileUpdate"
         @filter-data="handleSearch"

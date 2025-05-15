@@ -3,6 +3,8 @@
         v-model:files="files"
         :loading="loading"
         :data-type="dataType"
+        id="0"
+        :total="total"
         @update-file="handleFileUpdate"
         @filter-data="handleSearch"
     />
@@ -22,7 +24,7 @@ const total = ref(0);
 const dataType = ref("all-tag")
 
 onMounted(() =>
-    handleSearch({ cateId: '', keyword: "", types: [], tags: [] })
+    handleSearch({ cateId: '', keyword: "", types: [], tags: [], include: true })
 );
 
 // 处理文件更新

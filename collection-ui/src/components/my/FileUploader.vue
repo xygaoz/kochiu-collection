@@ -182,6 +182,7 @@ const cascaderProps = {
 
 // 处理文件选择
 const handleFileChange = (file: any, fileList: any[]) => {
+    console.log('handleFileChange', fileList.length)
     const isAllowedType = allowedTypes.includes(file.raw.type);
     if (!isAllowedType) {
         ElMessage.error(`文件类型 ${file.raw.type} 不支持`);

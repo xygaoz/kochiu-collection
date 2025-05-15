@@ -26,7 +26,7 @@ const dataType = ref("recycle")
 const hasMore = ref(false);
 
 onMounted(() => {
-    handleSearch({ keyword: "", types: [], tags: [], include: false, cateId: null });
+    handleSearch({ cateId: '', keyword: "", types: [], tags: [], include: false })
 });
 
 const handleSearch = async (searchForm: SearchForm) => {

@@ -43,7 +43,7 @@ export const getPublicKey = async(): Promise<string | null> => {
 };
 
 // 登录
-export const loginService = (loginForm: any): Promise<LoginInfo | null> => {
+export const loginService = async (loginForm: any): Promise<LoginInfo | null> => {
     const ld = loading("登录中");
     return httpInstance.post(sysApi + "/login", loginForm).then((model: any) => {
         if (model) {

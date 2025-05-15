@@ -30,7 +30,7 @@
 import { ref, defineEmits, defineExpose } from 'vue';
 import { Catalog } from "@/apis/interface";
 import { getCatalogTree } from "@/apis/catalog-api";
-import { ElMessage } from "element-plus";
+import { ElMessage, FormInstance } from "element-plus";
 import { moveToCatalog } from "@/apis/resource-api";
 
 const visible = ref(false);
@@ -39,9 +39,9 @@ const form = ref({
     cataId: null as number | null,
 });
 const catalogTree = ref<Catalog[]>([]);
-const emit = defineEmits(['confirm']);
+const emit = defineEmits(['success']);
 const loading = ref(false);
-const formRef = ref(null); // 添加表单引用
+const formRef = ref<FormInstance | null>(null); // 添加表单引用
 const resourceIds = ref<number[]>([]);
 
 const treeProps = {
@@ -63,7 +63,7 @@ const open = async (ids: number[]) => {
     try {
         catalogTree.value = await getCatalogTree();
         form.value = {
-            cateId: null,
+            cataId: null,
         };
     } catch (error) {
         console.error('加载目录树失败:', error);
@@ -74,7 +74,12 @@ const open = async (ids: number[]) => {
 
 const handleConfirm = async () => {
     try {
-        formRef.value.validate(async (valid) => {
+        if (!formRef.value) {
+            console.error('表单引用未初始化');
+            return;
+        }
+
+        formRef.value.validate(async (valid: boolean) => {
             if (valid) {
                 let result = await moveToCatalog(resourceIds.value, {
                     cataId: form.value.cataId

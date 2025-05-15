@@ -135,7 +135,7 @@ const openForDelete = async (category: Category) => {
     form.cateName = category.cateName || ''
 
     dialogVisible.value = true
-    nextTick(() => {
+    await nextTick(() => {
         if (formRef.value) {
             formRef.value.clearValidate()
         }

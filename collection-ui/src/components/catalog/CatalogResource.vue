@@ -14,9 +14,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from "vue";
+import { ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { listCatalogFiles, listCategoryFiles } from "@/apis/resource-api";
+import { listCatalogFiles } from "@/apis/resource-api";
 import { Resource, SearchForm } from "@/apis/interface";
 import ResourceView from "@/components/common/ResourceView.vue";
 

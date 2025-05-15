@@ -13,12 +13,10 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
-import { useRoute } from "vue-router";
-import { listCatalogFiles, listPublicFiles, listTagFiles, listTypeFiles } from "@/apis/resource-api";
+import { onMounted, ref } from "vue";
+import { listPublicFiles } from "@/apis/resource-api";
 import { Resource, SearchForm } from "@/apis/interface";
 import ResourceView from "@/components/common/ResourceView.vue";
-import { getResourceType } from "@/apis/system-api";
 
 const files = ref<Resource[]>([]);
 const loading = ref(true);
@@ -29,7 +27,7 @@ const dataType = ref("public")
 const hasMore = ref(false);
 
 onMounted(() => {
-    handleSearch({ keyword: "", types: [], tags: [], include: false, cateId: null });
+    handleSearch({ cateId: '', keyword: "", types: [], tags: [], include: false })
 });
 
 // 处理文件更新

@@ -3,7 +3,7 @@ import httpInstance from "@/utils/utils";
 
 const roleApi = "/role";
 
-export const listRoles = (): Promise<Role[]> => {
+export const listRoles = async (): Promise<Role[]> => {
     return httpInstance.get(roleApi + "/list").then((model: any) => {
         if (model) {
             return model as Role[];
@@ -15,7 +15,7 @@ export const listRoles = (): Promise<Role[]> => {
     });
 }
 
-export const addRole = (role: any): Promise<boolean> => {
+export const addRole = async (role: any): Promise<boolean> => {
     return httpInstance.post(roleApi + "/add", role).then((model: any) => {
         if (model) {
             return model as boolean;
@@ -27,7 +27,7 @@ export const addRole = (role: any): Promise<boolean> => {
     });
 }
 
-export const updateRole = (role: any): Promise<boolean> => {
+export const updateRole = async (role: any): Promise<boolean> => {
     return httpInstance.post(roleApi + "/update", role).then((model: any) => {
         if (model) {
             return model as boolean;
@@ -39,7 +39,7 @@ export const updateRole = (role: any): Promise<boolean> => {
     });
 }
 
-export const deleteRole = (roleId: string): Promise<boolean> => {
+export const deleteRole = async (roleId: string): Promise<boolean> => {
     return httpInstance.get(roleApi + "/delete/" + roleId).then((model: any) => {
         if (model) {
             return model as boolean;

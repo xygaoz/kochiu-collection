@@ -1,11 +1,11 @@
-import { Menu, PageInfo, Strategy, User } from "@/apis/interface";
+import { Menu, PageInfo, User } from "@/apis/interface";
 import httpInstance from "@/utils/utils";
 import { tokenStore } from "@/apis/system-api";
 import Cookies from "js-cookie";
 import { useUserStore } from "@/utils/global";
 
 const userApi = "/user";
-export const listUsers = (params: any): Promise<PageInfo<User>> => {
+export const listUsers = async (params: any): Promise<PageInfo<User>> => {
     return httpInstance.post(userApi + "/list", params).then((model: any) => {
         if (model) {
             console.log("获取用户列表成功:", model);
@@ -18,7 +18,7 @@ export const listUsers = (params: any): Promise<PageInfo<User>> => {
     });
 }
 
-export const addUser = (params: any): Promise<boolean> => {
+export const addUser = async (params: any): Promise<boolean> => {
     return httpInstance.post(userApi + "/add", params).then((model: any) => {
         if (model) {
             console.log("添加用户成功:", model);
@@ -31,7 +31,7 @@ export const addUser = (params: any): Promise<boolean> => {
     });
 }
 
-export const updateUser = (params: any): Promise<boolean> => {
+export const updateUser = async (params: any): Promise<boolean> => {
     return httpInstance.post(userApi + "/update", params).then((model: any) => {
         if (model) {
             console.log("更新用户成功:", model);
@@ -44,7 +44,7 @@ export const updateUser = (params: any): Promise<boolean> => {
     });
 }
 
-export const deleteUser = (params: any): Promise<boolean> => {
+export const deleteUser = async (params: any): Promise<boolean> => {
     return httpInstance.post(userApi + "/delete", params).then((model: any) => {
         if (model) {
             console.log("更新用户成功:", model);
@@ -57,7 +57,7 @@ export const deleteUser = (params: any): Promise<boolean> => {
     });
 }
 
-export const resetPwd = (params: any): Promise<boolean> => {
+export const resetPwd = async (params: any): Promise<boolean> => {
     return httpInstance.post(userApi + "/resetpwd", params).then((model: any) => {
         if (model) {
             console.log("重置用户密码成功:", model);
@@ -70,13 +70,13 @@ export const resetPwd = (params: any): Promise<boolean> => {
     });
 }
 
-export const enableOrDisable = (params: any): Promise<boolean> => {
+export const enableOrDisable = async (params: any): Promise<boolean> => {
     return httpInstance.post(userApi + "/enable-disable", params).then((model: any) => {
         if (model) {
             return model as boolean;
         }
         return false;
-    }).catch((error) => {
+    }).catch(() => {
         return false;
     });
 }

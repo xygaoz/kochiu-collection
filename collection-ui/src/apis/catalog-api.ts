@@ -2,7 +2,7 @@ import { Catalog, PathVo } from "@/apis/interface";
 import httpInstance from "@/utils/utils";
 
 const catalogApi = '/catalog'
-export const getCatalogTree = (): Promise<Catalog[]> => {
+export const getCatalogTree = async (): Promise<Catalog[]> => {
     return httpInstance.get(catalogApi + "/tree").then((model: any) => {
         if (model) {
             return model as Catalog[];
@@ -14,7 +14,7 @@ export const getCatalogTree = (): Promise<Catalog[]> => {
     });
 }
 
-export const addCatalog = (data: any): Promise<boolean> => {
+export const addCatalog = async (data: any): Promise<boolean> => {
 
     return httpInstance.post(catalogApi + "/add", data).then((model: any) => {
         return !!model;
@@ -36,7 +36,7 @@ export const getCatalogPath = async (id: string): Promise<PathVo> => {
     });
 }
 
-export const updateCatalog = (data: any) => {
+export const updateCatalog = async (data: any) => {
     return httpInstance.post(catalogApi + "/update", data).then((model: any) => {
         return !!model;
     }).catch((error) => {
@@ -45,7 +45,7 @@ export const updateCatalog = (data: any) => {
     })
 };
 
-export const deleteCatalog = (data: any) => {
+export const deleteCatalog = async (data: any) => {
     return httpInstance.post(catalogApi + "/remove", data).then((model: any) => {
         return !!model;
     }).catch((error) => {

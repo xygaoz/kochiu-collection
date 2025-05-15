@@ -2,7 +2,7 @@ import { Category } from "@/apis/interface";
 import httpInstance from "@/utils/utils";
 
 const categoryApi = '/category'
-export const listCategory = (): Promise<Category[]> => {
+export const listCategory = async (): Promise<Category[]> => {
     return httpInstance.get(categoryApi + "/list").then((model: any) => {
         if (model) {
             return model as Category[];
@@ -14,7 +14,7 @@ export const listCategory = (): Promise<Category[]> => {
     });
 }
 
-export const getAllCategory = (): Promise<Category[]> => {
+export const getAllCategory = async (): Promise<Category[]> => {
     return httpInstance.get(categoryApi + "/all").then((model: any) => {
         if (model) {
             return model as Category[];
@@ -26,7 +26,7 @@ export const getAllCategory = (): Promise<Category[]> => {
     });
 }
 
-export const getCategory = (id: string): Promise<Category> => {
+export const getCategory = async (id: string): Promise<Category> => {
     return httpInstance.get(categoryApi + "/get/" + id).then((model: any) => {
         if (model) {
             return model as Category;
@@ -38,7 +38,7 @@ export const getCategory = (id: string): Promise<Category> => {
     });
 }
 
-export const updateCategory = (params: any): Promise<any> => {
+export const updateCategory = async (params: any): Promise<any> => {
     return httpInstance.post(categoryApi + "/update", params).then((model: any) => {
         if (model) {
             console.log("修改成功:", model);
@@ -47,7 +47,7 @@ export const updateCategory = (params: any): Promise<any> => {
     });
 }
 
-export const deleteCategory = (params: any): Promise<any> => {
+export const deleteCategory = async (params: any): Promise<any> => {
     return httpInstance.post(categoryApi + "/remove", params).then((model: any) => {
         if (model) {
             console.log("删除成功:", model);
@@ -56,7 +56,7 @@ export const deleteCategory = (params: any): Promise<any> => {
     });
 }
 
-export const createCategory = (params: any): Promise<any> => {
+export const createCategory = async (params: any): Promise<any> => {
     return httpInstance.post(categoryApi + "/add", params).then((model: any) => {
         if (model) {
             console.log("新增成功:", model);

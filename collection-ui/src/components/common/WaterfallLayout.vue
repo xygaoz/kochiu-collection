@@ -521,6 +521,7 @@ onBeforeUnmount(() => {
     gap: 10px;
     width: 100%;
     justify-content: flex-start;
+    margin: 0 0 8px 0;
 }
 
 .waterfall-item {

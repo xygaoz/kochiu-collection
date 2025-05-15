@@ -57,11 +57,11 @@ export interface ResourceType {
 }
 
 export interface SearchForm {
-    cateId: string | null;
-    keyword: string | null;
-    types: string[] | null;
-    tags: string[] | null;
-    include: boolean | null; // 包含子目录
+    cateId?: string;
+    keyword?: string;
+    types?: string[];
+    tags?: string[];
+    include?: boolean; // 包含子目录
 }
 
 export interface Catalog {

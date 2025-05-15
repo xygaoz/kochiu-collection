@@ -316,7 +316,7 @@ onUnmounted(() => {
     window.removeEventListener('resize', checkCollapseNeed);
 });
 
-watch(() => [...searchForm.tags, searchForm.types, searchForm.keyword], () => {
+watch(() => [...(searchForm.tags || []), ...(searchForm.types || [])], () => {
     checkCollapseNeed();
 }, { deep: true });
 
@@ -328,7 +328,7 @@ watch(isExpanded, (newVal) => {
 });
 
 // 监听 include 变化
-watch(() => searchForm.include, (newVal) => {
+watch(() => searchForm.include, (newVal: any) => {
     userStore.setIncludeSubDir(newVal)
     emit('search', { ...searchForm, include: newVal })
 }, { immediate: true })
