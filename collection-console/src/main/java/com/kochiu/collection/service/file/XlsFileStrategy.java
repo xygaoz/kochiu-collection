@@ -70,7 +70,7 @@ public class XlsFileStrategy extends OfficeFileStrategy implements FileStrategy{
                 }
             }
             else if(properties.getJodconverter().getMode() == JodconverterModeEnum.REMOTE){
-                if(properties.getJodconverter().getRemote().getApiUrl() == null) {
+                if(properties.getJodconverter().getRemote().getApiHost() == null) {
                     thumbRatio = convertExcelToImageOfDraw(excelFile, thumbFilePath);
                 }
                 else {

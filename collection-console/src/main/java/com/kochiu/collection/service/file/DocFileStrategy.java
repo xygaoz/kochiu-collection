@@ -121,7 +121,7 @@ public class DocFileStrategy extends OfficeFileStrategy implements FileStrategy{
             }
         }
         else if(properties.getJodconverter().getMode() == JodconverterModeEnum.REMOTE) {
-            if(properties.getJodconverter().getRemote().getApiUrl() == null) {
+            if(properties.getJodconverter().getRemote().getApiHost() == null) {
                 convertDocToPdf(wordFile, outputPath);
             }
             else {

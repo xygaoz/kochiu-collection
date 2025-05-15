@@ -37,8 +37,12 @@ public abstract class OfficeFileStrategy {
         }
 
         // 3. 发送请求
+        String host = properties.getJodconverter().getRemote().getApiHost();
+        if(host.endsWith("/")) {
+            host = host.substring(0, host.length() - 1);
+        }
         ResponseEntity<byte[]> response = restTemplate.exchange(
-                properties.getJodconverter().getRemote().getApiUrl(),
+                host + "/lool/convert-to/pdf",
                 HttpMethod.POST,
                 new HttpEntity<>(body, headers),
                 byte[].class);

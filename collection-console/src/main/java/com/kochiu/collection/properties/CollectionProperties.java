@@ -56,7 +56,7 @@ public class CollectionProperties {
     public static class Remote {
         private String username;
         private String password = "";
-        private String apiUrl;
+        private String apiHost;
         private int timeout = 300000;
     }
 }
