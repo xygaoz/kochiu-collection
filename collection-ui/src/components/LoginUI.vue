@@ -118,10 +118,6 @@ const login = async () => {
     });
 };
 
-const changeUrl = (url) => {
-    router.replace(url);
-};
-
 // 组件挂载时调用getPublicKey方法
 onMounted(async () => {
     try {

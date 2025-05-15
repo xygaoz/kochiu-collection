@@ -6,6 +6,7 @@
         :id="cateId"
         :current-select="cateName"
         :has-more="hasMore"
+        :total="total"
         @update-file="handleFileUpdate"
         @filter-data="handleSearch"
         @load-more="loadMore"

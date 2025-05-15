@@ -6,6 +6,7 @@
         :id="tagId"
         :current-select="tagName"
         :has-more="hasMore"
+        :total="total"
         @update-file="handleFileUpdate"
         @filter-data="handleSearch"
         @load-more="loadMore"

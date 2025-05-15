@@ -6,6 +6,7 @@
         :id="typeName"
         :current-select="typeLabel"
         :has-more="hasMore"
+        :total="total"
         @update-file="handleFileUpdate"
         @filter-data="handleSearch"
         @load-more="loadMore"

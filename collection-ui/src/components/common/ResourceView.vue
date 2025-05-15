@@ -31,6 +31,16 @@
                 />
 
             </el-main>
+            <el-footer class="total-area">
+                <div class="total-area-left">
+                    <el-checkbox v-model="selectAll" size="small" @change="handleAll">
+                        全选
+                    </el-checkbox>
+                </div>
+                <div class="total-area-right">
+                    <span>总量 {{ props.total }}</span><span>已加载 {{ props.files.length }}</span>
+                </div>
+            </el-footer>
         </el-container>
 
         <el-aside class="detail-aside">
@@ -80,6 +90,7 @@ import MoveToCatalog from "@/components/catalog/MoveToCatalog.vue";
 import { moveToRecycle, restoreFormRecycle } from "@/apis/resource-api";
 
 const formExpanded = ref(false);
+const selectAll = ref(false);
 const headerHeight = ref('40px');
 const props = defineProps({
     files: {
@@ -105,6 +116,10 @@ const props = defineProps({
     hasMore:{
         type: Boolean,
         default: false
+    },
+    total:{
+        type: Number,
+        default: 0
     }
 });
 const currentComponent = WaterfallLayout;
@@ -299,6 +314,15 @@ const handleRestore = (resources: Resource[]) => {
 
 }
 
+const handleAll = () => {
+    if(selectAll.value){
+        handleSelectAll();
+    }
+    else{
+        handleClearSelection();
+    }
+};
+
 // 处理加载更多
 const handleLoadMore = async () => {
     try {
@@ -313,7 +337,7 @@ const handleLoadMore = async () => {
 <style scoped>
 .resource-view-container {
     display: flex;
-    height: calc(100vh - 60px);
+    height: calc(100vh - 58px);
     overflow: hidden;
     background-color: var(--el-bg-color-view);
 }
@@ -354,5 +378,24 @@ const handleLoadMore = async () => {
     text-align: center;
     padding: 50px;
     color: var(--el-text-color-secondary);
+}
+
+.total-area{
+    height: 24px;
+    background-color: var(--el-footer-bg-color);
+}
+
+.total-area-left{
+    float: left;
+}
+
+.total-area-right{
+    float: right;
+    font-size: 12px;
+    margin: 3px 0 0 0;
+}
+
+.total-area-right span{
+    margin-left: 10px;
 }
 </style>

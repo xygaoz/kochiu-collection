@@ -103,6 +103,7 @@ import { getCatalogTree } from '@/apis/catalog-api'
 import { Catalog, Category } from "@/apis/interface";
 import { testServerPath } from "@/apis/system-api";
 import { cancelBatchImport, startBatchImport } from "@/apis/resource-api";
+import emitter from "@/utils/event-bus";
 
 // 表单数据
 const form = ref({
@@ -293,6 +294,12 @@ const startImport = async () => {
                 importComplete.value = true;
                 progressStatus.value = 'success';
                 ws.close();
+
+                if(form.value.autoCreateRule !== 3){
+                    // 触发数据刷新事件
+                    emitter.emit('refresh-data')
+                }
+
                 form.value = {
                     taskId: '',
                     sourcePath: '',

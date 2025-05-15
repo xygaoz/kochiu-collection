@@ -433,7 +433,7 @@ const dynamicMenus = ref<RouteMenu[]>([]);
 const userStore = useUserStore();
 const { username } = storeToRefs(userStore);
 const themeStore = useThemeStore();
-const { currentTheme, isDark } = storeToRefs(themeStore);
+const { isDark } = storeToRefs(themeStore);
 
 // 计算属性：获取特定菜单项（资源、系统管理、帮助）
 const fixedMenuItems = computed(() => {
@@ -448,8 +448,7 @@ const showProfile = () => {
 };
 
 const toggleTheme = async () => {
-    const newTheme = currentTheme.value === "light" ? "dark" : "light";
-    await themeStore.applyTheme(newTheme);
+    await themeStore.toggleTheme();
 };
 
 const showAppInfo = () => {
@@ -605,7 +604,7 @@ const loadDynamicMenus = async () => {
 };
 
 // 解析组件路径
-const resolveComponent = (name: string) => {
+const resolveComponent = async (name: string) => {
     try {
         // 根据菜单名称映射到不同位置的组件
         if (name.toLowerCase().includes("user")) {

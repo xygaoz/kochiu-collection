@@ -2,7 +2,6 @@ package com.kochiu.collection.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.kochiu.collection.data.bo.PathBo;
-import com.kochiu.collection.data.dto.StrategyDto;
 import com.kochiu.collection.data.vo.KeyVo;
 import com.kochiu.collection.entity.*;
 import com.kochiu.collection.enums.ErrorCodeEnum;
@@ -23,7 +22,6 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static com.kochiu.collection.Constant.RANDOM_CHARS;
@@ -85,6 +83,7 @@ public class SystemService {
 
     /**
      * 测试服务端路径是否可读写
+     *
      * @param pathBo 要测试的路径
      * @return 如果路径安全且可读写返回true，否则返回false
      */
@@ -128,7 +127,7 @@ public class SystemService {
                     // 测试读权限
                     file.list();
                     // 测试写权限
-                    if(pathBo.getImportMethod() == ImportMethodEnum.MOVE) {
+                    if (pathBo.getImportMethod() == ImportMethodEnum.MOVE) {
                         File testFile = new File(file, ".kochiu_test_" + System.currentTimeMillis());
                         boolean created = testFile.createNewFile();
                         if (created) {
@@ -147,6 +146,7 @@ public class SystemService {
 
     /**
      * 检查路径是否包含敏感系统目录
+     *
      * @param path 要检查的路径
      * @return 如果是敏感路径返回true，否则返回false
      */
@@ -222,7 +222,7 @@ public class SystemService {
             SysStrategy sysStrategy = strategyRepository.getOne(new LambdaQueryWrapper<SysStrategy>().eq(SysStrategy::getStrategyCode, StrategyEnum.LOCAL.getCode()));
             if (sysStrategy != null) {
                 Path dir = Paths.get(sysStrategy.getServerUrl());
-                if(!dir.toFile().exists()){
+                if (!dir.toFile().exists()) {
                     return;
                 }
                 //删除源目录
@@ -266,8 +266,7 @@ public class SystemService {
             sysSecurity.setPublicKey(keys[0]);
             sysSecurity.setPrivateKey(keys[1]);
             securityRepository.updateById(sysSecurity);
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             throw new CollectionException(ErrorCodeEnum.RSA_KEY_GEN_FAIL);
         }
     }
@@ -278,8 +277,7 @@ public class SystemService {
             SysSecurity sysSecurity = securityRepository.getById(1);
             sysSecurity.setCommonKey(commonKey);
             securityRepository.updateById(sysSecurity);
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             throw new CollectionException(ErrorCodeEnum.RSA_KEY_GEN_FAIL);
         }
     }

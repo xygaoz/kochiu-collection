@@ -5,6 +5,7 @@
         :data-type="dataType"
         id="0"
         :has-more="hasMore"
+        :total="total"
         @filter-data="handleSearch"
         @load-more="loadMore"
     />

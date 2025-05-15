@@ -139,6 +139,7 @@ import { Catalog, Category } from "@/apis/interface";
 import { getAllCategory } from "@/apis/category-api";
 import { AxiosProgressEvent } from "axios";
 import { getCatalogTree } from "@/apis/catalog-api";
+import emitter from "@/utils/event-bus";
 
 interface UploadFileItem {
     name: string;
@@ -306,6 +307,11 @@ const uploadFiles = async () => {
 
     uploading.value = false;
     ElMessage.success('所有文件上传完成');
+
+    if(autoCreate.value) {
+        // 触发数据刷新事件
+        emitter.emit('refresh-data')
+    }
 };
 
 // 获取分类信息

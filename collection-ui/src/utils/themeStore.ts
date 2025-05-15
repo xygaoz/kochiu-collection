@@ -51,7 +51,6 @@ export const useThemeStore = defineStore('theme', {
         },
 
         async toggleTheme() {
-            alert(this.currentTheme)
             const newTheme = this.currentTheme === 'light' ? 'dark' : 'light';
             await this.applyTheme(newTheme);
         }

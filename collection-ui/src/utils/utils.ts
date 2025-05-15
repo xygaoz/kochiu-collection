@@ -1,11 +1,11 @@
 import axios from "axios";
-import { h, ref, render } from "vue";
+import { ref } from "vue";
 import { ElLoading, ElMessage } from "element-plus";
 import qs from "qs";
 import router from "@/apis/base-routes"; // 引入qs库来处理form-data
 import { tokenStore } from "@/apis/system-api";
 import Cookies from "js-cookie"; // 引入tokenStore
-import { JSEncrypt } from 'jsencrypt';
+import { JSEncrypt } from "jsencrypt";
 
 const httpInstance = axios.create({
     baseURL: process.env.VUE_APP_BASE_API,
@@ -86,7 +86,7 @@ httpInstance.interceptors.response.use(
                 // 刷新Token接口也返回401，说明refreshToken过期
                 ElMessage.error('登录已过期，请重新登录');
                 clearAuthData();
-                router.push({ name: 'LoginUI' });
+                await router.push({ name: 'LoginUI' });
                 return Promise.reject(error);
             }
 
@@ -107,7 +107,7 @@ httpInstance.interceptors.response.use(
                     // 刷新失败，清空认证数据并跳转登录
                     processQueue(refreshError);
                     clearAuthData();
-                    router.push({ name: 'LoginUI' });
+                    await router.push({ name: 'LoginUI' });
                     return Promise.reject(refreshError);
                 } finally {
                     isRefreshing = false;
@@ -176,17 +176,6 @@ const clearAuthData = () => {
 
 export default httpInstance
 
-export function initInstance(component:object, container:any, option:object) {
-    const vNode = h(component, option);
-    render(vNode, container);
-    document.body.appendChild(container.firstElementChild);
-    return vNode.component;
-}
-
-export function getContainer() {
-    return document.createElement('div');
-}
-
 export function loading(msg:string) {
     return ElLoading.service({
       lock: true,
@@ -195,7 +184,7 @@ export function loading(msg:string) {
     })
 }
 
-export const downloadFile = (url: string, data: any) => {
+export const downloadFile = async (url: string, data: any) => {
     const token = tokenStore.getToken();
     return axios({
         baseURL: process.env.VUE_RESOURCE_BASE_API,
@@ -206,8 +195,7 @@ export const downloadFile = (url: string, data: any) => {
         headers: {
             'Authorization': token || '',
         },
-    })
-        .then(res => {
+    }).then(res => {
             const str = res.headers['content-disposition']
             if (!res || !str) {
                 ElMessage.error('下载失败！')
@@ -223,8 +211,7 @@ export const downloadFile = (url: string, data: any) => {
                 }
                 const blob = new Blob([data], { type: headers['content-type'] })
                 const dom = document.createElement('a')
-                const downUrl = window.URL.createObjectURL(blob)
-                dom.href = downUrl
+                dom.href = window.URL.createObjectURL(blob)
                 dom.download = decodeURIComponent(fileName)
                 dom.style.display = 'none'
                 document.body.appendChild(dom)
@@ -241,7 +228,7 @@ export const downloadFile = (url: string, data: any) => {
 }
 
 // 加密密码的方法
-export const encryptPassword = (publicKey: string, password: string) => {
+export const encryptPassword = (publicKey: string, password: string) : undefined | string => {
 
     // 创建JSEncrypt实例
     const encryptor = new JSEncrypt();
