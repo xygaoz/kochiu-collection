@@ -242,6 +242,7 @@ import { addResourceTag, removeResourceTag, setResourcePublic, updateResource } 
 import type { Resource, Tag } from '@/apis/interface';
 import AudioPlayer from "@/components/common/AudioPlayer.vue";
 import VideoPlayer from '@/components/common/VideoPlayer.vue';
+import emitter from "@/utils/event-bus";
 
 type EditableField = 'title' | 'description' | 'tags';
 
@@ -471,6 +472,8 @@ const handleTagInputConfirm = async () => {
                 tags: updatedTags
             };
             emit('update-file', updatedFile);
+            //触发数据刷新事件
+            emitter.emit('refresh-tags')
 
         } catch (error) {
             ElMessage.error(`添加标签失败: ${error instanceof Error ? error.message : String(error)}`);
@@ -501,6 +504,8 @@ const handleTagClose = async (tag: Tag) => {
             tags: updatedTags
         };
         emit('update-file', updatedFile);
+        //触发数据刷新事件
+        emitter.emit('refresh-tags')
     } catch (error) {
         ElMessage.error(`移除标签失败: ${error instanceof Error ? error.message : String(error)}`);
     } finally {

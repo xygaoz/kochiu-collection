@@ -123,6 +123,7 @@ import { ElMessage } from "element-plus";
 import type { Resource, Tag } from '@/apis/interface';
 import { CircleCheck, CloseBold, Connection, Delete } from "@element-plus/icons-vue";
 import { batchAddTag, batchRemoveTag, bacthUpdateResource, batchShareResources } from "@/apis/resource-api";
+import emitter from "@/utils/event-bus";
 
 interface Props {
     selectedFiles: Resource[];
@@ -386,6 +387,9 @@ const removeTag = async (tag: Tag) => {
 
         // 6. 通知父组件
         emit('update-success', updatedFiles);
+        //触发数据刷新事件
+        emitter.emit('refresh-tags')
+
         ElMessage.success('标签已移除');
     } catch (error) {
         console.error('移除标签失败:', error);
@@ -460,6 +464,9 @@ const handleTagInputConfirm = async () => {
 
         // 9. 通知父组件
         emit('update-success', [...localSelectedFiles.value]);
+        //触发数据刷新事件
+        emitter.emit('refresh-tags')
+
         ElMessage.success(`标签 "${tagName}" 添加成功`);
 
     } catch (error) {

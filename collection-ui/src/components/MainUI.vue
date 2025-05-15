@@ -463,7 +463,7 @@ onMounted(async () => {
     await loadDynamicMenus(); // 加载动态菜单
     updateActiveMenu();
 
-    emitter.on('refresh-data', async () => {
+    emitter.on('refresh-menu', async () => {
         await loadCategories();
         await loadCatalogTree();
         await loadTags();
@@ -472,7 +472,7 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-    emitter.off('refresh-data');
+    emitter.off('refresh-menu');
 });
 
 const handleLogout = () => {

@@ -311,7 +311,7 @@ const uploadFiles = async () => {
 
     if(autoCreate.value) {
         // 触发数据刷新事件
-        emitter.emit('refresh-data')
+        emitter.emit('refresh-menu')
     }
 };
 
