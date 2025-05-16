@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.lang.NonNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -91,12 +92,10 @@ public class ApplicationBeforeConfig implements ApplicationContextInitializer<Co
     }
 
     @Override
-    public void initialize(ConfigurableApplicationContext applicationContext) {
+    public void initialize(@NonNull ConfigurableApplicationContext applicationContext) {
         try {
             log.info("【开始】初始化数据库");
             initDB();
-            log.info("环境变量DB_PATH: {}", System.getenv("DB_PATH"));
-            log.info("系统属性DB_PATH: {}", System.getProperty("DB_PATH"));
             log.info("【结束】初始化数据库");
         } catch (IOException e) {
             log.error("初始化数据库失败", e);

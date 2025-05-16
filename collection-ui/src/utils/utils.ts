@@ -6,6 +6,7 @@ import router from "@/apis/base-routes"; // 引入qs库来处理form-data
 import { tokenStore } from "@/apis/system-api";
 import Cookies from "js-cookie"; // 引入tokenStore
 import { JSEncrypt } from "jsencrypt";
+import { logout } from "@/apis/user-api";
 
 const httpInstance = axios.create({
     baseURL: process.env.VUE_APP_BASE_API,
@@ -155,6 +156,7 @@ export const refreshAccessToken = async () => {
         return response.data.token; // 假设返回 { token: 'xxx', expiresIn: 1800 }
     } catch (err) {
         console.error('刷新Token失败');
+        logout();
     }
 };
 

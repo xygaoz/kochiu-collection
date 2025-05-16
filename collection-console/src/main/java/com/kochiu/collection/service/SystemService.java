@@ -259,6 +259,7 @@ public class SystemService {
         return keyVo;
     }
 
+    // 重置RSA密钥
     public void resetRsaKeys() throws CollectionException {
         try {
             String[] keys = RsaHexUtil.genKeyPair();
@@ -271,9 +272,10 @@ public class SystemService {
         }
     }
 
+    //  重置公用密钥
     public void resetCommonKey() throws CollectionException {
         try {
-            String commonKey = RandomStringUtils.random(8, RANDOM_CHARS);
+            String commonKey = RandomStringUtils.random(16, RANDOM_CHARS);
             SysSecurity sysSecurity = securityRepository.getById(1);
             sysSecurity.setCommonKey(commonKey);
             securityRepository.updateById(sysSecurity);

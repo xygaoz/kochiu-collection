@@ -500,7 +500,7 @@ public class SysUserService {
     @Transactional(rollbackFor = Exception.class)
     public void resetKey(UserDto userDto) throws CollectionException {
         SysUser user = userRepository.getUser(userDto);
-        user.setKey(RandomStringUtils.random(8, RANDOM_CHARS));
+        user.setKey(RandomStringUtils.random(12, RANDOM_CHARS));
         userRepository.updateById(user);
     }
 

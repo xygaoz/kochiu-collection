@@ -26,6 +26,7 @@ public final class Constant {
     public static final String DB_PATH_PROPERTY = "DB_PATH";
     public static final String CONTAINER_DB_PATH = "/app/db";
     public static final String CONTAINER_BACKUP_DB_PATH = "/tmp/db";
+    public static final String CONTAINER_RESOURCE_PATH = "/app/resources";
 
     private Constant(){
 
