@@ -11,7 +11,7 @@ collection:
     remote: #LibreOffice远程模式
       username: admin
       password: 123456
-      api-url: http://localhost:8080/lool/convert-to/pdf #只能设置转dpf接口
+      api-host: http://localhost:8080 #远程服务地址
       timeout: 300000 #单位：毫秒(5分钟)
     local: #LibreOffice本地模式
       office-home: /Applications/LibreOffice.app/Contents #本地LibreOffice安装路径
@@ -43,3 +43,8 @@ collection:
       - mp3
       - flac
     other:
+
+## 日志配置（可选）
+logging:
+  file:
+    path: /tmp/logs

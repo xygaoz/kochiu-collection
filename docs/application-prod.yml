@@ -1,0 +1,10 @@
+collection:
+  jodconverter:
+    enabled: true
+    mode: remote #local 或 remote
+    remote: #LibreOffice远程模式
+      username: admin
+      password: 123456
+      api-host: http://localhost:8080 #远程服务地址
+      timeout: 300000 #单位：毫秒(5分钟)
+  ffmpeg-path: /opt/homebrew/Cellar/ffmpeg/7.1.1_1/bin

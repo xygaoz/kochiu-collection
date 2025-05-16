@@ -5,7 +5,7 @@ collection:
     remote:
       username: admin
       password: 123456
-      api-url: http://localhost:8080/lool/convert-to/pdf #只能设置转dpf接口
+      api-host: http://localhost:8080
       timeout: 300000 #单位：毫秒(5分钟)
     local:
       office-home: /Applications/LibreOffice.app/Contents

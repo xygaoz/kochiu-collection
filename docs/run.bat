@@ -1,1 +1,1 @@
-java -Xms512m -Xmx2048m -Xss256k -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=512m -XX:MaxDirectMemorySize=512m -jar kochiu-collection-0.1.0.jar -active=prod
+java -Xms512m -Xmx2048m -Xss256k -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=512m -XX:MaxDirectMemorySize=512m -jar kochiu-collection-0.1.0.jar --spring.profiles.active=prod

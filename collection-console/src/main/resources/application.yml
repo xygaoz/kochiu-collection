@@ -6,8 +6,6 @@ spring:
   profiles:
     active: dev
   datasource:
-    driver-class-name: org.sqlite.JDBC
-    url: jdbc:sqlite:${user.dir}/db/collection.db?journal_mode=WAL
     # 连接池配置
     hikari:
       maximum-pool-size: 1

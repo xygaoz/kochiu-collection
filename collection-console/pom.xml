@@ -328,6 +328,7 @@
     </dependencies>
 
     <build>
+        <finalName>kochiu-collection-${version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
