@@ -7,43 +7,45 @@
 ## 安装
 - 安装 Java v17 或更高版本。
 - 下载或执行maven打包
-  - 创建运行环境配置文件 `application-prod.yml`，参考 `application.yml.example`。
-    - 运行<br>
-      - Windows: 双击run.bat，或者命令窗口运行run.sh。
-        - Linux/MacOs/群晖: 执行run.sh。
-          - docker: <br>
-            - 修改application-prod.yml<br>
-            ```
-              collection:
-                jodconverter:
-                  enabled: true
-                  mode: remote  # 如果要使用jodconverter，必须设置为远程模式，参考下面docker安装jodconverter
-                  remote:
-                    username: admin
-                    password: 123456
-                    api-url: http://192.168.1.100:8080 #远程服务地址，ip为docker容器的机器ip，端口为docker jodconverter的映射端口
-                    timeout: 300000 #单位：毫秒(5分钟)
-              #设置日志文件路径
-              logging:
-                file:
-                  path: /home/logs
-            ```
-            - 运行：<br>
-              ```
-              docker run -d \
-                -p 9000:9000 \
-                --name kochiu-collection \
-                -v /path/kochiu-collection-0.1.0.jar:/app/app.jar \ #  替换为实际jar包路径
-                -v /path/application-prod.yml:/config/application-prod.yml \ # 替换为实际配置文件路径
-                -v /path/logs:/app/logs \ # 替换为实际日志文件路径
-                -v /path/db:/app/db \ # 替换为实际数据库文件存放路径
-                -v /path/resources:/app/resources \ # 替换为实际资源文件存放路径
-                -e DB_PATH=/app/db \
-                -e JAVA_OPTS="--enable-native-access=ALL-UNNAMED -Xms512m -Xmx2048m" \
-                openjdk:25-jdk \
-                sh -c "mkdir -p /app/db && chmod -R 777 /app/db && java \${JAVA_OPTS} -jar /app/app.jar --spring.profiles.active=prod --spring.config.additional-location=file:/config/"
-              ```
-- 访问 `http(https)://ip(域名):port/`，默认端口9000，如：`http://127.0.0.1:9000/`,  登录账号密码为admin/admin。
+- 创建运行环境配置文件 `application-prod.yml`，参考 `application.yml.example`。
+- 运行<br>
+  - Windows: 双击run.bat，或者命令窗口运行run.sh。
+  - Linux/MacOs/群晖: 执行run.sh。
+  - docker: <br>
+    - 修改application-prod.yml<br>
+    ```
+      collection:
+        jodconverter:
+          enabled: true
+          mode: remote  # 如果要使用jodconverter，必须设置为远程模式，参考下面docker安装jodconverter
+          remote:
+            username: admin
+            password: 123456
+            api-url: http://192.168.1.100:8080 #远程服务地址，ip为docker容器的机器ip，端口为docker jodconverter的映射端口
+            timeout: 300000 #单位：毫秒(5分钟)
+      #设置日志文件路径
+      logging:
+        file:
+          path: /home/logs
+    ```
+    - 运行：<br>
+      ```
+      docker run -d \
+        -p 9000:9000 \
+        --name kochiu-collection \
+        -v /path/kochiu-collection-0.1.0.jar:/app/app.jar \ #  替换为实际jar包路径
+        -v /path/application-prod.yml:/config/application-prod.yml \ # 替换为实际配置文件路径
+        -v /path/logs:/app/logs \ # 替换为实际日志文件路径
+        -v /path/db:/app/db \ # 替换为实际数据库文件存放路径
+        -v /path/resources:/app/resources \ # 替换为实际资源文件存放路径
+        -e DB_PATH=/app/db \
+        -e username=admin \ # 登录用户名（可选，默认admin）
+        -e password=admin \ # 登录密码（可选，默认admin）
+        -e JAVA_OPTS="--enable-native-access=ALL-UNNAMED -Xms512m -Xmx2048m" \
+        openjdk:17-jdk \
+        sh -c "mkdir -p /app/db && chmod -R 777 /app/db && java \${JAVA_OPTS} -jar /app/app.jar --spring.profiles.active=prod --spring.config.additional-location=file:/config/"
+      ```
+- 访问 `http(https)://ip(域名):port/`，默认端口9000，如：`http://127.0.0.1:9000/`,  登录账号密码默认为admin/admin，或使用docker设置的初始值。
 ### 后端依赖
   - 安装 LibreOffice(可选)<br>
   如不安装LibreOffice，office文件生成缩略图可能会比较粗糙，且不能预览。
