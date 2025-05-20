@@ -14,7 +14,7 @@
   - docker: <br>
     - 方案1:<br>
       ffmpeg、jodconverter和应用各自独立为三个docker容器<br>
-      jodconverter和ffmpeg docker安装参考后端依赖部分
+      docker安装jodconverter和ffmpeg参考后端依赖部分
       - 修改application-prod.yml<br>
       ```
         collection:
@@ -55,7 +55,8 @@
         ```
       - 访问 `http(https)://ip(域名):port/`，默认端口9000，如：`http://127.0.0.1:9000/`,  登录账号密码默认为admin/admin，或使用docker设置的初始值。<br><br>
     - 方案2:<br>
-      jodconverter独立一个容器，ffmpeg和应用合并一个容器
+      jodconverter独立一个容器，ffmpeg和应用合并为一个容器
+      docker安装jodconverter参考后端依赖部分
       - 修改application-prod.yml<br>
     ```
       collection:
@@ -79,8 +80,10 @@
     ```
     cd docs
     
+    # 构建
     docker build -t kochiu-collection . 
     
+    # 运行容器
     docker run -d \
     -p 9000:9000 \
     --name kochiu-collection \
@@ -134,6 +137,8 @@
       - 群晖：套件中安装 ffmpeg。（需设置第三方套件来源，如http://packages.synocommunity.com/，https://spk7.imnks.com/ ），查找安装目录：find / -name ffmpeg 2> /dev/null<br>
       - docker:<br>
         ```
+        cd ffmpeg-api
+        
         # 构建
         docker build -t ffmpeg-api .
   

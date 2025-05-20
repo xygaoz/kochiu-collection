@@ -1,7 +1,11 @@
 # 使用linuxserver/ffmpeg作为基础镜像
 FROM linuxserver/ffmpeg:latest
 
-# 安装OpenJDK 17
+# 安装OpenJDK 17（以下二选一）
+# RUN apt-get update && \
+#    apt-get install -y ca-certificates-java && \
+#    apt-get install -y openjdk-17-jdk && \
+#    rm -rf /var/lib/apt/lists/*
 RUN apt-get update && \
     apt-get install -y wget && \
     wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | apt-key add - && \
