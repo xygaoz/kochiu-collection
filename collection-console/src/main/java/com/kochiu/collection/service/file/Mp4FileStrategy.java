@@ -12,7 +12,6 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -36,9 +35,6 @@ public class Mp4FileStrategy implements FileStrategy{
 
     @Autowired
     protected CollectionProperties properties;
-    @Autowired
-    @Qualifier("jpg")
-    protected JpgFileStrategy jpgFileStrategy;
 
     @Override
     public String createThumbnail(File file,
@@ -51,13 +47,15 @@ public class Mp4FileStrategy implements FileStrategy{
         }
         else {
             if(properties.getFfmpeg().getMode() == ApiModeEnum.LOCAL) {
+                log.info("使用本地API将视频文件截帧");
                 return localApiCaptureVideoFrame(file, thumbFilePath, thumbUrl, fileType, resourceDto);
             }
             else{
                 try {
+                    log.info("使用远程API将视频文件截帧");
                     return remoteApiCaptureVideoFrame(file, thumbFilePath, thumbUrl, fileType, resourceDto);
                 } catch (Exception e) {
-                    log.error("远程转换mp4文件为图片失败", e);
+                    log.error("远程截帧失败", e);
                     return defaultThumbnail(thumbFilePath, thumbUrl, fileType, resourceDto);
                 }
             }
@@ -85,13 +83,13 @@ public class Mp4FileStrategy implements FileStrategy{
             log.info("使用ffmpeg截帧mp4文件为图片");
             try {
                 // 1. 获取视频时长
-                double duration = getVideoDuration(videoFile);
+                double duration = getVideoDuration(videoFile, ffmpegPath);
 
                 // 2. 计算最佳截取时间点（避免开头黑帧）
                 double captureTime = Math.min(60, duration * 0.1); // 取视频前10%或5秒处
 
                 // 3. 截取视频帧
-                localCaptureVideoFrame(videoFile, outputPath, captureTime);
+                localCaptureVideoFrame(videoFile, outputPath, captureTime, ffmpegPath);
 
                 // 4. 处理生成的缩略图
                 BufferedImage image = ImageIO.read(new File(outputPath));
@@ -110,9 +108,9 @@ public class Mp4FileStrategy implements FileStrategy{
     /**
      * 获取视频时长（秒）
      */
-    private double getVideoDuration(File videoFile) throws Exception {
+    private double getVideoDuration(File videoFile, String ffmpegPath) throws Exception {
         ProcessBuilder pb = new ProcessBuilder(
-                properties.getFfmpeg().getLocal().getFfmpegPath() + "/ffprobe",
+                ffmpegPath + "/ffprobe",
                 "-v", "error",
                 "-show_entries", "format=duration",
                 "-of", "default=noprint_wrappers=1:nokey=1",
@@ -135,7 +133,8 @@ public class Mp4FileStrategy implements FileStrategy{
      */
     private void localCaptureVideoFrame(File videoFile,
                                         String outputPath,
-                                        double captureTime) throws Exception {
+                                        double captureTime,
+                                        String ffmpegPath) throws Exception {
         // 将秒转换为HH:MM:SS格式
         String timeCode = String.format("%02d:%02d:%02d",
                 (int) (captureTime / 3600),
@@ -143,7 +142,7 @@ public class Mp4FileStrategy implements FileStrategy{
                 (int) (captureTime % 60));
 
         ProcessBuilder pb = new ProcessBuilder(
-                properties.getFfmpeg().getLocal().getFfmpegPath() + "/ffmpeg",
+                ffmpegPath + "/ffmpeg",
                 "-ss", timeCode,             // 跳转到指定时间
                 "-i", videoFile.getAbsolutePath(),
                 "-vframes", "1",             // 只取1帧
