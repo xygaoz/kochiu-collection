@@ -26,32 +26,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfiguration implements WebMvcConfigurer {
 
-    private final CollectionProperties collectionProperties;
-
-    public WebConfiguration(CollectionProperties collectionProperties) {
-        this.collectionProperties = collectionProperties;
-    }
-
-    @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate(getClientHttpRequestFactory());
-    }
-
-    private ClientHttpRequestFactory getClientHttpRequestFactory() {
-        int timeout = collectionProperties.getJodconverter().getRemote().getTimeout(); // 5分钟（单位：毫秒）
-        RequestConfig config = RequestConfig.custom()
-                .setConnectTimeout(timeout)      // 连接超时
-                .setConnectionRequestTimeout(timeout) // 请求超时
-                .setSocketTimeout(timeout)       // 响应读取超时
-                .build();
-
-        CloseableHttpClient client = HttpClientBuilder.create()
-                .setDefaultRequestConfig(config)
-                .build();
-
-        return new HttpComponentsClientHttpRequestFactory(client);
-    }
-
     // 解决 history 模式 404 问题
     @Bean
     public WebServerFactoryCustomizer<ConfigurableWebServerFactory> webServerFactoryCustomizer() {

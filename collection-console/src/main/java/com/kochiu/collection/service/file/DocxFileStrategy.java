@@ -15,9 +15,8 @@ import java.io.FileOutputStream;
 public class DocxFileStrategy extends DocFileStrategy{
 
     public DocxFileStrategy(CollectionProperties properties,
-                            PdfFileStrategy pdfFileStrategy,
-                            RestTemplate restTemplate) {
-        super(properties, pdfFileStrategy, restTemplate);
+                            PdfFileStrategy pdfFileStrategy) {
+        super(properties, pdfFileStrategy);
     }
 
     /**

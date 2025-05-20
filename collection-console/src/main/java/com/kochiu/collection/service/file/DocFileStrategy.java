@@ -5,7 +5,7 @@ import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.kochiu.collection.data.dto.ResourceDto;
 import com.kochiu.collection.enums.FileTypeEnum;
-import com.kochiu.collection.enums.JodconverterModeEnum;
+import com.kochiu.collection.enums.ApiModeEnum;
 import com.kochiu.collection.properties.CollectionProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hwpf.HWPFDocument;
@@ -28,9 +28,8 @@ public class DocFileStrategy extends OfficeFileStrategy implements FileStrategy{
     protected final PdfFileStrategy pdfFileStrategy;
 
     public DocFileStrategy(CollectionProperties properties,
-                           PdfFileStrategy pdfFileStrategy,
-                           RestTemplate restTemplate) {
-        super(properties, restTemplate);
+                           PdfFileStrategy pdfFileStrategy) {
+        super(properties);
         this.properties = properties;
         this.pdfFileStrategy = pdfFileStrategy;
     }
@@ -95,7 +94,7 @@ public class DocFileStrategy extends OfficeFileStrategy implements FileStrategy{
 
     protected void convertDocToPdfOfJodconverter(File wordFile, String outputPath) throws Exception{
 
-        if(properties.getJodconverter().getMode() == JodconverterModeEnum.LOCAL) {
+        if(properties.getJodconverter().getMode() == ApiModeEnum.LOCAL) {
             if (properties.getJodconverter().getLocal().getOfficeHome() != null && new File(properties.getJodconverter().getLocal().getOfficeHome()).exists()) {
 
                 // 启动 LibreOffice 服务
@@ -120,7 +119,7 @@ public class DocFileStrategy extends OfficeFileStrategy implements FileStrategy{
                 convertDocToPdf(wordFile, outputPath);
             }
         }
-        else if(properties.getJodconverter().getMode() == JodconverterModeEnum.REMOTE) {
+        else if(properties.getJodconverter().getMode() == ApiModeEnum.REMOTE) {
             if(properties.getJodconverter().getRemote().getApiHost() == null) {
                 convertDocToPdf(wordFile, outputPath);
             }

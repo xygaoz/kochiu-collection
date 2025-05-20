@@ -3,19 +3,19 @@ package com.kochiu.collection.enums;
 import lombok.Getter;
 
 @Getter
-public enum JodconverterModeEnum {
+public enum ApiModeEnum {
 
     LOCAL("local"),
     REMOTE("remote");
 
     private final String mode;
 
-    JodconverterModeEnum(String mode) {
+    ApiModeEnum(String mode) {
         this.mode = mode;
     }
 
-    public static JodconverterModeEnum getByMode(String mode) {
-        for (JodconverterModeEnum jodconverterModeEnum : JodconverterModeEnum.values()) {
+    public static ApiModeEnum getByMode(String mode) {
+        for (ApiModeEnum jodconverterModeEnum : ApiModeEnum.values()) {
             if (jodconverterModeEnum.getMode().equals(mode)) {
                 return jodconverterModeEnum;
             }

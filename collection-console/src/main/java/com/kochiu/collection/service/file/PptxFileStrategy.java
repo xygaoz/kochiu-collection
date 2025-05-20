@@ -8,8 +8,7 @@ import org.springframework.web.client.RestTemplate;
 public class PptxFileStrategy extends PptFileStrategy{
 
     public PptxFileStrategy(CollectionProperties properties,
-                            PdfFileStrategy pdfFileStrategy,
-                            RestTemplate restTemplate) {
-        super(properties, pdfFileStrategy, restTemplate);
+                            PdfFileStrategy pdfFileStrategy) {
+        super(properties, pdfFileStrategy);
     }
 }

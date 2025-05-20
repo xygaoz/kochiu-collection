@@ -1,6 +1,6 @@
 package com.kochiu.collection.properties;
 
-import com.kochiu.collection.enums.JodconverterModeEnum;
+import com.kochiu.collection.enums.ApiModeEnum;
 import com.kochiu.collection.enums.ResourceTypeEnum;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -15,8 +15,7 @@ public class CollectionProperties {
 
     private Map<String, List<String>> uploadType;
     private Jodconverter jodconverter = new Jodconverter();
-    // ffmpeg安装目录
-    private String ffmpegPath;
+    private FFMpeg ffmpeg = new FFMpeg();
 
     public Collection<String> getUploadTypes() {
         Set<String> values = new HashSet<>();
@@ -42,14 +41,27 @@ public class CollectionProperties {
         private Local local;
         private Remote remote;
 
-        public JodconverterModeEnum getMode() {
-            return JodconverterModeEnum.getByMode(mode);
+        public ApiModeEnum getMode() {
+            return ApiModeEnum.getByMode(mode);
+        }
+    }
+
+    @Data
+    public static class FFMpeg {
+        private boolean enabled;
+        private String mode;
+        private Local local;
+        private Remote remote;
+
+        public ApiModeEnum getMode() {
+            return ApiModeEnum.getByMode(mode);
         }
     }
 
     @Data
     public static class Local {
         private String officeHome;
+        private String ffmpegPath;
     }
 
     @Data
@@ -57,6 +69,7 @@ public class CollectionProperties {
         private String username;
         private String password = "";
         private String apiHost;
+        private String apiUrl;
         private int timeout = 300000;
     }
 }

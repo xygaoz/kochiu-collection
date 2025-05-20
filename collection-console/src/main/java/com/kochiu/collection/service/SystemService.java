@@ -11,6 +11,7 @@ import com.kochiu.collection.exception.CollectionException;
 import com.kochiu.collection.repository.*;
 import com.kochiu.collection.util.DesensitizationUtil;
 import com.kochiu.collection.util.RsaHexUtil;
+import com.kochiu.collection.util.SysUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
@@ -238,12 +239,16 @@ public class SystemService {
                         if (exc != null) {
                             throw exc; // 抛出遍历过程中的异常
                         }
-                        Files.delete(dir); // 删除目录（此时目录已空）
+                        if(!SysUtil.isRunningInDocker()) {
+                            //容器运行不能删映射目录
+                            Files.delete(dir); // 删除目录（此时目录已空）
+                        }
                         return FileVisitResult.CONTINUE;
                     }
                 });
             }
         } catch (IOException e) {
+            log.error("Failed to delete directory", e);
             throw new CollectionException(ErrorCodeEnum.CLEAR_FAIL);
         }
     }

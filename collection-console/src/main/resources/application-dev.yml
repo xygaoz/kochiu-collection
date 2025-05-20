@@ -9,4 +9,10 @@ collection:
       timeout: 300000 #单位：毫秒(5分钟)
     local:
       office-home: /Applications/LibreOffice.app/Contents
-  ffmpeg-path: /opt/homebrew/Cellar/ffmpeg/7.1.1_1/bin
+  ffmpeg:
+    enabled: true
+    mode: remote
+    remote:
+      api-url: http://localhost:8000/capture
+    local:
+      ffmpeg-path: /opt/homebrew/Cellar/ffmpeg/7.1.1_1/bin

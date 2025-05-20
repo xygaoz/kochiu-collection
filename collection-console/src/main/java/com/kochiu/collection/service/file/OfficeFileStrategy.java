@@ -1,8 +1,12 @@
 package com.kochiu.collection.service.file;
 
 import com.kochiu.collection.properties.CollectionProperties;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -15,12 +19,9 @@ import java.util.Objects;
 public abstract class OfficeFileStrategy {
 
     private final CollectionProperties properties;
-    private final RestTemplate restTemplate;
 
-    protected OfficeFileStrategy(CollectionProperties properties,
-                                 RestTemplate restTemplate) {
+    protected OfficeFileStrategy(CollectionProperties properties) {
         this.properties = properties;
-        this.restTemplate = restTemplate;
     }
 
     public void remoteConvertToPdf(File inputFile, File outputFile) throws IOException {
@@ -41,7 +42,7 @@ public abstract class OfficeFileStrategy {
         if(host.endsWith("/")) {
             host = host.substring(0, host.length() - 1);
         }
-        ResponseEntity<byte[]> response = restTemplate.exchange(
+        ResponseEntity<byte[]> response = createRestTemplateWithTimeout().exchange(
                 host + "/lool/convert-to/pdf",
                 HttpMethod.POST,
                 new HttpEntity<>(body, headers),
@@ -49,5 +50,18 @@ public abstract class OfficeFileStrategy {
 
         // 4. 保存结果
         Files.write(outputFile.toPath(), Objects.requireNonNull(response.getBody()));
+    }
+
+    private RestTemplate createRestTemplateWithTimeout() {
+        RequestConfig config = RequestConfig.custom()
+                .setConnectTimeout(properties.getJodconverter().getRemote().getTimeout())
+                .setSocketTimeout(properties.getJodconverter().getRemote().getTimeout())
+                .build();
+
+        CloseableHttpClient httpClient = HttpClients.custom()
+                .setDefaultRequestConfig(config)
+                .build();
+
+        return new RestTemplate(new HttpComponentsClientHttpRequestFactory(httpClient));
     }
 }

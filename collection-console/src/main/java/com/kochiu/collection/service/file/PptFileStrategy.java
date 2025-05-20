@@ -2,7 +2,7 @@ package com.kochiu.collection.service.file;
 
 import com.kochiu.collection.data.dto.ResourceDto;
 import com.kochiu.collection.enums.FileTypeEnum;
-import com.kochiu.collection.enums.JodconverterModeEnum;
+import com.kochiu.collection.enums.ApiModeEnum;
 import com.kochiu.collection.properties.CollectionProperties;
 import com.kochiu.collection.util.ImageUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -29,9 +29,8 @@ public class PptFileStrategy extends OfficeFileStrategy implements FileStrategy{
     protected final PdfFileStrategy pdfFileStrategy;
 
     public PptFileStrategy(CollectionProperties properties,
-                           PdfFileStrategy pdfFileStrategy,
-                           RestTemplate restTemplate) {
-        super(properties, restTemplate);
+                           PdfFileStrategy pdfFileStrategy) {
+        super(properties);
         this.properties = properties;
         this.pdfFileStrategy = pdfFileStrategy;
     }
@@ -56,7 +55,7 @@ public class PptFileStrategy extends OfficeFileStrategy implements FileStrategy{
         String thumbRatio;
         if (properties.getJodconverter().isEnabled()) {
             log.info("使用jodconverter转换ppt文件");
-            if(properties.getJodconverter().getMode() == JodconverterModeEnum.LOCAL){
+            if(properties.getJodconverter().getMode() == ApiModeEnum.LOCAL){
                if(properties.getJodconverter().getLocal().getOfficeHome() != null && new File(properties.getJodconverter().getLocal().getOfficeHome()).exists()){
                    log.info("使用jodconverter转换ppt文件为pdf文件");
                    String pdfPath = thumbFilePath.substring(0, thumbFilePath.lastIndexOf("_thumb.png")) + ".pdf";
@@ -90,7 +89,7 @@ public class PptFileStrategy extends OfficeFileStrategy implements FileStrategy{
                    thumbRatio = convertPptFirstPage(pptFile, thumbFilePath);
                }
             }
-            else if(properties.getJodconverter().getMode() == JodconverterModeEnum.REMOTE) {
+            else if(properties.getJodconverter().getMode() == ApiModeEnum.REMOTE) {
                 log.info("使用jodconverter远程转换ppt文件为pdf文件");
 
                 if(properties.getJodconverter().getRemote().getApiHost() == null) {

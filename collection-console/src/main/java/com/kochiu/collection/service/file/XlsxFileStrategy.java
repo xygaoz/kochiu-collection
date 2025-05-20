@@ -8,8 +8,7 @@ import org.springframework.web.client.RestTemplate;
 public class XlsxFileStrategy extends XlsFileStrategy{
 
     public XlsxFileStrategy(CollectionProperties properties,
-                            PdfFileStrategy pdfFileStrategy,
-                            RestTemplate restTemplate) {
-        super(properties, pdfFileStrategy, restTemplate);
+                            PdfFileStrategy pdfFileStrategy) {
+        super(properties, pdfFileStrategy);
     }
 }

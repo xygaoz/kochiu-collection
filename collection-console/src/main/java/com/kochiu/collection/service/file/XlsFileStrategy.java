@@ -2,7 +2,7 @@ package com.kochiu.collection.service.file;
 
 import com.kochiu.collection.data.dto.ResourceDto;
 import com.kochiu.collection.enums.FileTypeEnum;
-import com.kochiu.collection.enums.JodconverterModeEnum;
+import com.kochiu.collection.enums.ApiModeEnum;
 import com.kochiu.collection.properties.CollectionProperties;
 import com.kochiu.collection.util.ImageUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -30,9 +30,8 @@ public class XlsFileStrategy extends OfficeFileStrategy implements FileStrategy{
     protected final PdfFileStrategy pdfFileStrategy;
 
     public XlsFileStrategy(CollectionProperties properties,
-                           PdfFileStrategy pdfFileStrategy,
-                           RestTemplate restTemplate) {
-        super(properties, restTemplate);
+                           PdfFileStrategy pdfFileStrategy) {
+        super(properties);
         this.properties = properties;
         this.pdfFileStrategy = pdfFileStrategy;
     }
@@ -59,7 +58,7 @@ public class XlsFileStrategy extends OfficeFileStrategy implements FileStrategy{
             log.info("使用jodconverter转换ppt文件");
             String pdfPath = thumbFilePath.substring(0, thumbFilePath.lastIndexOf("_thumb.png")) + ".pdf";
 
-            if(properties.getJodconverter().getMode() == JodconverterModeEnum.LOCAL) {
+            if(properties.getJodconverter().getMode() == ApiModeEnum.LOCAL) {
                 if (properties.getJodconverter().getLocal().getOfficeHome() != null && new File(properties.getJodconverter().getLocal().getOfficeHome()).exists()) {
                     convertExcelToPdfOfJodconverter(excelFile, pdfPath);
 
@@ -69,7 +68,7 @@ public class XlsFileStrategy extends OfficeFileStrategy implements FileStrategy{
                     thumbRatio = convertExcelToImageOfDraw(excelFile, thumbFilePath);
                 }
             }
-            else if(properties.getJodconverter().getMode() == JodconverterModeEnum.REMOTE){
+            else if(properties.getJodconverter().getMode() == ApiModeEnum.REMOTE){
                 if(properties.getJodconverter().getRemote().getApiHost() == null) {
                     thumbRatio = convertExcelToImageOfDraw(excelFile, thumbFilePath);
                 }
