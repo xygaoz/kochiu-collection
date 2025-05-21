@@ -75,6 +75,13 @@ routes.push(
             },
         ]
     },
+    {
+        path: '/Help',
+        name: "help",
+        component: () => import('@/components/HelpPage.vue'),
+        meta: { title: '帮助', icon: 'Help', iconType: 'icons-vue', style: 'color: rgb(59,130,246); margin: 0 -1px 0 0;', group: 'help-group' },
+        children: []
+    },
     // router.ts 中添加动态路由规则
     {
         path: '/Category/:cateId',  // 动态参数（注意大小写统一）
