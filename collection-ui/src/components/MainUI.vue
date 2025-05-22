@@ -107,7 +107,6 @@
                             </el-sub-menu>
                         </el-menu>
                     </div>
-
                     <!-- 固定菜单区域 -->
                     <el-menu
                         class="fixed-menu"
@@ -175,227 +174,23 @@
                             </el-menu-item>
                         </el-sub-menu>
 
-                        <!-- 动态生成特定菜单项 -->
-                        <template v-for="menu in fixedMenuItems" :key="menu.path">
-                            <!-- 有子菜单的情况（资源、系统管理） -->
-                            <el-sub-menu
-                                v-if="menu.children && menu.children.length > 0"
-                                :index="menu.meta?.group"
-                            >
-                                <template #title>
-                                    <div class="menu-icon">
-                                        <template v-if="menu.meta?.iconType === 'iconfont'">
-                                            <i
-                                                :class="`iconfont ${menu.meta?.icon}`"
-                                                :style="menu.meta?.style as StyleValue"
-                                            ></i>
-                                        </template>
-                                        <template v-else>
-                                            <el-icon :style="menu.meta?.style as StyleValue">
-                                                <component :is="menu.meta?.icon" />
-                                            </el-icon>
-                                        </template>
-                                    </div>
-                                    <div class="menu-label">{{ menu.meta?.title }}</div>
-                                </template>
+                        <!-- 固定菜单项 -->
+                        <CommonMenu
+                            :menus="fixedMenuItems"
+                            @menu-click="menuItemClick"
+                        />
 
-                                <el-menu-item
-                                    v-for="child in menu.children"
-                                    :key="child.path"
-                                    :index="child.path"
-                                    @click="menuItemClick({path: child.path})"
-                                >
-                                    <template #title>
-                                        <div class="menu-icon">
-                                            <template v-if="child.meta?.iconType === 'iconfont'">
-                                                <i
-                                                    :class="`iconfont ${child.meta?.icon}`"
-                                                    :style="child.meta?.style as StyleValue"
-                                                ></i>
-                                            </template>
-                                            <template v-else>
-                                                <el-icon :style="child.meta?.style">
-                                                    <component :is="child.meta?.icon" />
-                                                </el-icon>
-                                            </template>
-                                        </div>
-                                        <div class="menu-label">{{ child.meta?.title }}</div>
-                                    </template>
-                                </el-menu-item>
-                            </el-sub-menu>
+                        <!-- 动态菜单 -->
+                        <CommonMenu
+                            :menus="dynamicMenus"
+                            @menu-click="menuItemClick"
+                        />
 
-                            <!-- 没有子菜单的情况（帮助） -->
-                            <el-menu-item
-                                v-else
-                                :index="menu.path"
-                                @click="menuItemClick({path: menu.path})"
-                            >
-                                <template #title>
-                                    <div class="menu-icon">
-                                        <template v-if="menu.meta?.iconType === 'iconfont'">
-                                            <i
-                                                :class="`iconfont ${menu.meta?.icon}`"
-                                                :style="menu.meta?.style as StyleValue"
-                                            ></i>
-                                        </template>
-                                        <template v-else>
-                                            <el-icon :style="menu.meta?.style">
-                                                <component :is="menu.meta?.icon" />
-                                            </el-icon>
-                                        </template>
-                                    </div>
-                                    <div class="menu-label">{{ menu.meta?.title }}</div>
-                                </template>
-                            </el-menu-item>
-                        </template>
-
-                        <!-- 动态生成特定菜单项 -->
-                        <template v-for="menu in dynamicMenus" :key="menu.path">
-                            <!-- 有子菜单的情况 -->
-                            <el-sub-menu
-                                v-if="menu.children && menu.children.length > 0"
-                                :index="menu.meta.group"
-                            >
-                                <template #title>
-                                    <div class="menu-icon">
-                                        <template v-if="menu.meta.iconType === 'iconfont'">
-                                            <i
-                                                :class="`iconfont ${menu.meta.icon}`"
-                                                :style="menu.meta.style"
-                                            ></i>
-                                        </template>
-                                        <template v-else>
-                                            <el-icon :style="menu.meta.style">
-                                                <component :is="menu.meta.icon" />
-                                            </el-icon>
-                                        </template>
-                                    </div>
-                                    <div class="menu-label">{{ menu.meta.title }}</div>
-                                </template>
-
-                                <!-- 子菜单项 -->
-                                <el-menu-item
-                                    v-for="child in menu.children"
-                                    :key="child.path"
-                                    :index="child.path"
-                                    @click="menuItemClick({path: child.path})"
-                                >
-                                    <template #title>
-                                        <div class="menu-icon">
-                                            <template v-if="child.meta.iconType === 'iconfont'">
-                                                <i
-                                                    :class="`iconfont ${child.meta.icon}`"
-                                                    :style="child.meta.style"
-                                                ></i>
-                                            </template>
-                                            <template v-else>
-                                                <el-icon :style="child.meta.style">
-                                                    <component :is="child.meta.icon" />
-                                                </el-icon>
-                                            </template>
-                                        </div>
-                                        <div class="menu-label">{{ child.meta.title }}</div>
-                                    </template>
-                                </el-menu-item>
-                            </el-sub-menu>
-
-                            <!-- 没有子菜单的情况 -->
-                            <el-menu-item
-                                v-else
-                                :index="menu.path"
-                                @click="menuItemClick({path: menu.path})"
-                            >
-                                <template #title>
-                                    <div class="menu-icon">
-                                        <template v-if="menu.meta.iconType === 'iconfont'">
-                                            <i
-                                                :class="`iconfont ${menu.meta.icon}`"
-                                                :style="menu.meta.style"
-                                            ></i>
-                                        </template>
-                                        <template v-else>
-                                            <el-icon :style="menu.meta.style">
-                                                <component :is="menu.meta.icon" />
-                                            </el-icon>
-                                        </template>
-                                    </div>
-                                    <div class="menu-label">{{ menu.meta.title }}</div>
-                                </template>
-                            </el-menu-item>
-                        </template>
-
-                        <template v-for="menu in helpMenuItems" :key="menu.path">
-                            <!-- 有子菜单的情况（资源、系统管理） -->
-                            <el-sub-menu
-                                v-if="menu.children && menu.children.length > 0"
-                                :index="menu.meta?.group"
-                            >
-                                <template #title>
-                                    <div class="menu-icon">
-                                        <template v-if="menu.meta?.iconType === 'iconfont'">
-                                            <i
-                                                :class="`iconfont ${menu.meta?.icon}`"
-                                                :style="menu.meta?.style as StyleValue"
-                                            ></i>
-                                        </template>
-                                        <template v-else>
-                                            <el-icon :style="menu.meta?.style as StyleValue">
-                                                <component :is="menu.meta?.icon" />
-                                            </el-icon>
-                                        </template>
-                                    </div>
-                                    <div class="menu-label">{{ menu.meta?.title }}</div>
-                                </template>
-
-                                <el-menu-item
-                                    v-for="child in menu.children"
-                                    :key="child.path"
-                                    :index="child.path"
-                                    @click="menuItemClick({path: child.path})"
-                                >
-                                    <template #title>
-                                        <div class="menu-icon">
-                                            <template v-if="child.meta?.iconType === 'iconfont'">
-                                                <i
-                                                    :class="`iconfont ${child.meta?.icon}`"
-                                                    :style="child.meta?.style as StyleValue"
-                                                ></i>
-                                            </template>
-                                            <template v-else>
-                                                <el-icon :style="child.meta?.style">
-                                                    <component :is="child.meta?.icon" />
-                                                </el-icon>
-                                            </template>
-                                        </div>
-                                        <div class="menu-label">{{ child.meta?.title }}</div>
-                                    </template>
-                                </el-menu-item>
-                            </el-sub-menu>
-
-                            <!-- 没有子菜单的情况（帮助） -->
-                            <el-menu-item
-                                v-else
-                                :index="menu.path"
-                                @click="menuItemClick({path: menu.path})"
-                            >
-                                <template #title>
-                                    <div class="menu-icon">
-                                        <template v-if="menu.meta?.iconType === 'iconfont'">
-                                            <i
-                                                :class="`iconfont ${menu.meta?.icon}`"
-                                                :style="menu.meta?.style as StyleValue"
-                                            ></i>
-                                        </template>
-                                        <template v-else>
-                                            <el-icon :style="menu.meta?.style">
-                                                <component :is="menu.meta?.icon" />
-                                            </el-icon>
-                                        </template>
-                                    </div>
-                                    <div class="menu-label">{{ menu.meta?.title }}</div>
-                                </template>
-                            </el-menu-item>
-                        </template>
+                        <!-- 帮助菜单 -->
+                        <CommonMenu
+                            :menus="helpMenuItems"
+                            @menu-click="menuItemClick"
+                        />
                     </el-menu>
                 </div>
             </el-aside>
@@ -485,6 +280,7 @@ import userAvatar from "../assets/imgs/user.gif";
 import AppInfoDialog from "@/components/sys/AppInfoDialog.vue";
 import ModifyPasswordDialog from "@/components/my/ModifyPasswordDialog.vue";
 import emitter from "@/utils/event-bus";
+import CommonMenu from "@/components/main/CommonMenu.vue";
 
 // 状态管理
 const showCatalogMenu = ref(false);

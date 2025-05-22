@@ -41,37 +41,37 @@ routes.push(
     {
         path: '/My',
         name: "my",
-        meta: { title: '我的', icon: 'Collection', iconType: 'icons-vue', style: 'color: rgb(59,130,246); margin: 0 -1px 0 0;', group: 'my-group' },
+        meta: { title: '我的', icon: 'Collection', iconType: 'icons-vue', style: 'color: rgb(59,130,246); margin: 0px 9px 0px 4px;', group: 'my-group' },
         children: [
             {
                 path: '/Upload',
                 name: 'upload',
                 component: () => import('@/components/my/FileUploader.vue'),
-                meta: { title: '上传文件', icon: 'UploadFilled', iconType: 'icons-vue', style: 'color: rgb(59,130,246)', requiresAuth: true },
+                meta: { title: '上传文件', icon: 'UploadFilled', iconType: 'icons-vue', style: 'color: rgb(59,130,246); margin: 0 7px 0 3px;', requiresAuth: true },
             },
             {
                 path: '/BatchImport',
                 name: 'batch-import',
                 component: () => import('@/components/my/BatchImport.vue'),
-                meta: { title: '批量导入', icon: 'icon-col-piliangdaoru1', iconType: 'iconfont', style: 'font-size: 18px; color: rgb(59,130,246); margin: 0 3px 0 0', requiresAuth: true },
+                meta: { title: '批量导入', icon: 'icon-col-piliangdaoru1', iconType: 'iconfont', style: 'font-size: 18px; color: rgb(59,130,246); margin: 0px 10px 0px 6px;', requiresAuth: true },
             },
             {
                 path: '/Public',
                 name: 'public',
                 component: () => import('@/components/my/PublicResource.vue'),
-                meta: { title: '公共资源', icon: 'icon-col-gonggongziyuan', iconType: 'iconfont', style: 'font-size: 18px; color: rgb(59,130,246); margin: 0 1px 0 0', requiresAuth: true },
+                meta: { title: '公共资源', icon: 'icon-col-gonggongziyuan', iconType: 'iconfont', style: 'font-size: 18px; color: rgb(59,130,246); margin: 0px 10px 0px 6px;', requiresAuth: true },
             },
             {
                 path: '/Recycle',
                 name: 'recycle',
                 component: () => import('@/components/my/RecycleResource.vue'),
-                meta: { title: '回收站', icon: 'icon-col-huishouzhanx', iconType: 'iconfont', style: 'font-size: 25px; color: rgb(59,130,246); margin: 0 1px 0 0', requiresAuth: true },
+                meta: { title: '回收站', icon: 'icon-col-huishouzhanx', iconType: 'iconfont', style: 'font-size: 25px; color: rgb(59,130,246); margin: 0px 6px 0px 3px;', requiresAuth: true },
             },
             {
                 path: '/profile',
                 name: 'Profile',
                 component: () => import('@/components/my/Profile.vue'),
-                meta: { title: '个人资料', icon: 'icon-col-gerenziliao', iconType: 'iconfont', style: 'font-size: 18px; color: rgb(59,130,246); margin: 0 2px 0 0', requiresAuth: true }
+                meta: { title: '个人资料', icon: 'icon-col-gerenziliao', iconType: 'iconfont', style: 'font-size: 18px; color: rgb(59,130,246); margin: 0px 9px 0px 6px;', requiresAuth: true }
             },
         ]
     },
@@ -79,7 +79,7 @@ routes.push(
         path: '/Help',
         name: "help",
         component: () => import('@/components/HelpPage.vue'),
-        meta: { title: '帮助', icon: 'Help', iconType: 'icons-vue', style: 'color: rgb(59,130,246); margin: 0 -1px 0 0;', group: 'help-group' },
+        meta: { title: '帮助', icon: 'Help', iconType: 'icons-vue', style: 'color: rgb(59,130,246); margin: 0px 8px 0px 5px;', group: 'help-group' },
         children: []
     },
     // router.ts 中添加动态路由规则

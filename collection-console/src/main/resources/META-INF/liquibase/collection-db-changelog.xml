@@ -751,7 +751,7 @@
             <column name="icon" value="icon-col-shezhi"/>
             <column name="icon_type" value="iconfont"/>
             <column name="sort" value="1"/>
-            <column name="style" value="font-size: 21px; color: rgb(59,130,246)"/>
+            <column name="style" value="font-size: 21px; color: rgb(59,130,246); margin: 0 9px 0 6px;"/>
             <column name="CREATE_TIME" valueComputed="datetime('now')"/>
             <column name="CREATE_BY" value="sys"/>
             <column name="DB_VERSION" value="1"/>
@@ -766,7 +766,7 @@
             <column name="icon" value="UserFilled"/>
             <column name="icon_type" value="icons-vue"/>
             <column name="sort" value="1"/>
-            <column name="style" value="color: rgb(59,130,246);"/>
+            <column name="style" value="color: rgb(59,130,246);margin: 0px 7px 0px 2px;"/>
             <column name="CREATE_TIME" valueComputed="datetime('now')"/>
             <column name="CREATE_BY" value="sys"/>
             <column name="DB_VERSION" value="1"/>
@@ -781,7 +781,7 @@
             <column name="icon" value="icon-col-jiaoseguanli1"/>
             <column name="icon_type" value="iconfont"/>
             <column name="sort" value="2"/>
-            <column name="style" value="font-size: 21px; color: rgb(59,130,246)"/>
+            <column name="style" value="font-size: 21px; color: rgb(59,130,246); margin: 0px 8px 0px 3px;"/>
             <column name="CREATE_TIME" valueComputed="datetime('now')"/>
             <column name="CREATE_BY" value="sys"/>
             <column name="DB_VERSION" value="1"/>
@@ -796,7 +796,7 @@
             <column name="icon" value="icon-col-cunchucelve"/>
             <column name="icon_type" value="iconfont"/>
             <column name="sort" value="3"/>
-            <column name="style" value="font-size: 21px; color: rgb(59,130,246)"/>
+            <column name="style" value="font-size: 21px; color: rgb(59,130,246); margin: 0 8px 0 3px;"/>
             <column name="CREATE_TIME" valueComputed="datetime('now')"/>
             <column name="CREATE_BY" value="sys"/>
             <column name="DB_VERSION" value="1"/>
@@ -811,7 +811,7 @@
             <column name="icon" value="icon-col-ceshi"/>
             <column name="icon_type" value="iconfont"/>
             <column name="sort" value="3"/>
-            <column name="style" value="font-size: 18px; color: rgb(59,130,246)"/>
+            <column name="style" value="font-size: 18px; color: rgb(59,130,246); margin: 0 8px 0 5px;"/>
             <column name="CREATE_TIME" valueComputed="datetime('now')"/>
             <column name="CREATE_BY" value="sys"/>
             <column name="DB_VERSION" value="1"/>
