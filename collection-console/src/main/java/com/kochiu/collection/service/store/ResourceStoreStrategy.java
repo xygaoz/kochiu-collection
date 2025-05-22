@@ -4,6 +4,9 @@ import com.kochiu.collection.data.dto.UserDto;
 import com.kochiu.collection.data.vo.FileVo;
 import com.kochiu.collection.entity.UserResource;
 import com.kochiu.collection.exception.CollectionException;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpRange;
+import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -47,12 +50,18 @@ public interface ResourceStoreStrategy {
                           Long cataId) throws CollectionException;
 
     /**
-     * 下载文件
-     * @param request
-     * @param response
-     * @param resourceId
+     * 统一文件下载方法
+     * @param request HTTP请求
+     * @param response HTTP响应
+     * @param ranges Range请求头（可为空）
+     * @param resourceId 资源ID
+     * @return ResponseEntity（用于媒体文件）或null（普通文件直接写入response）
      */
-    void download(HttpServletRequest request, HttpServletResponse response, Long resourceId);
+    ResponseEntity<Resource> downloadResource(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            List<HttpRange> ranges,
+            Long resourceId);
 
     /**
      * 删除文件

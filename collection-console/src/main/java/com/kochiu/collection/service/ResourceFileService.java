@@ -22,6 +22,9 @@ import com.kochiu.collection.repository.UserResourceRepository;
 import com.kochiu.collection.service.store.ResourceStoreStrategy;
 import com.kochiu.collection.service.store.ResourceStrategyFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpRange;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -206,24 +209,24 @@ public class ResourceFileService {
 
     /**
      * 通过策略下载文件
+     * @return
      */
-    public void download(HttpServletRequest request, HttpServletResponse response, Long resourceId) {
+    public ResponseEntity<Resource> downloadResource(HttpServletRequest request, HttpServletResponse response, List<HttpRange> ranges, Long resourceId) {
 
         //查找资源
         UserResource resource = resourceRepository.getById(resourceId);
         if(resource == null){
-            response.setStatus(404);
-            return;
+            return ResponseEntity.notFound().build();
         }
 
         int userId = resource.getUserId();
         SysUser user = userRepository.getById(userId);
         if (user == null) {
-            response.setStatus(404);
-            return;
+            return ResponseEntity.notFound().build();
         }
 
-        resourceStrategyFactory.getStrategy(user.getStrategy()).download(request, response, resourceId);
+        return resourceStrategyFactory.getStrategy(user.getStrategy())
+                .downloadResource(request, response, ranges, resourceId);
     }
 
     /**

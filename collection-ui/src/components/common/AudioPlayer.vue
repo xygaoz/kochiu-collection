@@ -77,6 +77,7 @@
         <!-- 隐藏的原生audio元素 -->
         <audio
             ref="audioElement"
+            preload="metadata"
             :src="src"
             @timeupdate="updateCurrentTime"
             @loadedmetadata="handleLoadedMetadata"

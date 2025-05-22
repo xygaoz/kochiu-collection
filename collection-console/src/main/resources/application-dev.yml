@@ -11,7 +11,7 @@ collection:
       office-home: /Applications/LibreOffice.app/Contents
   ffmpeg:
     enabled: true
-    mode: remote
+    mode: local
     remote:
       api-url: http://localhost:8000/capture
     local:

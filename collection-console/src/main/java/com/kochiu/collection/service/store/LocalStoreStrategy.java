@@ -1,6 +1,7 @@
 package com.kochiu.collection.service.store;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.LimitedInputStream;
 import cn.hutool.core.io.unit.DataSizeUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.kochiu.collection.data.dto.ResourceDto;
@@ -10,10 +11,7 @@ import com.kochiu.collection.entity.SysStrategy;
 import com.kochiu.collection.entity.SysUser;
 import com.kochiu.collection.entity.UserCatalog;
 import com.kochiu.collection.entity.UserResource;
-import com.kochiu.collection.enums.ErrorCodeEnum;
-import com.kochiu.collection.enums.FileTypeEnum;
-import com.kochiu.collection.enums.SaveTypeEnum;
-import com.kochiu.collection.enums.StrategyEnum;
+import com.kochiu.collection.enums.*;
 import com.kochiu.collection.exception.CollectionException;
 import com.kochiu.collection.properties.CollectionProperties;
 import com.kochiu.collection.repository.SysStrategyRepository;
@@ -26,17 +24,24 @@ import com.kochiu.collection.service.file.FileStrategyFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.HttpMethod;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.List;
+import java.util.Map;
 
 import static com.kochiu.collection.enums.ErrorCodeEnum.*;
 
@@ -234,68 +239,97 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
         }
     }
 
-    /**
-     * 下载文件
-     * @param request
-     * @param resourceId
-     */
-    public void download(HttpServletRequest request, HttpServletResponse response, Long resourceId) {
-        //请求路径
-        String url = request.getRequestURI();
-        url = url.substring(request.getContextPath().length());
+    public ResponseEntity<Resource> downloadResource(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            List<HttpRange> ranges,
+            Long resourceId) {
 
-        //查找资源
-        UserResource resource = resourceRepository.getById(resourceId);
-        if(resource == null){
-            response.setStatus(404);
-            return;
-        }
-
-        String str = "/" + resourceId + "/";
-        url = url.substring(url.indexOf(str) + str.length() - 1);
-        SysUser user = userRepository.getById(resource.getUserId());
-        if(user == null){
-            response.setStatus(404);
-            return;
-        }
-        url = "/" + user.getUserCode() + url;
-        if(!url.equals(resource.getResourceUrl())
-                && !url.equals(resource.getThumbUrl())
-                && !url.equals(resource.getPreviewUrl())){
-            response.setStatus(404);
-            return;
-        }
-
-        //读取文件下载
-        String filePath = strategy.getServerUrl() + url;
-        File file = new File(filePath);
-        if(!file.exists()){
-            response.setStatus(404);
-            return;
-        }
-
-        String fileName = file.getName();
-        String extension = FilenameUtils.getExtension(fileName).toLowerCase();
-
-        response.setHeader("Content-Length", String.valueOf(file.length()));
-        response.setContentType(FileTypeEnum.getByValue(extension).getMimeType());
-        log.debug("下载文件：{}, mimeType: {}", url, FileTypeEnum.getByValue(extension).getMimeType());
-        if(url.equals(resource.getResourceUrl())){
-            if(HttpMethod.POST.name().equalsIgnoreCase(request.getMethod())){
-                response.setHeader("Content-Disposition", "attachment;filename=" +
-                        URLEncoder.encode(resource.getSourceFileName(), StandardCharsets.UTF_8));
-            }
-            else{
-                response.setHeader("Content-Disposition", "inline;filename=" +
-                    URLEncoder.encode(file.getName(), StandardCharsets.UTF_8));
-            }
-        }
         try {
-            FileUtil.writeToStream(file, response.getOutputStream());
-        }
-        catch (IOException e) {
+            // 1. 获取请求路径和资源信息
+            String url = request.getRequestURI().substring(request.getContextPath().length());
+
+            UserResource resource = resourceRepository.getById(resourceId);
+            if (resource == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // 2. 验证路径和用户
+            String str = "/" + resourceId + "/";
+            url = url.substring(url.indexOf(str) + str.length() - 1);
+            SysUser user = userRepository.getById(resource.getUserId());
+            if (user == null) {
+                return ResponseEntity.notFound().build();
+            } else {
+                url = "/" + user.getUserCode() + url;
+                if (!url.equals(resource.getResourceUrl()) &&
+                        !url.equals(resource.getThumbUrl()) &&
+                        !url.equals(resource.getPreviewUrl())) {
+                    return ResponseEntity.notFound().build();
+                }
+            }
+
+            // 3. 获取实际文件
+            String filePath = strategy.getServerUrl() + url;
+            File file = new File(filePath);
+            if (!file.exists()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // 4. 获取文件类型
+            String extension = FilenameUtils.getExtension(file.getName()).toLowerCase();
+            MediaType mediaType = MediaType.parseMediaType(
+                    FileTypeEnum.getByValue(extension).getMimeType()
+            );
+
+            // 5. 准备公共响应头
+            String disposition = HttpMethod.POST.name().equalsIgnoreCase(request.getMethod())
+                    ? "attachment"
+                    : "inline";
+            String filenameHeader = disposition + ";filename=" +
+                    URLEncoder.encode(resource.getSourceFileName(), StandardCharsets.UTF_8);
+
+            // 6. 处理Range请求
+            if (ranges != null && !ranges.isEmpty()) {
+                HttpRange range = ranges.get(0);
+                long fileLength = file.length();
+                long start = range.getRangeStart(fileLength);
+                long end = range.getRangeEnd(fileLength);
+                end = Math.min(end, fileLength - 1);
+
+                long contentLength = end - start + 1;
+                InputStream inputStream = new FileInputStream(file);
+                inputStream.skip(start);
+
+                InputStreamResource resourceStream = new InputStreamResource(inputStream) {
+                    @Override
+                    public long contentLength() {
+                        return contentLength;
+                    }
+                };
+
+                return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
+                        .contentType(mediaType)
+                        .header(HttpHeaders.CONTENT_DISPOSITION, filenameHeader)
+                        .header(HttpHeaders.CONTENT_RANGE, "bytes " + start + "-" + end + "/" + fileLength)
+                        .header(HttpHeaders.ACCEPT_RANGES, "bytes")
+                        .contentLength(contentLength)
+                        .body(resourceStream);
+            }
+
+            // 7. 完整文件下载
+            return ResponseEntity.ok()
+                    .contentType(mediaType)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, filenameHeader)
+                    .header(HttpHeaders.ACCEPT_RANGES, "bytes")
+                    .contentLength(file.length())
+                    .body(new FileSystemResource(file));
+
+        } catch (IOException e) {
             log.error("文件下载失败", e);
-            response.setStatus(500);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .body(new ByteArrayResource("文件下载失败".getBytes(StandardCharsets.UTF_8)));
         }
     }
 

@@ -6,6 +6,7 @@
             <div class="video-display">
                 <video
                     ref="videoElement"
+                    preload="metadata"
                     :src="src"
                     :poster="poster"
                     class="video-element"

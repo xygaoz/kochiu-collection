@@ -6,18 +6,30 @@ import com.kochiu.collection.data.bo.BatchImportBo;
 import com.kochiu.collection.data.bo.UploadBo;
 import com.kochiu.collection.data.dto.UserDto;
 import com.kochiu.collection.data.vo.FileVo;
+import com.kochiu.collection.enums.FileTypeEnum;
 import com.kochiu.collection.enums.PermitEnum;
+import com.kochiu.collection.enums.ResourceTypeEnum;
 import com.kochiu.collection.exception.CollectionException;
 import com.kochiu.collection.handler.ImportProgressWebSocketHandler;
 import com.kochiu.collection.service.CheckPermitAspect;
 import com.kochiu.collection.service.ImportTaskService;
 import com.kochiu.collection.service.ResourceFileService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpRange;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import static com.kochiu.collection.Constant.PUBLIC_URL;
@@ -45,9 +57,13 @@ public class ResourceFileController {
     }
 
     @RequestMapping("/resource/{resourceId}/**")
-    public void download(HttpServletRequest request, HttpServletResponse response, @PathVariable Long resourceId){
+    public ResponseEntity<Resource> downloadResource(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            @PathVariable Long resourceId,
+            @RequestHeader HttpHeaders headers) {
 
-        resourceFileService.download(request, response, resourceId);
+        return resourceFileService.downloadResource(request, response, headers.getRange(), resourceId);
     }
 
     @CheckPermit
