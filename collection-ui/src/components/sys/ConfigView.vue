@@ -71,11 +71,24 @@
                     :rules="rules"
                 >
                     <el-form-item label="上传文件最大限制" prop="uploadMaxSize">
-                        <el-input
-                            v-model="formData.uploadMaxSize"
-                            placeholder="例如：500MB 或 1GB"
-                            suffix="MB/GB/TB"
-                        />
+                        <div class="upload-size-container">
+                            <el-input-number
+                                v-model="sizeValue"
+                                :min="1"
+                                :max="maxSizeLimit"
+                                controls-position="right"
+                                class="size-input"
+                            />
+                            <el-select
+                                v-model="sizeUnit"
+                                placeholder="选择单位"
+                                class="unit-select"
+                            >
+                                <el-option label="MB" value="MB" />
+                                <el-option label="GB" value="GB" />
+                                <el-option label="TB" value="TB" />
+                            </el-select>
+                        </div>
                     </el-form-item>
 
                     <el-form-item
@@ -106,7 +119,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { ElMessage, ElMessageBox, FormInstance, FormRules } from "element-plus";
 import {
     clearAllData,
@@ -135,6 +148,9 @@ const clearDialogVisible = ref(false)
 const formData = ref<SysProperty>({
     uploadMaxSize: '500MB',
 })
+const sizeValue = ref(500);
+const sizeUnit = ref('MB');
+const maxSizeLimit = ref(10240); // 最大限制值
 
 // 表单引用
 const configForm = ref<FormInstance>()
@@ -291,6 +307,21 @@ const resetForm = () => {
     })
 }
 
+// 初始化时解析现有值
+const parseInitialValue = (value: string) => {
+    if (!value) return;
+    const match = value.match(/^(\d+)(MB|GB|TB)$/i);
+    if (match) {
+        sizeValue.value = parseInt(match[1]);
+        sizeUnit.value = match[2].toUpperCase();
+    }
+};
+
+// 监听变化组合成完整字符串
+watch([sizeValue, sizeUnit], () => {
+    formData.value.uploadMaxSize = `${sizeValue.value}${sizeUnit.value}`;
+});
+
 onMounted(async () => {
     const result = await loadCurrentKeys();
     if(result){
@@ -300,8 +331,8 @@ onMounted(async () => {
     }
     //加载上传大小配置
     const config = await getSysConfig();
-    if(config && config.uploadMaxSize){
-        formData.value.uploadMaxSize = config.uploadMaxSize
+    if (config?.uploadMaxSize) {
+        parseInitialValue(config.uploadMaxSize);
     }
 })
 </script>
@@ -334,5 +365,23 @@ onMounted(async () => {
 .key-display {
     font-family: monospace;
     margin-bottom: 15px;
+}
+
+.upload-size-container {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.size-input {
+    width: 100%;
+}
+
+.size-input :deep(.el-input__inner) {
+    text-align: left;
+}
+
+.unit-select {
+    width: 100px;
 }
 </style>
