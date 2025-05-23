@@ -68,10 +68,16 @@ routes.push(
                 meta: { title: '回收站', icon: 'icon-col-huishouzhanx', iconType: 'iconfont', style: 'font-size: 25px; color: rgb(59,130,246); margin: 0px 6px 0px 3px;', requiresAuth: true },
             },
             {
-                path: '/profile',
-                name: 'Profile',
+                path: '/Profile',
+                name: 'profile',
                 component: () => import('@/components/my/Profile.vue'),
                 meta: { title: '个人资料', icon: 'icon-col-gerenziliao', iconType: 'iconfont', style: 'font-size: 18px; color: rgb(59,130,246); margin: 0px 9px 0px 6px;', requiresAuth: true }
+            },
+            {
+                path: '/MyConfig',
+                name: 'my-config',
+                component: () => import('@/components/my/MyConfig.vue'),
+                meta: { title: '个性配置', icon: 'icon-col-shouye', iconType: 'iconfont', style: 'font-size: 18px; color: rgb(59,130,246); margin: 0px 9px 0px 6px;', requiresAuth: true }
             },
         ]
     },

@@ -14,11 +14,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { listCatalogFiles } from "@/apis/resource-api";
 import { Resource, SearchForm } from "@/apis/interface";
 import ResourceView from "@/components/common/ResourceView.vue";
+import { getMyConfig } from "@/apis/user-api";
 
 const route = useRoute();
 const files = ref<Resource[]>([]);
@@ -109,6 +110,15 @@ const loadMore = async (searchForm: SearchForm) => {
         loading.value = false;
     }
 };
+
+// 初始化加载配置
+onMounted(async () => {
+    const config = await getMyConfig()
+    if (config && config.resourcePageSize) {
+        pageSize.value = config.resourcePageSize
+    }
+})
+
 </script>
 
 <style scoped>

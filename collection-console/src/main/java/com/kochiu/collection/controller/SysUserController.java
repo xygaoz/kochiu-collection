@@ -10,6 +10,7 @@ import com.kochiu.collection.data.vo.MenuVo;
 import com.kochiu.collection.data.vo.PageVo;
 import com.kochiu.collection.data.vo.UserVo;
 import com.kochiu.collection.exception.CollectionException;
+import com.kochiu.collection.properties.UserConfigProperties;
 import com.kochiu.collection.service.CheckPermitAspect;
 import com.kochiu.collection.service.SysUserService;
 import org.springframework.validation.annotation.Validated;
@@ -27,9 +28,12 @@ import static com.kochiu.collection.Constant.PUBLIC_URL;
 public class SysUserController {
 
     private final SysUserService userService;
+    private final UserConfigProperties userConfigProperties;
 
-    public SysUserController(SysUserService userService) {
+    public SysUserController(SysUserService userService,
+                             UserConfigProperties userConfigProperties) {
         this.userService = userService;
+        this.userConfigProperties = userConfigProperties;
     }
 
     @CheckPermit
@@ -132,6 +136,21 @@ public class SysUserController {
     public DefaultResult<Boolean> modifyPwd(@Validated ModifyPwdBo modifyPwdBo) throws CollectionException {
 
         userService.modifyPassword(CheckPermitAspect.USER_INFO.get(), modifyPwdBo);
+        return DefaultResult.ok(true);
+    }
+
+    @CheckPermit
+    @GetMapping("/my-config")
+    public DefaultResult<UserConfigProperties.UserProperty> getMyConfig() {
+
+        return DefaultResult.ok(userConfigProperties.getUserProperty(CheckPermitAspect.USER_INFO.get().getUserId()));
+    }
+
+    @CheckPermit
+    @PostMapping("/set-my-config")
+    public DefaultResult<Boolean> setMyConfig(@Validated UserConfigProperties.UserProperty property) throws CollectionException {
+
+        userService.setMyConfig(CheckPermitAspect.USER_INFO.get(), property);
         return DefaultResult.ok(true);
     }
 }

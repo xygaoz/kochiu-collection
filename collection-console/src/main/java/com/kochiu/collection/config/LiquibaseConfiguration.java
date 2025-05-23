@@ -1,7 +1,10 @@
 package com.kochiu.collection.config;
 
 import com.kochiu.collection.properties.SysConfigProperties;
+import com.kochiu.collection.properties.UserConfigProperties;
 import com.kochiu.collection.repository.SysConfigRepository;
+import com.kochiu.collection.repository.SysUserRepository;
+import com.kochiu.collection.repository.UserConfigRepository;
 import liquibase.Liquibase;
 import liquibase.database.Database;
 import liquibase.database.DatabaseConnection;
@@ -87,7 +90,20 @@ public class LiquibaseConfiguration {
         try {
             properties.afterPropertiesSet();
         } catch (Exception e) {
-            log.error("sysConfigProperties init error", e);
+            log.error("SysConfigProperties init error", e);
+        }
+        return properties;
+    }
+
+    @DependsOn("KoChiuCollection")
+    @Bean
+    public UserConfigProperties userConfigProperties(UserConfigRepository userConfigRepository,
+                                                     SysUserRepository sysUserRepository) {
+        UserConfigProperties properties = new UserConfigProperties(userConfigRepository, sysUserRepository);
+        try {
+            properties.afterPropertiesSet();
+        } catch (Exception e) {
+            log.error("UserConfigProperties init error", e);
         }
         return properties;
     }

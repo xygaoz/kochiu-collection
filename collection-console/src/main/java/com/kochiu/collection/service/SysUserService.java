@@ -10,6 +10,7 @@ import com.kochiu.collection.data.vo.*;
 import com.kochiu.collection.entity.*;
 import com.kochiu.collection.enums.*;
 import com.kochiu.collection.exception.CollectionException;
+import com.kochiu.collection.properties.UserConfigProperties;
 import com.kochiu.collection.repository.*;
 import com.kochiu.collection.service.store.ResourceStoreStrategy;
 import com.kochiu.collection.service.store.ResourceStrategyFactory;
@@ -47,6 +48,8 @@ public class SysUserService {
     private final UserTagRepository userTagRepository;
     private final UserCategoryRepository userCategoryRepository;
     private final SysModuleService moduleService;
+    private final UserConfigRepository userConfigRepository;
+    private final UserConfigProperties userConfigProperties;
 
     public SysUserService(SysUserRepository userRepository,
                           SysSecurityRepository securityRepository,
@@ -59,7 +62,9 @@ public class SysUserService {
                           UserCatalogRepository userCatalogRepository,
                           UserTagRepository userTagRepository,
                           UserCategoryRepository userCategoryRepository,
-                          SysModuleService moduleService) {
+                          SysModuleService moduleService,
+                          UserConfigRepository userConfigRepository,
+                          UserConfigProperties userConfigProperties) {
         this.userRepository = userRepository;
         this.securityRepository = securityRepository;
         this.tokenService = tokenService;
@@ -72,6 +77,8 @@ public class SysUserService {
         this.userTagRepository = userTagRepository;
         this.userCategoryRepository = userCategoryRepository;
         this.moduleService = moduleService;
+        this.userConfigRepository = userConfigRepository;
+        this.userConfigProperties = userConfigProperties;
     }
 
     /**
@@ -546,6 +553,32 @@ public class SysUserService {
 
         user.setPassword(SHA256Util.encryptBySHA256(newPassword));
         userRepository.updateById(user);
+    }
 
+    //  设置用户配置
+    public void setMyConfig(UserDto userDto, UserConfigProperties.UserProperty property) throws CollectionException {
+        SysUser user = userRepository.getUser(userDto);
+        if(user == null){
+            throw new CollectionException(ErrorCodeEnum.USER_IS_NOT_EXIST);
+        }
+
+        UserConfigProperties.UserProperty userProperty = userConfigProperties.getUserProperty(user.getUserId());
+        userProperty.setListCategoryNum(property.getListCategoryNum());
+        userProperty.setListCategoryBy(property.getListCategoryBy());
+        userProperty.setResourcePageSize(property.getResourcePageSize());
+        userProperty.setListTagNum(property.getListTagNum());
+        userProperty.setListTagBy(property.getListTagBy());
+        userConfigProperties.setUserProperty(user.getUserId(), userProperty);
+
+        //删除再保存
+        userConfigRepository.remove(new LambdaQueryWrapper<UserConfig>().eq(UserConfig::getUserId, user.getUserId()));
+        Map<String, String> configMap = userProperty.toMap();
+        for (Map.Entry<String, String> entry : configMap.entrySet()) {
+            UserConfig userConfig = new UserConfig();
+            userConfig.setUserId(user.getUserId());
+            userConfig.setConfigKey(entry.getKey());
+            userConfig.setConfigValue(entry.getValue());
+            userConfigRepository.save(userConfig);
+        }
     }
 }

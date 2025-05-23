@@ -17,6 +17,7 @@ import { onMounted, ref } from "vue";
 import { listPublicFiles } from "@/apis/resource-api";
 import { Resource, SearchForm } from "@/apis/interface";
 import ResourceView from "@/components/common/ResourceView.vue";
+import { getMyConfig } from "@/apis/user-api";
 
 const files = ref<Resource[]>([]);
 const loading = ref(true);
@@ -26,8 +27,13 @@ const total = ref(0);
 const dataType = ref("public")
 const hasMore = ref(false);
 
-onMounted(() => {
-    handleSearch({ cateId: '', keyword: "", types: [], tags: [], include: false })
+onMounted(async () => {
+    await handleSearch({ cateId: '', keyword: "", types: [], tags: [], include: false })
+
+    const config = await getMyConfig()
+    if (config && config.resourcePageSize) {
+        pageSize.value = config.resourcePageSize
+    }
 });
 
 // 处理文件更新
@@ -78,6 +84,7 @@ const loadMore = async (searchForm: SearchForm) => {
         loading.value = false;
     }
 };
+
 </script>
 
 <style scoped>

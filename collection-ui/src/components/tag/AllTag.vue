@@ -15,6 +15,7 @@ import { onMounted, ref } from "vue";
 import { listAllCateFiles } from "@/apis/resource-api";
 import { Resource, SearchForm } from "@/apis/interface";
 import ResourceView from "@/components/common/ResourceView.vue";
+import { getMyConfig } from "@/apis/user-api";
 
 const files = ref<Resource[]>([]);
 const loading = ref(true);
@@ -23,9 +24,14 @@ const pageSize = ref(500);
 const total = ref(0);
 const dataType = ref("all-tag")
 
-onMounted(() =>
-    handleSearch({ cateId: '', keyword: "", types: [], tags: [], include: true })
-);
+onMounted(async () => {
+    await handleSearch({ cateId: '', keyword: "", types: [], tags: [], include: true })
+
+    const config = await getMyConfig()
+    if (config && config.resourcePageSize) {
+        pageSize.value = config.resourcePageSize
+    }
+});
 
 // 处理文件更新
 const handleFileUpdate = (params: Resource): void => {

@@ -170,3 +170,11 @@ export interface Keys {
 export interface UploadSize {
     size: string
 }
+
+export interface UserProperty {
+    listCategoryNum: number;
+    listCategoryBy: number;
+    resourcePageSize: number;
+    listTagNum: number;
+    listTagBy: number;
+}

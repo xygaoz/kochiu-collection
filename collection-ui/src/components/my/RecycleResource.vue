@@ -16,6 +16,7 @@ import { onMounted, ref } from "vue";
 import { listRecycleFiles } from "@/apis/resource-api";
 import { Resource, SearchForm } from "@/apis/interface";
 import ResourceView from "@/components/common/ResourceView.vue";
+import { getMyConfig } from "@/apis/user-api";
 
 const files = ref<Resource[]>([]);
 const loading = ref(true);
@@ -25,8 +26,13 @@ const total = ref(0);
 const dataType = ref("recycle")
 const hasMore = ref(false);
 
-onMounted(() => {
-    handleSearch({ cateId: '', keyword: "", types: [], tags: [], include: false })
+onMounted(async () => {
+    await handleSearch({ cateId: '', keyword: "", types: [], tags: [], include: false })
+
+    const config = await getMyConfig()
+    if (config && config.resourcePageSize) {
+        pageSize.value = config.resourcePageSize
+    }
 });
 
 const handleSearch = async (searchForm: SearchForm) => {

@@ -1,10 +1,8 @@
 package com.kochiu.collection.config;
 
-import com.kochiu.collection.enums.AutoCreateRuleEnum;
-import com.kochiu.collection.enums.ImportMethodEnum;
-import com.kochiu.collection.enums.RemoveEnum;
-import com.kochiu.collection.enums.RemoveUserOptionEnum;
+import com.kochiu.collection.enums.*;
 import com.kochiu.collection.properties.CollectionProperties;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -49,6 +47,8 @@ public class WebConfiguration implements WebMvcConfigurer {
         registry.addConverter(new StringToAutoCreateRuleEnumConverter());
         registry.addConverter(new StringToImportMethodEnumConverter());
         registry.addConverter(new StringToRemoveUserOptionEnumConverter());
+        registry.addConverter(new StringToCategoryByEnumConverter());
+        registry.addConverter(new StringToTagByEnumConverter());
     }
 
     public static class StringToRemoveEnumConverter implements Converter<String, RemoveEnum> {
@@ -76,6 +76,19 @@ public class WebConfiguration implements WebMvcConfigurer {
         @Override
         public RemoveUserOptionEnum convert(@Nullable String source) {
             return RemoveUserOptionEnum.getByValue(source); // 调用枚举的 fromCode 方法
+        }
+    }
+
+    public static class StringToCategoryByEnumConverter implements Converter<String, CategoryByEnum> {
+        @Override
+        public CategoryByEnum convert(@Nullable String source) {
+            return CategoryByEnum.getByCode(NumberUtils.toInt(source, 1)); // 调用枚举的 fromCode 方法
+        }
+    }
+    public static class StringToTagByEnumConverter implements Converter<String, TagByEnum> {
+        @Override
+        public TagByEnum convert(@Nullable String source) {
+            return TagByEnum.getByCode(NumberUtils.toInt(source, 1)); // 调用枚举的 fromCode 方法
         }
     }
 }

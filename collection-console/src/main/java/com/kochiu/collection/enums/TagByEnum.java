@@ -1,5 +1,6 @@
 package com.kochiu.collection.enums;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 @Getter
@@ -9,6 +10,7 @@ public enum TagByEnum {
     CREATE_TIME_DESC(2, "创建时间倒序"),
     RESOURCE_NUM_DESC(3, "资源数量倒叙");
 
+    @JsonValue
     private final int code;
     private final String desc;
 
@@ -23,6 +25,10 @@ public enum TagByEnum {
                 return categoryByEnum;
             }
         }
-        return null;
+        return CREATE_TIME_ABS;
+    }
+
+    public String toString() {
+        return String.valueOf(code);
     }
 }

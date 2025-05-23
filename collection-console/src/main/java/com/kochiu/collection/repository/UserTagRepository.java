@@ -6,6 +6,7 @@ import com.kochiu.collection.entity.UserTag;
 import com.kochiu.collection.enums.TagByEnum;
 import com.kochiu.collection.mapper.UserTagMapper;
 import com.kochiu.collection.properties.SysConfigProperties;
+import com.kochiu.collection.properties.UserConfigProperties;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,10 +14,10 @@ import java.util.List;
 @Service
 public class UserTagRepository extends ServiceImpl<UserTagMapper, UserTag> {
 
-    private final SysConfigProperties sysConfigProperties;
+    private final UserConfigProperties userConfigProperties;
 
-    public UserTagRepository(SysConfigProperties sysConfigProperties) {
-        this.sysConfigProperties = sysConfigProperties;
+    public UserTagRepository(UserConfigProperties userConfigProperties) {
+        this.userConfigProperties = userConfigProperties;
     }
 
     public Long existsTag(int userId, String tagName) {
@@ -45,23 +46,25 @@ public class UserTagRepository extends ServiceImpl<UserTagMapper, UserTag> {
      * @return
      */
     public List<UserTag> getTagList(int userId) {
-        if (sysConfigProperties.getListTagBy() == TagByEnum.CREATE_TIME_ABS ||
-                sysConfigProperties.getListTagBy() == TagByEnum.CREATE_TIME_DESC) {
+
+        UserConfigProperties.UserProperty userProperty = userConfigProperties.getUserProperty(userId);
+        if (userProperty.getListTagBy() == TagByEnum.CREATE_TIME_ABS ||
+                userProperty.getListTagBy() == TagByEnum.CREATE_TIME_DESC) {
             LambdaQueryWrapper<UserTag> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.select(UserTag::getTagId, UserTag::getTagName);  // 选择字段
             lambdaQueryWrapper.eq(UserTag::getUserId, userId);
             lambdaQueryWrapper.groupBy(UserTag::getTagId, UserTag::getTagName);  // 分组去重
-            if (sysConfigProperties.getListTagBy() == TagByEnum.CREATE_TIME_ABS){
+            if (userProperty.getListTagBy() == TagByEnum.CREATE_TIME_ABS){
                 lambdaQueryWrapper.orderByAsc(UserTag::getCreateTime);
             }
             else{
                 lambdaQueryWrapper.orderByDesc(UserTag::getCreateTime);
             }
-            lambdaQueryWrapper.last("limit " + sysConfigProperties.getListTagNum());
+            lambdaQueryWrapper.last("limit " + userProperty.getListTagNum());
             return baseMapper.selectList(lambdaQueryWrapper);
         }
         else{
-            return baseMapper.listTagByResourceNum(userId, sysConfigProperties.getListTagNum());
+            return baseMapper.listTagByResourceNum(userId, userProperty.getListTagNum());
         }
     }
 

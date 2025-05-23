@@ -15,18 +15,8 @@ import java.util.stream.Collectors;
 @Data
 public class SysConfigProperties {
 
-    // 首页展示的分类数量
-    private int listCategoryNum = 5;
-    // 首页展示的分类排序字段
-    private CategoryByEnum listCategoryBy = CategoryByEnum.CREATE_TIME_ABS;
-    // 分类资源分页大小
-    private int categoryResourcePageSize = 100;
-    // 首页展示的标签数量
-    private int listTagNum = 5;
-    // 首页展示的标签排序字段
-    private TagByEnum listTagBy = TagByEnum.CREATE_TIME_ABS;
-    // 标签资源分页大小
-    private int tagResourcePageSize = 100;
+    // 上传文件大小限制
+    private String maxSize = "500MB";
 
     private final SysConfigRepository sysConfigRepository;
 

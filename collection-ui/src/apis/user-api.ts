@@ -1,4 +1,4 @@
-import { Menu, PageInfo, User } from "@/apis/interface";
+import { Menu, PageInfo, User, UserProperty } from "@/apis/interface";
 import httpInstance from "@/utils/utils";
 import { tokenStore } from "@/apis/system-api";
 import Cookies from "js-cookie";
@@ -163,6 +163,30 @@ export const modifyPassword = async (param: any): Promise<boolean | null> => {
         return null;
     }).catch((error) => {
         console.error("修改密码失败:", error);
+        return null;
+    });
+}
+
+export const getMyConfig = async (): Promise<UserProperty | null> => {
+    return httpInstance.get(userApi + "/my-config").then((model: any) => {
+        if (model) {
+            return model as UserProperty;
+        }
+        return null;
+    }).catch((error) => {
+        console.error("获取用户配置失败:", error);
+        return null;
+    });
+}
+
+export const setMyConfig = async (param: any): Promise<boolean | null> => {
+    return httpInstance.post(userApi + "/set-my-config", param).then((model: any) => {
+        if (model) {
+            return model as boolean;
+        }
+        return null;
+    }).catch((error) => {
+        console.error("修改用户配置失败:", error);
         return null;
     });
 }

@@ -15,6 +15,7 @@ import com.kochiu.collection.enums.FileTypeEnum;
 import com.kochiu.collection.enums.ResourceTypeEnum;
 import com.kochiu.collection.exception.CollectionException;
 import com.kochiu.collection.mapper.UserResourceMapper;
+import com.kochiu.collection.properties.UserConfigProperties;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,12 @@ import java.util.Set;
 
 @Service
 public class UserResourceRepository extends ServiceImpl<UserResourceMapper, UserResource>{
+
+    private final UserConfigProperties userConfigProperties;
+
+    public UserResourceRepository(UserConfigProperties userConfigProperties) {
+        this.userConfigProperties = userConfigProperties;
+    }
 
     /**
      * 保存资源，返回资源id
@@ -60,12 +67,20 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
         return 0L;
     }
 
+    private int getPageSize(int userId, Integer pageSize) {
+
+        if (pageSize == null || pageSize <= 0 || pageSize > userConfigProperties.getUserProperty(userId).getResourcePageSize()) {
+            return userConfigProperties.getUserProperty(userId).getResourcePageSize();
+        }
+        return pageSize;
+    }
+
     /**
      * 获取分类下资源列表
      */
     public PageInfo<UserResource> getResourceListByCate(int userId, long cateId, FilterResourceBo filterResourceBo) {
 
-        try(Page<UserResource> ignored = PageHelper.startPage(filterResourceBo.getPageNum(), filterResourceBo.getPageSize())) {
+        try(Page<UserResource> ignored = PageHelper.startPage(filterResourceBo.getPageNum(), getPageSize(userId, filterResourceBo.getPageSize()))) {
 
             Set<String> fileExtList = new HashSet<>();
             if(filterResourceBo.getTypes() != null) {
@@ -86,7 +101,7 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
      */
     public PageInfo<UserResource> getAllCateResourceList(int userId, FilterResourceBo filterResourceBo) {
 
-        try(Page<UserResource> ignored = PageHelper.startPage(filterResourceBo.getPageNum(), filterResourceBo.getPageSize())) {
+        try(Page<UserResource> ignored = PageHelper.startPage(filterResourceBo.getPageNum(), getPageSize(userId, filterResourceBo.getPageSize()))) {
 
             Set<String> fileExtList = new HashSet<>();
             if(filterResourceBo.getTypes() != null) {
@@ -137,7 +152,7 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
      */
     public PageInfo<UserResource> getResourceListByTag(int userId, int tagId, FilterResourceBo filterResourceBo) {
 
-        try(Page<UserResource> ignored = PageHelper.startPage(filterResourceBo.getPageNum(), filterResourceBo.getPageSize())) {
+        try(Page<UserResource> ignored = PageHelper.startPage(filterResourceBo.getPageNum(), getPageSize(userId, filterResourceBo.getPageSize()))) {
 
             Set<String> fileExtList = new HashSet<>();
             if(filterResourceBo.getTypes() != null) {
@@ -158,7 +173,7 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
      */
     public PageInfo<UserResource> getResourceListByType(int userId, FilterResourceBo filterResourceBo) {
 
-        try(Page<UserResource> ignored = PageHelper.startPage(filterResourceBo.getPageNum(), filterResourceBo.getPageSize())) {
+        try(Page<UserResource> ignored = PageHelper.startPage(filterResourceBo.getPageNum(), getPageSize(userId, filterResourceBo.getPageSize()))) {
 
             Set<String> fileExtList = new HashSet<>();
             if(filterResourceBo.getTypes() != null) {
@@ -237,7 +252,7 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
      */
     public PageInfo<UserResource> getResourceListByRecycle(int userId, FilterResourceBo filterResourceBo) {
 
-        try(Page<UserResource> ignored = PageHelper.startPage(filterResourceBo.getPageNum(), filterResourceBo.getPageSize())) {
+        try(Page<UserResource> ignored = PageHelper.startPage(filterResourceBo.getPageNum(), getPageSize(userId, filterResourceBo.getPageSize()))) {
 
             Set<String> fileExtList = new HashSet<>();
             if(filterResourceBo.getTypes() != null) {
@@ -258,7 +273,7 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
      */
     public PageInfo<UserResource> getCatalogResource(int userId, FilterResourceBo filterResourceBo) {
 
-        try(Page<UserResource> ignored = PageHelper.startPage(filterResourceBo.getPageNum(), filterResourceBo.getPageSize())) {
+        try(Page<UserResource> ignored = PageHelper.startPage(filterResourceBo.getPageNum(), getPageSize(userId, filterResourceBo.getPageSize()))) {
 
             Set<String> fileExtList = new HashSet<>();
             if(filterResourceBo.getTypes() != null) {
@@ -300,9 +315,9 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
     }
 
     // 获取公开资源列表
-    public PageInfo<UserResource> getPublicResourceList(int userId, FilterResourceBo filterResourceBo) throws CollectionException {
+    public PageInfo<UserResource> getPublicResourceList(int userId, FilterResourceBo filterResourceBo) {
 
-        try(Page<UserResource> ignored = PageHelper.startPage(filterResourceBo.getPageNum(), filterResourceBo.getPageSize())) {
+        try(Page<UserResource> ignored = PageHelper.startPage(filterResourceBo.getPageNum(), getPageSize(userId, filterResourceBo.getPageSize()))) {
 
             Set<String> fileExtList = new HashSet<>();
             if(filterResourceBo.getTypes() != null) {

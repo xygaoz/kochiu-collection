@@ -1162,4 +1162,54 @@
         </insert>
     </changeSet>
 
+    <changeSet id="kcdb_39" author="kochiu" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="user_config"/>
+            </not>
+        </preConditions>
+        <createTable remarks="用户配置表" tableName="user_config">
+            <column name="config_id" type="INTEGER" remarks="配置id">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" remarks="用户ID" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="config_key" remarks="配置key" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="config_value" remarks="配置值" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="config_desc" remarks="配置描述" type="VARCHAR(100)"/>
+            <column name="CREATE_TIME" remarks="创建时间" type="date"/>
+            <column name="CREATE_BY" remarks="创建人" type="VARCHAR(20)"/>
+            <column name="UPDATE_TIME" remarks="更新时间" type="date"/>
+            <column name="UPDATE_BY" remarks="更新人" type="VARCHAR(20)"/>
+            <column name="DB_VERSION" remarks="数据版本" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- 添加主键自增元数据 -->
+        <addAutoIncrement
+                tableName="user_config"
+                columnName="config_id"
+                columnDataType="INTEGER"
+        />
+    </changeSet>
+
+    <changeSet id="kcdb_40" author="kochiu" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="user_config_idx1" tableName="user_config"/>
+            </not>
+        </preConditions>
+        <createIndex unique="true"
+                indexName="user_config_idx1"
+                tableName="user_config">
+            <column name="user_id"/>
+            <column name="config_key"/>
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>

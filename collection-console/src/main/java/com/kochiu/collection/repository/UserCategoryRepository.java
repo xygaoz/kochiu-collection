@@ -9,6 +9,7 @@ import com.kochiu.collection.enums.CategoryByEnum;
 import com.kochiu.collection.exception.CollectionException;
 import com.kochiu.collection.mapper.UserCategoryMapper;
 import com.kochiu.collection.properties.SysConfigProperties;
+import com.kochiu.collection.properties.UserConfigProperties;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,10 +19,10 @@ import static com.kochiu.collection.enums.ErrorCodeEnum.FAILED_GET_DEFAULT_CATEG
 @Service
 public class UserCategoryRepository extends ServiceImpl<UserCategoryMapper, UserCategory>{
 
-    private final SysConfigProperties sysConfigProperties;
+    private final UserConfigProperties userConfigProperties;
 
-    public UserCategoryRepository(SysConfigProperties sysConfigProperties) {
-        this.sysConfigProperties = sysConfigProperties;
+    public UserCategoryRepository(UserConfigProperties userConfigProperties) {
+        this.userConfigProperties = userConfigProperties;
     }
 
     /**
@@ -67,22 +68,23 @@ public class UserCategoryRepository extends ServiceImpl<UserCategoryMapper, User
      */
     public List<UserCategory> getCategoryList(int userId) {
 
-        if(sysConfigProperties.getListCategoryBy() == CategoryByEnum.CREATE_TIME_ABS ||
-                sysConfigProperties.getListCategoryBy() == CategoryByEnum.CREATE_TIME_DESC) {
+        UserConfigProperties.UserProperty userProperty = userConfigProperties.getUserProperty(userId);
+        if(userProperty.getListCategoryBy() == CategoryByEnum.CREATE_TIME_ABS ||
+                userProperty.getListCategoryBy() == CategoryByEnum.CREATE_TIME_DESC) {
             LambdaQueryWrapper<UserCategory> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(UserCategory::getUserId, userId);
-            if(sysConfigProperties.getListCategoryBy() == CategoryByEnum.CREATE_TIME_ABS) {
+            if(userProperty.getListCategoryBy() == CategoryByEnum.CREATE_TIME_ABS) {
                 lambdaQueryWrapper.orderByAsc(UserCategory::getCreateTime);
             }
             else{
                 lambdaQueryWrapper.orderByDesc(UserCategory::getCreateTime);
             }
-            lambdaQueryWrapper.last("limit " + sysConfigProperties.getListCategoryNum());
+            lambdaQueryWrapper.last("limit " + userProperty.getListCategoryNum());
 
             return this.list(lambdaQueryWrapper);
         }
         else{
-            return baseMapper.listCategoryByResourceNum(userId, sysConfigProperties.getListCategoryNum());
+            return baseMapper.listCategoryByResourceNum(userId, userProperty.getListCategoryNum());
         }
     }
 
