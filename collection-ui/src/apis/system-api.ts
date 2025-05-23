@@ -1,6 +1,6 @@
 import httpInstance from "@/utils/utils";
 import { loading } from "@/utils/utils";
-import { Keys, LoginInfo, ResourceType, Strategy } from "@/apis/interface";
+import { Keys, LoginInfo, ResourceType, Strategy, UploadSize } from "@/apis/interface";
 
 const sysApi = "/sys";
 export const tokenStore = {
@@ -182,5 +182,17 @@ export const loadCurrentKeys = async (): Promise<Keys | null> => {
     }).catch((error) => {
         console.error("添加策略失败:", error);
         return null;
+    });
+}
+
+export const getUploadSize = async (): Promise<UploadSize> => {
+    return httpInstance.get(sysApi + "/upload-size").then((model: any) => {
+        if (model) {
+            return model as UploadSize;
+        }
+        return {size: '500MB'};
+    }).catch((error) => {
+        console.error("添加策略失败:", error);
+        return {size: '500MB'};
     });
 }

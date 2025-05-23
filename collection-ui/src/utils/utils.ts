@@ -250,3 +250,24 @@ export const encryptPassword = (publicKey: string, password: string) : undefined
     // 执行加密
     return encrypted;
 };
+
+export const convertToBytes = (value: any) : number => {
+    if (typeof value === 'number') return value
+
+    const units: Record<string, number> = {
+        B: 1,
+        KB: 1024,
+        MB: 1024 ** 2,
+        GB: 1024 ** 3,
+        TB: 1024 ** 4,
+        PB: 1024 ** 5
+    }
+
+    const match = String(value).trim().match(/^([\d.]+)\s*([KMGTP]?B)$/i)
+    if (!match) return parseFloat(value) || 0
+
+    const num = parseFloat(match[1])
+    const unit = match[2].toUpperCase()
+
+    return num * (units[unit] || 1)
+}

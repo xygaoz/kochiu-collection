@@ -140,6 +140,8 @@ import { getAllCategory } from "@/apis/category-api";
 import { AxiosProgressEvent } from "axios";
 import { getCatalogTree } from "@/apis/catalog-api";
 import emitter from "@/utils/event-bus";
+import { getUploadSize } from "@/apis/system-api";
+import { convertToBytes } from "@/utils/utils";
 
 interface UploadFileItem {
     name: string;
@@ -158,7 +160,7 @@ const allowedTypes = [
     'application/pdf', 'text/plain', 'video/mp4', 'video/avi', 'video/wmv', 'video/quicktime',
     'video/x-matroska', 'audio/mpeg', 'audio/wav', 'audio/flac'
 ];
-const maxSize = 1024 * 1024 * 1024; // 1GB in bytes
+let maxSize = 1024 * 1024 * 500; // 500mb in bytes
 
 // 分类相关
 const categories = reactive<Category[]>([])
@@ -344,6 +346,10 @@ onMounted(async () => {
             // 默认选择第一个顶级目录
             cataId.value = catalogTreeRes[0].id;
         }
+
+        //加载上传大小配置
+        const uploadSize = await getUploadSize();
+        maxSize = convertToBytes(uploadSize.size)
     } catch (error) {
         console.error("初始化数据失败:", error);
         ElMessage.error("加载数据失败");

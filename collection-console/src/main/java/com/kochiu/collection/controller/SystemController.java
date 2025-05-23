@@ -7,10 +7,12 @@ import com.kochiu.collection.data.bo.PathBo;
 import com.kochiu.collection.data.dto.StrategyDto;
 import com.kochiu.collection.data.vo.KeyVo;
 import com.kochiu.collection.data.vo.ResourceTypeVo;
+import com.kochiu.collection.data.vo.UploadSizeVo;
 import com.kochiu.collection.enums.ResourceTypeEnum;
 import com.kochiu.collection.exception.CollectionException;
 import com.kochiu.collection.service.SysStrategyService;
 import com.kochiu.collection.service.SystemService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +28,9 @@ import static com.kochiu.collection.Constant.PUBLIC_URL;
 @RestController
 @RequestMapping(PUBLIC_URL + "/sys")
 public class SystemController {
+
+    @Value("${spring.servlet.multipart.max-file-size}")
+    private String uploadSize = "500MB";
 
     private final SystemService systemService;
     private final SysStrategyService strategyService;
@@ -116,4 +121,8 @@ public class SystemController {
         return DefaultResult.ok(true);
     }
 
+    @GetMapping("/upload-size")
+    public DefaultResult<UploadSizeVo> getUploadSize() {
+        return DefaultResult.ok(new UploadSizeVo(uploadSize));
+    }
 }

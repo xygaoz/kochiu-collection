@@ -161,8 +161,12 @@ export interface RouteMenu {
     children: RouteMenu[];
 }
 
-export interface Keys{
+export interface Keys {
     publicKey: string;
     privateKey: string;
     commonKey: string;
+}
+
+export interface UploadSize {
+    size: string
 }
