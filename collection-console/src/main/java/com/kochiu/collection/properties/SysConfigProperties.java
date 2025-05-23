@@ -5,26 +5,30 @@ import com.kochiu.collection.enums.CategoryByEnum;
 import com.kochiu.collection.enums.TagByEnum;
 import com.kochiu.collection.repository.SysConfigRepository;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Data
 public class SysConfigProperties {
 
-    // 上传文件大小限制
-    private String maxSize = "500MB";
-
     private final SysConfigRepository sysConfigRepository;
+    private SysProperty sysProperty = new SysProperty();
 
     public SysConfigProperties(SysConfigRepository sysConfigRepository) {
         this.sysConfigRepository = sysConfigRepository;
     }
 
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         List<SysConfig> configList = sysConfigRepository.list();
         if (configList == null || configList.isEmpty()) {
             return;
@@ -37,12 +41,14 @@ public class SysConfigProperties {
                         SysConfig::getConfigValue,
                         (existing, replacement) -> existing)); // 如果有重复键，保留现有值
 
+        SysProperty sysProperty = new SysProperty();
+
         // 获取当前类的所有字段
-        Field[] fields = this.getClass().getDeclaredFields();
+        Field[] fields = SysProperty.class.getDeclaredFields();
 
         for (Field field : fields) {
             // 跳过静态字段和sysConfigRepository字段
-            if (Modifier.isStatic(field.getModifiers()) || "sysConfigRepository".equals(field.getName())) {
+            if (Modifier.isStatic(field.getModifiers())) {
                 continue;
             }
 
@@ -58,41 +64,18 @@ public class SysConfigProperties {
 
                     // 根据字段类型转换配置值
                     if (field.getType() == int.class || field.getType() == Integer.class) {
-                        field.setInt(this, Integer.parseInt(configValue));
+                        field.setInt(sysProperty, Integer.parseInt(configValue));
                     } else if (field.getType() == long.class || field.getType() == Long.class) {
-                        field.setLong(this, Long.parseLong(configValue));
+                        field.setLong(sysProperty, Long.parseLong(configValue));
                     } else if (field.getType() == boolean.class || field.getType() == Boolean.class) {
-                        field.setBoolean(this, Boolean.parseBoolean(configValue));
+                        field.setBoolean(sysProperty, Boolean.parseBoolean(configValue));
                     } else if (field.getType() == double.class || field.getType() == Double.class) {
-                        field.setDouble(this, Double.parseDouble(configValue));
+                        field.setDouble(sysProperty, Double.parseDouble(configValue));
                     } else if (field.getType() == float.class || field.getType() == Float.class) {
-                        field.setFloat(this, Float.parseFloat(configValue));
-                    } else if (field.getType().isEnum()) {
-                        // 处理枚举类型
-                        try {
-                            int code = Integer.parseInt(configValue);
-                            Object enumValue = null;
-                            if (field.getType() == CategoryByEnum.class) {
-                                enumValue = CategoryByEnum.getByCode(code);
-                            } else if (field.getType() == TagByEnum.class) {
-                                enumValue = TagByEnum.getByCode(code);
-                            }
-                            if (enumValue != null) {
-                                field.set(this, enumValue);
-                            } else {
-                                System.err.println("Invalid code for CategoryByEnum: " + code);
-                            }
-                        } catch (NumberFormatException e) {
-                            try {
-                                Object enumValue = Enum.valueOf((Class<? extends Enum>) field.getType(), configValue);
-                                field.set(this, enumValue);
-                            } catch (IllegalArgumentException ex) {
-                                System.err.println("Invalid value for CategoryByEnum: " + configValue);
-                            }
-                        }
+                        field.setFloat(sysProperty, Float.parseFloat(configValue));
                     } else {
                         // 其他类型直接设置为字符串
-                        field.set(this, configValue);
+                        field.set(sysProperty, configValue);
                     }
                 } catch (Exception e) {
                     // 转换失败时使用默认值，并记录日志
@@ -101,12 +84,51 @@ public class SysConfigProperties {
                 }
             }
         }
+        this.sysProperty = sysProperty;
     }
 
     /**
      * 将驼峰命名转换为下划线命名
      */
-    private String camelToUnderline(String camelCase) {
+    private static String camelToUnderline(String camelCase) {
         return camelCase.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
+    }
+
+    @Data
+    public static class SysProperty {
+        // 上传文件大小限制
+        @NotNull
+        @Pattern(regexp = "^\\d+(\\.\\d+)?\\s*(MB|GB|TB)$", flags = Pattern.Flag.CASE_INSENSITIVE,
+                message = "必须是以MB/GB/TB结尾的大小格式")
+        private String uploadMaxSize = "1GB";
+
+        public Map<String, String> toMap() {
+            Map<String, String> map = new HashMap<>();
+            Field[] fields = SysProperty.class.getDeclaredFields();
+
+            for (Field field : fields) {
+                // 跳过静态字段
+                if (Modifier.isStatic(field.getModifiers())) {
+                    continue;
+                }
+
+                // 构建配置键，通常是将驼峰命名转为下划线命名
+                String configKey = camelToUnderline(field.getName());
+                String configValue = null;
+                try {
+                    // 设置字段可访问
+                    field.setAccessible(true);
+                    configValue = field.get(this).toString();
+                }
+                catch (Exception e){
+                    log.error("设置字段可访问失败", e);
+                }
+
+                if(StringUtils.isNotBlank(configValue)) {
+                    map.put(configKey, configValue);
+                }
+            }
+            return map;
+        }
     }
 }

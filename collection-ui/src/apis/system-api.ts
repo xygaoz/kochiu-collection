@@ -1,6 +1,6 @@
 import httpInstance from "@/utils/utils";
 import { loading } from "@/utils/utils";
-import { Keys, LoginInfo, ResourceType, Strategy, UploadSize } from "@/apis/interface";
+import { Keys, LoginInfo, ResourceType, Strategy, SysProperty } from "@/apis/interface";
 
 const sysApi = "/sys";
 export const tokenStore = {
@@ -185,14 +185,26 @@ export const loadCurrentKeys = async (): Promise<Keys | null> => {
     });
 }
 
-export const getUploadSize = async (): Promise<UploadSize> => {
-    return httpInstance.get(sysApi + "/upload-size").then((model: any) => {
+export const getSysConfig = async (): Promise<SysProperty> => {
+    return httpInstance.get(sysApi + "/sys-config").then((model: any) => {
         if (model) {
-            return model as UploadSize;
+            return model as SysProperty;
         }
-        return {size: '500MB'};
+        return {uploadMaxSize: '500MB'};
     }).catch((error) => {
-        console.error("添加策略失败:", error);
-        return {size: '500MB'};
+        console.error("获取系统配置失败:", error);
+        return {uploadMaxSize: '500MB'};
+    });
+}
+
+export const setSysConfig = async (params: any): Promise<boolean> => {
+    return httpInstance.post(sysApi + "/set-sys-config", params).then((model: any) => {
+        if (model) {
+            return model as boolean;
+        }
+        return false;
+    }).catch((error) => {
+        console.error("设置系统配置失败:", error);
+        return false;
     });
 }

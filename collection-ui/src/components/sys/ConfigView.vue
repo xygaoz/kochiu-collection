@@ -61,6 +61,31 @@
                     重置公共加密Key
                 </el-button>
             </div>
+            <div class="config-section">
+                <h3>其他配置</h3>
+                <el-form
+                    ref="configForm"
+                    :model="formData"
+                    label-width="140px"
+                    label-position="right"
+                    :rules="rules"
+                >
+                    <el-form-item label="上传文件最大限制" prop="uploadMaxSize">
+                        <el-input
+                            v-model="formData.uploadMaxSize"
+                            placeholder="例如：500MB 或 1GB"
+                            suffix="MB/GB/TB"
+                        />
+                    </el-form-item>
+
+                    <el-form-item
+                        v-if="userStore.hasPermission('config:set-sys-config')"
+                    >
+                        <el-button type="primary" @click="submitForm">保存配置</el-button>
+                        <el-button @click="resetForm">重置</el-button>
+                    </el-form-item>
+                </el-form>
+            </div>
         </el-card>
 
         <!-- 清空系统确认对话框 -->
@@ -82,15 +107,19 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, FormInstance, FormRules } from "element-plus";
 import {
     clearAllData,
     resetRSAKeys,
-    resetEncryptKey, loadCurrentKeys
+    resetEncryptKey,
+    loadCurrentKeys,
+    setSysConfig,
+    getSysConfig
 } from "@/apis/system-api";
 import { logout } from "@/apis/user-api";
 import emitter from "@/utils/event-bus";
 import { useUserStore } from "@/utils/global";
+import { SysProperty } from "@/apis/interface";
 
 const userStore = useUserStore();
 
@@ -101,6 +130,37 @@ const keyLoading = ref(false)
 
 // 对话框控制
 const clearDialogVisible = ref(false)
+
+// 表单数据
+const formData = ref<SysProperty>({
+    uploadMaxSize: '500MB',
+})
+
+// 表单引用
+const configForm = ref<FormInstance>()
+// 表单验证规则
+const rules = ref<FormRules<SysProperty>>({
+    uploadMaxSize: [
+        { required: true, message: '请输入上传文件最大限制', trigger: 'blur' },
+        {
+            validator: (rule, value, callback) => {
+                if (!value) {
+                    callback(new Error('请输入上传文件最大限制'));
+                    return;
+                }
+
+                // 允许大小写（MB/mb/Gb/tB等）
+                const regex = /^\d+(\.\d+)?\s*(MB|GB|TB)$/i;
+                if (!regex.test(value)) {
+                    callback(new Error('格式不正确，请使用 MB/GB/TB 单位（例如：500MB 或 1GB）'));
+                } else {
+                    callback();
+                }
+            },
+            trigger: ['blur', 'change'] // 同时监听输入和变化
+        }
+    ],
+})
 
 // 密钥数据
 const currentPublicKey = ref('')
@@ -197,12 +257,51 @@ const confirmResetEncryptKey = async () => {
     }
 }
 
+// 提交表单
+const submitForm = async () => {
+    try {
+        const valid = await configForm.value?.validate()
+        if (valid) {
+            const success = await setSysConfig(formData.value)
+            if (success) {
+                ElMessage.success('配置保存成功')
+                // 触发数据刷新事件
+                emitter.emit('refresh-menu')
+            } else {
+                ElMessage.error('配置保存失败')
+            }
+        }
+    } catch (error) {
+        console.error('保存配置失败:', error)
+        ElMessage.error('配置保存失败')
+    }
+}
+
+// 重置表单
+const resetForm = () => {
+    ElMessageBox.confirm('确定要重置所有配置吗?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+    }).then(() => {
+        configForm.value?.resetFields()
+        ElMessage.success('重置成功')
+    }).catch(() => {
+        // 取消操作
+    })
+}
+
 onMounted(async () => {
     const result = await loadCurrentKeys();
     if(result){
         currentPublicKey.value = result.publicKey
         currentPrivateKey.value = result.privateKey
         currentEncryptKey.value = result.commonKey
+    }
+    //加载上传大小配置
+    const config = await getSysConfig();
+    if(config && config.uploadMaxSize){
+        formData.value.uploadMaxSize = config.uploadMaxSize
     }
 })
 </script>

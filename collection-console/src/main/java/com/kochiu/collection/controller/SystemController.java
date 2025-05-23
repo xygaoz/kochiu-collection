@@ -7,12 +7,13 @@ import com.kochiu.collection.data.bo.PathBo;
 import com.kochiu.collection.data.dto.StrategyDto;
 import com.kochiu.collection.data.vo.KeyVo;
 import com.kochiu.collection.data.vo.ResourceTypeVo;
-import com.kochiu.collection.data.vo.UploadSizeVo;
 import com.kochiu.collection.enums.ResourceTypeEnum;
 import com.kochiu.collection.exception.CollectionException;
+import com.kochiu.collection.properties.SysConfigProperties;
+import com.kochiu.collection.properties.UserConfigProperties;
+import com.kochiu.collection.service.CheckPermitAspect;
 import com.kochiu.collection.service.SysStrategyService;
 import com.kochiu.collection.service.SystemService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,15 +30,16 @@ import static com.kochiu.collection.Constant.PUBLIC_URL;
 @RequestMapping(PUBLIC_URL + "/sys")
 public class SystemController {
 
-    @Value("${spring.servlet.multipart.max-file-size}")
-    private String uploadSize = "500MB";
-
     private final SystemService systemService;
     private final SysStrategyService strategyService;
+    private final SysConfigProperties sysConfigProperties;
 
-    public SystemController(SystemService systemService, SysStrategyService strategyService) {
+    public SystemController(SystemService systemService,
+                            SysStrategyService strategyService,
+                            SysConfigProperties sysConfigProperties) {
         this.systemService = systemService;
         this.strategyService = strategyService;
+        this.sysConfigProperties = sysConfigProperties;
     }
 
     @GetMapping("/resourceTypes")
@@ -121,8 +123,18 @@ public class SystemController {
         return DefaultResult.ok(true);
     }
 
-    @GetMapping("/upload-size")
-    public DefaultResult<UploadSizeVo> getUploadSize() {
-        return DefaultResult.ok(new UploadSizeVo(uploadSize));
+    @GetMapping("/sys-config")
+    public DefaultResult<SysConfigProperties.SysProperty> getSysConfig() {
+        return DefaultResult.ok(sysConfigProperties.getSysProperty());
+    }
+
+    @CheckPermit(modules = {
+            @Module(modeCode = "config", byAction = {"set-sys-config"})
+    })
+    @PostMapping("/set-sys-config")
+    public DefaultResult<Boolean> setSysConfig(@Validated SysConfigProperties.SysProperty property) {
+
+        systemService.setSysConfig(property);
+        return DefaultResult.ok(true);
     }
 }

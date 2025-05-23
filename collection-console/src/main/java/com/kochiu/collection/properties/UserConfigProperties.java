@@ -157,7 +157,7 @@ public class UserConfigProperties {
 
             for (Field field : fields) {
                 // 跳过静态字段和userConfigRepository字段
-                if (Modifier.isStatic(field.getModifiers()) || "userConfigRepository".equals(field.getName())) {
+                if (Modifier.isStatic(field.getModifiers())) {
                     continue;
                 }
 

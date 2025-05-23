@@ -167,14 +167,14 @@ export interface Keys {
     commonKey: string;
 }
 
-export interface UploadSize {
-    size: string
-}
-
 export interface UserProperty {
     listCategoryNum: number;
     listCategoryBy: number;
     resourcePageSize: number;
     listTagNum: number;
     listTagBy: number;
+}
+
+export interface SysProperty {
+    uploadMaxSize: string
 }

@@ -140,7 +140,7 @@ import { getAllCategory } from "@/apis/category-api";
 import { AxiosProgressEvent } from "axios";
 import { getCatalogTree } from "@/apis/catalog-api";
 import emitter from "@/utils/event-bus";
-import { getUploadSize } from "@/apis/system-api";
+import { getSysConfig } from "@/apis/system-api";
 import { convertToBytes } from "@/utils/utils";
 
 interface UploadFileItem {
@@ -348,8 +348,9 @@ onMounted(async () => {
         }
 
         //加载上传大小配置
-        const uploadSize = await getUploadSize();
-        maxSize = convertToBytes(uploadSize.size)
+        const config = await getSysConfig();
+        if(config && config.uploadMaxSize)
+        maxSize = convertToBytes(config.uploadMaxSize)
     } catch (error) {
         console.error("初始化数据失败:", error);
         ElMessage.error("加载数据失败");

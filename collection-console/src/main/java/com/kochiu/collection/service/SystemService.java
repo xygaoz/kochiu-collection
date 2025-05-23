@@ -8,21 +8,29 @@ import com.kochiu.collection.enums.ErrorCodeEnum;
 import com.kochiu.collection.enums.ImportMethodEnum;
 import com.kochiu.collection.enums.StrategyEnum;
 import com.kochiu.collection.exception.CollectionException;
+import com.kochiu.collection.properties.SysConfigProperties;
 import com.kochiu.collection.repository.*;
 import com.kochiu.collection.util.DesensitizationUtil;
 import com.kochiu.collection.util.RsaHexUtil;
 import com.kochiu.collection.util.SysUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.boot.web.servlet.MultipartConfigFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.unit.DataSize;
 
+import javax.servlet.MultipartConfigElement;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static com.kochiu.collection.Constant.RANDOM_CHARS;
@@ -31,6 +39,7 @@ import static com.kochiu.collection.Constant.RANDOM_CHARS;
 @Service
 public class SystemService {
 
+    private final ApplicationContext applicationContext;
     private final UserCatalogRepository userCatalogRepository;
     private final UserCategoryRepository userCategoryRepository;
     private final UserResourceRepository userResourceRepository;
@@ -42,6 +51,8 @@ public class SystemService {
     private final UserRoleRepository userRoleRepository;
     private final SysStrategyRepository strategyRepository;
     private final SysSecurityRepository securityRepository;
+    private final SysConfigProperties sysConfigProperties;
+    private final SysConfigRepository sysConfigRepository;
 
     // Linux系统敏感目录
     private static final Set<String> LINUX_SENSITIVE_DIRS = new HashSet<>(Arrays.asList(
@@ -58,7 +69,8 @@ public class SystemService {
             "C:\\Recovery", "C:\\Config.Msi", "C:\\MSOCache"
     ));
 
-    public SystemService(UserCatalogRepository userCatalogRepository,
+    public SystemService(ApplicationContext applicationContext,
+                         UserCatalogRepository userCatalogRepository,
                          UserCategoryRepository userCategoryRepository,
                          UserResourceRepository userResourceRepository,
                          SysUserRepository sysUserRepository,
@@ -68,7 +80,10 @@ public class SystemService {
                          UserTagRepository userTagRepository,
                          UserRoleRepository userRoleRepository,
                          SysStrategyRepository strategyRepository,
-                         SysSecurityRepository securityRepository) {
+                         SysSecurityRepository securityRepository,
+                         SysConfigProperties sysConfigProperties,
+                         SysConfigRepository sysConfigRepository) {
+        this.applicationContext = applicationContext;
         this.userCatalogRepository = userCatalogRepository;
         this.userCategoryRepository = userCategoryRepository;
         this.userResourceRepository = userResourceRepository;
@@ -80,6 +95,8 @@ public class SystemService {
         this.userRoleRepository = userRoleRepository;
         this.strategyRepository = strategyRepository;
         this.securityRepository = securityRepository;
+        this.sysConfigProperties = sysConfigProperties;
+        this.sysConfigRepository = sysConfigRepository;
     }
 
     /**
@@ -265,6 +282,7 @@ public class SystemService {
     }
 
     // 重置RSA密钥
+    @Transactional(rollbackFor = Exception.class)
     public void resetRsaKeys() throws CollectionException {
         try {
             String[] keys = RsaHexUtil.genKeyPair();
@@ -278,6 +296,7 @@ public class SystemService {
     }
 
     //  重置公用密钥
+    @Transactional(rollbackFor = Exception.class)
     public void resetCommonKey() throws CollectionException {
         try {
             String commonKey = RandomStringUtils.random(16, RANDOM_CHARS);
@@ -287,5 +306,64 @@ public class SystemService {
         } catch (Exception e) {
             throw new CollectionException(ErrorCodeEnum.RSA_KEY_GEN_FAIL);
         }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void setSysConfig(SysConfigProperties.SysProperty property) {
+
+        // 保存配置到数据库
+        sysConfigRepository.remove(null);
+        Map<String, String> configMap = property.toMap();
+        for (Map.Entry<String, String> entry : configMap.entrySet()) {
+            SysConfig sysConfig = new SysConfig();
+            sysConfig.setConfigKey(entry.getKey());
+            sysConfig.setConfigValue(entry.getValue());
+            sysConfigRepository.save(sysConfig);
+        }
+
+        if(!sysConfigProperties.getSysProperty().getUploadMaxSize().equals(property.getUploadMaxSize())){
+
+            // 修改上传配置
+            try {
+                // 1. 创建新的配置
+                MultipartConfigFactory factory = new MultipartConfigFactory();
+                factory.setMaxFileSize(DataSize.parse(property.getUploadMaxSize().toUpperCase()));
+                factory.setMaxRequestSize(DataSize.parse(property.getUploadMaxSize().toUpperCase()));
+                MultipartConfigElement newConfig = factory.createMultipartConfig();
+
+                // 2. 获取 BeanFactory 并更新配置
+                if (applicationContext instanceof ConfigurableApplicationContext) {
+                    DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory)
+                            ((ConfigurableApplicationContext) applicationContext).getBeanFactory();
+
+                    // 3. 更安全的销毁和重新注册流程
+                    synchronized (this) { // 添加同步锁防止并发问题
+                        // 先移除bean定义（如果存在）
+                        if (beanFactory.containsBeanDefinition("multipartConfigElement")) {
+                            beanFactory.removeBeanDefinition("multipartConfigElement");
+                        }
+
+                        // 销毁单例实例（如果存在）
+                        if (beanFactory.containsSingleton("multipartConfigElement")) {
+                            beanFactory.destroySingleton("multipartConfigElement");
+                        }
+
+                        // 注册新的单例
+                        beanFactory.registerSingleton("multipartConfigElement", newConfig);
+
+                        // 强制触发Servlet容器重新初始化
+                        try {
+                            ((ConfigurableApplicationContext) applicationContext).getBeanFactory().destroyScopedBean("multipartConfigElement");
+                        } catch (Exception e) {
+                            log.warn("Failed to destroy scoped bean", e);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Failed to update multipart config", e);
+                throw new RuntimeException("Failed to update upload size configuration", e);
+            }
+        }
+        sysConfigProperties.setSysProperty(property);
     }
 }
