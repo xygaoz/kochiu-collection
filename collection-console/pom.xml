@@ -20,6 +20,10 @@
         <java.version>17</java.version>
         <start-class>Application</start-class>
 
+        <imageio.version>3.12.0</imageio.version>
+        <libraw.version>0.21.2-1.5.11</libraw.version>
+        <mybatis-plus.version>3.5.9</mybatis-plus.version>
+        <pagehelper.version>1.4.6</pagehelper.version>
         <poi.version>5.2.5</poi.version>
     </properties>
     <dependencies>
@@ -54,7 +58,7 @@
         <dependency>
             <groupId>com.github.pagehelper</groupId>
             <artifactId>pagehelper-spring-boot-starter</artifactId>
-            <version>1.4.6</version>
+            <version>${pagehelper.version}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>spring-boot-starter</artifactId>
@@ -78,7 +82,7 @@
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
-            <version>3.5.9</version>
+            <version>${mybatis-plus.version}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>slf4j-api</artifactId>
@@ -287,22 +291,56 @@
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
             <artifactId>imageio-jpeg</artifactId>
-            <version>3.10.1</version>
+            <version>${imageio.version}</version>
         </dependency>
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
             <artifactId>imageio-webp</artifactId>
-            <version>3.12.0</version>
+            <version>${imageio.version}</version>
         </dependency>
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
             <artifactId>imageio-tiff</artifactId>
-            <version>3.12.0</version>
+            <version>${imageio.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.twelvemonkeys.imageio</groupId>
+            <artifactId>imageio-psd</artifactId>
+            <version>${imageio.version}</version>
         </dependency>
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
             <artifactId>imageio-pdf</artifactId>
-            <version>3.12.0</version>
+            <version>${imageio.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>libraw</artifactId>
+            <version>${libraw.version}</version>
+        </dependency>
+        <!-- macOS (x86_64) -->
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>libraw</artifactId>
+            <version>${libraw.version}</version>
+            <classifier>macosx-x86_64</classifier>
+        </dependency>
+
+        <!-- Windows (x86_64) -->
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>libraw</artifactId>
+            <version>${libraw.version}</version>
+            <classifier>windows-x86_64</classifier>
+        </dependency>
+
+        <!-- Linux (x86_64) -->
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>libraw</artifactId>
+            <version>${libraw.version}</version>
+            <classifier>linux-x86_64</classifier>
         </dependency>
 
         <!-- Apache POI for .doc (Word 97-2003) -->
