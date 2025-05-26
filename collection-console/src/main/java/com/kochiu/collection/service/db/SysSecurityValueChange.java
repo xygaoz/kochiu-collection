@@ -3,7 +3,6 @@ package com.kochiu.collection.service.db;
 import com.kochiu.collection.util.RsaHexUtil;
 import liquibase.change.ChangeMetaData;
 import liquibase.change.DatabaseChange;
-import liquibase.change.AbstractChange;
 import liquibase.change.custom.CustomSqlChange;
 import liquibase.database.Database;
 import liquibase.exception.SetupException;
