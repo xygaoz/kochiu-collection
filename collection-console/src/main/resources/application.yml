@@ -2,6 +2,11 @@ server:
   port: 9000
   servlet:
     context-path: /collection
+  tomcat:
+    max-swallow-size: 5GB  # 必须确保这一行无缩进错误
+    connection-timeout: 600000
+    max-http-form-post-size: 5GB
+
 spring:
   profiles:
     active: dev
@@ -18,8 +23,9 @@ spring:
     database-change-log-table: KC_CO_DATABASECHANGELOG
   servlet:
     multipart:
+      enabled: true
       # 上传文件大小
-      max-file-size: 1GB
+      max-file-size: 2GB
       #请求总上传大小
       max-request-size: 10GB
   web:
@@ -43,38 +49,3 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: auto
-
-collection:
-  upload-type:
-    image:
-      - jpg
-      - jpeg
-      - gif
-      - bmp
-      - png
-      - webp
-      - tif
-      - psd
-      - psb
-      - dng
-      - nef
-      - cr2
-      - arw
-    document:
-      - pdf
-      - txt
-      - doc
-      - docx
-      - xls
-      - xlsx
-      - ppt
-      - pptx
-    video:
-      - mp4
-      - mov
-      - avi
-    audio:
-      - wav
-      - mp3
-      - flac
-    other:

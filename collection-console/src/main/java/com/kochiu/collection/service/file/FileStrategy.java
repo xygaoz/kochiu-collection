@@ -1,8 +1,8 @@
 package com.kochiu.collection.service.file;
 
 import cn.hutool.core.io.FileUtil;
+import com.kochiu.collection.annotation.FileType;
 import com.kochiu.collection.data.dto.ResourceDto;
-import com.kochiu.collection.enums.FileTypeEnum;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
@@ -15,14 +15,14 @@ public interface FileStrategy {
 
     String createThumbnail(File file, String thumbFilePath,
                            String thumbUrl,
-                           FileTypeEnum fileType,
+                           FileType fileType,
                            ResourceDto resourceDto) throws Exception;
 
     default String defaultThumbnail(String thumbFilePath,
                                     String thumbUrl,
-                                    FileTypeEnum fileType,
+                                    FileType fileType,
                                     ResourceDto resourceDto) throws Exception{
-        Resource resource = new ClassPathResource("/images/" + fileType.name() + ".png");
+        Resource resource = new ClassPathResource("/images/" + fileType.desc().name() + ".png");
         if (resource.exists()) {
             FileUtil.copyFile(resource.getInputStream(), new File(thumbFilePath), StandardCopyOption.REPLACE_EXISTING);
             resourceDto.setThumbUrl(thumbUrl);

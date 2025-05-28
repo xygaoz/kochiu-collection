@@ -1,12 +1,12 @@
 package com.kochiu.collection.service.file;
 
-import com.kochiu.collection.enums.FileTypeEnum;
+import com.kochiu.collection.annotation.FileType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.Map;
-
-import static com.kochiu.collection.enums.FileTypeEnum.unknown;
+import java.util.Set;
 
 @Component
 public class FileStrategyFactory {
@@ -21,14 +21,40 @@ public class FileStrategyFactory {
 
     /**
      * 根据存储类型获取策略
-     * @param type 策略标识
+     * @param extension 扩展名
      * @return 具体策略实例
      */
-    public FileStrategy getStrategy(FileTypeEnum type) {
-        FileStrategy strategy = strategyMap.get(type.name());
-        if (strategy == null) {
-            return strategyMap.get(unknown.name());
+    public FileStrategy getStrategy(String extension) {
+
+        for(String key : strategyMap.keySet()){
+            if(key.equalsIgnoreCase(extension)){
+                return strategyMap.get(key);
+            }
         }
-        return strategy;
+        return strategyMap.get("unknown");
+    }
+
+    public FileType getFileType(String extension) {
+        FileStrategy fileStrategy = getStrategy(extension);
+        return fileStrategy.getClass().getAnnotation(FileType.class);
+    }
+
+    public FileStrategy getStrategy(FileType fileType) {
+        for(String key : strategyMap.keySet()){
+            if(strategyMap.get(key).getClass().getAnnotation(FileType.class).equals(fileType)){
+                return strategyMap.get(key);
+            }
+        }
+        return strategyMap.get("unknown");
+    }
+
+    //  获取所有允许的mimeType
+    public Set<String> getAllowedTypes() {
+
+        Set<String> types = new HashSet<>();
+        strategyMap.forEach((k, v) -> {
+            types.add(v.getClass().getAnnotation(FileType.class).mimeType());
+        });
+        return types;
     }
 }

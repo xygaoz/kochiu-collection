@@ -1,7 +1,8 @@
 package com.kochiu.collection.service.file;
 
+import com.kochiu.collection.annotation.FileType;
 import com.kochiu.collection.data.dto.ResourceDto;
-import com.kochiu.collection.enums.FileTypeEnum;
+import com.kochiu.collection.enums.ResourceTypeEnum;
 import com.kochiu.collection.util.ImageUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import java.util.List;
 
 @Slf4j
 @Service("txt")
+@FileType(thumb = true, mimeType = "text/plain", desc = ResourceTypeEnum.DOCUMENT)
 public class TxtFileStrategy implements FileStrategy{
 
     /**
@@ -31,7 +33,7 @@ public class TxtFileStrategy implements FileStrategy{
     public String createThumbnail(File file,
                                   String thumbFilePath,
                                   String thumbUrl,
-                                  FileTypeEnum fileType,
+                                  FileType fileType,
                                   ResourceDto resourceDto) throws Exception {
 
         // A4 纸尺寸（300 DPI）

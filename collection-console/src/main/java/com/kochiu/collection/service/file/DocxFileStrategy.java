@@ -1,17 +1,18 @@
 package com.kochiu.collection.service.file;
 
+import com.kochiu.collection.annotation.FileType;
 import com.kochiu.collection.data.dto.ResourceDto;
-import com.kochiu.collection.enums.FileTypeEnum;
+import com.kochiu.collection.enums.ResourceTypeEnum;
 import com.kochiu.collection.properties.CollectionProperties;
 import org.docx4j.Docx4J;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.FileOutputStream;
 
 @Service("docx")
+@FileType(thumb = true, mimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document", desc = ResourceTypeEnum.DOCUMENT)
 public class DocxFileStrategy extends DocFileStrategy{
 
     public DocxFileStrategy(CollectionProperties properties,
@@ -33,7 +34,7 @@ public class DocxFileStrategy extends DocFileStrategy{
     public String createThumbnail(File wordFile,
                                   String thumbFilePath,
                                   String thumbUrl,
-                                  FileTypeEnum fileType,
+                                  FileType fileType,
                                   ResourceDto resourceDto) throws Exception {
 
         String pdfPath = thumbFilePath.substring(0, thumbFilePath.lastIndexOf("_thumb.png")) + ".pdf";

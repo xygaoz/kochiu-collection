@@ -1,7 +1,8 @@
 package com.kochiu.collection.service.file;
 
+import com.kochiu.collection.annotation.FileType;
 import com.kochiu.collection.data.dto.ResourceDto;
-import com.kochiu.collection.enums.FileTypeEnum;
+import com.kochiu.collection.enums.ResourceTypeEnum;
 import com.kochiu.collection.util.ImageUtil;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
@@ -11,6 +12,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 
 @Service("pdf")
+@FileType(thumb = true, mimeType = "application/pdf", desc = ResourceTypeEnum.DOCUMENT)
 public class PdfFileStrategy implements FileStrategy{
 
     /**
@@ -27,7 +29,7 @@ public class PdfFileStrategy implements FileStrategy{
     public String createThumbnail(File file,
                                   String thumbFilePath,
                                   String thumbUrl,
-                                  FileTypeEnum fileType,
+                                  FileType fileType,
                                   ResourceDto resourceDto) throws Exception {
 
         try (PDDocument document = PDDocument.load(file)) {

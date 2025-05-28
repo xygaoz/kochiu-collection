@@ -334,3 +334,9 @@ export const batchShareResources = async (resourceIds: number[], isPublic: boole
         return model as boolean;
     });
 }
+
+export const getAllowedTypes = async (): Promise<string[]> => {
+    return httpInstance.get(resourceApi + "/allowedTypes").then((model: any) => {
+        return model as string[];
+    });
+}

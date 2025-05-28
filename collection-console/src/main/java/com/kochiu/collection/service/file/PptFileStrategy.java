@@ -1,8 +1,9 @@
 package com.kochiu.collection.service.file;
 
+import com.kochiu.collection.annotation.FileType;
 import com.kochiu.collection.data.dto.ResourceDto;
-import com.kochiu.collection.enums.FileTypeEnum;
 import com.kochiu.collection.enums.ApiModeEnum;
+import com.kochiu.collection.enums.ResourceTypeEnum;
 import com.kochiu.collection.properties.CollectionProperties;
 import com.kochiu.collection.util.ImageUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +14,6 @@ import org.jodconverter.local.LocalConverter;
 import org.jodconverter.local.filter.PagesSelectorFilter;
 import org.jodconverter.local.office.LocalOfficeManager;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -23,6 +23,7 @@ import java.io.IOException;
 
 @Slf4j
 @Service("ppt")
+@FileType(thumb = true, mimeType = "application/vnd.ms-powerpoint", desc = ResourceTypeEnum.DOCUMENT)
 public class PptFileStrategy extends OfficeFileStrategy implements FileStrategy{
 
     protected final CollectionProperties properties;
@@ -49,7 +50,7 @@ public class PptFileStrategy extends OfficeFileStrategy implements FileStrategy{
     public String createThumbnail(File pptFile,
                                   String thumbFilePath,
                                   String thumbUrl,
-                                  FileTypeEnum fileType,
+                                  FileType fileType,
                                   ResourceDto resourceDto) throws Exception {
 
         String thumbRatio;

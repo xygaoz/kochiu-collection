@@ -1,12 +1,11 @@
 package com.kochiu.collection.properties;
 
 import com.kochiu.collection.entity.SysConfig;
-import com.kochiu.collection.enums.CategoryByEnum;
-import com.kochiu.collection.enums.TagByEnum;
 import com.kochiu.collection.repository.SysConfigRepository;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -23,6 +22,8 @@ public class SysConfigProperties {
 
     private final SysConfigRepository sysConfigRepository;
     private SysProperty sysProperty = new SysProperty();
+    @Value("${spring.servlet.multipart.max-file-size}")
+    private String maxFileSize;
 
     public SysConfigProperties(SysConfigRepository sysConfigRepository) {
         this.sysConfigRepository = sysConfigRepository;
@@ -84,6 +85,7 @@ public class SysConfigProperties {
                 }
             }
         }
+        sysProperty.setUploadMaxSize(maxFileSize);
         this.sysProperty = sysProperty;
     }
 
@@ -100,7 +102,7 @@ public class SysConfigProperties {
         @NotNull
         @Pattern(regexp = "^\\d+(\\.\\d+)?\\s*(MB|GB|TB)$", flags = Pattern.Flag.CASE_INSENSITIVE,
                 message = "必须是以MB/GB/TB结尾的大小格式")
-        private String uploadMaxSize = "1GB";
+        private String uploadMaxSize = "2GB";
 
         public Map<String, String> toMap() {
             Map<String, String> map = new HashMap<>();

@@ -6,30 +6,23 @@ import com.kochiu.collection.data.bo.BatchImportBo;
 import com.kochiu.collection.data.bo.UploadBo;
 import com.kochiu.collection.data.dto.UserDto;
 import com.kochiu.collection.data.vo.FileVo;
-import com.kochiu.collection.enums.FileTypeEnum;
 import com.kochiu.collection.enums.PermitEnum;
-import com.kochiu.collection.enums.ResourceTypeEnum;
 import com.kochiu.collection.exception.CollectionException;
 import com.kochiu.collection.handler.ImportProgressWebSocketHandler;
 import com.kochiu.collection.service.CheckPermitAspect;
 import com.kochiu.collection.service.ImportTaskService;
 import com.kochiu.collection.service.ResourceFileService;
+import com.kochiu.collection.service.file.FileStrategyFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpRange;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.util.List;
-import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 import static com.kochiu.collection.Constant.PUBLIC_URL;
@@ -41,11 +34,14 @@ public class ResourceFileController {
     private final String RESOURCE_PATH = PUBLIC_URL + "/resource";
     private final ResourceFileService resourceFileService;
     private final ImportTaskService taskService;
+    private final FileStrategyFactory fileStrategyFactory;
 
     public ResourceFileController(ResourceFileService resourceFileService,
-                                  ImportTaskService taskService) {
+                                  ImportTaskService taskService,
+                                  FileStrategyFactory fileStrategyFactory) {
         this.resourceFileService = resourceFileService;
         this.taskService = taskService;
+        this.fileStrategyFactory = fileStrategyFactory;
     }
 
 
@@ -100,5 +96,10 @@ public class ResourceFileController {
             return DefaultResult.ok(true);
         }
         return DefaultResult.fail("任务不存在或已完成");
+    }
+
+    @GetMapping(RESOURCE_PATH + "/allowedTypes")
+    public DefaultResult<Set<String>> getAllowedTypes() {
+        return DefaultResult.ok(fileStrategyFactory.getAllowedTypes());
     }
 }

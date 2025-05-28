@@ -1,6 +1,7 @@
 package com.kochiu.collection.service;
 
 import com.github.pagehelper.PageInfo;
+import com.kochiu.collection.annotation.FileType;
 import com.kochiu.collection.data.bo.*;
 import com.kochiu.collection.data.dto.TagDto;
 import com.kochiu.collection.data.dto.UserDto;
@@ -11,11 +12,11 @@ import com.kochiu.collection.entity.UserCatalog;
 import com.kochiu.collection.entity.UserResource;
 import com.kochiu.collection.entity.UserTag;
 import com.kochiu.collection.enums.ErrorCodeEnum;
-import com.kochiu.collection.enums.FileTypeEnum;
 import com.kochiu.collection.enums.SaveTypeEnum;
 import com.kochiu.collection.exception.CollectionException;
 import com.kochiu.collection.properties.CollectionProperties;
 import com.kochiu.collection.repository.*;
+import com.kochiu.collection.service.file.FileStrategyFactory;
 import com.kochiu.collection.service.store.ResourceStoreStrategy;
 import com.kochiu.collection.service.store.ResourceStrategyFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +44,7 @@ public class UserResourceService {
     private final UserTagRepository tagRepository;
     private final UserCategoryRepository categoryRepository;
     private final UserCatalogRepository catalogRepository;
+    private final FileStrategyFactory fileStrategyFactory;
 
     public UserResourceService(ResourceStrategyFactory resourceStrategyFactory,
                                SysUserRepository userRepository,
@@ -50,7 +52,8 @@ public class UserResourceService {
                                CollectionProperties properties,
                                UserTagRepository tagRepository,
                                UserCategoryRepository categoryRepository,
-                               UserCatalogRepository catalogRepository) {
+                               UserCatalogRepository catalogRepository,
+                               FileStrategyFactory fileStrategyFactory) {
         this.resourceStrategyFactory = resourceStrategyFactory;
         this.userRepository = userRepository;
         this.resourceRepository = resourceRepository;
@@ -58,6 +61,7 @@ public class UserResourceService {
         this.tagRepository = tagRepository;
         this.categoryRepository = categoryRepository;
         this.catalogRepository = catalogRepository;
+        this.fileStrategyFactory = fileStrategyFactory;
     }
 
 
@@ -150,7 +154,7 @@ public class UserResourceService {
                                 height = Integer.parseInt(split[1]);
                             }
 
-                            FileTypeEnum fileType = FileTypeEnum.getByValue(resource.getFileExt());
+                            FileType fileType = fileStrategyFactory.getFileType(resource.getFileExt());
 
                             //获取资源标签
                             List<UserTag> tags = tagRepository.getTagList(user.getUserId(), resource.getResourceId());
@@ -167,9 +171,9 @@ public class UserResourceService {
                                     .cataPath(resource.getCataPath())
                                     .width(width)
                                     .height(height)
-                                    .fileType(resource.getFileExt() + " - " +fileType.getDesc().getLabel())
-                                    .typeName(properties.getResourceType(resource.getFileExt()).name().toLowerCase())
-                                    .mimeType(fileType.getMimeType())
+                                    .fileType(resource.getFileExt() + " - " +fileType.desc().getLabel())
+                                    .typeName(fileType.desc().name().toLowerCase())
+                                    .mimeType(fileType.mimeType())
                                     .size(resource.getSize())
                                     .resolutionRatio(resource.getResolutionRatio())
                                     .createTime(resource.getCreateTime())

@@ -2,6 +2,7 @@ package com.kochiu.collection.service;
 
 import cn.hutool.crypto.digest.DigestUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kochiu.collection.annotation.FileType;
 import com.kochiu.collection.data.bo.BatchImportBo;
 import com.kochiu.collection.data.bo.PathBo;
 import com.kochiu.collection.data.bo.UploadBo;
@@ -11,14 +12,15 @@ import com.kochiu.collection.entity.SysUser;
 import com.kochiu.collection.entity.UserCatalog;
 import com.kochiu.collection.entity.UserResource;
 import com.kochiu.collection.enums.ErrorCodeEnum;
-import com.kochiu.collection.enums.FileTypeEnum;
 import com.kochiu.collection.enums.ImportMethodEnum;
+import com.kochiu.collection.enums.ResourceTypeEnum;
 import com.kochiu.collection.exception.CollectionException;
 import com.kochiu.collection.handler.ImportProgressWebSocketHandler;
 import com.kochiu.collection.repository.SysUserRepository;
 import com.kochiu.collection.repository.UserCatalogRepository;
 import com.kochiu.collection.repository.UserCategoryRepository;
 import com.kochiu.collection.repository.UserResourceRepository;
+import com.kochiu.collection.service.file.FileStrategyFactory;
 import com.kochiu.collection.service.store.ResourceStoreStrategy;
 import com.kochiu.collection.service.store.ResourceStrategyFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +60,7 @@ public class ResourceFileService {
     private final SystemService systemService;
     private final ObjectMapper objectMapper;
     private final UserCategoryRepository  userCategoryRepository;
+    private final FileStrategyFactory fileStrategyFactory;
 
     public ResourceFileService(ResourceStrategyFactory resourceStrategyFactory,
                                SysUserRepository userRepository,
@@ -65,7 +68,8 @@ public class ResourceFileService {
                                UserCatalogService userCatalogService,
                                UserCatalogRepository catalogRepository,
                                SystemService systemService, ObjectMapper objectMapper,
-                               UserCategoryRepository userCategoryRepository) {
+                               UserCategoryRepository userCategoryRepository,
+                               FileStrategyFactory fileStrategyFactory) {
         this.resourceStrategyFactory = resourceStrategyFactory;
         this.userRepository = userRepository;
         this.resourceRepository = resourceRepository;
@@ -74,6 +78,7 @@ public class ResourceFileService {
         this.systemService = systemService;
         this.objectMapper = objectMapper;
         this.userCategoryRepository = userCategoryRepository;
+        this.fileStrategyFactory = fileStrategyFactory;
     }
 
     /**
@@ -540,8 +545,8 @@ public class ResourceFileService {
 
         String extension = fileName.substring(dotIndex + 1).toLowerCase();
         try {
-            FileTypeEnum fileType = FileTypeEnum.valueOf(extension);
-            return fileType != FileTypeEnum.unknown; // 排除未知类型
+            FileType fileType = fileStrategyFactory.getFileType(extension);
+            return !fileType.desc().equals(ResourceTypeEnum.UNKNOWN); // 排除未知类型
         } catch (IllegalArgumentException e) {
             return false; // 排除不在枚举中的类型
         }

@@ -1,8 +1,9 @@
 package com.kochiu.collection.service.file;
 
+import com.kochiu.collection.annotation.FileType;
 import com.kochiu.collection.data.dto.ResourceDto;
 import com.kochiu.collection.enums.ApiModeEnum;
-import com.kochiu.collection.enums.FileTypeEnum;
+import com.kochiu.collection.enums.ResourceTypeEnum;
 import com.kochiu.collection.properties.CollectionProperties;
 import com.kochiu.collection.util.ImageUtil;
 import com.kochiu.collection.util.SysUtil;
@@ -31,6 +32,7 @@ import java.nio.file.Path;
 
 @Slf4j
 @Service("mp4")
+@FileType(thumb = true, mimeType = "video/mp4", desc = ResourceTypeEnum.VIDEO)
 public class Mp4FileStrategy implements FileStrategy{
 
     @Autowired
@@ -40,7 +42,7 @@ public class Mp4FileStrategy implements FileStrategy{
     public String createThumbnail(File file,
                                   String thumbFilePath,
                                   String thumbUrl,
-                                  FileTypeEnum fileType,
+                                  FileType fileType,
                                   ResourceDto resourceDto) throws Exception {
         if(!properties.getFfmpeg().isEnabled()){
             return defaultThumbnail(thumbFilePath, thumbUrl, fileType, resourceDto);
@@ -66,7 +68,7 @@ public class Mp4FileStrategy implements FileStrategy{
     private String localApiCaptureVideoFrame(File videoFile,
                                              String outputPath,
                                              String thumbUrl,
-                                             FileTypeEnum fileType,
+                                             FileType fileType,
                                              ResourceDto resourceDto) throws Exception {
         String ffmpegPath;
         if(SysUtil.isRunningInDocker()){
@@ -164,7 +166,7 @@ public class Mp4FileStrategy implements FileStrategy{
     private String remoteApiCaptureVideoFrame(File videoFile,
                                               String outputPath,
                                               String thumbUrl,
-                                              FileTypeEnum fileType,
+                                              FileType fileType,
                                               ResourceDto resourceDto) throws Exception {
 
         if(StringUtils.isNotBlank(properties.getFfmpeg().getRemote().getApiUrl())) {

@@ -437,6 +437,12 @@
             <groupId>org.bytedeco</groupId>
             <artifactId>libraw</artifactId>
             <version>${libraw.version}</version>
+            <classifier>macosx-arm64</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>libraw</artifactId>
+            <version>${libraw.version}</version>
             <classifier>windows-x86_64</classifier>
         </dependency>
         <dependency>

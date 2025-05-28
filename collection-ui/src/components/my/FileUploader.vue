@@ -134,7 +134,7 @@
 import { UploadFilled } from '@element-plus/icons-vue'
 import { ElMessage } from "element-plus";
 import { ref, onMounted, reactive } from "vue";
-import { uploadFile } from "@/apis/resource-api";
+import { getAllowedTypes, uploadFile } from "@/apis/resource-api";
 import { Catalog, Category } from "@/apis/interface";
 import { getAllCategory } from "@/apis/category-api";
 import { AxiosProgressEvent } from "axios";
@@ -152,15 +152,16 @@ interface UploadFileItem {
 }
 
 // 定义允许的文件类型和最大文件大小（100MB）
-const allowedTypes = [
+const allowedTypes = ref<string[]>([
     'image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp', 'image/vnd.adobe.photoshop',
     'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
     'application/pdf', 'text/plain', 'video/mp4', 'video/avi', 'video/wmv', 'video/quicktime',
     'video/x-matroska', 'audio/mpeg', 'audio/wav', 'audio/flac'
-];
+]);
 let maxSize = 1024 * 1024 * 500; // 500mb in bytes
+let uploadMaxSize = '500MB'
 
 // 分类相关
 const categories = reactive<Category[]>([])
@@ -185,7 +186,7 @@ const cascaderProps = {
 // 处理文件选择
 const handleFileChange = (file: any, fileList: any[]) => {
     console.log('handleFileChange', fileList.length)
-    const isAllowedType = allowedTypes.includes(file.raw.type);
+    const isAllowedType = allowedTypes.value.includes(file.raw.type);
     if (!isAllowedType) {
         ElMessage.error(`文件类型 ${file.raw.type} 不支持`);
         return false;
@@ -193,7 +194,7 @@ const handleFileChange = (file: any, fileList: any[]) => {
 
     const isLtMaxSize = file.size <= maxSize;
     if (!isLtMaxSize) {
-        ElMessage.error(`文件大小不能超过 100MB`);
+        ElMessage.error(`文件大小不能超过 ${uploadMaxSize}`);
         return false;
     }
 
@@ -349,8 +350,13 @@ onMounted(async () => {
 
         //加载上传大小配置
         const config = await getSysConfig();
-        if(config && config.uploadMaxSize)
-        maxSize = convertToBytes(config.uploadMaxSize)
+        if(config && config.uploadMaxSize) {
+            maxSize = convertToBytes(config.uploadMaxSize)
+            uploadMaxSize = config.uploadMaxSize
+        }
+
+        //加载上传限制
+        allowedTypes.value = await getAllowedTypes();
     } catch (error) {
         console.error("初始化数据失败:", error);
         ElMessage.error("加载数据失败");

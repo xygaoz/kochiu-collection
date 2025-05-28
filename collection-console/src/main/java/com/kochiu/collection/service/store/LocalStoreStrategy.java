@@ -4,6 +4,7 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.LimitedInputStream;
 import cn.hutool.core.io.unit.DataSizeUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.kochiu.collection.annotation.FileType;
 import com.kochiu.collection.data.dto.ResourceDto;
 import com.kochiu.collection.data.dto.UserDto;
 import com.kochiu.collection.data.vo.FileVo;
@@ -100,7 +101,8 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
 
         //判断文件类型
         String extension = FilenameUtils.getExtension(originalFilename).toLowerCase();
-        if(!collectionProperties.getUploadTypes().contains(extension)){
+        FileType fileType = fileStrategyFactory.getFileType(extension);
+        if(fileType.desc().equals(ResourceTypeEnum.UNKNOWN)){
             throw new CollectionException(UNSUPPORTED_FILE_TYPES);
         }
 
@@ -133,7 +135,6 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
             throw new CollectionException(ErrorCodeEnum.FILE_SAVING_FAILURE);
         }
 
-        FileTypeEnum fileType = FileTypeEnum.getByValue(extension);
         ResourceDto resourceDto = ResourceDto.builder()
                 .userId(userDto.getUserId())
                 .cateId(categoryId)
@@ -146,7 +147,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
                 .saveType(SaveTypeEnum.LOCAL)
                .build();
 
-        Long resId = resourceRepository.saveResource(resourceDto);
+        Long resId = resourceRepository.saveResource(resourceDto, fileType.desc().getCode());
 
         //异步生成缩略图
         resourceDto.setResourceId(resId);
@@ -162,7 +163,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
                 .thumbnailUrl(thumbUrl)
                 .resourceUrl(savePath)
                 .size(DataSizeUtil.format(size))
-                .mimeType(fileType.getMimeType())
+                .mimeType(fileType.mimeType())
                 .build();
     }
 
@@ -186,7 +187,8 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
 
         //判断文件类型
         String extension = FilenameUtils.getExtension(file.getName()).toLowerCase();
-        if(!collectionProperties.getUploadTypes().contains(extension)){
+        FileType fileType = fileStrategyFactory.getFileType(extension);
+        if(fileType.desc().equals(ResourceTypeEnum.UNKNOWN)){
             throw new CollectionException(UNSUPPORTED_FILE_TYPES);
         }
 
@@ -204,7 +206,6 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
 
         long size = FileUtil.size(file);
 
-        FileTypeEnum fileType = FileTypeEnum.getByValue(extension);
         ResourceDto resourceDto = ResourceDto.builder()
                 .userId(userDto.getUserId())
                 .cateId(categoryId)
@@ -218,19 +219,19 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
                 .saveType(SaveTypeEnum.LINK)
                 .build();
         //生成缩略图
-        createThumbnail(resourceDto, fileType, file.getAbsolutePath(), recFilePathDir + resourceUrl);
+        createThumbnail(resourceDto, fileType, extension, file.getAbsolutePath(), recFilePathDir + resourceUrl);
 
-        resourceRepository.saveResource(resourceDto);
+        resourceRepository.saveResource(resourceDto, fileType.desc().getCode());
     }
 
-    private void createThumbnail(ResourceDto resourceDto, FileTypeEnum fileType, String sourceFile, String thumbFilePath){
+    private void createThumbnail(ResourceDto resourceDto, FileType fileType, String extension, String sourceFile, String thumbFilePath){
 
         //判断文件是否需要生成缩略图
-        if(fileType.isThumb()) {
+        if(fileType.thumb()) {
             thumbFilePath = thumbFilePath.replace("." + resourceDto.getFileExt(), "_thumb.png");
             String thumbUrl = resourceDto.getResourceUrl().replace("." + resourceDto.getFileExt(), "_thumb.png");
 
-            FileStrategy fileStrategy = fileStrategyFactory.getStrategy(fileType);
+            FileStrategy fileStrategy = fileStrategyFactory.getStrategy(extension);
             try {
                 fileStrategy.createThumbnail(new File(sourceFile), thumbFilePath, thumbUrl, fileType, resourceDto);
             } catch (Exception e) {
@@ -278,9 +279,8 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
 
             // 4. 获取文件类型
             String extension = FilenameUtils.getExtension(file.getName()).toLowerCase();
-            MediaType mediaType = MediaType.parseMediaType(
-                    FileTypeEnum.getByValue(extension).getMimeType()
-            );
+            FileType fileType = fileStrategyFactory.getFileType(extension);
+            MediaType mediaType = MediaType.parseMediaType(fileType.mimeType());
 
             // 5. 准备公共响应头
             String disposition = HttpMethod.POST.name().equalsIgnoreCase(request.getMethod())

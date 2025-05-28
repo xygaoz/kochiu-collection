@@ -3,9 +3,10 @@ package com.kochiu.collection.service.file;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
+import com.kochiu.collection.annotation.FileType;
 import com.kochiu.collection.data.dto.ResourceDto;
-import com.kochiu.collection.enums.FileTypeEnum;
 import com.kochiu.collection.enums.ApiModeEnum;
+import com.kochiu.collection.enums.ResourceTypeEnum;
 import com.kochiu.collection.properties.CollectionProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hwpf.HWPFDocument;
@@ -14,7 +15,6 @@ import org.jodconverter.core.office.OfficeManager;
 import org.jodconverter.local.LocalConverter;
 import org.jodconverter.local.office.LocalOfficeManager;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,6 +22,7 @@ import java.io.FileOutputStream;
 
 @Slf4j
 @Service("doc")
+@FileType(thumb = true, mimeType = "application/msword", desc = ResourceTypeEnum.DOCUMENT)
 public class DocFileStrategy extends OfficeFileStrategy implements FileStrategy{
 
     protected final CollectionProperties properties;
@@ -48,7 +49,7 @@ public class DocFileStrategy extends OfficeFileStrategy implements FileStrategy{
     public String createThumbnail(File file,
                                   String thumbFilePath,
                                   String thumbUrl,
-                                  FileTypeEnum fileType,
+                                  FileType fileType,
                                   ResourceDto resourceDto) throws Exception {
 
         String pdfPath = thumbFilePath.substring(0, thumbFilePath.lastIndexOf("_thumb.png")) + ".pdf";

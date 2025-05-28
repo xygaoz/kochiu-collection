@@ -1,10 +1,15 @@
 package com.kochiu.collection.annotation;
 
+import java.lang.annotation.*;
+
 /**
  *
  * @author KoChiu
  * @date 2022/6/22
  */
+@Documented
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
 public @interface Module {
 
     String modeCode();

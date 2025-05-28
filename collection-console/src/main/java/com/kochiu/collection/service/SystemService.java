@@ -320,50 +320,6 @@ public class SystemService {
             sysConfig.setConfigValue(entry.getValue());
             sysConfigRepository.save(sysConfig);
         }
-
-        if(!sysConfigProperties.getSysProperty().getUploadMaxSize().equals(property.getUploadMaxSize())){
-
-            // 修改上传配置
-            try {
-                // 1. 创建新的配置
-                MultipartConfigFactory factory = new MultipartConfigFactory();
-                factory.setMaxFileSize(DataSize.parse(property.getUploadMaxSize().toUpperCase()));
-                factory.setMaxRequestSize(DataSize.parse(property.getUploadMaxSize().toUpperCase()));
-                MultipartConfigElement newConfig = factory.createMultipartConfig();
-
-                // 2. 获取 BeanFactory 并更新配置
-                if (applicationContext instanceof ConfigurableApplicationContext) {
-                    DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory)
-                            ((ConfigurableApplicationContext) applicationContext).getBeanFactory();
-
-                    // 3. 更安全的销毁和重新注册流程
-                    synchronized (this) { // 添加同步锁防止并发问题
-                        // 先移除bean定义（如果存在）
-                        if (beanFactory.containsBeanDefinition("multipartConfigElement")) {
-                            beanFactory.removeBeanDefinition("multipartConfigElement");
-                        }
-
-                        // 销毁单例实例（如果存在）
-                        if (beanFactory.containsSingleton("multipartConfigElement")) {
-                            beanFactory.destroySingleton("multipartConfigElement");
-                        }
-
-                        // 注册新的单例
-                        beanFactory.registerSingleton("multipartConfigElement", newConfig);
-
-                        // 强制触发Servlet容器重新初始化
-                        try {
-                            ((ConfigurableApplicationContext) applicationContext).getBeanFactory().destroyScopedBean("multipartConfigElement");
-                        } catch (Exception e) {
-                            log.warn("Failed to destroy scoped bean", e);
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                log.error("Failed to update multipart config", e);
-                throw new RuntimeException("Failed to update upload size configuration", e);
-            }
-        }
         sysConfigProperties.setSysProperty(property);
     }
 }

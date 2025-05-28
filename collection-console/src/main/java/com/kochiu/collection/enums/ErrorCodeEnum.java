@@ -64,7 +64,7 @@ public enum ErrorCodeEnum {
     SENSITIVE_PATH("1062", "不能保存在敏感目录，请在策略管理里设置目录"),
     CLEAR_FAIL("1063", "清理失败"),
     RSA_KEY_GEN_FAIL("1064", "RSA密钥对生成失败"),
-    ;
+    UPLOAD_MAX_SIZE_TOO_LARGE("1065", "上传文件不能大于5GB");
 
     private final String code;
     private final String message;

@@ -1,8 +1,8 @@
 package com.kochiu.collection.service.store;
 
+import com.kochiu.collection.annotation.FileType;
 import com.kochiu.collection.data.dto.ResourceDto;
 import com.kochiu.collection.entity.UserResource;
-import com.kochiu.collection.enums.FileTypeEnum;
 import com.kochiu.collection.repository.UserResourceRepository;
 import com.kochiu.collection.service.file.FileStrategy;
 import com.kochiu.collection.service.file.FileStrategyFactory;
@@ -31,7 +31,7 @@ public class ThumbnailService {
      * 异步生成缩略图
      */
     @Async
-    public void asyncCreateThumbnail(ResourceDto resourceDto, FileTypeEnum fileType, String filePath) {
+    public void asyncCreateThumbnail(ResourceDto resourceDto, FileType fileType, String filePath) {
 
         //判断文件是否需要生成缩略图
         String thumbFilePath = filePath.replace("." + resourceDto.getFileExt(), "_thumb.png");
@@ -39,7 +39,7 @@ public class ThumbnailService {
 
         FileStrategy fileStrategy = fileStrategyFactory.getStrategy(fileType);
         try {
-            if(fileType.isThumb()) {
+            if(fileType.thumb()) {
                 fileStrategy.createThumbnail(new File(filePath), thumbFilePath, thumbUrl, fileType, resourceDto);
             }
             else{

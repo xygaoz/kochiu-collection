@@ -11,9 +11,7 @@ import com.kochiu.collection.data.bo.MoveToBo;
 import com.kochiu.collection.data.bo.ResInfoBo;
 import com.kochiu.collection.data.dto.ResourceDto;
 import com.kochiu.collection.entity.UserResource;
-import com.kochiu.collection.enums.FileTypeEnum;
 import com.kochiu.collection.enums.ResourceTypeEnum;
-import com.kochiu.collection.exception.CollectionException;
 import com.kochiu.collection.mapper.UserResourceMapper;
 import com.kochiu.collection.properties.UserConfigProperties;
 import org.apache.commons.io.FilenameUtils;
@@ -23,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Service
@@ -37,7 +36,7 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
     /**
      * 保存资源，返回资源id
      */
-    public Long saveResource(ResourceDto resourceDto) {
+    public Long saveResource(ResourceDto resourceDto, Integer resourceType) {
 
         String extension = FilenameUtils.getExtension(resourceDto.getSourceFileName()).toLowerCase();
 
@@ -56,7 +55,7 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
         userResource.setThumbRatio(resourceDto.getThumbRatio());
         userResource.setPreviewUrl(resourceDto.getPreviewUrl());
         userResource.setMd5(resourceDto.getMd5());
-        userResource.setResourceType(FileTypeEnum.getByValue(extension).getDesc().getCode());
+        userResource.setResourceType(resourceType);
         if (this.save(userResource)) {
             // 获取最后插入的行ID
             Long resourceId = baseMapper.selectLastInsertId();
@@ -82,16 +81,16 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
 
         try(Page<UserResource> ignored = PageHelper.startPage(filterResourceBo.getPageNum(), getPageSize(userId, filterResourceBo.getPageSize()))) {
 
-            Set<String> fileExtList = new HashSet<>();
+            Set<Integer> typeList = new HashSet<>();
             if(filterResourceBo.getTypes() != null) {
                 for (String type : filterResourceBo.getTypes()) {
-                    fileExtList.addAll(FileTypeEnum.getNames(ResourceTypeEnum.getByValue(type)));
+                    typeList.add(Objects.requireNonNull(ResourceTypeEnum.getByValue(type)).getCode());
                 }
             }
             return new PageInfo<>(baseMapper.selectCategoryResource(userId,
                     cateId,
                     filterResourceBo.getKeyword(),
-                    fileExtList.toArray(new String[0]),
+                    typeList.toArray(new Integer[0]),
                     filterResourceBo.getTags()));
         }
     }
@@ -103,16 +102,16 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
 
         try(Page<UserResource> ignored = PageHelper.startPage(filterResourceBo.getPageNum(), getPageSize(userId, filterResourceBo.getPageSize()))) {
 
-            Set<String> fileExtList = new HashSet<>();
+            Set<Integer> typeList = new HashSet<>();
             if(filterResourceBo.getTypes() != null) {
                 for (String type : filterResourceBo.getTypes()) {
-                    fileExtList.addAll(FileTypeEnum.getNames(ResourceTypeEnum.getByValue(type)));
+                    typeList.add(Objects.requireNonNull(ResourceTypeEnum.getByValue(type)).getCode());
                 }
             }
             return new PageInfo<>(baseMapper.selectAllCateResource(userId,
                     filterResourceBo.getCateId(),
                     filterResourceBo.getKeyword(),
-                    fileExtList.toArray(new String[0]),
+                    typeList.toArray(new Integer[0]),
                     filterResourceBo.getTags()));
         }
     }
@@ -154,16 +153,16 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
 
         try(Page<UserResource> ignored = PageHelper.startPage(filterResourceBo.getPageNum(), getPageSize(userId, filterResourceBo.getPageSize()))) {
 
-            Set<String> fileExtList = new HashSet<>();
+            Set<Integer> typeList = new HashSet<>();
             if(filterResourceBo.getTypes() != null) {
                 for (String type : filterResourceBo.getTypes()) {
-                    fileExtList.addAll(FileTypeEnum.getNames(ResourceTypeEnum.getByValue(type)));
+                    typeList.add(Objects.requireNonNull(ResourceTypeEnum.getByValue(type)).getCode());
                 }
             }
             return new PageInfo<>(baseMapper.selectTagResource(userId,
                     tagId,
                     filterResourceBo.getKeyword(),
-                    fileExtList.toArray(new String[0]))
+                    typeList.toArray(new Integer[0]))
             );
         }
     }
@@ -175,15 +174,15 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
 
         try(Page<UserResource> ignored = PageHelper.startPage(filterResourceBo.getPageNum(), getPageSize(userId, filterResourceBo.getPageSize()))) {
 
-            Set<String> fileExtList = new HashSet<>();
+            Set<Integer> typeList = new HashSet<>();
             if(filterResourceBo.getTypes() != null) {
                 for (String type : filterResourceBo.getTypes()) {
-                    fileExtList.addAll(FileTypeEnum.getNames(ResourceTypeEnum.getByValue(type)));
+                    typeList.add(Objects.requireNonNull(ResourceTypeEnum.getByValue(type)).getCode());
                 }
             }
             return new PageInfo<>(baseMapper.selectTypeResource(userId,
                     filterResourceBo.getKeyword(),
-                    fileExtList.toArray(new String[0]),
+                    typeList.toArray(new Integer[0]),
                     filterResourceBo.getTags())
             );
         }
@@ -254,15 +253,15 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
 
         try(Page<UserResource> ignored = PageHelper.startPage(filterResourceBo.getPageNum(), getPageSize(userId, filterResourceBo.getPageSize()))) {
 
-            Set<String> fileExtList = new HashSet<>();
+            Set<Integer> typeList = new HashSet<>();
             if(filterResourceBo.getTypes() != null) {
                 for (String type : filterResourceBo.getTypes()) {
-                    fileExtList.addAll(FileTypeEnum.getNames(ResourceTypeEnum.getByValue(type)));
+                    typeList.add(Objects.requireNonNull(ResourceTypeEnum.getByValue(type)).getCode());
                 }
             }
             return new PageInfo<>(baseMapper.selectRecycleResource(userId,
                     filterResourceBo.getKeyword(),
-                    fileExtList.toArray(new String[0]),
+                    typeList.toArray(new Integer[0]),
                     filterResourceBo.getTags())
             );
         }
@@ -275,10 +274,10 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
 
         try(Page<UserResource> ignored = PageHelper.startPage(filterResourceBo.getPageNum(), getPageSize(userId, filterResourceBo.getPageSize()))) {
 
-            Set<String> fileExtList = new HashSet<>();
+            Set<Integer> typeList = new HashSet<>();
             if(filterResourceBo.getTypes() != null) {
                 for (String type : filterResourceBo.getTypes()) {
-                    fileExtList.addAll(FileTypeEnum.getNames(ResourceTypeEnum.getByValue(type)));
+                    typeList.add(Objects.requireNonNull(ResourceTypeEnum.getByValue(type)).getCode());
                 }
             }
 
@@ -287,7 +286,7 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
                         filterResourceBo.getCataId(),
                         filterResourceBo.getCateId(),
                         filterResourceBo.getKeyword(),
-                        fileExtList.toArray(new String[0]),
+                        typeList.toArray(new Integer[0]),
                         filterResourceBo.getTags())
                 );
             }
@@ -296,7 +295,7 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
                         filterResourceBo.getCataId(),
                         filterResourceBo.getCateId(),
                         filterResourceBo.getKeyword(),
-                        fileExtList.toArray(new String[0]),
+                        typeList.toArray(new Integer[0]),
                         filterResourceBo.getTags())
                 );
             }
@@ -319,15 +318,15 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
 
         try(Page<UserResource> ignored = PageHelper.startPage(filterResourceBo.getPageNum(), getPageSize(userId, filterResourceBo.getPageSize()))) {
 
-            Set<String> fileExtList = new HashSet<>();
+            Set<Integer> typeList = new HashSet<>();
             if(filterResourceBo.getTypes() != null) {
                 for (String type : filterResourceBo.getTypes()) {
-                    fileExtList.addAll(FileTypeEnum.getNames(ResourceTypeEnum.getByValue(type)));
+                    typeList.add(Objects.requireNonNull(ResourceTypeEnum.getByValue(type)).getCode());
                 }
             }
             return new PageInfo<>(baseMapper.selectPublicResource(userId,
                     filterResourceBo.getKeyword(),
-                    fileExtList.toArray(new String[0]),
+                    typeList.toArray(new Integer[0]),
                     filterResourceBo.getTags()));
         }
     }
