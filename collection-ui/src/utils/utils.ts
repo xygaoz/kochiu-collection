@@ -45,6 +45,7 @@ httpInstance.interceptors.request.use(config => {
 }, error => {
     return Promise.reject(error);
 });
+httpInstance.defaults.timeout = 3600000; // 1小时超时
 
 let isRefreshing = false; // 是否正在刷新Token
 let failedQueue: any[] = []; // 存储刷新Token期间的失败请求

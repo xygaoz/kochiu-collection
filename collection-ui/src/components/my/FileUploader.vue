@@ -72,7 +72,7 @@
                 </div>
                 <template #tip>
                     <div class="el-upload__tip">
-                        支持格式：图片（JPG/PNG/GIF等）、文档（PDF/DOCX等）、视频（MP4/AVI等）、音频（MP3/WAV等），单文件最大 1GB
+                        支持格式：图片（JPG/PNG/GIF等）、文档（PDF/DOCX等）、视频（MP4/AVI等）、音频（MP3/WAV等），单文件最大 {{ uploadMaxSize }}
                     </div>
                 </template>
             </el-upload>
@@ -134,12 +134,10 @@
 import { UploadFilled } from '@element-plus/icons-vue'
 import { ElMessage } from "element-plus";
 import { ref, onMounted, reactive } from "vue";
-import { getAllowedTypes, uploadFile } from "@/apis/resource-api";
+import { getAllowedTypes, uploadFile, uploadLargeFile } from "@/apis/resource-api";
 import { Catalog, Category } from "@/apis/interface";
 import { getAllCategory } from "@/apis/category-api";
-import { AxiosProgressEvent } from "axios";
 import { getCatalogTree } from "@/apis/catalog-api";
-import emitter from "@/utils/event-bus";
 import { getSysConfig } from "@/apis/system-api";
 import { convertToBytes } from "@/utils/utils";
 
@@ -148,7 +146,7 @@ interface UploadFileItem {
     size: number;
     raw: File;
     progress?: number;
-    status?: 'success' | 'exception' | undefined;
+    status?: 'success' | 'exception' | 'uploading' | 'processing' | undefined;
 }
 
 // 定义允许的文件类型和最大文件大小（100MB）
@@ -161,7 +159,7 @@ const allowedTypes = ref<string[]>([
     'video/x-matroska', 'audio/mpeg', 'audio/wav', 'audio/flac'
 ]);
 let maxSize = 1024 * 1024 * 500; // 500mb in bytes
-let uploadMaxSize = '500MB'
+const uploadMaxSize = ref('500MB')
 
 // 分类相关
 const categories = reactive<Category[]>([])
@@ -194,7 +192,7 @@ const handleFileChange = (file: any, fileList: any[]) => {
 
     const isLtMaxSize = file.size <= maxSize;
     if (!isLtMaxSize) {
-        ElMessage.error(`文件大小不能超过 ${uploadMaxSize}`);
+        ElMessage.error(`文件大小不能超过 ${uploadMaxSize.value}`);
         return false;
     }
 
@@ -268,54 +266,50 @@ const clearFiles = () => {
 };
 
 // 上传文件
+// FileUploader.vue
 const uploadFiles = async () => {
-    if (!selectedCategory.value) {
-        ElMessage.warning('请选择分类');
-        return;
-    }
-
     uploading.value = true;
 
     for (const file of files) {
-        try {
-            file.progress = 0;
-            file.status = undefined;
+        file.progress = 0;
+        file.status = 'uploading';
 
-            let result = await uploadFile(
-                file.raw,
-                selectedCategory.value,
-                overwrite.value.toString(),
-                cataId.value,
-                autoCreate.value,
-                (progressEvent: AxiosProgressEvent) => {
-                    // 添加对 total 的检查
-                    if (progressEvent.lengthComputable && progressEvent.total) {
-                        file.progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        try {
+            // 大于100MB使用分片上传，否则使用普通上传
+            if (file.size > 100 * 1024 * 1024) {
+                await uploadLargeFile(
+                    file.raw,
+                    selectedCategory.value!,
+                    overwrite.value.toString(),
+                    cataId.value,
+                    autoCreate.value,
+                    (percent) => {
+                        file.progress = percent;
+                    },
+                    50 * 1024 * 1024 // 50MB分片
+                );
+            } else {
+                await uploadFile(
+                    file.raw,
+                    selectedCategory.value!,
+                    overwrite.value.toString(),
+                    cataId.value,
+                    autoCreate.value,
+                    (percent) => {
+                        file.progress = percent;
                     }
-                }
-            );
-            if(result) {
-                file.progress = 100;
-                file.status = 'success';
+                );
             }
-            else{
-                file.status = 'exception';
-                ElMessage.error(`文件 ${file.name} 上传失败`);
-            }
+            file.status = 'success';
+            ElMessage.success(`${file.name} 上传成功`);
         } catch (error) {
-            console.error("文件上传失败:", error);
             file.status = 'exception';
-            ElMessage.error(`文件 ${file.name} 上传失败`);
+            console.error('上传失败:', error);
+            ElMessage.error(`${file.name} 上传失败`);
         }
     }
 
     uploading.value = false;
-    ElMessage.success('所有文件上传完成');
-
-    if(autoCreate.value) {
-        // 触发数据刷新事件
-        emitter.emit('refresh-menu')
-    }
 };
 
 // 获取分类信息
@@ -352,7 +346,7 @@ onMounted(async () => {
         const config = await getSysConfig();
         if(config && config.uploadMaxSize) {
             maxSize = convertToBytes(config.uploadMaxSize)
-            uploadMaxSize = config.uploadMaxSize
+            uploadMaxSize.value = config.uploadMaxSize
         }
 
         //加载上传限制
@@ -501,5 +495,15 @@ onMounted(async () => {
 .upload-actions {
     margin-top: 20px;
     text-align: right;
+}
+
+.file-preview-item.processing {
+    border-left: 3px solid #e6a23c;
+}
+
+.processing-text {
+    color: #e6a23c;
+    font-size: 12px;
+    margin-top: 5px;
 }
 </style>

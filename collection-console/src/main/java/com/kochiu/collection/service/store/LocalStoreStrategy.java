@@ -50,7 +50,6 @@ import static com.kochiu.collection.enums.ErrorCodeEnum.*;
 @Service("local")
 public class LocalStoreStrategy implements ResourceStoreStrategy {
 
-    private final CollectionProperties collectionProperties;
     private final UserResourceRepository resourceRepository;
     private final SysUserRepository userRepository;
     private final FileStrategyFactory fileStrategyFactory;
@@ -59,15 +58,13 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
     private final ThumbnailService thumbnailService;
     private final SystemService systemService;
 
-    public LocalStoreStrategy(CollectionProperties collectionProperties,
-                              UserResourceRepository resourceRepository,
+    public LocalStoreStrategy(UserResourceRepository resourceRepository,
                               SysUserRepository userRepository,
                               FileStrategyFactory fileStrategyFactory,
                               UserCatalogRepository catalogRepository,
                               SysStrategyRepository strategyRepository,
                               ThumbnailService thumbnailService,
                               SystemService systemService) {
-        this.collectionProperties = collectionProperties;
         this.resourceRepository = resourceRepository;
         this.userRepository = userRepository;
         this.fileStrategyFactory = fileStrategyFactory;
@@ -147,24 +144,45 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
                 .saveType(SaveTypeEnum.LOCAL)
                .build();
 
+        // 保存资源记录
         Long resId = resourceRepository.saveResource(resourceDto, fileType.desc().getCode());
-
-        //异步生成缩略图
         resourceDto.setResourceId(resId);
-        thumbnailService.asyncCreateThumbnail(resourceDto, fileType, filePath);
 
-        //拼接缩略图url
+        // 立即返回结果（不等待缩略图生成）
         String thumbUrl = resourceDto.getResourceUrl().replace("." + resourceDto.getFileExt(), "_thumb.png");
         thumbUrl = thumbUrl.replace("/" + userCode + "/", "");
         thumbUrl = "/" + resId + "/" + thumbUrl;
 
+        log.debug("保存文件成功 - 文件名: {}, 文件大小: {}", originalFilename, size);
         return FileVo.builder()
+                .resourceId(resId)
                 .url("/" + resId + returnUrl)
                 .thumbnailUrl(thumbUrl)
                 .resourceUrl(savePath)
                 .size(DataSizeUtil.format(size))
                 .mimeType(fileType.mimeType())
                 .build();
+    }
+
+    public void asyncCreateThumbnail(Long resourceId){
+
+        UserResource resource = resourceRepository.getById(resourceId);
+        if(resource == null){
+            return;
+        }
+        ResourceDto resourceDto = ResourceDto.builder()
+                .resourceId(resourceId)
+                .resourceUrl(resource.getResourceUrl())
+                .fileExt(resource.getFileExt())
+                .filePath(resource.getFilePath())
+                .build();
+
+        FileType fileType = fileStrategyFactory.getFileType(resource.getFileExt());
+
+        String recFilePathDir = strategy.getServerUrl();
+        String filePath = recFilePathDir + resource.getFilePath();
+
+        thumbnailService.asyncCreateThumbnail(resourceDto, fileType, filePath);
     }
 
     /**

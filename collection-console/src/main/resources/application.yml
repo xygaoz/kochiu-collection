@@ -38,8 +38,13 @@ spring:
       pool:
         core-size: 5
         max-size: 10
-        queue-capacity: 100
+        queue-capacity: 1000  # 增加队列容量
+        keep-alive: 120s     # 增加线程保持活动时间
+        allow-core-thread-timeout: true
       thread-name-prefix: thumbnail-task-
+      shutdown:
+        await-termination: true
+        await-termination-period: 60s
 
 #指定mybatis-config.xml的位置
 mybatis-plus:

@@ -6,6 +6,7 @@ import com.kochiu.collection.annotation.FileType;
 import com.kochiu.collection.data.bo.BatchImportBo;
 import com.kochiu.collection.data.bo.PathBo;
 import com.kochiu.collection.data.bo.UploadBo;
+import com.kochiu.collection.data.dto.ChunkUploadDto;
 import com.kochiu.collection.data.dto.UserDto;
 import com.kochiu.collection.data.vo.FileVo;
 import com.kochiu.collection.entity.SysUser;
@@ -24,33 +25,43 @@ import com.kochiu.collection.service.file.FileStrategyFactory;
 import com.kochiu.collection.service.store.ResourceStoreStrategy;
 import com.kochiu.collection.service.store.ResourceStrategyFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.jodconverter.local.office.utils.Lo;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpRange;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.kochiu.collection.Constant.RANDOM_CHARS2;
 import static com.kochiu.collection.enums.ErrorCodeEnum.FILE_IS_EXIST;
 import static com.kochiu.collection.enums.ErrorCodeEnum.FILE_SAVING_FAILURE;
 
 @Slf4j
 @Service
 public class ResourceFileService {
+
+    @Value("${file.upload.dir:}")
+    private String uploadDir;
 
     private final ResourceStrategyFactory resourceStrategyFactory;
     private final SysUserRepository userRepository;
@@ -61,6 +72,7 @@ public class ResourceFileService {
     private final ObjectMapper objectMapper;
     private final UserCategoryRepository  userCategoryRepository;
     private final FileStrategyFactory fileStrategyFactory;
+    private final Executor asyncExecutor;
 
     public ResourceFileService(ResourceStrategyFactory resourceStrategyFactory,
                                SysUserRepository userRepository,
@@ -69,7 +81,8 @@ public class ResourceFileService {
                                UserCatalogRepository catalogRepository,
                                SystemService systemService, ObjectMapper objectMapper,
                                UserCategoryRepository userCategoryRepository,
-                               FileStrategyFactory fileStrategyFactory) {
+                               FileStrategyFactory fileStrategyFactory,
+                               Executor asyncExecutor) {
         this.resourceStrategyFactory = resourceStrategyFactory;
         this.userRepository = userRepository;
         this.resourceRepository = resourceRepository;
@@ -79,6 +92,7 @@ public class ResourceFileService {
         this.objectMapper = objectMapper;
         this.userCategoryRepository = userCategoryRepository;
         this.fileStrategyFactory = fileStrategyFactory;
+        this.asyncExecutor = asyncExecutor;
     }
 
     /**
@@ -87,24 +101,42 @@ public class ResourceFileService {
     @Transactional(rollbackFor = Exception.class)
     public FileVo saveFile(UploadBo uploadBo, UserDto userDto) throws CollectionException {
 
+        return saveFile(uploadBo.getFile().getResource(),
+                uploadBo.getCategoryId(),
+                uploadBo.getCataId(),
+                uploadBo.getOverwrite(),
+                uploadBo.getAutoCreate(),
+                uploadBo.getFile().getOriginalFilename(),
+                userDto);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public FileVo saveFile(Resource file,
+                           Long categoryId,
+                           Long cataId,
+                           Boolean overwrite,
+                           Boolean autoCreate,
+                           String originalFilename,
+                           UserDto userDto) throws CollectionException {
+
         SysUser user = userRepository.getUser(userDto);
         try {
             // 创建临时文件
             Path tempFile = Files.createTempFile("upload-", ".tmp");
-            Files.copy(uploadBo.getFile().getInputStream(), tempFile, StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(file.getInputStream(), tempFile, StandardCopyOption.REPLACE_EXISTING);
             // 计算MD5
             String md5 = DigestUtil.md5Hex(tempFile.toFile());
 
             // 使用临时文件
             try (InputStream is = Files.newInputStream(tempFile)) {
                 return saveFile(is,
-                        uploadBo.getFile().getOriginalFilename(),
+                        originalFilename,
                         md5,
                         userDto,
-                        uploadBo.getCategoryId(),
-                        uploadBo.getCataId(),
-                        uploadBo.getOverwrite(),
-                        uploadBo.getAutoCreate(),
+                        categoryId,
+                        cataId,
+                        overwrite,
+                        autoCreate,
                         user.getStrategy());
             } catch (IOException e) {
                 log.error("文件保存失败", e);
@@ -125,6 +157,20 @@ public class ResourceFileService {
         }
     }
 
+    private void createThumbnail(FileVo fileVo, String strategy){
+        //异步创建缩略图
+        ResourceStoreStrategy storeStrategy = resourceStrategyFactory.getStrategy(strategy);
+        CompletableFuture.runAsync(() -> {
+            // 添加超时控制
+            try {
+                log.debug("开始生成缩略图 - 文件ID: {}", fileVo.getResourceId());
+                storeStrategy.asyncCreateThumbnail(fileVo.getResourceId());
+            } catch (Exception e) {
+                log.error("缩略图生成失败", e);
+            }
+        }, asyncExecutor);
+    }
+
     /**
      * 保存文件
      */
@@ -143,7 +189,7 @@ public class ResourceFileService {
             overwrite = true;
         }
 
-        List<UserResource> resources =resourceRepository.countFileMd5(userDto.getUserId(), md5);
+        List<UserResource> resources = resourceRepository.countFileMd5(userDto.getUserId(), md5);
         if(!resources.isEmpty() && !overwrite){
             throw new CollectionException(FILE_IS_EXIST);
         }
@@ -196,6 +242,7 @@ public class ResourceFileService {
         FileVo fileVo = storeStrategy.saveFile(inputStream,
                         originalFilename,
                         userDto, md5, savePath, categoryId, cataId);
+
         //保存成功。删除原有记录
         if(!resources.isEmpty() && overwrite){
             for(UserResource resource : resources){
@@ -360,7 +407,7 @@ public class ResourceFileService {
                 //在根目录创建日期目录
                 case CREATE_DATE_DIRECTORY: {
                     try (InputStream is = new FileInputStream(file)) {
-                        saveFile(is,
+                        FileVo fileVo = saveFile(is,
                                 file.getName(),
                                 md5,
                                 userDto,
@@ -369,6 +416,7 @@ public class ResourceFileService {
                                 true,
                                 true,
                                 user.getStrategy());
+                        createThumbnail(fileVo, user.getStrategy());
 
                         //保存成功。删除原有记录
                         if (!resources.isEmpty()) {
@@ -403,7 +451,7 @@ public class ResourceFileService {
                         cataId = rootCataId;
                     }
                     try (InputStream is = new FileInputStream(file)) {
-                        saveFile(is,
+                        FileVo fileVo = saveFile(is,
                                 file.getName(),
                                 md5,
                                 userDto,
@@ -412,6 +460,7 @@ public class ResourceFileService {
                                 true,
                                 false,
                                 user.getStrategy());
+                        createThumbnail(fileVo, user.getStrategy());
 
                         for (UserResource resource : resources) {
                             resourceRepository.removeById(resource);
@@ -428,7 +477,7 @@ public class ResourceFileService {
                 //不自动创建，保存到根目录
                 case NO_AUTO_CREATE: {
                     try (InputStream is = new FileInputStream(file)) {
-                        saveFile(is,
+                        FileVo fileVo = saveFile(is,
                                 file.getName(),
                                 md5,
                                 userDto,
@@ -437,6 +486,7 @@ public class ResourceFileService {
                                 true,
                                 false,
                                 user.getStrategy());
+                        createThumbnail(fileVo, user.getStrategy());
 
                         //一起存在到根目录只会有一份文件，只删除资源记录即可
                         for (UserResource resource : resources) {
@@ -454,7 +504,7 @@ public class ResourceFileService {
         }
         else{
             try (InputStream is = new FileInputStream(file)) {
-                saveFile(is,
+                FileVo fileVo = saveFile(is,
                         file.getName(),
                         md5,
                         userDto,
@@ -463,6 +513,7 @@ public class ResourceFileService {
                         true,
                         false,
                         user.getStrategy());
+                createThumbnail(fileVo, user.getStrategy());
 
                 //保存成功。删除原有记录
                 if (!resources.isEmpty()) {
@@ -550,5 +601,73 @@ public class ResourceFileService {
         } catch (IllegalArgumentException e) {
             return false; // 排除不在枚举中的类型
         }
+    }
+
+    @Async("taskExecutor")
+    public void generateThumbnail(UserDto userDto, Long resourceId) throws CollectionException {
+
+        SysUser user = userRepository.getUser(userDto);
+        ResourceStoreStrategy storeStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
+        storeStrategy.asyncCreateThumbnail(resourceId);
+    }
+
+    // 存储分片文件
+    public void storeChunk(ChunkUploadDto chunkDTO) throws IOException {
+
+        //取系统临时文件夹
+        uploadDir = StringUtils.isBlank(uploadDir) ? System.getProperty("java.io.tmpdir") : uploadDir;
+        String chunkDir = uploadDir + File.separator + "chunks" + File.separator + chunkDTO.getFileId();
+        File dir = new File(chunkDir);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        String chunkFilename = chunkDTO.getChunkIndex() + ".part";
+        Path filePath = Paths.get(chunkDir, chunkFilename);
+        Files.write(filePath, chunkDTO.getFile().getBytes());
+    }
+
+    // 合并分片文件
+    public File mergeChunks(String fileId) throws IOException {
+
+        //取系统临时文件夹
+        uploadDir = StringUtils.isBlank(uploadDir) ? System.getProperty("java.io.tmpdir") : uploadDir;
+        String chunkDir = uploadDir + File.separator + "chunks" + File.separator + fileId;
+        File[] chunks = new File(chunkDir).listFiles();
+
+        if (chunks == null || chunks.length == 0) {
+            throw new RuntimeException("No chunks found");
+        }
+
+        // 按分片序号排序
+        Arrays.sort(chunks, Comparator.comparingInt(f -> Integer.parseInt(f.getName().split("\\.")[0])));
+
+        // 创建最终文件
+        String filePath = uploadDir + File.separator + RandomStringUtils.random(16, RANDOM_CHARS2) + ".tmp";
+        try (RandomAccessFile destFile = new RandomAccessFile(filePath, "rw")) {
+            byte[] buffer = new byte[1024 * 1024]; // 1MB缓冲区
+            for (File chunk : chunks) {
+                try (FileInputStream fis = new FileInputStream(chunk)) {
+                    int len;
+                    while ((len = fis.read(buffer)) != -1) {
+                        destFile.write(buffer, 0, len);
+                    }
+                }
+                chunk.delete(); // 合并后删除分片
+            }
+        }
+
+        // 删除分片目录
+        Files.delete(Paths.get(chunkDir));
+
+        return new File(filePath);
+    }
+
+    // 检查分片是否已上传
+    public boolean checkChunk(String fileId, Integer chunkIndex) {
+        //取系统临时文件夹
+        uploadDir = StringUtils.isBlank(uploadDir) ? System.getProperty("java.io.tmpdir") : uploadDir;
+        String chunkPath = uploadDir + File.separator + "chunks" + File.separator + fileId + File.separator + chunkIndex + ".part";
+        return new File(chunkPath).exists();
     }
 }

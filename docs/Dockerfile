@@ -26,7 +26,7 @@ WORKDIR /app
 ENV DB_PATH=/app/db \
     username=admin \
     password=admin \
-    JAVA_OPTS="--enable-native-access=ALL-UNNAMED -Xms512m -Xmx2048m"
+    JAVA_OPTS="--enable-native-access=ALL-UNNAMED -Xms512m -Xmx4g -XX:MaxDirectMemorySize=2G"
 
 # 暴露端口
 EXPOSE 9000

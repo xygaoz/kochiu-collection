@@ -5,7 +5,6 @@ import com.kochiu.collection.repository.SysConfigRepository;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -22,11 +21,11 @@ public class SysConfigProperties {
 
     private final SysConfigRepository sysConfigRepository;
     private SysProperty sysProperty = new SysProperty();
-    @Value("${spring.servlet.multipart.max-file-size}")
     private String maxFileSize;
 
-    public SysConfigProperties(SysConfigRepository sysConfigRepository) {
+    public SysConfigProperties(SysConfigRepository sysConfigRepository, String maxFileSize) {
         this.sysConfigRepository = sysConfigRepository;
+        this.maxFileSize = maxFileSize;
     }
 
     public void afterPropertiesSet() {

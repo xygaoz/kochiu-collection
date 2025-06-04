@@ -114,4 +114,7 @@ public interface ResourceStoreStrategy {
      * @return
      */
     boolean updateResourcesPath(int userId, Long targetCataId, List<Long> resourceIds) throws CollectionException;
+
+    //  异步创建缩略图
+    void asyncCreateThumbnail(Long resourceId);
 }

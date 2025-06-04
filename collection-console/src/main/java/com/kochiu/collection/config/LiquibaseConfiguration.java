@@ -14,6 +14,7 @@ import liquibase.exception.DatabaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -32,6 +33,8 @@ public class LiquibaseConfiguration {
 
     protected static final String LIQUIBASE_CHANGELOG_PREFIX = "KC_DB_";
     private final JdbcTemplate jdbcTemplate;
+    @Value("${spring.servlet.multipart.max-file-size}")
+    private String maxFileSize;
 
     public LiquibaseConfiguration(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -86,7 +89,7 @@ public class LiquibaseConfiguration {
     @DependsOn("KoChiuCollection")
     @Bean
     public SysConfigProperties sysConfigProperties(SysConfigRepository sysConfigRepository) {
-        SysConfigProperties properties = new SysConfigProperties(sysConfigRepository);
+        SysConfigProperties properties = new SysConfigProperties(sysConfigRepository, maxFileSize);
         try {
             properties.afterPropertiesSet();
         } catch (Exception e) {

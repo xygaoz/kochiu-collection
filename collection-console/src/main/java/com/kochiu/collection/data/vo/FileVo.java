@@ -7,10 +7,11 @@ import lombok.Data;
 @Data
 public class FileVo {
 
-    public String url;
-    public String thumbnailUrl;
+    private Long resourceId;
+    private String url;
+    private String thumbnailUrl;
     //kb
-    public String size;
-    public String mimeType;
-    public String resourceUrl;
+    private String size;
+    private String mimeType;
+    private String resourceUrl;
 }
