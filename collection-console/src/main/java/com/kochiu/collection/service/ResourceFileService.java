@@ -171,6 +171,12 @@ public class ResourceFileService {
         }, asyncExecutor);
     }
 
+    //  检查文件是否存在
+    public boolean checkFileExist(UserDto userDto, String md5) throws CollectionException {
+        List<UserResource> resources = resourceRepository.countFileMd5(userDto.getUserId(), md5);
+        return !resources.isEmpty();
+    }
+
     /**
      * 保存文件
      */

@@ -22,7 +22,7 @@
 
         <!-- 图像处理相关 -->
         <imageio.version>3.12.0</imageio.version>
-        <libraw.version>0.21.2-1.5.11</libraw.version>
+        <im4java.version>1.4.0</im4java.version>
         <thumbnailator.version>0.4.20</thumbnailator.version>
         <imgscalr.version>4.2</imgscalr.version>
 
@@ -423,33 +423,9 @@
             <version>${imageio.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.bytedeco</groupId>
-            <artifactId>libraw</artifactId>
-            <version>${libraw.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bytedeco</groupId>
-            <artifactId>libraw</artifactId>
-            <version>${libraw.version}</version>
-            <classifier>macosx-x86_64</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.bytedeco</groupId>
-            <artifactId>libraw</artifactId>
-            <version>${libraw.version}</version>
-            <classifier>macosx-arm64</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.bytedeco</groupId>
-            <artifactId>libraw</artifactId>
-            <version>${libraw.version}</version>
-            <classifier>windows-x86_64</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.bytedeco</groupId>
-            <artifactId>libraw</artifactId>
-            <version>${libraw.version}</version>
-            <classifier>linux-x86_64</classifier>
+            <groupId>org.im4java</groupId>
+            <artifactId>im4java</artifactId>
+            <version>${im4java.version}</version>
         </dependency>
 
         <!-- 其他 -->

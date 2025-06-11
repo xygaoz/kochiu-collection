@@ -1,12 +1,9 @@
 package com.kochiu.collection.properties;
 
 import com.kochiu.collection.enums.ApiModeEnum;
-import com.kochiu.collection.enums.ResourceTypeEnum;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
-
-import java.util.*;
 
 @Data
 @Component
@@ -15,6 +12,7 @@ public class CollectionProperties {
 
     private Jodconverter jodconverter = new Jodconverter();
     private FFMpeg ffmpeg = new FFMpeg();
+    private GraphicsMagick graphicsMagick = new GraphicsMagick();
 
     @Data
     public static class Jodconverter {
@@ -44,6 +42,7 @@ public class CollectionProperties {
     public static class Local {
         private String officeHome;
         private String ffmpegPath;
+        private String graphicsMagickPath;
     }
 
     @Data
@@ -53,5 +52,17 @@ public class CollectionProperties {
         private String apiHost;
         private String apiUrl;
         private int timeout = 300000;
+    }
+
+    @Data
+    public static class GraphicsMagick {
+        private boolean enabled;
+        private String mode;
+        private Remote remote;
+        private Local local;
+
+        public ApiModeEnum getMode() {
+            return ApiModeEnum.getByMode(mode);
+        }
     }
 }

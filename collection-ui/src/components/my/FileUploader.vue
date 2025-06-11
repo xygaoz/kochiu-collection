@@ -134,12 +134,13 @@
 import { UploadFilled } from '@element-plus/icons-vue'
 import { ElMessage } from "element-plus";
 import { ref, onMounted, reactive } from "vue";
-import { getAllowedTypes, uploadFile, uploadLargeFile } from "@/apis/resource-api";
+import { checkFileExist, getAllowedTypes, uploadFile, uploadLargeFile } from "@/apis/resource-api";
 import { Catalog, Category } from "@/apis/interface";
 import { getAllCategory } from "@/apis/category-api";
 import { getCatalogTree } from "@/apis/catalog-api";
 import { getSysConfig } from "@/apis/system-api";
 import { convertToBytes } from "@/utils/utils";
+import SparkMD5 from "spark-md5";
 
 interface UploadFileItem {
     name: string;
@@ -265,6 +266,68 @@ const clearFiles = () => {
     files.length = 0;
 };
 
+const calculateMD5Chunked = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const chunkSize = 2 * 1024 * 1024; // 2MB chunks
+        const chunks = Math.ceil(file.size / chunkSize);
+        const spark = new SparkMD5.ArrayBuffer();
+        const fileReader = new FileReader();
+        let currentChunk = 0;
+
+        fileReader.onload = (e: ProgressEvent<FileReader>) => {
+            if (!e.target || !e.target.result) {
+                reject(new Error('File reading failed'));
+                return;
+            }
+
+            // 确保结果是 ArrayBuffer 类型
+            if (typeof e.target.result === 'string') {
+                reject(new Error('Unexpected string result'));
+                return;
+            }
+
+            spark.append(e.target.result as ArrayBuffer);
+            currentChunk++;
+
+            if (currentChunk < chunks) {
+                loadNext();
+            } else {
+                resolve(spark.end());
+            }
+        };
+
+        fileReader.onerror = () => {
+            reject(new Error('File reading error'));
+        };
+
+        const loadNext = () => {
+            const start = currentChunk * chunkSize;
+            const end = Math.min(start + chunkSize, file.size);
+            fileReader.readAsArrayBuffer(file.slice(start, end));
+        };
+
+        loadNext();
+    });
+};
+
+const calculateMD5 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const spark = new SparkMD5.ArrayBuffer();
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+            spark.append(e.target?.result as ArrayBuffer);
+            resolve(spark.end());
+        };
+
+        reader.onerror = () => {
+            reject(new Error('File reading failed'));
+        };
+
+        reader.readAsArrayBuffer(file);
+    });
+};
+
 // 上传文件
 // FileUploader.vue
 const uploadFiles = async () => {
@@ -277,6 +340,13 @@ const uploadFiles = async () => {
         try {
             // 大于100MB使用分片上传，否则使用普通上传
             if (file.size > 100 * 1024 * 1024) {
+                //先计算md5
+                const md5 = await calculateMD5Chunked(file.raw);
+                if (await checkFileExist(md5)) {
+                    ElMessage.warning(`文件 ${file.name} 已存在`);
+                    continue;
+                }
+
                 await uploadLargeFile(
                     file.raw,
                     selectedCategory.value!,
@@ -289,6 +359,11 @@ const uploadFiles = async () => {
                     50 * 1024 * 1024 // 50MB分片
                 );
             } else {
+                if (await checkFileExist(await calculateMD5(file.raw))) {
+                    ElMessage.warning(`文件 ${file.name} 已存在`);
+                    continue;
+                }
+
                 await uploadFile(
                     file.raw,
                     selectedCategory.value!,

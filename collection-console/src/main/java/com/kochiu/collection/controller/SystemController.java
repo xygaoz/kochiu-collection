@@ -42,6 +42,7 @@ public class SystemController {
         this.sysConfigProperties = sysConfigProperties;
     }
 
+    @CheckPermit
     @GetMapping("/resourceTypes")
     public DefaultResult<List<ResourceTypeVo>> getSysResourceTypes() {
 
@@ -53,6 +54,7 @@ public class SystemController {
         return new DefaultResult<>(resourceTypeVos);
     }
 
+    @CheckPermit
     @GetMapping("/resourceType/get/{type}")
     public DefaultResult<ResourceTypeVo> getSysResourceType(@PathVariable String type) {
 
@@ -62,6 +64,7 @@ public class SystemController {
         return DefaultResult.ok(resourceTypeVo);
     }
 
+    @CheckPermit
     @PostMapping("/testServerPath")
     public DefaultResult<Boolean> testServerPath(PathBo pathBo) {
         return DefaultResult.ok(systemService.testServerPath(pathBo));
@@ -123,6 +126,7 @@ public class SystemController {
         return DefaultResult.ok(true);
     }
 
+    @CheckPermit
     @GetMapping("/sys-config")
     public DefaultResult<SysConfigProperties.SysProperty> getSysConfig() {
         return DefaultResult.ok(sysConfigProperties.getSysProperty());

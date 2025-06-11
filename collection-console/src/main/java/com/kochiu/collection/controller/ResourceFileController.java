@@ -26,6 +26,7 @@ import org.springframework.web.multipart.commons.CommonsMultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.Set;
@@ -55,6 +56,12 @@ public class ResourceFileController {
         this.asyncExecutor = asyncExecutor;
     }
 
+    @CheckPermit(on = {PermitEnum.UI, PermitEnum.API})
+    @PostMapping(RESOURCE_PATH + "/check-file-exist")
+    public DefaultResult<Boolean> checkFileExist(@NotNull String md5) throws CollectionException {
+        UserDto userDto = CheckPermitAspect.USER_INFO.get();
+        return DefaultResult.ok(resourceFileService.checkFileExist(userDto, md5));
+    }
 
     @CheckPermit(on = {PermitEnum.UI, PermitEnum.API})
     @PostMapping(RESOURCE_PATH + "/upload")
@@ -115,6 +122,7 @@ public class ResourceFileController {
         return DefaultResult.ok(taskId);
     }
 
+    @CheckPermit
     @GetMapping(RESOURCE_PATH + "/cancelImport/{taskId}")
     public DefaultResult<Boolean> cancelBatchImport(@PathVariable String taskId) {
         boolean success = taskService.cancelTask(taskId);
@@ -125,6 +133,7 @@ public class ResourceFileController {
         return DefaultResult.fail("任务不存在或已完成");
     }
 
+    @CheckPermit
     @GetMapping(RESOURCE_PATH + "/allowedTypes")
     public DefaultResult<Set<String>> getAllowedTypes() {
         return DefaultResult.ok(fileStrategyFactory.getAllowedTypes());

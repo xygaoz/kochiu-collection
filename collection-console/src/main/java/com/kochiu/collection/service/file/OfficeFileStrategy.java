@@ -19,9 +19,11 @@ import java.util.Objects;
 public abstract class OfficeFileStrategy {
 
     private final CollectionProperties properties;
+    protected final RestTemplate restTemplate;
 
     protected OfficeFileStrategy(CollectionProperties properties) {
         this.properties = properties;
+        this.restTemplate = createRestTemplateWithTimeout();
     }
 
     public void remoteConvertToPdf(File inputFile, File outputFile) throws IOException {
@@ -42,7 +44,7 @@ public abstract class OfficeFileStrategy {
         if(host.endsWith("/")) {
             host = host.substring(0, host.length() - 1);
         }
-        ResponseEntity<byte[]> response = createRestTemplateWithTimeout().exchange(
+        ResponseEntity<byte[]> response = restTemplate.exchange(
                 host + "/lool/convert-to/pdf",
                 HttpMethod.POST,
                 new HttpEntity<>(body, headers),

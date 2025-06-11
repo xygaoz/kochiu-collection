@@ -2,125 +2,119 @@ package com.kochiu.collection.service.file;
 
 import com.kochiu.collection.annotation.FileType;
 import com.kochiu.collection.data.dto.ResourceDto;
+import com.kochiu.collection.enums.ApiModeEnum;
 import com.kochiu.collection.enums.ResourceTypeEnum;
+import com.kochiu.collection.properties.CollectionProperties;
 import com.kochiu.collection.util.ImageUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.bytedeco.javacpp.*;
-import org.bytedeco.libraw.*;
+import org.im4java.core.ConvertCmd;
+import org.im4java.core.IMOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
-
-import static org.bytedeco.libraw.global.LibRaw.*;
+import java.util.Collections;
 
 @Slf4j
 @Service("dng")
 @FileType(thumb = true, resolutionRatio = true, mimeType = "image/x-adobe-dng", desc = ResourceTypeEnum.IMAGE)
-public class DngFileStrategy implements FileStrategy {
+public class DngFileStrategy extends TifFileStrategy {
+
+    @Autowired
+    public DngFileStrategy(CollectionProperties collectionProperties) {
+        super(collectionProperties);
+    }
+
+    @Override
+    protected String getPreviewExtension() {
+        return ".dng.png";
+    }
 
     @Override
     public String createThumbnail(File file, String thumbFilePath, String thumbUrl, FileType fileType, ResourceDto resourceDto) throws Exception {
-
-        try {
-            String resolutionRation = null;
-            BufferedImage srcImg = processRaw(file);
-
-            if (fileType.resolutionRatio()) {
-                resolutionRation = srcImg.getWidth() + "x" + srcImg.getHeight();
-            }
-
-            resourceDto.setThumbRatio(ImageUtil.writeThumbnail(srcImg, thumbFilePath));
-            resourceDto.setResolutionRatio(resolutionRation);
-            resourceDto.setThumbUrl(thumbUrl);
-
-            // 生成预览图，raw文件不能直接预览
-            ImageIO.write(srcImg, "png", new File(thumbFilePath.replace("_thumb.png", ".png")));
-            resourceDto.setPreviewUrl(thumbUrl.replace("_thumb.png", ".png"));
-
-            return resourceDto.getThumbRatio();
-        }
-        catch (Exception e) {
-            log.error("Failed to create thumbnail for RAW file: " + file.getAbsolutePath(), e);
+        if (!collectionProperties.getGraphicsMagick().isEnabled()) {
             return defaultThumbnail(thumbFilePath, thumbUrl, fileType, resourceDto);
         }
+        return super.createThumbnail(file, thumbFilePath, thumbUrl, fileType, resourceDto);
     }
 
-    private BufferedImage processRaw(File file) {
-        libraw_data_t rawData = libraw_init(0);
-        if (rawData == null) {
-            throw new RuntimeException("Failed to initialize LibRaw");
+    @Override
+    protected BufferedImage processImage(File file) throws Exception {
+        if (!collectionProperties.getGraphicsMagick().isEnabled()) {
+            return ImageUtil.readImageWithFallback(file);
         }
+
+        if (shouldUseImageMagick(file)) {
+            if (collectionProperties.getGraphicsMagick().getMode() == ApiModeEnum.REMOTE) {
+                return processDngWithRemoteImageMagick(file);
+            } else {
+                return processDngWithLocalImageMagick(file);
+            }
+        }
+        return super.processImage(file);
+    }
+
+    private BufferedImage processDngWithLocalImageMagick(File file) throws Exception {
+        String tempOutput = File.createTempFile("dng_", ".png").getAbsolutePath();
 
         try {
-            // 加载文件并设置参数
-            int ret = libraw_open_file(rawData, file.getAbsolutePath());
-            if (ret != 0) {
-                throw new RuntimeException("Failed to load RAW: " + libraw_strerror(ret));
-            }
+            IMOperation op = new IMOperation();
+            op.addImage(file.getAbsolutePath());
+            op.quality(95.0); // DNG需要更高品质
+            op.colorspace("sRGB"); // 确保色彩空间正确
+            op.addImage(tempOutput);
 
-            rawData.params().output_color(1);  // 1 = sRGB
-            rawData.params().use_camera_wb(1);
-            rawData.params().output_bps(8);
-            rawData.params().user_qual(1);
-            rawData.params().user_flip(0);
+            ConvertCmd cmd = new ConvertCmd();
+            cmd.run(op);
 
-            // 解码和处理
-            ret = libraw_unpack(rawData);
-            if (ret != 0) {
-                throw new RuntimeException("Failed to unpack: " + libraw_strerror(ret));
-            }
-
-            ret = libraw_dcraw_process(rawData);
-            if (ret != 0) {
-                throw new RuntimeException("Failed to process: " + libraw_strerror(ret));
-            }
-            if (rawData.sizes().width() <= 0 || rawData.sizes().height() <= 0) {
-                throw new RuntimeException("Invalid image dimensions after processing");
-            }
-            rawData.params().output_bps(8); // 确保 8 位输出
-            rawData.params().output_color(1); // sRGB
-            rawData.params().no_auto_bright(1); // 禁用自动亮度调整
-
-            // 生成内存图像
-            try (IntPointer error = new IntPointer(1)) {
-                libraw_processed_image_t processed = libraw_dcraw_make_mem_image(rawData, error);
-                if (processed == null || error.get() != 0) {
-                    throw new RuntimeException("Failed to make mem image: " + error.get());
-                }
-                log.debug("Image processed: {}x{}, colors={}",
-                        processed.width(), processed.height(), processed.colors());
-                return rawToBufferedImage(processed);
-            }
+            return ImageIO.read(new File(tempOutput));
         } finally {
-            libraw_close(rawData);
+            new File(tempOutput).delete();
         }
     }
 
-    private BufferedImage rawToBufferedImage(libraw_processed_image_t processed) {
-        int width = processed.width();
-        int height = processed.height();
-        int colors = processed.colors(); // 检查色彩通道数
-        BytePointer data = processed.data();
+    private BufferedImage processDngWithRemoteImageMagick(File file) throws Exception {
+        CollectionProperties.Remote remoteConfig = collectionProperties.getGraphicsMagick().getRemote();
+        String apiUrl = remoteConfig.getApiHost() + "/convert";
 
-        if (width <= 0 || height <= 0 || colors != 3 || data == null || data.capacity() == 0) {
-            throw new RuntimeException(String.format(
-                    "Invalid image data: width=%d, height=%d, colors=%d, data.capacity=%d",
-                    width, height, colors, data.capacity()
-            ));
-        }
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+            headers.setAccept(Collections.singletonList(MediaType.IMAGE_PNG));
 
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int offset = (y * width + x) * 3;
-                int r = data.get(offset) & 0xFF;
-                int g = data.get(offset + 1) & 0xFF;
-                int b = data.get(offset + 2) & 0xFF;
-                image.setRGB(x, y, (r << 16) | (g << 8) | b);
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            body.add("file", new FileSystemResource(file));
+            body.add("outputFormat", "png");
+            body.add("quality", "95");
+            body.add("colorspace", "sRGB");
+            body.add("noflatten", "true"); // DNG不需要合并图层
+
+            if (remoteConfig.getUsername() != null && remoteConfig.getPassword() != null) {
+                headers.setBasicAuth(remoteConfig.getUsername(), remoteConfig.getPassword());
             }
+
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+
+            ResponseEntity<byte[]> response = restTemplate.exchange(
+                    apiUrl,
+                    HttpMethod.POST,
+                    requestEntity,
+                    byte[].class);
+
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                return ImageIO.read(new ByteArrayInputStream(response.getBody()));
+            }
+            throw new RuntimeException("DNG conversion failed: " + response.getStatusCode());
+        } catch (Exception e) {
+            log.error("Remote DNG conversion failed", e);
+            throw e;
         }
-        return image;
     }
 }

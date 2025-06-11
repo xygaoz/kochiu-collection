@@ -12,7 +12,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -35,8 +34,13 @@ import java.nio.file.Path;
 @FileType(thumb = true, mimeType = "video/mp4", desc = ResourceTypeEnum.VIDEO)
 public class Mp4FileStrategy implements FileStrategy{
 
-    @Autowired
-    protected CollectionProperties properties;
+    protected final CollectionProperties properties;
+    private final RestTemplate restTemplate;
+
+    public Mp4FileStrategy(CollectionProperties properties) {
+        this.properties = properties;
+        this.restTemplate = createRestTemplateWithTimeout();
+    }
 
     @Override
     public String createThumbnail(File file,
@@ -200,7 +204,7 @@ public class Mp4FileStrategy implements FileStrategy{
                 new HttpEntity<>(body, headers);
 
         // 4. 发送请求
-        ResponseEntity<byte[]> response = createRestTemplateWithTimeout().exchange(
+        ResponseEntity<byte[]> response = restTemplate.exchange(
                 properties.getFfmpeg().getRemote().getApiUrl(),
                 HttpMethod.POST,
                 requestEntity,

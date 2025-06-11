@@ -437,3 +437,11 @@ export const getAllowedTypes = async (): Promise<string[]> => {
         return model as string[];
     });
 }
+
+export const checkFileExist = async (md5: string): Promise<boolean> => {
+    return httpInstance.post(resourceApi + "/check-file-exist",  {
+        md5: md5
+    }).then((model: any) => {
+        return model as boolean;
+    });
+}

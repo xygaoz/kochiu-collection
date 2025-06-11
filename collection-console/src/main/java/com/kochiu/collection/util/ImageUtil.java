@@ -10,6 +10,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
@@ -90,6 +91,12 @@ public class ImageUtil {
                 return reader.read(0);
             }
             throw new IOException("No TIFF reader found");
+        }
+    }
+
+    public static BufferedImage byteArrayToImage(byte[] imageData) throws IOException {
+        try (ByteArrayInputStream bis = new ByteArrayInputStream(imageData)) {
+            return ImageIO.read(bis);
         }
     }
 }
