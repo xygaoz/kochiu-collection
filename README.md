@@ -149,12 +149,11 @@
         --name ffmpeg-api \
         ffmpeg-api   
         ```
-    - 安装GraphicsMagick(可选)<br>
-      对御三家的raw格式文件、dng文件以及超过500MB的tif、psd文件生成缩略图，没有生成默认缩略图<br>
-      - Windows: 从[GraphicsMagick Windows Binaries](https://www.graphicsmagick.org/download.html)下载安装包，运行安装程序，勾选 "Add application directory to your system path"
-        （将安装目录添加到系统环境变量）
-      - Linux: sudo apt-get install graphicsmagick (Ubuntu/Debian)，或 sudo yum install GraphicsMagick (CentOS)
-      - Mac: brew install graphicsmagick
+    - 安装ImageMagick(可选)<br>
+      对超过500MB的tif、psd文件以及raw格式的文件生成缩略图，没有生成默认缩略图<br>
+      - Windows: 从[官网](https://imagemagick.org/)下载安装包
+      - Linux: sudo apt-get install imagemagick (Ubuntu/Debian)
+      - Mac: brew install imagemagick
 
 ### 客户端
 - PicGo

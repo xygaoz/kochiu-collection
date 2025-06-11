@@ -6,7 +6,7 @@ import com.kochiu.collection.properties.CollectionProperties;
 import org.springframework.stereotype.Service;
 
 @Service("psb")
-@FileType(thumb = true, mimeType = "image/vnd.adobe.photoshop", desc = ResourceTypeEnum.IMAGE)
+@FileType(thumb = true, mimeType = "application/x-photoshop", desc = ResourceTypeEnum.IMAGE)
 public class PsbFileStrategy extends PsdFileStrategy{
 
     public PsbFileStrategy(CollectionProperties collectionProperties) {

@@ -14,7 +14,7 @@ import java.io.File;
 
 @Slf4j
 @Service("psd")
-@FileType(thumb = true, resolutionRatio = true, mimeType = "image/vnd.adobe.photoshop", desc = ResourceTypeEnum.IMAGE)
+@FileType(thumb = true, resolutionRatio = true, mimeType = "application/x-photoshop", desc = ResourceTypeEnum.IMAGE)
 public class PsdFileStrategy extends TifFileStrategy {
 
     @Autowired
