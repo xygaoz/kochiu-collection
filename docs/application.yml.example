@@ -22,33 +22,14 @@ collection:
       api-url: http://localhost:8000/capture #远程服务接口地址
     local:
       ffmpeg-path: /opt/homebrew/Cellar/ffmpeg/7.1.1_1/bin #ffmpeg安装路径(可选，如果是docker2方案，不用设置)
-  ## 文件上传类型（可选，以下类型已经支持，如要添加，请自行修改，测试未必通过）
-  upload-type:
-    image:
-      - jpg
-      - jpeg
-      - gif
-      - bmp
-      - png
-      - webp
-    document:
-      - pdf
-      - txt
-      - doc
-      - docx
-      - xls
-      - xlsx
-      - ppt
-      - pptx
-    video:
-      - mp4
-      - mov
-      - avi
-    audio:
-      - wav
-      - mp3
-      - flac
-    other:
+  imageMagick:
+    enabled: true
+    mode: local
+    remote:
+      api-url: http://localhost:8190/convert
+      timeout: 300000
+    local:
+      image-magick-path: /opt/homebrew/bin
 
 ## 日志配置（可选）
 logging:

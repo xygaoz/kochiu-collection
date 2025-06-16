@@ -7,4 +7,13 @@ collection:
       password: 123456
       api-host: http://localhost:8080 #远程服务地址
       timeout: 300000 #单位：毫秒(5分钟)
-  ffmpeg-path: /opt/homebrew/Cellar/ffmpeg/7.1.1_1/bin
+  ffmpeg:
+    enabled: true
+    mode: local
+    local:
+      ffmpeg-path: /opt/homebrew/Cellar/ffmpeg/7.1.1_1/bin #ffmpeg安装路径(可选，如果是docker2方案，不用设置)
+  imageMagick:
+    enabled: true
+    mode: local
+    local:
+      image-magick-path: /opt/homebrew/bin

@@ -18,7 +18,7 @@ collection:
       ffmpeg-path: /opt/homebrew/Cellar/ffmpeg/7.1.1_1/bin
   imageMagick:
     enabled: true
-    mode: remote
+    mode: local
     remote:
       api-url: http://localhost:8190/convert
       timeout: 300000
