@@ -14,7 +14,7 @@
   - docker: <br>
     - 方案1:<br>
       ffmpeg、jodconverter和应用各自独立为三个docker容器<br>
-      docker安装jodconverter和ffmpeg参考后端依赖部分
+      docker安装jodconverter、ffmpeg、imagemagick参考后端依赖部分，且需求设置远程模式
       - 修改application-prod.yml<br>
       ```
         collection:
@@ -31,6 +31,14 @@
             mode: remote
             remote:
               api-url: http://localhost:8000/capture #远程服务接口地址
+          imageMagick:
+            enabled: true
+            mode: remote
+            remote:
+              api-url: http://localhost:8190/convert
+              timeout: 300000
+            local:
+              image-magick-path: /opt/homebrew/bin
         #设置日志文件路径
         logging:
           file:
@@ -154,7 +162,19 @@
       - Windows: 从[官网](https://imagemagick.org/)下载安装包
       - Linux: sudo apt-get install imagemagick (Ubuntu/Debian)
       - Mac: brew install imagemagick
+      - 群晖：套件中安装 ImageMagick。（需设置第三方套件来源，如http://packages.synocommunity.com/，https://spk7.imnks.com/ ），查找安装目录：find / -name ffmpeg 2> /dev/null<br>
+        - docker:<br>
+        ```
+        cd imagemagick-api
 
+        # 构建
+        docker build --no-cache --platform linux/amd64 -t imagemagick-api .  # 强制x86构建
+        # 或
+        docker build --no-cache --platform linux/arm64 -t imagemagick-api .  # 强制ARM构建
+
+        # 运行容器
+        docker run --name imagemagick-api -p 8190:8190 imagemagick-api
+        ```
 ### 客户端
 - PicGo
   1. 下载并安装[PicGo](https://github.com/Molunerfinn/PicGo)。<br>

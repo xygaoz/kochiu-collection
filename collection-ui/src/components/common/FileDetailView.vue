@@ -4,8 +4,8 @@
             <!-- 图片预览 -->
             <el-image
                 v-if="isImageType"
-                :src="file.resourceUrl"
-                :preview-src-list="[file.resourceUrl]"
+                :src="imagePreviewUrl"
+                :preview-src-list="[imagePreviewUrl]"
                 fit="contain"
                 class="preview-content"
                 hide-on-click-modal
@@ -305,6 +305,17 @@ const handleAudioError = (error: Event) => {
     console.error('音频播放失败:', error);
     ElMessage.error('音频播放失败，请检查文件格式或网络连接');
 };
+
+// 计算图片预览URL
+const imagePreviewUrl = computed(() => {
+    if (!props.file) return '';
+
+    // 优先使用previewUrl，如果没有则使用resourceUrl
+    const url = props.file.previewUrl || props.file.resourceUrl;
+
+    // 处理相对路径
+    return url.startsWith('http') ? url : `${window.location.origin}${url}`;
+});
 
 // 视频文件URL（处理相对路径）
 const videoFileUrl = computed(() => {

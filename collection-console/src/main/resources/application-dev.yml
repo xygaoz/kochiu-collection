@@ -16,11 +16,11 @@ collection:
       api-url: http://localhost:8000/capture
     local:
       ffmpeg-path: /opt/homebrew/Cellar/ffmpeg/7.1.1_1/bin
-  graphicsMagick:
+  imageMagick:
     enabled: true
-    mode: local
+    mode: remote
     remote:
-      api-url: http://localhost:8000/capture
+      api-url: http://localhost:8190/convert
       timeout: 300000
     local:
-      graphics-magick-path: /opt/homebrew/bin
+      image-magick-path: /opt/homebrew/bin

@@ -12,7 +12,7 @@ public class CollectionProperties {
 
     private Jodconverter jodconverter = new Jodconverter();
     private FFMpeg ffmpeg = new FFMpeg();
-    private GraphicsMagick graphicsMagick = new GraphicsMagick();
+    private ImageMagick imageMagick = new ImageMagick();
 
     @Data
     public static class Jodconverter {
@@ -55,7 +55,7 @@ public class CollectionProperties {
     }
 
     @Data
-    public static class GraphicsMagick {
+    public static class ImageMagick {
         private boolean enabled;
         private String mode;
         private Remote remote;

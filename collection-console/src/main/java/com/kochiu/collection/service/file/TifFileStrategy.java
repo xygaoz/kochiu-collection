@@ -28,7 +28,6 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 
 @Slf4j
 @Service("tif")
@@ -46,11 +45,11 @@ public class TifFileStrategy implements FileStrategy {
     }
 
     protected void initializeImageMagick() {
-        if (collectionProperties.getGraphicsMagick().isEnabled() &&
-                collectionProperties.getGraphicsMagick().getMode() == ApiModeEnum.LOCAL) {
+        if (collectionProperties.getImageMagick().isEnabled() &&
+                collectionProperties.getImageMagick().getMode() == ApiModeEnum.LOCAL) {
 
             // 优先使用配置的路径，否则尝试自动检测
-            String imagemagickPath = collectionProperties.getGraphicsMagick().getLocal().getGraphicsMagickPath();
+            String imagemagickPath = collectionProperties.getImageMagick().getLocal().getGraphicsMagickPath();
 
             if (imagemagickPath == null || imagemagickPath.isEmpty()) {
                 // 尝试常见安装路径
@@ -109,7 +108,7 @@ public class TifFileStrategy implements FileStrategy {
 
     protected BufferedImage processImage(File file) throws Exception {
         if (shouldUseImageMagick(file)) {
-            if (collectionProperties.getGraphicsMagick().getMode() == ApiModeEnum.REMOTE) {
+            if (collectionProperties.getImageMagick().getMode() == ApiModeEnum.REMOTE) {
                 return processWithRemoteImageMagick(file);
             } else {
                 return processWithLocalImageMagick(file, "tif");
@@ -119,7 +118,7 @@ public class TifFileStrategy implements FileStrategy {
     }
 
     protected boolean shouldUseImageMagick(File file) {
-        return collectionProperties.getGraphicsMagick().isEnabled() &&
+        return collectionProperties.getImageMagick().isEnabled() &&
                 file.length() > LARGE_FILE_THRESHOLD;
     }
 
@@ -130,7 +129,7 @@ public class TifFileStrategy implements FileStrategy {
         String previewUrl = thumbUrl.replace("_thumb.png", getPreviewExtension());
 
         if (shouldUseImageMagick(file)) {
-            if (collectionProperties.getGraphicsMagick().getMode() == ApiModeEnum.REMOTE) {
+            if (collectionProperties.getImageMagick().getMode() == ApiModeEnum.REMOTE) {
                 generatePreviewWithRemoteImageMagick(file, previewPath);
             } else {
                 generatePreviewWithLocalImageMagick(file, previewPath);
@@ -209,32 +208,31 @@ public class TifFileStrategy implements FileStrategy {
     }
 
     protected void generatePreviewWithRemoteImageMagick(File inputFile, String outputPath) throws Exception {
-        CollectionProperties.Remote remoteConfig = collectionProperties.getGraphicsMagick().getRemote();
-        String apiUrl = remoteConfig.getApiHost() + "/convert";
+
+        log.info("Generating preview with remote ImageMagick...");
+        CollectionProperties.Remote remoteConfig = collectionProperties.getImageMagick().getRemote();
+        String apiUrl = remoteConfig.getApiUrl();
 
         try {
+            // 1. 准备请求头（支持文件上传）
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-            headers.setAccept(Collections.singletonList(MediaType.IMAGE_PNG));
 
+            // 2. 封装文件参数
             MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
             body.add("file", new FileSystemResource(inputFile));
-            body.add("resize", "2048x2048");
-            body.add("quality", "100");
-            body.add("outputFormat", "png");
-            body.add("flatten", "true");
 
-            if (remoteConfig.getUsername() != null && remoteConfig.getPassword() != null) {
-                headers.setBasicAuth(remoteConfig.getUsername(), remoteConfig.getPassword());
-            }
-
+            // 3. 构建请求实体
             HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
+            // 4. 调用 API
+            RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<byte[]> response = restTemplate.exchange(
-                    apiUrl,
+                    apiUrl + "?format=png",
                     HttpMethod.POST,
                     requestEntity,
-                    byte[].class);
+                    byte[].class
+            );
 
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                 try (ByteArrayInputStream bis = new ByteArrayInputStream(response.getBody())) {
@@ -252,8 +250,8 @@ public class TifFileStrategy implements FileStrategy {
 
     private RestTemplate createRestTemplateWithTimeout() {
         RequestConfig config = RequestConfig.custom()
-                .setConnectTimeout(collectionProperties.getGraphicsMagick().getRemote().getTimeout())
-                .setSocketTimeout(collectionProperties.getGraphicsMagick().getRemote().getTimeout())
+                .setConnectTimeout(collectionProperties.getImageMagick().getRemote().getTimeout())
+                .setSocketTimeout(collectionProperties.getImageMagick().getRemote().getTimeout())
                 .build();
 
         CloseableHttpClient httpClient = HttpClients.custom()

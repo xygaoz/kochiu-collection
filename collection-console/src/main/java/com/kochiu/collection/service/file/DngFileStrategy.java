@@ -38,8 +38,14 @@ public class DngFileStrategy extends TifFileStrategy {
     }
 
     @Override
+    protected boolean shouldUseImageMagick(File file) {
+        // 总是使用ImageMagick处理
+        return collectionProperties.getImageMagick().isEnabled();
+    }
+
+    @Override
     public String createThumbnail(File file, String thumbFilePath, String thumbUrl, FileType fileType, ResourceDto resourceDto) throws Exception {
-        if (!collectionProperties.getGraphicsMagick().isEnabled()) {
+        if (!collectionProperties.getImageMagick().isEnabled()) {
             return defaultThumbnail(thumbFilePath, thumbUrl, fileType, resourceDto);
         }
         return super.createThumbnail(file, thumbFilePath, thumbUrl, fileType, resourceDto);
@@ -47,12 +53,12 @@ public class DngFileStrategy extends TifFileStrategy {
 
     @Override
     protected BufferedImage processImage(File file) throws Exception {
-        if (!collectionProperties.getGraphicsMagick().isEnabled()) {
+        if (!collectionProperties.getImageMagick().isEnabled()) {
             return ImageUtil.readImageWithFallback(file);
         }
 
         if (shouldUseImageMagick(file)) {
-            if (collectionProperties.getGraphicsMagick().getMode() == ApiModeEnum.REMOTE) {
+            if (collectionProperties.getImageMagick().getMode() == ApiModeEnum.REMOTE) {
                 return processDngWithRemoteImageMagick(file);
             } else {
                 return processDngWithLocalImageMagick(file);
@@ -81,40 +87,13 @@ public class DngFileStrategy extends TifFileStrategy {
     }
 
     private BufferedImage processDngWithRemoteImageMagick(File file) throws Exception {
-        CollectionProperties.Remote remoteConfig = collectionProperties.getGraphicsMagick().getRemote();
-        String apiUrl = remoteConfig.getApiHost() + "/convert";
 
+        String tempOutput = File.createTempFile("dng_", ".png").getAbsolutePath();
         try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-            headers.setAccept(Collections.singletonList(MediaType.IMAGE_PNG));
-
-            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-            body.add("file", new FileSystemResource(file));
-            body.add("outputFormat", "png");
-            body.add("quality", "95");
-            body.add("colorspace", "sRGB");
-            body.add("noflatten", "true"); // DNG不需要合并图层
-
-            if (remoteConfig.getUsername() != null && remoteConfig.getPassword() != null) {
-                headers.setBasicAuth(remoteConfig.getUsername(), remoteConfig.getPassword());
-            }
-
-            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-
-            ResponseEntity<byte[]> response = restTemplate.exchange(
-                    apiUrl,
-                    HttpMethod.POST,
-                    requestEntity,
-                    byte[].class);
-
-            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-                return ImageIO.read(new ByteArrayInputStream(response.getBody()));
-            }
-            throw new RuntimeException("DNG conversion failed: " + response.getStatusCode());
-        } catch (Exception e) {
-            log.error("Remote DNG conversion failed", e);
-            throw e;
+            generatePreviewWithRemoteImageMagick(file, tempOutput);
+            return ImageIO.read(new File(tempOutput));
+        } finally {
+            new File(tempOutput).delete();
         }
     }
 }

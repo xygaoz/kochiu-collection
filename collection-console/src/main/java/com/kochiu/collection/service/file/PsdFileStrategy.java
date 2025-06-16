@@ -30,7 +30,7 @@ public class PsdFileStrategy extends TifFileStrategy {
     @Override
     protected boolean shouldUseImageMagick(File file) {
         // PSD文件总是使用ImageMagick处理
-        return collectionProperties.getGraphicsMagick().isEnabled();
+        return collectionProperties.getImageMagick().isEnabled();
     }
 
     @Override
