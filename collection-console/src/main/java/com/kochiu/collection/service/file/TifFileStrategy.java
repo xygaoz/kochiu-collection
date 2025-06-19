@@ -49,7 +49,7 @@ public class TifFileStrategy implements FileStrategy {
                 collectionProperties.getImageMagick().getMode() == ApiModeEnum.LOCAL) {
 
             // 优先使用配置的路径，否则尝试自动检测
-            String imagemagickPath = collectionProperties.getImageMagick().getLocal().getGraphicsMagickPath();
+            String imagemagickPath = collectionProperties.getImageMagick().getLocal().getImageMagickPath();
 
             if (imagemagickPath == null || imagemagickPath.isEmpty()) {
                 // 尝试常见安装路径
