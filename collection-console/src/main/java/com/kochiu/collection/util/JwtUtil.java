@@ -20,9 +20,6 @@ public class JwtUtil {
 
     /**
      * 用户登录成功后生成Jwt
-     * 使用Hs256算法  私匙使用用户密码
-     * @param params 登录成功用户信息
-     * @return
      */
     public static String createJWT(Object params, String key, String id, String subject, long ttlMillis) {
         //指定签名的时候使用的签名算法，也就是header那部分，jjwt已经将这部分内容封装好了。
@@ -60,9 +57,6 @@ public class JwtUtil {
 
     /**
      * Token的解密
-     *
-     * @param token 加密后的token
-     * @return
      */
     public static Claims parseJWT(String token, String key) {
         //得到DefaultJwtParser
@@ -71,27 +65,5 @@ public class JwtUtil {
                 .setSigningKey(key)
                 //设置需要解析的jwt
                 .parseClaimsJws(token).getBody();
-    }
-
-    /**
-     * 校验token
-     * 在这里可以使用官方的校验，我这里校验的是token中携带的密码于数据库一致的话就校验通过
-     *
-     * @param token
-     * @param params
-     * @return
-     */
-    public static Boolean isVerify(String token, Object params, String key) {
-        //得到DefaultJwtParser
-        Claims claims = Jwts.parser()
-                //设置签名的秘钥
-                .setSigningKey(key)
-                //设置需要解析的jwt
-                .parseClaimsJws(token).getBody();
-
-        if (claims.get(TOKEN_PARAMS_FLAG).equals(params)) {
-            return true;
-        }
-        return false;
     }
 }
