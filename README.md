@@ -148,7 +148,9 @@
         cd ffmpeg-api
         
         # 构建
-        docker build -t ffmpeg-api .
+        docker build --platform linux/amd64 -t ffmpeg-api .
+        或
+        docker build --platform linux/arm64 -t ffmpeg-api .
   
         # 运行容器
         docker run -d \
