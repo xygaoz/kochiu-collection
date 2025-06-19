@@ -1,8 +1,6 @@
 package com.kochiu.collection.service.db;
 
-import com.kochiu.collection.util.RsaHexUtil;
-import com.kochiu.collection.util.SHA256Util;
-import liquibase.change.AbstractChange;
+import cn.hutool.crypto.SecureUtil;
 import liquibase.change.ChangeMetaData;
 import liquibase.change.DatabaseChange;
 import liquibase.change.custom.CustomSqlChange;
@@ -35,7 +33,7 @@ public class SysUserValueChange implements CustomSqlChange {
 
         String userCode = StringUtils.isNotBlank(System.getenv("username")) ? System.getenv("username") : "admin";
         String password = StringUtils.isNotBlank(System.getenv("password")) ? System.getenv("password") : "admin";
-        password = SHA256Util.encryptBySHA256(password);
+        password = SecureUtil.sha256(password);
 
         statement.addColumnValue("USER_ID", 1);
         statement.addColumnValue("USER_CODE", userCode);

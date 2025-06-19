@@ -16,12 +16,12 @@ import com.kochiu.collection.service.store.ResourceStoreStrategy;
 import com.kochiu.collection.service.store.ResourceStrategyFactory;
 import com.kochiu.collection.util.HexUtils;
 import com.kochiu.collection.util.RsaHexUtil;
-import com.kochiu.collection.util.SHA256Util;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import cn.hutool.crypto.SecureUtil;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -151,7 +151,7 @@ public class SysUserService {
             if(user != null){
                 loginBo.setNikeName(user.getUserName());
                 String loginPwd = RsaHexUtil.decrypt(loginBo.getPassword(), securityRepository.getPrivateKey());
-                loginPwd = SHA256Util.encryptBySHA256(loginPwd);
+                loginPwd = SecureUtil.sha256(loginPwd);
                 if(loginPwd.equals(user.getPassword())){
                     Map<String, Object> claims = Map.of(
                             TOKEN_API_FLAG, permitEnum.name(),
@@ -251,7 +251,7 @@ public class SysUserService {
         SysUser user = SysUser.builder()
                 .userCode(userInfoBo.getUserCode())
                 .userName(userInfoBo.getUserName())
-                .password(SHA256Util.encryptBySHA256(password))
+                .password(SecureUtil.sha256(password))
                 .strategy(userInfoBo.getStrategy())
                 .key(RandomStringUtils.random(8, RANDOM_CHARS))
                 .build();
@@ -355,7 +355,7 @@ public class SysUserService {
             throw new CollectionException(ErrorCodeEnum.USER_PASSWORD_DECRYPT_ERROR);
         }
 
-        user.setPassword(SHA256Util.encryptBySHA256(password));
+        user.setPassword(SecureUtil.sha256(password));
         userRepository.updateById(user);
     }
 
@@ -547,11 +547,11 @@ public class SysUserService {
             throw new CollectionException(ErrorCodeEnum.USER_PASSWORD_DECRYPT_ERROR);
         }
 
-        if(!SHA256Util.encryptBySHA256(oldPassword).equals(user.getPassword())){
+        if(!SecureUtil.sha256(oldPassword).equals(user.getPassword())){
             throw new CollectionException(ErrorCodeEnum.USER_OLD_PASSWORD_ERROR);
         }
 
-        user.setPassword(SHA256Util.encryptBySHA256(newPassword));
+        user.setPassword(SecureUtil.sha256(newPassword));
         userRepository.updateById(user);
     }
 
