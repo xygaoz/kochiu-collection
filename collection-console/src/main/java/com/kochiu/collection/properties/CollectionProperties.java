@@ -42,7 +42,7 @@ public class CollectionProperties {
     public static class Local {
         private String officeHome;
         private String ffmpegPath;
-        private String graphicsMagickPath;
+        private String imageMagickPath;
     }
 
     @Data
