@@ -1,7 +1,6 @@
 package com.kochiu.collection.service.store;
 
 import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.io.LimitedInputStream;
 import cn.hutool.core.io.unit.DataSizeUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.kochiu.collection.annotation.FileType;
@@ -12,13 +11,16 @@ import com.kochiu.collection.entity.SysStrategy;
 import com.kochiu.collection.entity.SysUser;
 import com.kochiu.collection.entity.UserCatalog;
 import com.kochiu.collection.entity.UserResource;
-import com.kochiu.collection.enums.*;
+import com.kochiu.collection.enums.ErrorCodeEnum;
+import com.kochiu.collection.enums.ResourceTypeEnum;
+import com.kochiu.collection.enums.SaveTypeEnum;
+import com.kochiu.collection.enums.StrategyEnum;
 import com.kochiu.collection.exception.CollectionException;
-import com.kochiu.collection.properties.CollectionProperties;
 import com.kochiu.collection.repository.SysStrategyRepository;
 import com.kochiu.collection.repository.SysUserRepository;
 import com.kochiu.collection.repository.UserCatalogRepository;
 import com.kochiu.collection.repository.UserResourceRepository;
+import com.kochiu.collection.service.SysStrategyService;
 import com.kochiu.collection.service.SystemService;
 import com.kochiu.collection.service.file.FileStrategy;
 import com.kochiu.collection.service.file.FileStrategyFactory;
@@ -40,9 +42,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.List;
-import java.util.Map;
 
 import static com.kochiu.collection.enums.ErrorCodeEnum.*;
 
@@ -57,6 +57,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
     private final SysStrategy strategy;
     private final ThumbnailService thumbnailService;
     private final SystemService systemService;
+    private final SysStrategyService sysStrategyService;
 
     public LocalStoreStrategy(UserResourceRepository resourceRepository,
                               SysUserRepository userRepository,
@@ -64,13 +65,15 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
                               UserCatalogRepository catalogRepository,
                               SysStrategyRepository strategyRepository,
                               ThumbnailService thumbnailService,
-                              SystemService systemService) {
+                              SystemService systemService,
+                              SysStrategyService sysStrategyService) {
         this.resourceRepository = resourceRepository;
         this.userRepository = userRepository;
         this.fileStrategyFactory = fileStrategyFactory;
         this.catalogRepository = catalogRepository;
         this.thumbnailService = thumbnailService;
         this.systemService = systemService;
+        this.sysStrategyService = sysStrategyService;
 
         try {
             strategy = strategyRepository.getOne(new LambdaQueryWrapper<SysStrategy>()
@@ -95,6 +98,10 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
                            String savePath,
                            Long categoryId,
                            Long cataId) throws CollectionException {
+
+        if(!sysStrategyService.checkLocalStrategy()){
+            throw new CollectionException(SERVER_PATH_ERROR);
+        }
 
         //判断文件类型
         String extension = FilenameUtils.getExtension(originalFilename).toLowerCase();
