@@ -88,7 +88,7 @@ public class UserCatalogService {
         }
     }
 
-    private List<UserCatalog> getCatalogList(int userId, Long parentId) {
+    public List<UserCatalog> getCatalogList(int userId, Long parentId) {
         LambdaQueryWrapper<UserCatalog> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(UserCatalog::getUserId, userId);
         if(parentId == null){

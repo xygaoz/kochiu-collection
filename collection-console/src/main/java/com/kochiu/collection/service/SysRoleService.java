@@ -72,16 +72,18 @@ public class SysRoleService {
         sysRoleRepository.save(role);
         Long roleId = sysRoleRepository.getBaseMapper().selectLastInsertId();
         // 添加权限
-        for(Long actionId : roleBo.getPermissions()){
+        if(roleBo.getPermissions() != null) {
+            for (Long actionId : roleBo.getPermissions()) {
 
-            SysModuleAction action = sysModuleActionRepository.getById(actionId);
+                SysModuleAction action = sysModuleActionRepository.getById(actionId);
 
-            UserPermission permission = UserPermission.builder()
-                    .roleId(roleId)
-                    .moduleId(action.getModuleId())
-                    .actionId(actionId)
-                    .build();
-            userPermissionRepository.save(permission);
+                UserPermission permission = UserPermission.builder()
+                        .roleId(roleId)
+                        .moduleId(action.getModuleId())
+                        .actionId(actionId)
+                        .build();
+                userPermissionRepository.save(permission);
+            }
         }
     }
 
@@ -100,16 +102,18 @@ public class SysRoleService {
             //先删除权限再添加
             userPermissionRepository.remove(new LambdaQueryWrapper<UserPermission>()
                     .eq(UserPermission::getRoleId, roleBo.getRoleId()));
-            for (Long actionId : roleBo.getPermissions()) {
+            if(roleBo.getPermissions() != null) {
+                for (Long actionId : roleBo.getPermissions()) {
 
-                SysModuleAction action = sysModuleActionRepository.getById(actionId);
+                    SysModuleAction action = sysModuleActionRepository.getById(actionId);
 
-                UserPermission permission = UserPermission.builder()
-                        .roleId(role.getRoleId())
-                        .moduleId(action.getModuleId())
-                        .actionId(actionId)
-                        .build();
-                userPermissionRepository.save(permission);
+                    UserPermission permission = UserPermission.builder()
+                            .roleId(role.getRoleId())
+                            .moduleId(action.getModuleId())
+                            .actionId(actionId)
+                            .build();
+                    userPermissionRepository.save(permission);
+                }
             }
         }
     }

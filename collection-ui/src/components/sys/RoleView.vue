@@ -10,7 +10,7 @@
 
         <el-table :data="roleList" border style="width: 100%" v-loading="loading">
             <el-table-column prop="roleName" label="角色名称" width="120"></el-table-column>
-            <el-table-column label="权限" min-width="300">
+            <el-table-column label="系统管理权限" min-width="300">
                 <template #default="{row}">
                     <div class="permission-tags">
                         <el-tag
@@ -22,7 +22,7 @@
                             {{ permission.moduleName }} - {{ permission.actionName }}
                         </el-tag>
                         <el-tag v-if="!row.permissions || row.permissions.length === 0" size="small" type="info">
-                            无权限
+                            无管理权限
                         </el-tag>
                     </div>
                 </template>
@@ -168,19 +168,6 @@ const rules = reactive<FormRules>({
         { required: true, message: '请输入角色名称', trigger: 'blur' },
         { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' }
     ],
-    permissions: [
-        {
-            required: true,
-            validator: (rule, value, callback) => {
-                if (!value || value.length === 0) {
-                    callback(new Error('请至少选择一个权限'));
-                } else {
-                    callback();
-                }
-            },
-            trigger: 'change'
-        }
-    ]
 });
 
 const fetchRoles = async () => {

@@ -50,6 +50,7 @@ public class SysUserService {
     private final SysModuleService moduleService;
     private final UserConfigRepository userConfigRepository;
     private final UserConfigProperties userConfigProperties;
+    private final UserCatalogService catalogService;
 
     public SysUserService(SysUserRepository userRepository,
                           SysSecurityRepository securityRepository,
@@ -64,7 +65,8 @@ public class SysUserService {
                           UserCategoryRepository userCategoryRepository,
                           SysModuleService moduleService,
                           UserConfigRepository userConfigRepository,
-                          UserConfigProperties userConfigProperties) {
+                          UserConfigProperties userConfigProperties,
+                          UserCatalogService catalogService) {
         this.userRepository = userRepository;
         this.securityRepository = securityRepository;
         this.tokenService = tokenService;
@@ -79,6 +81,7 @@ public class SysUserService {
         this.moduleService = moduleService;
         this.userConfigRepository = userConfigRepository;
         this.userConfigProperties = userConfigProperties;
+        this.catalogService = catalogService;
     }
 
     /**
@@ -254,6 +257,7 @@ public class SysUserService {
                 .password(SecureUtil.sha256(password))
                 .strategy(userInfoBo.getStrategy())
                 .key(RandomStringUtils.random(8, RANDOM_CHARS))
+                .canDel(YesNoEnum.YES.getCode())
                 .build();
         userRepository.save(user);
         Integer userId = userRepository.getBaseMapper().selectLastInsertId();
@@ -263,6 +267,22 @@ public class SysUserService {
                     .roleId(roleId)
                     .build();
             userRoleRepository.save(userRole);
+        }
+
+        //初始化部分数据
+        List<UserCatalog> catalogList = catalogService.getCatalogList(userId, null);
+        if(catalogList.isEmpty()){
+            UserCatalog rootCatalog = UserCatalog.builder()
+                    .cataName("我的资源")
+                    .userId(userId)
+                    .cataLevel(0)
+                    .cataPath("/")
+                    .build();
+            userCatalogRepository.insert(rootCatalog);
+        }
+
+        if(userCategoryRepository.list(new LambdaQueryWrapper<UserCategory>().eq(UserCategory::getUserId, userId)).isEmpty()){
+            userCategoryRepository.addCategory(userId, "默认");
         }
     }
 

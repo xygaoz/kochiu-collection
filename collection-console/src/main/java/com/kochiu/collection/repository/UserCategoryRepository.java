@@ -1,6 +1,5 @@
 package com.kochiu.collection.repository;
 
-import com.alibaba.fastjson.support.geo.Feature;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.kochiu.collection.data.vo.CategoryVo;
@@ -8,7 +7,6 @@ import com.kochiu.collection.entity.UserCategory;
 import com.kochiu.collection.enums.CategoryByEnum;
 import com.kochiu.collection.exception.CollectionException;
 import com.kochiu.collection.mapper.UserCategoryMapper;
-import com.kochiu.collection.properties.SysConfigProperties;
 import com.kochiu.collection.properties.UserConfigProperties;
 import org.springframework.stereotype.Service;
 
