@@ -56,8 +56,8 @@ public abstract class OfficeFileStrategy {
 
     private RestTemplate createRestTemplateWithTimeout() {
         RequestConfig config = RequestConfig.custom()
-                .setConnectTimeout(properties.getJodconverter().getRemote().getTimeout())
-                .setSocketTimeout(properties.getJodconverter().getRemote().getTimeout())
+                .setConnectTimeout(properties.getJodconverter() == null || properties.getJodconverter().getRemote() == null ? 5000 : properties.getJodconverter().getRemote().getTimeout())
+                .setSocketTimeout(properties.getJodconverter() == null || properties.getJodconverter().getRemote() == null ? 5000 : properties.getJodconverter().getRemote().getTimeout())
                 .build();
 
         CloseableHttpClient httpClient = HttpClients.custom()

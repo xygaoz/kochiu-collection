@@ -222,8 +222,8 @@ public class Mp4FileStrategy implements FileStrategy{
     // 创建具有超时设置的RestTemplate
     private RestTemplate createRestTemplateWithTimeout() {
         RequestConfig config = RequestConfig.custom()
-                .setConnectTimeout(properties.getFfmpeg().getRemote().getTimeout())
-                .setSocketTimeout(properties.getFfmpeg().getRemote().getTimeout())
+                .setConnectTimeout(properties.getFfmpeg() == null || properties.getFfmpeg().getRemote() == null ? 5000 : properties.getFfmpeg().getRemote().getTimeout())
+                .setSocketTimeout(properties.getFfmpeg() == null || properties.getFfmpeg().getRemote() == null ? 5000 : properties.getFfmpeg().getRemote().getTimeout())
                 .build();
 
         CloseableHttpClient httpClient = HttpClients.custom()

@@ -250,8 +250,8 @@ public class TifFileStrategy implements FileStrategy {
 
     private RestTemplate createRestTemplateWithTimeout() {
         RequestConfig config = RequestConfig.custom()
-                .setConnectTimeout(collectionProperties.getImageMagick().getRemote().getTimeout())
-                .setSocketTimeout(collectionProperties.getImageMagick().getRemote().getTimeout())
+                .setConnectTimeout(collectionProperties.getImageMagick() == null || collectionProperties.getImageMagick().getRemote() == null ? 5000 : collectionProperties.getImageMagick().getRemote().getTimeout())
+                .setSocketTimeout(collectionProperties.getImageMagick() == null || collectionProperties.getImageMagick().getRemote() == null ? 5000 : collectionProperties.getImageMagick().getRemote().getTimeout())
                 .build();
 
         CloseableHttpClient httpClient = HttpClients.custom()
