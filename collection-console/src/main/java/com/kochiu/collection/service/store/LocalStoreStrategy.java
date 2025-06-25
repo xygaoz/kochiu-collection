@@ -370,27 +370,28 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
             return;
         }
 
-        //假如是本地资源，不能删除
-        if(resource.getSaveType() != SaveTypeEnum.LOCAL.getCode()){
-            return;
-        }
-
         String serverUrl = getServerUrl();
-        File file = new File(serverUrl + resource.getResourceUrl());
-        if(file.exists()){
-            file.delete();
-        }
         if(StringUtils.isNotBlank(resource.getThumbUrl())) {
-            file = new File(serverUrl + resource.getThumbUrl());
+            File file = new File(serverUrl + resource.getThumbUrl());
             if (file.exists()) {
                 file.delete();
             }
         }
         if(StringUtils.isNotBlank(resource.getPreviewUrl())) {
-            file = new File(serverUrl + resource.getPreviewUrl());
+            File file = new File(serverUrl + resource.getPreviewUrl());
             if (file.exists()) {
                 file.delete();
             }
+        }
+
+        //假如是本地资源，不能删除
+        if(resource.getSaveType() != SaveTypeEnum.LOCAL.getCode()){
+            return;
+        }
+
+        File file = new File(serverUrl + resource.getResourceUrl());
+        if(file.exists()){
+            file.delete();
         }
     }
 
