@@ -108,6 +108,9 @@ public class Mp4FileStrategy implements FileStrategy{
                 log.error("视频截帧失败，使用默认缩略图", e);
             }
         }
+        else{
+            log.warn("ffmpeg路径为{}, 未安装或未找到，使用默认缩略图", ffmpegPath);
+        }
         return defaultThumbnail(outputPath, thumbUrl, fileType, resourceDto);
     }
 

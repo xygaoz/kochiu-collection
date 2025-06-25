@@ -15,7 +15,7 @@ collection:
     remote:
       api-url: http://localhost:8000/capture
     local:
-      ffmpeg-path: /opt/homebrew/Cellar/ffmpeg/7.1.1_1/bin
+      ffmpeg-path: /opt/homebrew/bin
   imageMagick:
     enabled: true
     mode: local
