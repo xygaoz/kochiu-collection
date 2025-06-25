@@ -22,7 +22,7 @@ public interface FileStrategy {
                                     String thumbUrl,
                                     FileType fileType,
                                     ResourceDto resourceDto) throws Exception{
-        Resource resource = new ClassPathResource("/images/" + fileType.desc().name() + ".png");
+        Resource resource = new ClassPathResource("/images/" + fileType.desc().name().toLowerCase() + ".png");
         if (resource.exists()) {
             FileUtil.copyFile(resource.getInputStream(), new File(thumbFilePath), StandardCopyOption.REPLACE_EXISTING);
             resourceDto.setThumbUrl(thumbUrl);

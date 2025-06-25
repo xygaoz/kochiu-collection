@@ -117,4 +117,7 @@ public interface ResourceStoreStrategy {
 
     //  异步创建缩略图
     void asyncCreateThumbnail(Long resourceId);
+
+    // 检查服务url是否正常
+    boolean checkServerUrl();
 }

@@ -21,6 +21,7 @@ public final class Constant {
     public static final int ROOT_CATALOG_SNO = 1;
 
     public static final String ROOT_PATH = "/";
+    public static final String ROOT_PATH_WIN = "C:";
 
     public static final String RANDOM_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
     public static final String RANDOM_CHARS2 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";

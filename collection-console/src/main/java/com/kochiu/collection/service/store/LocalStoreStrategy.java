@@ -54,10 +54,10 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
     private final SysUserRepository userRepository;
     private final FileStrategyFactory fileStrategyFactory;
     private final UserCatalogRepository catalogRepository;
-    private final SysStrategy strategy;
     private final ThumbnailService thumbnailService;
     private final SystemService systemService;
     private final SysStrategyService sysStrategyService;
+    private final SysStrategyRepository strategyRepository;
 
     public LocalStoreStrategy(UserResourceRepository resourceRepository,
                               SysUserRepository userRepository,
@@ -74,18 +74,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
         this.thumbnailService = thumbnailService;
         this.systemService = systemService;
         this.sysStrategyService = sysStrategyService;
-
-        try {
-            strategy = strategyRepository.getOne(new LambdaQueryWrapper<SysStrategy>()
-                    .eq(SysStrategy::getStrategyCode, StrategyEnum.LOCAL.getCode())
-                    .last("limit 1")
-            );
-        } catch (Exception e) {
-            throw new RuntimeException(LOCAL_STRATEGY_IS_INVALID.getMessage());
-        }
-        if(strategy == null){
-            throw new RuntimeException(LOCAL_STRATEGY_IS_INVALID.getMessage());
-        }
+        this.strategyRepository = strategyRepository;
     }
 
     /**
@@ -117,7 +106,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
 
         //读取文件到本地
         String returnUrl = savePath.substring(("/" + userCode).length());
-        String recFilePathDir = strategy.getServerUrl();
+        String recFilePathDir = getServerUrl();
         //检查目标路径
         if(systemService.isSensitivePath(recFilePathDir)){
             throw new CollectionException(SENSITIVE_PATH);
@@ -186,10 +175,15 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
 
         FileType fileType = fileStrategyFactory.getFileType(resource.getFileExt());
 
-        String recFilePathDir = strategy.getServerUrl();
+        String recFilePathDir = getServerUrl();
         String filePath = recFilePathDir + resource.getFilePath();
 
         thumbnailService.asyncCreateThumbnail(resourceDto, fileType, filePath);
+    }
+
+    @Override
+    public boolean checkServerUrl() {
+        return sysStrategyService.checkLocalStrategy();
     }
 
     /**
@@ -223,7 +217,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
         }
 
         String resourceUrl = "/" + userCode + savePath + "/" + md5 + "." + extension;
-        String recFilePathDir = strategy.getServerUrl();
+        String recFilePathDir = getServerUrl();
         File dir = new File(recFilePathDir + "/" + userCode + savePath);
         if (!dir.exists()) {
             dir.mkdirs();
@@ -296,7 +290,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
             }
 
             // 3. 获取实际文件
-            String filePath = strategy.getServerUrl() + url;
+            String filePath = getServerUrl() + url;
             File file = new File(filePath);
             if (!file.exists()) {
                 return ResponseEntity.notFound().build();
@@ -379,18 +373,24 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
             return;
         }
 
-        File file = new File(strategy.getServerUrl() + resource.getResourceUrl());
+        //假如是本地资源，不能删除
+        if(resource.getSaveType() != SaveTypeEnum.LOCAL.getCode()){
+            return;
+        }
+
+        String serverUrl = getServerUrl();
+        File file = new File(serverUrl + resource.getResourceUrl());
         if(file.exists()){
             file.delete();
         }
         if(StringUtils.isNotBlank(resource.getThumbUrl())) {
-            file = new File(strategy.getServerUrl() + resource.getThumbUrl());
+            file = new File(serverUrl + resource.getThumbUrl());
             if (file.exists()) {
                 file.delete();
             }
         }
         if(StringUtils.isNotBlank(resource.getPreviewUrl())) {
-            file = new File(strategy.getServerUrl() + resource.getPreviewUrl());
+            file = new File(serverUrl + resource.getPreviewUrl());
             if (file.exists()) {
                 file.delete();
             }
@@ -407,23 +407,29 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
             return;
         }
 
-        File dir = new File(strategy.getServerUrl() + newPath);
+        //假如是本地资源，不能移动
+        if(resource.getSaveType() != SaveTypeEnum.LOCAL.getCode()){
+            return;
+        }
+
+        String serverUrl = getServerUrl();
+        File dir = new File(serverUrl + newPath);
         if (!dir.exists()) {
             dir.mkdirs();
         }
 
-        File file = new File(strategy.getServerUrl() + resource.getResourceUrl());
+        File file = new File(serverUrl + resource.getResourceUrl());
         if(file.exists()){
             FileUtil.move(file, dir, true);
         }
         if(StringUtils.isNotBlank(resource.getThumbUrl())) {
-            file = new File(strategy.getServerUrl() + resource.getThumbUrl());
+            file = new File(serverUrl + resource.getThumbUrl());
             if (file.exists()) {
                 FileUtil.move(file, dir, true);
             }
         }
         if(StringUtils.isNotBlank(resource.getPreviewUrl())) {
-            file = new File(strategy.getServerUrl() + resource.getPreviewUrl());
+            file = new File(serverUrl + resource.getPreviewUrl());
             if (file.exists()) {
                 FileUtil.move(file, dir, true);
             }
@@ -432,7 +438,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
 
     @Override
     public boolean addFolder(String folderPath) throws CollectionException {
-        File file = new File(strategy.getServerUrl() + folderPath);
+        File file = new File(getServerUrl() + folderPath);
         if(!file.exists()){
             if(!file.mkdirs()){
                 throw new CollectionException(ErrorCodeEnum.ADD_CATALOG_FAIL);
@@ -444,13 +450,15 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
 
     @Override
     public boolean renameFolder(String oldFolderPath, String newFolderPath, boolean onlyRename) throws CollectionException {
+
+        String serverUrl = getServerUrl();
         if(onlyRename){
             String[] paths = StringUtils.split(newFolderPath, "/");
-            if(new File(strategy.getServerUrl() + newFolderPath).exists()){
+            if(new File(serverUrl + newFolderPath).exists()){
                 throw new CollectionException(ErrorCodeEnum.CATALOG_IS_EXIST);
             }
             try {
-                FileUtil.rename(new File(strategy.getServerUrl() + oldFolderPath), paths[paths.length - 1], false);
+                FileUtil.rename(new File(serverUrl + oldFolderPath), paths[paths.length - 1], false);
                 return true;
             }
             catch (Exception e) {
@@ -459,17 +467,17 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
             }
         }
         else{
-            if(new File(strategy.getServerUrl() + newFolderPath).exists()){
+            if(new File(serverUrl + newFolderPath).exists()){
                 //先复制原目录文件过去
                 try {
-                    FileUtil.copyFilesFromDir(new File(strategy.getServerUrl() + oldFolderPath), new File(strategy.getServerUrl() + newFolderPath), true);
+                    FileUtil.copyFilesFromDir(new File(serverUrl + oldFolderPath), new File(serverUrl + newFolderPath), true);
                 }
                 catch (Exception e) {
                     log.error("系统错误", e);
                     return false;
                 }
                 try {
-                    FileUtil.del(new File(strategy.getServerUrl() + oldFolderPath));
+                    FileUtil.del(new File(serverUrl + oldFolderPath));
                     return true;
                 }
                 catch (Exception e) {
@@ -479,7 +487,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
             }
             else {
                 try {
-                    FileUtil.move(new File(strategy.getServerUrl() + oldFolderPath), new File(strategy.getServerUrl() + newFolderPath), false);
+                    FileUtil.move(new File(serverUrl + oldFolderPath), new File(serverUrl + newFolderPath), false);
                     return true;
                 } catch (Exception e) {
                     log.error("系统错误", e);
@@ -491,7 +499,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
 
     @Override
     public boolean deleteFolder(String folderPath) {
-        return FileUtil.del(new File(strategy.getServerUrl() + folderPath));
+        return FileUtil.del(new File(getServerUrl() + folderPath));
     }
 
     @Override
@@ -549,5 +557,22 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
 
     private String normPath(String path){
         return path.replaceAll("\\\\", "/").replaceAll("//", "/");
+    }
+
+    //获取服务器地址
+    public String getServerUrl() {
+        SysStrategy strategy;
+        try {
+            strategy = strategyRepository.getOne(new LambdaQueryWrapper<SysStrategy>()
+                    .eq(SysStrategy::getStrategyCode, StrategyEnum.LOCAL.getCode())
+                    .last("limit 1")
+            );
+        } catch (Exception e) {
+            throw new RuntimeException(LOCAL_STRATEGY_IS_INVALID.getMessage());
+        }
+        if(strategy == null){
+            throw new RuntimeException(LOCAL_STRATEGY_IS_INVALID.getMessage());
+        }
+        return strategy.getServerUrl();
     }
 }

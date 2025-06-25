@@ -315,6 +315,11 @@ public class ResourceFileService {
 
         int successCount = 0, failCount = 0;
         try {
+            ResourceStoreStrategy storeStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
+            if(!storeStrategy.checkServerUrl()){
+                throw new CollectionException(ErrorCodeEnum.SERVER_PATH_ERROR);
+            }
+
             for (int i = 0; i < files.size(); i++) {
                 // 检查是否被取消（通过线程中断）
                 if (Thread.currentThread().isInterrupted()) {
@@ -322,14 +327,13 @@ public class ResourceFileService {
                 }
 
                 File file = files.get(i);
+                log.info("正在处理文件：{}", file.getName());
                 String filePath = file.getAbsolutePath();
                 String relativePath = filePath.substring(batchImportBo.getSourcePath().length());
 
                 // 获取文件MD5，查出相同文件的记录
                 String md5 = DigestUtil.md5Hex(file);
                 List<UserResource> resources = resourceRepository.countFileMd5(userDto.getUserId(), md5);
-
-                ResourceStoreStrategy storeStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
 
                 switch (batchImportBo.getImportMethod()){
                     case COPY:

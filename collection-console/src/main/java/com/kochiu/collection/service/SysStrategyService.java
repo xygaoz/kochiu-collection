@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static com.kochiu.collection.Constant.ROOT_PATH;
+import static com.kochiu.collection.Constant.ROOT_PATH_WIN;
 
 @Slf4j
 @Service
@@ -78,7 +79,9 @@ public class SysStrategyService {
         strategyRepository.updateById(sysStrategy);
 
         if(sysStrategy.getStrategyCode().equals(StrategyEnum.LOCAL.getCode())
-                && !oldPath.equals(strategyDto.getServerUrl()) && !oldPath.equals(ROOT_PATH)){
+                && !oldPath.equals(strategyDto.getServerUrl())
+                && !oldPath.equals(ROOT_PATH)
+                && !oldPath.equalsIgnoreCase(ROOT_PATH_WIN)){
             //迁移文件
             Path dir = Paths.get(oldPath);
             if(!dir.toFile().exists()){
@@ -165,7 +168,7 @@ public class SysStrategyService {
     public boolean checkLocalStrategy() {
         SysStrategy sysStrategy = strategyRepository.getOne(new LambdaQueryWrapper<SysStrategy>().eq(SysStrategy::getStrategyCode, StrategyEnum.LOCAL.getCode()));
         if (sysStrategy != null) {
-            if(ROOT_PATH.equals(sysStrategy.getServerUrl())){
+            if(ROOT_PATH.equals(sysStrategy.getServerUrl()) || sysStrategy.getServerUrl().toUpperCase().startsWith(ROOT_PATH_WIN)){
                 return false;
             }
 
