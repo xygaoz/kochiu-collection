@@ -214,7 +214,7 @@ const submitForm = async () => {
 
         // 确认对话框
         await ElMessageBox.confirm(
-            '确认开始批量导入资源吗？此操作可能需要较长时间。',
+            '确认开始批量导入资源吗？此操作可能需要较长时间, 缩略图缓步生成。',
             '确认导入',
             {
                 confirmButtonText: '确定',

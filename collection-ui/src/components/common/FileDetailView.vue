@@ -286,6 +286,7 @@ const isPdfType = computed<boolean>(() => props.file.fileType === 'application/p
 const isReadOnly = computed(() => props.dataType === 'recycle' || props.dataType === 'public');
 const videoPlayer = ref<InstanceType<typeof VideoPlayer> | null>(null);
 const isVideoPlaying = ref(false);
+import imageThumbnail from '@/assets/imgs/type/image.png';
 
 const handleVideoPlay = () => {
     isVideoPlaying.value = true;
@@ -311,7 +312,7 @@ const imagePreviewUrl = computed(() => {
     if (!props.file) return '';
 
     // 优先使用previewUrl，如果没有则使用resourceUrl
-    const url = props.file.previewUrl || props.file.thumbnailUrl || props.file.resourceUrl;
+    const url = props.file.previewUrl || props.file.thumbnailUrl || imageThumbnail;
 
     // 处理相对路径
     return url.startsWith('http') ? url : `${window.location.origin}${url}`;
