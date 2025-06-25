@@ -32,11 +32,12 @@ public class ThumbnailService {
     /**
      * 异步生成缩略图（增强版）
      */
-    public void asyncCreateThumbnail(ResourceDto resourceDto, FileType fileType, String filePath) {
+    public void asyncCreateThumbnail(ResourceDto resourceDto, FileType fileType, String filePath,
+                                     String thumbFilePath, String thumbUrl) {
         CompletableFuture.runAsync(() -> {
             // 添加超时控制
             try {
-                createThumbnailWithTimeout(resourceDto, fileType, filePath);
+                createThumbnailWithTimeout(resourceDto, fileType, filePath, thumbFilePath, thumbUrl);
             } catch (Exception e) {
                 log.error("缩略图生成失败 - 资源ID: {}, 文件: {}",
                         resourceDto.getResourceId(), filePath, e);
@@ -51,11 +52,12 @@ public class ThumbnailService {
     /**
      * 带超时控制的缩略图生成
      */
-    private void createThumbnailWithTimeout(ResourceDto resourceDto, FileType fileType, String filePath) {
+    private void createThumbnailWithTimeout(ResourceDto resourceDto, FileType fileType, String filePath,
+                                            String thumbFilePath, String thumbUrl) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Future<?> future = executor.submit(() -> {
             try {
-                internalCreateThumbnail(resourceDto, fileType, filePath);
+                internalCreateThumbnail(resourceDto, fileType, filePath, thumbFilePath, thumbUrl);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             } finally {
@@ -65,7 +67,7 @@ public class ThumbnailService {
 
         try {
             // 设置超时时间为5分钟
-            future.get(5, TimeUnit.MINUTES);
+            future.get(10, TimeUnit.MINUTES);
         } catch (TimeoutException e) {
             future.cancel(true);
             log.warn("缩略图生成超时 - 资源ID: {}, 文件: {}",
@@ -81,9 +83,14 @@ public class ThumbnailService {
     /**
      * 实际缩略图生成逻辑
      */
-    private void internalCreateThumbnail(ResourceDto resourceDto, FileType fileType, String filePath) throws Exception {
-        String thumbFilePath = filePath.replace("." + resourceDto.getFileExt(), "_thumb.png");
-        String thumbUrl = resourceDto.getResourceUrl().replace("." + resourceDto.getFileExt(), "_thumb.png");
+    private void internalCreateThumbnail(ResourceDto resourceDto, FileType fileType, String filePath,
+                                         String thumbFilePath, String thumbUrl) throws Exception {
+        if(thumbFilePath == null) {
+            thumbFilePath = filePath.replace("." + resourceDto.getFileExt(), "_thumb.png");
+        }
+        if(thumbUrl == null) {
+            thumbUrl = resourceDto.getResourceUrl().replace("." + resourceDto.getFileExt(), "_thumb.png");
+        }
 
         FileStrategy fileStrategy = fileStrategyFactory.getStrategy(fileType);
         try {

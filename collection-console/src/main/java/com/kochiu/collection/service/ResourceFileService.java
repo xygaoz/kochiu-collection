@@ -331,6 +331,9 @@ public class ResourceFileService {
                 String filePath = file.getAbsolutePath();
                 String relativePath = filePath.substring(batchImportBo.getSourcePath().length());
 
+                ImportProgressWebSocketHandler.ImportProgress progress = new ImportProgressWebSocketHandler.ImportProgress(i + 1, files.size(), successCount, failCount, filePath, "processing", null);
+                ImportProgressWebSocketHandler.sendProgress(taskId, progress);
+
                 // 获取文件MD5，查出相同文件的记录
                 String md5 = DigestUtil.md5Hex(file);
                 List<UserResource> resources = resourceRepository.countFileMd5(userDto.getUserId(), md5);
@@ -354,13 +357,24 @@ public class ResourceFileService {
                         try {
                             // 提取子目录
                             String catalogPath = getSubPath(relativePath);
+                            if (isMore4Floors(catalogPath)) {
+                                throw new CollectionException("目录层级超过4层，无法导入" + filePath);
+                            }
+                            //虚拟目录
+                            Long cataId;
+                            if (!"/".equals(catalogPath)) {
+                                //不是根目录
+                                cataId = userCatalogService.addCatalogPath(userDto, catalogPath);
+                            } else {
+                                cataId = rootCataId;
+                            }
                             // 调用 saveLinkResource 方法保存链接资源
                             storeStrategy.saveLinkResource(file,
                                     userDto,
                                     md5,
                                     catalogPath, // 根据原目录结构保存缩略图
                                     batchImportBo.getCategoryId(),
-                                    rootCataId
+                                    cataId
                             );
                             successCount++;
                         } catch (Exception e) {
@@ -376,7 +390,7 @@ public class ResourceFileService {
 
                 // 发送进度前打印日志
                 log.info("发送进度: taskId={}, progress={}/{}", taskId, i + 1, files.size());
-                ImportProgressWebSocketHandler.ImportProgress progress = new ImportProgressWebSocketHandler.ImportProgress(i + 1, files.size(), successCount, failCount, filePath, "processing", null);
+                progress = new ImportProgressWebSocketHandler.ImportProgress(i + 1, files.size(), successCount, failCount, filePath, "processing", null);
                 String json = objectMapper.writeValueAsString(progress); // 假设使用 Jackson
                 log.info("准备发送进度: {}", json); // 关键日志
                 ImportProgressWebSocketHandler.sendProgress(taskId, progress);

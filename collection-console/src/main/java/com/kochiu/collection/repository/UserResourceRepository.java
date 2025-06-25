@@ -38,8 +38,6 @@ public class UserResourceRepository extends ServiceImpl<UserResourceMapper, User
      */
     public Long saveResource(ResourceDto resourceDto, Integer resourceType) {
 
-        String extension = FilenameUtils.getExtension(resourceDto.getSourceFileName()).toLowerCase();
-
         UserResource userResource = new UserResource();
         userResource.setUserId(resourceDto.getUserId());
         userResource.setCateId(resourceDto.getCateId());

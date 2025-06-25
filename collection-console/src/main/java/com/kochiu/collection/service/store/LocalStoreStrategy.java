@@ -178,7 +178,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
         String recFilePathDir = getServerUrl();
         String filePath = recFilePathDir + resource.getFilePath();
 
-        thumbnailService.asyncCreateThumbnail(resourceDto, fileType, filePath);
+        thumbnailService.asyncCreateThumbnail(resourceDto, fileType, filePath, null, null);
     }
 
     @Override
@@ -237,25 +237,22 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
                 .md5(md5)
                 .saveType(SaveTypeEnum.LINK)
                 .build();
-        //生成缩略图
-        createThumbnail(resourceDto, fileType, extension, file.getAbsolutePath(), recFilePathDir + resourceUrl);
 
-        resourceRepository.saveResource(resourceDto, fileType.desc().getCode());
+        Long resId = resourceRepository.saveResource(resourceDto, fileType.desc().getCode());
+        resourceDto.setResourceId(resId);
+
+        //生成缩略图
+        createThumbnail(resourceDto, fileType, file.getAbsolutePath(), recFilePathDir + resourceUrl);
     }
 
-    private void createThumbnail(ResourceDto resourceDto, FileType fileType, String extension, String sourceFile, String thumbFilePath){
+    private void createThumbnail(ResourceDto resourceDto, FileType fileType, String sourceFile, String thumbFilePath){
 
         //判断文件是否需要生成缩略图
         if(fileType.thumb()) {
             thumbFilePath = thumbFilePath.replace("." + resourceDto.getFileExt(), "_thumb.png");
             String thumbUrl = resourceDto.getResourceUrl().replace("." + resourceDto.getFileExt(), "_thumb.png");
 
-            FileStrategy fileStrategy = fileStrategyFactory.getStrategy(extension);
-            try {
-                fileStrategy.createThumbnail(new File(sourceFile), thumbFilePath, thumbUrl, fileType, resourceDto);
-            } catch (Exception e) {
-                log.error("缩略图生成失败", e);
-            }
+            thumbnailService.asyncCreateThumbnail(resourceDto, fileType, sourceFile, thumbFilePath, thumbUrl);
         }
     }
 
