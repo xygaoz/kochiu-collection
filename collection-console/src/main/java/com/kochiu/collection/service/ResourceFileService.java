@@ -27,7 +27,6 @@ import com.kochiu.collection.service.store.ResourceStrategyFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jodconverter.local.office.utils.Lo;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpRange;
@@ -353,30 +352,15 @@ public class ResourceFileService {
                         }
                         break;
                     }
+                    case KEEP_ORIGINAL_AND_CREATE_CATA:
                     case KEEP_ORIGINAL: {
                         try {
-                            // 提取子目录
-                            String catalogPath = getSubPath(relativePath);
-                            if (isMore4Floors(catalogPath)) {
-                                throw new CollectionException("目录层级超过4层，无法导入" + filePath);
+                            if(keepOriginal(userDto, batchImportBo, file, relativePath, storeStrategy, md5, rootCataId, resources)) {
+                                successCount++;
                             }
-                            //虚拟目录
-                            Long cataId;
-                            if (!"/".equals(catalogPath)) {
-                                //不是根目录
-                                cataId = userCatalogService.addCatalogPath(userDto, catalogPath);
-                            } else {
-                                cataId = rootCataId;
+                            else{
+                                failCount++;
                             }
-                            // 调用 saveLinkResource 方法保存链接资源
-                            storeStrategy.saveLinkResource(file,
-                                    userDto,
-                                    md5,
-                                    catalogPath, // 根据原目录结构保存缩略图
-                                    batchImportBo.getCategoryId(),
-                                    cataId
-                            );
-                            successCount++;
                         } catch (Exception e) {
                             log.error("文件保存失败", e);
                             failCount++;
@@ -462,9 +446,10 @@ public class ResourceFileService {
                     String relativePath = filePath.substring(batchImportBo.getSourcePath().length());
                     //提取子目录
                     String catalogPath = getSubPath(relativePath);
-                    if (isMore4Floors(catalogPath)) {
-                        log.error("目录层级超过4层，无法导入{}", filePath);
-                        return false;
+                    if (isMore3Floors(catalogPath)) {
+                        //目录层级超过3层，不再创建子目录，放到上一层
+                        //取上一层目录
+                        catalogPath = getParentPath(catalogPath);
                     }
 
                     Long cataId;
@@ -555,6 +540,84 @@ public class ResourceFileService {
         }
     }
 
+    private boolean keepOriginal(UserDto userDto, BatchImportBo batchImportBo,
+                              File file, String relativePath,
+                              ResourceStoreStrategy storeStrategy, String md5,
+                              Long rootCataId, List<UserResource> resources) throws CollectionException{
+
+        if(!resources.isEmpty()){
+            return false;
+        }
+
+        //虚拟目录
+        Long cataId = rootCataId;
+        // 提取子目录
+        String catalogPath = getSubPath(relativePath);
+        if(catalogPath.contains("dd/111/2")){
+            System.out.println(1);
+        }
+        if(batchImportBo.getImportMethod() == ImportMethodEnum.KEEP_ORIGINAL_AND_CREATE_CATA) {
+            //取选择的目录
+            UserCatalog parentCatalog = userCatalogService.getParentCatalog(userDto, batchImportBo.getCatalogId());
+            catalogPath = (parentCatalog.getCataPath() + "/" + catalogPath).replaceAll("//", "/");
+            if (isMore3Floors(catalogPath)) {
+                //目录层级超过3层，不再创建子目录，放到上一层
+                //取上一层目录
+                catalogPath = getParentPath(catalogPath);
+            }
+            if(catalogPath.endsWith("/")){
+                catalogPath = catalogPath.substring(0, catalogPath.length() - 1);
+            }
+
+            if(!catalogPath.equals(parentCatalog.getCataPath())){
+                String path = catalogPath.substring(parentCatalog.getCataPath().length());
+                cataId = userCatalogService.addCatalogPath(userDto,
+                        batchImportBo.getCatalogId() == null ? rootCataId : batchImportBo.getCatalogId(),
+                        path);
+            }
+        }
+        // 调用 saveLinkResource 方法保存链接资源
+        storeStrategy.saveLinkResource(file,
+                userDto,
+                md5,
+                catalogPath, // 根据原目录结构保存缩略图
+                batchImportBo.getCategoryId(),
+                cataId
+        );
+        return true;
+    }
+
+    private String getParentPath(String catalogPath) {
+        if (catalogPath == null || "/".equals(catalogPath)) {
+            return "/";
+        }
+        if(catalogPath.startsWith("/")){
+            catalogPath = catalogPath.substring(1);
+        }
+        if(catalogPath.endsWith("/")){
+            catalogPath = catalogPath.substring(0, catalogPath.length() - 1);
+        }
+        
+        // Remove the last directory name to get the parent path
+        String[] pathParts = catalogPath.split("/");
+        if (pathParts.length <= 1) {
+            return "/";
+        }
+        
+        StringBuilder parentPath = new StringBuilder();
+        for (int i = 0; i < pathParts.length - 1; i++) {
+            if (pathParts[i] != null && !pathParts[i].isEmpty()) {
+                parentPath.append("/").append(pathParts[i]);
+            }
+        }
+        
+        String path = parentPath.toString().isEmpty() ? "/" : parentPath.toString();
+        if (isMore3Floors(path)){
+            return getParentPath(path);
+        }
+        return path;
+    }
+
     private String getSubPath(String filePath){
         String catalogPath = filePath.substring(0, filePath.lastIndexOf(File.separatorChar));
         if (File.separatorChar == '/') { // Linux系统
@@ -567,17 +630,22 @@ public class ResourceFileService {
     }
 
     /**
-     * 目录层级超过4层，无法导入
+     * 目录层级超过3层
      * @param catalogPath
      * @return
      */
-    private boolean isMore4Floors(String catalogPath){
-        if(catalogPath.split("/").length > 3){
-            return true;
-        }
-        else{
+    private boolean isMore3Floors(String catalogPath){
+        catalogPath = catalogPath.replaceAll("//", "/");
+        if("/".equals(catalogPath)){
             return false;
         }
+        if(catalogPath.startsWith("/")){
+            catalogPath = catalogPath.substring(1);
+        }
+        if(catalogPath.endsWith("/")){
+            catalogPath = catalogPath.substring(0, catalogPath.length() - 1);
+        }
+        return StringUtils.countMatches(catalogPath, "/") + 1 > 3;
     }
 
     /**

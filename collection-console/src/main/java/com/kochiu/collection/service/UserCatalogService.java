@@ -16,6 +16,7 @@ import com.kochiu.collection.repository.UserCatalogRepository;
 import com.kochiu.collection.repository.UserResourceRepository;
 import com.kochiu.collection.service.store.ResourceStoreStrategy;
 import com.kochiu.collection.service.store.ResourceStrategyFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -224,6 +225,103 @@ public class UserCatalogService {
             parentId = id.get();
         }
         return id.get();
+    }
+
+    //添加目录路径
+    public Long addCatalogPath(UserDto userDto, Long parentCataId, String path) throws CollectionException {
+        // 去除路径开头的斜杠
+        if (path.startsWith("/")) {
+            path = path.substring(1);
+        }
+        String[] catalogNames = path.split("/");
+
+        // 获取父目录信息
+        UserCatalog parent = getParentCatalog(userDto, parentCataId);
+        if (parent == null) {
+            throw new CollectionException(ErrorCodeEnum.CATALOG_NAME_IS_SAME);
+        }
+
+        // 获取父目录的当前深度
+        int parentDepth = calculateCatalogDepth(parent.getCataPath());
+
+        Long currentParentId = parent.getCataId();
+        String currentPath = parent.getCataPath();
+        Long lastValidId = currentParentId; // 记录最后一个有效ID（第4层目录）
+
+        for (String catalogName : catalogNames) {
+            // 计算新目录的深度
+            int newDepth = parentDepth + 1;
+
+            // 检查是否超过4层限制
+            if (newDepth > 3) {
+                // 查找是否已存在该路径的目录
+                UserCatalog existingCatalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
+                        .eq(UserCatalog::getUserId, userDto.getUserId())
+                        .eq(UserCatalog::getCataPath, currentPath + "/" + catalogName));
+
+                return existingCatalog != null ? existingCatalog.getCataId() : lastValidId;
+            }
+
+            // 构建新目录路径
+            currentPath += "/" + catalogName;
+
+            // 检查目录是否已存在
+            UserCatalog catalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
+                    .eq(UserCatalog::getUserId, userDto.getUserId())
+                    .eq(UserCatalog::getCataPath, currentPath));
+
+            if (catalog == null) {
+                // 创建新目录
+                CatalogBo catalogBo = CatalogBo.builder()
+                        .parentId(currentParentId)
+                        .cataName(catalogName)
+                        .build();
+                Long newCatalogId = addCatalog(userDto, catalogBo);
+                currentParentId = newCatalogId;
+            } else {
+                currentParentId = catalog.getCataId();
+            }
+
+            // 更新最后有效的目录ID（当达到第4层时记录）
+            if (newDepth == 4) {
+                lastValidId = currentParentId;
+            }
+
+            parentDepth = newDepth;
+        }
+
+        return currentParentId;
+    }
+
+    // 获取父目录信息
+    public UserCatalog getParentCatalog(UserDto userDto, Long parentCataId) throws CollectionException {
+        if (parentCataId != null) {
+            UserCatalog parent = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
+                    .eq(UserCatalog::getUserId, userDto.getUserId())
+                    .eq(UserCatalog::getCataId, parentCataId));
+            if (parent != null) {
+                return parent;
+            }
+        }
+
+        // 如果未提供父ID或父目录不存在，使用默认根目录
+        return catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
+                .eq(UserCatalog::getUserId, userDto.getUserId())
+                .eq(UserCatalog::getCataSno, ROOT_CATALOG_SNO));
+    }
+
+    // 计算目录深度（根据路径中的斜杠数量）
+    private int calculateCatalogDepth(String cataPath) {
+        if (cataPath == null || cataPath.isEmpty()) {
+            return 0;
+        }
+        if(cataPath.startsWith("/")){
+            cataPath = cataPath.substring(1);
+        }
+        if(cataPath.endsWith("/")){
+            cataPath = cataPath.substring(0, cataPath.length() - 1);
+        }
+        return StringUtils.countMatches(cataPath.replaceAll("//", "/"), "/") + 1;
     }
 
     @Transactional(rollbackFor = Exception.class)

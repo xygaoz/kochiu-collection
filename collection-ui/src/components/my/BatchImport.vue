@@ -47,12 +47,12 @@
                         filterable
                         style="width: 100%"
                     />
-                    <div class="form-tip">不选择目录时，将按下方规则自动创建目录</div>
+                    <div class="form-tip">选择目录且导入方式是前面三种，不会自动创建子目录；不选择目录时，将按下方规则自动创建目录</div>
                 </el-form-item>
 
                 <!-- 4. 自动创建目录选项 -->
                 <el-form-item label="自动创建目录规则" prop="autoCreateRule">
-                    <el-radio-group v-model="form.autoCreateRule" :disabled="form.importMethod === 3">
+                    <el-radio-group v-model="form.autoCreateRule" :disabled="form.importMethod === 3 || form.importMethod === 4">
                         <el-radio :label="1">在根目录创建日期目录 (格式: YYYY-MM-DD)</el-radio>
                         <el-radio :label="2">在根目录按服务端路径子目录结构创建</el-radio>
                         <el-radio :label="3">不自动创建 (仅导入到根目录)</el-radio>
@@ -64,7 +64,8 @@
                     <el-radio-group v-model="form.importMethod" style="width: 100%">
                         <el-radio :label="1">复制到新位置</el-radio>
                         <el-radio :label="2">移动到新位置</el-radio>
-                        <el-radio :label="3">保持原路径 (仅建立索引)</el-radio>
+                        <el-radio :label="3">保持原路径 (仅建立索引，导入到根目录)</el-radio>
+                        <el-radio :label="4">保持原路径 (仅建立索引，在选择的目录下按服务端路径子目录结构创建虚拟目录)</el-radio>
                     </el-radio-group>
                     <div class="form-tip">选择保持原路径，创建目录规则强制为"不自动创建 (仅导入到根目录)"</div>
                 </el-form-item>
@@ -81,7 +82,7 @@
         <el-dialog v-model="progressDialogVisible" title="导入进度" width="50%" :close-on-click-modal="false">
             <el-progress :percentage="progressPercent" :status="progressStatus" />
             <div class="progress-info">
-                <div>已处理: {{ processedCount }} / {{ totalCount }}</div>
+                <div>处理: {{ processedCount }} / {{ totalCount }}</div>
                 <div>成功: {{ successCount }} 失败: {{ failCount }}</div>
                 <div>当前文件: {{ currentFile }}</div>
                 <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
@@ -159,6 +160,9 @@ watch(() => form.value.importMethod, (newVal) => {
     if (newVal === 3) {
         form.value.autoCreateRule = 3
         form.value.catalogId = null
+    }
+    else if (newVal === 4) {
+        form.value.autoCreateRule = 2
     }
 })
 

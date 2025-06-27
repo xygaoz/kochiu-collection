@@ -21,7 +21,8 @@ public enum ImportMethodEnum {
     /**
      * 保持原路径 (仅建立索引)
      */
-    KEEP_ORIGINAL(3, "保持原路径 (仅建立索引)");
+    KEEP_ORIGINAL(3, "保持原路径 (仅建立索引)"),
+    KEEP_ORIGINAL_AND_CREATE_CATA(4, "保持原路径 (仅建立索引，创建虚拟目录)");
 
     private final int code;
     private final String description;

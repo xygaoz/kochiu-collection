@@ -22,7 +22,6 @@ import com.kochiu.collection.repository.UserCatalogRepository;
 import com.kochiu.collection.repository.UserResourceRepository;
 import com.kochiu.collection.service.SysStrategyService;
 import com.kochiu.collection.service.SystemService;
-import com.kochiu.collection.service.file.FileStrategy;
 import com.kochiu.collection.service.file.FileStrategyFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
@@ -40,6 +39,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -287,7 +288,28 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
             }
 
             // 3. 获取实际文件
-            String filePath = getServerUrl() + url;
+            if(resource.getSaveType() == SaveTypeEnum.NETWORK.getCode()){
+                if(HttpMethod.POST.name().equalsIgnoreCase(request.getMethod()) && url.equals(resource.getResourceUrl())) {
+                    //重定向
+                    URL resUrl = new URL(resource.getFilePath());
+                    return ResponseEntity.status(HttpStatus.FOUND)
+                            .location(resUrl.toURI())
+                            .build();
+                }
+            }
+
+            String filePath;
+            if(resource.getSaveType() == SaveTypeEnum.LOCAL.getCode()) {
+                filePath = getServerUrl() + url;
+            }
+            else{
+                if(HttpMethod.POST.name().equalsIgnoreCase(request.getMethod()) && url.equals(resource.getResourceUrl())) {
+                    filePath = resource.getFilePath();
+                }
+                else{
+                    filePath = getServerUrl() + url;
+                }
+            }
             File file = new File(filePath);
             if (!file.exists()) {
                 return ResponseEntity.notFound().build();
@@ -346,6 +368,8 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .contentType(MediaType.TEXT_PLAIN)
                     .body(new ByteArrayResource("文件下载失败".getBytes(StandardCharsets.UTF_8)));
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
         }
     }
 
