@@ -133,7 +133,8 @@ const handleItemClick = (item: Catalog) => {
 .menu-icon {
     width: 32px;
     text-align: center;
-    color: rgb(59,130,246)
+    color: rgb(59,130,246);
+    margin: 0 0 3px 0;
 }
 
 .menu-label {
