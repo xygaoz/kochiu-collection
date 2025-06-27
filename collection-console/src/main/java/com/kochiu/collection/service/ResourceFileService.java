@@ -553,10 +553,10 @@ public class ResourceFileService {
         Long cataId = rootCataId;
         // 提取子目录
         String catalogPath = getSubPath(relativePath);
-        if(catalogPath.contains("dd/111/2")){
-            System.out.println(1);
-        }
         if(batchImportBo.getImportMethod() == ImportMethodEnum.KEEP_ORIGINAL_AND_CREATE_CATA) {
+
+            cataId = batchImportBo.getCatalogId() == null ? rootCataId : batchImportBo.getCatalogId();
+
             //取选择的目录
             UserCatalog parentCatalog = userCatalogService.getParentCatalog(userDto, batchImportBo.getCatalogId());
             catalogPath = (parentCatalog.getCataPath() + "/" + catalogPath).replaceAll("//", "/");

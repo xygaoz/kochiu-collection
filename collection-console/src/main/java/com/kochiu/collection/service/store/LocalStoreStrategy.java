@@ -303,7 +303,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
                 filePath = getServerUrl() + url;
             }
             else{
-                if(HttpMethod.POST.name().equalsIgnoreCase(request.getMethod()) && url.equals(resource.getResourceUrl())) {
+                if(HttpMethod.POST.name().equalsIgnoreCase(request.getMethod()) || url.equals(resource.getResourceUrl())) {
                     filePath = resource.getFilePath();
                 }
                 else{
