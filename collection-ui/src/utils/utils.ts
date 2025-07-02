@@ -7,6 +7,15 @@ import { tokenStore } from "@/apis/system-api";
 import Cookies from "js-cookie"; // 引入tokenStore
 import { JSEncrypt } from "jsencrypt";
 import { logout } from "@/apis/user-api";
+import * as FingerprintJS from "@fingerprintjs/fingerprintjs";
+
+// 初始化指纹
+const initFingerprint = async () => {
+    const fp = await FingerprintJS.load();
+    const { visitorId } = await fp.get();
+    localStorage.setItem('deviceFingerprint', visitorId);
+    return visitorId;
+};
 
 const httpInstance = axios.create({
     baseURL: process.env.VUE_APP_BASE_API,
@@ -28,11 +37,12 @@ const httpInstance = axios.create({
 });
 
 // 配置axios的请求拦截器，将application/json改为form-data
-httpInstance.interceptors.request.use(config => {
+httpInstance.interceptors.request.use(async config => {
     // 获取token并设置到Authorization header中
     const token = tokenStore.getToken();
     if (token) {
         config.headers['Authorization'] = token;
+        config.headers['X-Device-Fingerprint'] = localStorage.getItem('deviceFingerprint') || await initFingerprint();
     }
     if (config.data && config.headers['Content-Type'] === 'application/x-www-form-urlencoded') {
         config.data = qs.stringify(config.data, {

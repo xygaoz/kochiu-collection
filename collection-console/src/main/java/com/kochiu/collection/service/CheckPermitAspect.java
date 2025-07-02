@@ -6,6 +6,7 @@ import com.kochiu.collection.data.dto.TokenDto;
 import com.kochiu.collection.data.dto.UserDto;
 import com.kochiu.collection.enums.PermitEnum;
 import com.kochiu.collection.exception.CollectionException;
+import com.kochiu.collection.util.IpUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.aspectj.lang.JoinPoint;
@@ -78,13 +79,17 @@ public class CheckPermitAspect {
             log.info("Current request URL: {}", requestUrl);
 
             String authorization = request.getHeader(HEADER_AUTHORIZATION);
-            if(!checkPermit(requestUrl, authorization, checkPermit)){
+            String currentFingerprint = request.getHeader(HEADER_DEVICE_FINGERPRINT);
+            String clientIp = IpUtils.getClientIp( request);
+            if(!checkPermit(requestUrl, authorization, checkPermit, currentFingerprint, clientIp)){
                 throw new CollectionException(ERROR_TOKEN_INVALID);
             }
         }
     }
 
-    private boolean checkPermit(String requestUrl, String authorization, CheckPermit checkPermit) throws CollectionException {
+    private boolean checkPermit(String requestUrl, String authorization, CheckPermit checkPermit,
+                                String currentFingerprint,
+                                String clientIp) throws CollectionException {
 
         TokenDto tokenDto = tokenService.validateToken(authorization,
                 ArrayUtils.contains(checkPermit.on(), API) && checkPermit.on().length == 1);
@@ -106,6 +111,16 @@ public class CheckPermitAspect {
             if(!tokenDto.getUser().getToken().equals(authorization)){
                 throw new CollectionException(ERROR_TOKEN_INVALID);
             }
+        }
+        //校验浏览器指纹
+        if(tokenDto.getClaims().get(TOKEN_FINGERPRINT_FLAG) != null &&
+                !tokenDto.getClaims().get(TOKEN_FINGERPRINT_FLAG).equals(currentFingerprint)){
+            throw new CollectionException(ERROR_TOKEN_INVALID);
+        }
+        //校验客户端IP
+        if(tokenDto.getClaims().get(TOKEN_IP_FLAG) != null &&
+                !tokenDto.getClaims().get(TOKEN_IP_FLAG).equals(clientIp)){
+            throw new CollectionException(ERROR_TOKEN_INVALID);
         }
 
         //校验权限

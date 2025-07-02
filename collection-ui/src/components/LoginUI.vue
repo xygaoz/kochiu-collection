@@ -59,6 +59,7 @@ import { getPublicKey, loginService, tokenStore } from "@/apis/system-api"; // �
 import Cookies from 'js-cookie';
 import { encryptPassword } from "@/utils/utils";
 import { useUserStore } from "@/utils/global";
+import * as FingerprintJS from "@fingerprintjs/fingerprintjs";
 
 const loginForm = ref({
     username: "",
@@ -93,7 +94,10 @@ const login = async () => {
                 ElMessage.error('加密失败');
                 return
             }
-            const res = await loginService({ ...loginForm.value, password: encryptedPassword });
+            // 生成设备指纹
+            const fp = await FingerprintJS.load();
+            const { visitorId } = await fp.get();
+            const res = await loginService({ ...loginForm.value, password: encryptedPassword, deviceFingerprint: visitorId });
             if (res) {
                 // 登录成功后初始化用户状态
                 const userStore = useUserStore();

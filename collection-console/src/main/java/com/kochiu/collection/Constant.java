@@ -9,12 +9,15 @@ public final class Constant {
      * 请求头中存放用户信息的key
      */
     public static final String HEADER_AUTHORIZATION = "Authorization";
+    public static final String HEADER_DEVICE_FINGERPRINT = "X-Device-Fingerprint";
 
     public static final String PUBLIC_URL = "/api/v1";
 
     public static final String TOKEN_PARAMS_FLAG = "params";
     public static final String TOKEN_API_FLAG = "api";
     public static final String TOKEN_TYPE_FLAG = "type";
+    public static final String TOKEN_FINGERPRINT_FLAG = "fingerprint";
+    public static final String TOKEN_IP_FLAG = "ip";
     public static final String TOKEN_TYPE_ACCESS = "access";
     public static final String TOKEN_TYPE_REFRESH = "refresh";
 

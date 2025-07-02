@@ -8,10 +8,12 @@ import com.kochiu.collection.exception.CollectionException;
 import com.kochiu.collection.service.SysSecurityService;
 import com.kochiu.collection.service.SysUserService;
 import com.kochiu.collection.service.TokenService;
+import com.kochiu.collection.util.IpUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.time.ZoneId;
 import java.util.Map;
@@ -66,7 +68,8 @@ public class SysSecurityController {
      */
     @ResponseBody
     @PostMapping("/login")
-    public DefaultResult<LoginDto> login(@Valid LoginBo loginBo) throws CollectionException {
+    public DefaultResult<LoginDto> login(HttpServletRequest request, @Valid LoginBo loginBo) throws CollectionException {
+        loginBo.setIp(IpUtils.getClientIp( request));
         return DefaultResult.ok(userService.login(loginBo));
     }
 

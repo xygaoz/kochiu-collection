@@ -14,4 +14,7 @@ public class LoginBo {
     private String username;
     @NotNull(message = "密码不能为空")
     private String password;
+    @NotNull(message = "设备指纹不能为空")
+    private String deviceFingerprint;
+    private String ip;
 }

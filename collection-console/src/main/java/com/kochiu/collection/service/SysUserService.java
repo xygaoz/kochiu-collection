@@ -180,7 +180,9 @@ public class SysUserService {
                 if(validatePassword(user, loginBo.getPassword())){
                     Map<String, Object> claims = Map.of(
                             TOKEN_API_FLAG, permitEnum.name(),
-                            TOKEN_TYPE_FLAG, TOKEN_TYPE_ACCESS
+                            TOKEN_TYPE_FLAG, TOKEN_TYPE_ACCESS,
+                            TOKEN_FINGERPRINT_FLAG, loginBo.getDeviceFingerprint(),
+                            TOKEN_IP_FLAG, loginBo.getIp()
                     );
                     String token = tokenService.createToken(user,
                             claims,
