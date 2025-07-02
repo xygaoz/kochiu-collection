@@ -3,6 +3,7 @@ package com.kochiu.collection.controller;
 import com.kochiu.collection.annotation.CheckPermit;
 import com.kochiu.collection.annotation.Module;
 import com.kochiu.collection.data.DefaultResult;
+import com.kochiu.collection.data.bo.ClearDataBo;
 import com.kochiu.collection.data.bo.PathBo;
 import com.kochiu.collection.data.dto.StrategyDto;
 import com.kochiu.collection.data.vo.KeyVo;
@@ -10,7 +11,6 @@ import com.kochiu.collection.data.vo.ResourceTypeVo;
 import com.kochiu.collection.enums.ResourceTypeEnum;
 import com.kochiu.collection.exception.CollectionException;
 import com.kochiu.collection.properties.SysConfigProperties;
-import com.kochiu.collection.properties.UserConfigProperties;
 import com.kochiu.collection.service.CheckPermitAspect;
 import com.kochiu.collection.service.SysStrategyService;
 import com.kochiu.collection.service.SystemService;
@@ -94,9 +94,9 @@ public class SystemController {
     @CheckPermit(modules = {
             @Module(modeCode = "config", byAction = {"clear"})
     })
-    @GetMapping("/test/clear")
-    public DefaultResult<Boolean> clearTest() throws CollectionException {
-        systemService.clear();
+    @PostMapping("/test/clear")
+    public DefaultResult<Boolean> clearTest(@Validated ClearDataBo clearDataBo) throws Exception {
+        systemService.clearSysData(CheckPermitAspect.USER_INFO.get(), clearDataBo);
         return DefaultResult.ok(true);
     }
 
@@ -104,7 +104,7 @@ public class SystemController {
             @Module(modeCode = "config")
     })
     @GetMapping("/load-key")
-    public DefaultResult<KeyVo> loadKeys() throws CollectionException {
+    public DefaultResult<KeyVo> loadKeys() {
         return DefaultResult.ok(systemService.getKeys());
     }
 

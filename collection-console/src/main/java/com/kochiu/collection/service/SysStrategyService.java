@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -169,21 +170,40 @@ public class SysStrategyService {
         SysStrategy sysStrategy = strategyRepository.getOne(new LambdaQueryWrapper<SysStrategy>().eq(SysStrategy::getStrategyCode, StrategyEnum.LOCAL.getCode()));
         if (sysStrategy != null) {
             if(ROOT_PATH.equals(sysStrategy.getServerUrl()) || sysStrategy.getServerUrl().toUpperCase().startsWith(ROOT_PATH_WIN)){
+                log.error("不能存储到根目录");
                 return false;
             }
 
             Path dir = Paths.get(sysStrategy.getServerUrl());
             if(!dir.toFile().exists()){
+                log.error("{} 目录不存在", sysStrategy.getServerUrl());
                 return false;
             }
 
-            try (Stream<Path> stream = Files.list(dir)) {
-                return stream.findAny().isPresent();
-            } catch (IOException e) {
-                log.error("Failed to list directory: {}", dir, e);
-                return true;
+            try {
+                File file = dir.toFile();
+                if (file.isDirectory()) {
+                    // 测试读权限
+                    file.list();
+                    // 测试写权限
+                    File testFile = new File(file, ".kochiu_test_" + System.currentTimeMillis());
+                    boolean created = testFile.createNewFile();
+                    if (created) {
+                        testFile.delete();
+                    }
+                    else{
+                        log.error("存储路径不可读写");
+                    }
+                    return created;
+                }
+                log.error("存储路径不是目录");
+                return false;
+            } catch (Exception e) {
+                log.error("存储路径异常", e);
+                return false;
             }
         }
+        log.error("本地存储策略找不到");
         return false;
     }
 }

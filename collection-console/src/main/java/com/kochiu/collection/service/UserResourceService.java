@@ -40,7 +40,6 @@ public class UserResourceService {
     private final ResourceStrategyFactory resourceStrategyFactory;
     private final SysUserRepository userRepository;
     private final UserResourceRepository resourceRepository;
-    private final CollectionProperties properties;
     private final UserTagRepository tagRepository;
     private final UserCategoryRepository categoryRepository;
     private final UserCatalogRepository catalogRepository;
@@ -49,7 +48,6 @@ public class UserResourceService {
     public UserResourceService(ResourceStrategyFactory resourceStrategyFactory,
                                SysUserRepository userRepository,
                                UserResourceRepository resourceRepository,
-                               CollectionProperties properties,
                                UserTagRepository tagRepository,
                                UserCategoryRepository categoryRepository,
                                UserCatalogRepository catalogRepository,
@@ -57,7 +55,6 @@ public class UserResourceService {
         this.resourceStrategyFactory = resourceStrategyFactory;
         this.userRepository = userRepository;
         this.resourceRepository = resourceRepository;
-        this.properties = properties;
         this.tagRepository = tagRepository;
         this.categoryRepository = categoryRepository;
         this.catalogRepository = catalogRepository;

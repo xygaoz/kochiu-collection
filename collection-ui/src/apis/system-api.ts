@@ -137,14 +137,16 @@ export const checkServerPath = async (): Promise<boolean> => {
     });
 }
 
-export const clearAllData = async (): Promise<boolean> => {
-    return httpInstance.get(sysApi + "/test/clear").then((model: any) => {
+export const clearAllData = async (password: string | undefined): Promise<boolean> => {
+    return httpInstance.post(sysApi + "/test/clear",  {
+        password: password
+    }).then((model: any) => {
         if (model) {
             return model as boolean;
         }
         return false;
     }).catch((error) => {
-        console.error("添加策略失败:", error);
+        console.error("清除数据失败:", error);
         return false;
     });
 }

@@ -153,4 +153,11 @@ public class SysUserController {
         userService.setMyConfig(CheckPermitAspect.USER_INFO.get(), property);
         return DefaultResult.ok(true);
     }
+
+    @CheckPermit
+    @PostMapping("/test/clear")
+    public DefaultResult<Boolean> clearTest(@Validated ClearDataBo clearDataBo) throws Exception {
+        userService.clearMyData(CheckPermitAspect.USER_INFO.get(), clearDataBo);
+        return DefaultResult.ok(true);
+    }
 }

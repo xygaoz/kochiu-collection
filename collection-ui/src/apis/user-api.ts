@@ -190,3 +190,18 @@ export const setMyConfig = async (param: any): Promise<boolean | null> => {
         return null;
     });
 }
+
+export const clearMyData = async (password: string | undefined): Promise<boolean> => {
+    return httpInstance.post(userApi + "/test/clear",  {
+        password: password
+    }).then((model: any) => {
+        if (model) {
+            return model as boolean;
+        }
+        return false;
+    }).catch((error) => {
+        console.error("清除数据失败:", error);
+        return false;
+    });
+}
+

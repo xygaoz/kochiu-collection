@@ -52,6 +52,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.kochiu.collection.Constant.RANDOM_CHARS2;
+import static com.kochiu.collection.Constant.ROOT_PATH;
 import static com.kochiu.collection.enums.ErrorCodeEnum.FILE_IS_EXIST;
 import static com.kochiu.collection.enums.ErrorCodeEnum.FILE_SAVING_FAILURE;
 
@@ -565,11 +566,12 @@ public class ResourceFileService {
                 //取上一层目录
                 catalogPath = getParentPath(catalogPath);
             }
-            if(catalogPath.endsWith("/")){
+            if(!ROOT_PATH.equals(catalogPath) && catalogPath.endsWith("/")){
                 catalogPath = catalogPath.substring(0, catalogPath.length() - 1);
             }
 
             if(!catalogPath.equals(parentCatalog.getCataPath())){
+                log.debug("catalogPath: {}, parentPath: {}", catalogPath, parentCatalog.getCataPath());
                 String path = catalogPath.substring(parentCatalog.getCataPath().length());
                 cataId = userCatalogService.addCatalogPath(userDto,
                         batchImportBo.getCatalogId() == null ? rootCataId : batchImportBo.getCatalogId(),
@@ -615,7 +617,7 @@ public class ResourceFileService {
         if (isMore3Floors(path)){
             return getParentPath(path);
         }
-        return path;
+        return path.replaceAll("//", "/");
     }
 
     private String getSubPath(String filePath){

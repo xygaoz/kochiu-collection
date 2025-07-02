@@ -23,6 +23,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import cn.hutool.crypto.SecureUtil;
 
+import java.io.IOException;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -51,6 +54,9 @@ public class SysUserService {
     private final UserConfigRepository userConfigRepository;
     private final UserConfigProperties userConfigProperties;
     private final UserCatalogService catalogService;
+    private final UserResourceTagRepository userResourceTagRepository;
+    private final UserResourceRepository userResourceRepository;
+    private final SysStrategyRepository strategyRepository;
 
     public SysUserService(SysUserRepository userRepository,
                           SysSecurityRepository securityRepository,
@@ -66,7 +72,10 @@ public class SysUserService {
                           SysModuleService moduleService,
                           UserConfigRepository userConfigRepository,
                           UserConfigProperties userConfigProperties,
-                          UserCatalogService catalogService) {
+                          UserCatalogService catalogService,
+                          UserResourceTagRepository userResourceTagRepository,
+                          UserResourceRepository userResourceRepository,
+                          SysStrategyRepository strategyRepository) {
         this.userRepository = userRepository;
         this.securityRepository = securityRepository;
         this.tokenService = tokenService;
@@ -82,6 +91,9 @@ public class SysUserService {
         this.userConfigRepository = userConfigRepository;
         this.userConfigProperties = userConfigProperties;
         this.catalogService = catalogService;
+        this.userResourceTagRepository = userResourceTagRepository;
+        this.userResourceRepository = userResourceRepository;
+        this.strategyRepository = strategyRepository;
     }
 
     /**
@@ -140,6 +152,18 @@ public class SysUserService {
         }
     }
 
+    public boolean validatePassword(UserDto userDto, String password) throws Exception{
+        SysUser user = userRepository.getUser(userDto);
+        return validatePassword(user, password);
+    }
+
+    public boolean validatePassword(SysUser user, String password) throws Exception {
+        String loginPwd = RsaHexUtil.decrypt(password, securityRepository.getPrivateKey());
+        loginPwd = SecureUtil.sha256(loginPwd);
+
+        return loginPwd.equals(user.getPassword());
+    }
+
     /**
      * 根据登录用户信息生成token
      * @param loginBo
@@ -153,9 +177,7 @@ public class SysUserService {
             SysUser user = userRepository.getOne(lambdaQueryWrapper);
             if(user != null){
                 loginBo.setNikeName(user.getUserName());
-                String loginPwd = RsaHexUtil.decrypt(loginBo.getPassword(), securityRepository.getPrivateKey());
-                loginPwd = SecureUtil.sha256(loginPwd);
-                if(loginPwd.equals(user.getPassword())){
+                if(validatePassword(user, loginBo.getPassword())){
                     Map<String, Object> claims = Map.of(
                             TOKEN_API_FLAG, permitEnum.name(),
                             TOKEN_TYPE_FLAG, TOKEN_TYPE_ACCESS
@@ -276,6 +298,7 @@ public class SysUserService {
                     .cataName("我的资源")
                     .userId(userId)
                     .cataLevel(0)
+                    .cataSno(1)
                     .cataPath("/")
                     .build();
             userCatalogRepository.insert(rootCatalog);
@@ -599,6 +622,56 @@ public class SysUserService {
             userConfig.setConfigKey(entry.getKey());
             userConfig.setConfigValue(entry.getValue());
             userConfigRepository.save(userConfig);
+        }
+    }
+    //  清空数据
+    @Transactional(rollbackFor = Exception.class)
+    public void clearMyData(UserDto userDto, ClearDataBo clearDataBo) throws Exception {
+
+        //校验密码
+        String password = HexUtils.base64ToHex(clearDataBo.getPassword());
+        if(!validatePassword(userDto, password)){
+            throw new CollectionException(ErrorCodeEnum.INVALID_USERNAME_OR_PASSWORD);
+        }
+
+        //清空标签
+        userResourceTagRepository.remove(new LambdaQueryWrapper<UserResourceTag>().eq(UserResourceTag::getUserId, userDto.getUserId()));
+        //清空资源
+        userResourceRepository.remove(new LambdaQueryWrapper<UserResource>().eq(UserResource::getUserId, userDto.getUserId()));
+        //清空标签
+        userTagRepository.remove(new LambdaQueryWrapper<UserTag>().eq(UserTag::getUserId, userDto.getUserId()));
+        //清空目录
+        userCatalogRepository.remove(new LambdaQueryWrapper<UserCatalog>().eq(UserCatalog::getUserId, userDto.getUserId()).ne(UserCatalog::getCataLevel, 0));
+        //清空分类
+        userCategoryRepository.remove(new LambdaQueryWrapper<UserCategory>().eq(UserCategory::getUserId, userDto.getUserId()).ne(UserCategory::getSno, 1));
+        //删除物理资源
+        try {
+            SysStrategy sysStrategy = strategyRepository.getOne(new LambdaQueryWrapper<SysStrategy>().eq(SysStrategy::getStrategyCode, StrategyEnum.LOCAL.getCode()));
+            if (sysStrategy != null) {
+                Path dir = Paths.get(sysStrategy.getServerUrl() + "/" + userDto.getUserCode());
+                if (!dir.toFile().exists()) {
+                    return;
+                }
+                //删除源目录
+                Files.walkFileTree(dir, new SimpleFileVisitor<>() {
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                        Files.delete(file); // 删除文件
+                        return FileVisitResult.CONTINUE;
+                    }
+
+                    @Override
+                    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                        if (exc != null) {
+                            throw exc; // 抛出遍历过程中的异常
+                        }
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+            }
+        } catch (IOException e) {
+            log.error("Failed to delete directory", e);
+            throw new CollectionException(ErrorCodeEnum.CLEAR_FAIL);
         }
     }
 }

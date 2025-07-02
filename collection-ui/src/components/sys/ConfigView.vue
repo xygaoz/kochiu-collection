@@ -108,10 +108,20 @@
             width="30%"
             :close-on-click-modal="false">
             <span>此操作将永久清空所有系统数据，且不可恢复！确认继续吗？</span>
+            <el-form :model="clearForm" :rules="clearRules" ref="clearFormRef" style="margin-top: 20px;">
+                <el-form-item label="您的登录密码" prop="password">
+                    <el-input
+                        v-model="clearForm.password"
+                        type="password"
+                        placeholder="请输入您的登录密码"
+                        show-password
+                    />
+                </el-form-item>
+            </el-form>
             <template #footer>
                 <span class="dialog-footer">
                     <el-button @click="clearDialogVisible = false">取消</el-button>
-                    <el-button type="danger" @click="clearSystemData">确认清空</el-button>
+                    <el-button type="danger" @click="clearSystemData" :loading="clearLoading">确认清空</el-button>
                 </span>
             </template>
         </el-dialog>
@@ -127,12 +137,13 @@ import {
     resetEncryptKey,
     loadCurrentKeys,
     setSysConfig,
-    getSysConfig
+    getSysConfig, getPublicKey
 } from "@/apis/system-api";
 import { logout } from "@/apis/user-api";
 import emitter from "@/utils/event-bus";
 import { useUserStore } from "@/utils/global";
 import { SysProperty } from "@/apis/interface";
+import { encryptPassword } from "@/utils/utils";
 
 const userStore = useUserStore();
 
@@ -143,6 +154,16 @@ const keyLoading = ref(false)
 
 // 对话框控制
 const clearDialogVisible = ref(false)
+// 清空系统表单
+const clearForm = ref({
+    password: ''
+})
+const clearFormRef = ref<FormInstance>()
+const clearRules = ref({
+    password: [
+        { required: true, message: '请输入您的登录密码', trigger: 'blur' },
+    ]
+})
 
 // 表单数据
 const formData = ref<SysProperty>({
@@ -151,6 +172,7 @@ const formData = ref<SysProperty>({
 const sizeValue = ref(500);
 const sizeUnit = ref('MB');
 const maxSizeLimit = ref(10240); // 最大限制值
+const publicKey = ref<string | null>(null); // 用于存储公钥
 
 // 表单引用
 const configForm = ref<FormInstance>()
@@ -192,14 +214,19 @@ const confirmClearSystem = () => {
 const clearSystemData = async () => {
     clearLoading.value = true
     try {
-        if(await clearAllData()) {
+        // 验证表单
+        await clearFormRef.value?.validate()
+        const encryptedPassword: string | undefined = encryptPassword(publicKey.value!, clearForm.value.password);
+
+        if(await clearAllData(encryptedPassword)) {
             ElMessage.success('系统数据已清空')
+            clearForm.value.password =  ''
             clearDialogVisible.value = false
             // 触发数据刷新事件
             emitter.emit('refresh-menu')
         }
     } catch (error) {
-        ElMessage.error('清空系统失败')
+        ElMessage.error('清空系统数据失败')
         console.error(error)
     } finally {
         clearLoading.value = false
@@ -323,6 +350,13 @@ watch([sizeValue, sizeUnit], () => {
 });
 
 onMounted(async () => {
+    try {
+        publicKey.value = await getPublicKey();
+    } catch (error) {
+        console.error("获取公钥失败:", error);
+        ElMessage.error("获取公钥失败");
+    }
+
     const result = await loadCurrentKeys();
     if(result){
         currentPublicKey.value = result.publicKey

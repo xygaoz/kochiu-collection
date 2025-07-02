@@ -105,6 +105,9 @@
                 <el-form-item label="密码" prop="password" v-if="isAdd">
                     <el-input v-model="userForm.password" type="password" placeholder="请输入密码"></el-input>
                 </el-form-item>
+                <el-form-item label="确认密码" prop="confirmPassword" v-if="isAdd">
+                    <el-input v-model="userForm.confirmPassword" type="password" placeholder="请输入确认密码"></el-input>
+                </el-form-item>
                 <el-form-item label="存储策略" prop="strategy">
                     <el-select v-model="userForm.strategy" placeholder="请选择存储策略">
                         <el-option
@@ -276,6 +279,7 @@ interface Form {
     userCode: string
     userName: string
     password: string
+    confirmPassword: string
     strategy: string
     roles: string[]
 }
@@ -285,6 +289,7 @@ const userForm = reactive<Form>({
     userCode: '',
     userName: '',
     password: '',
+    confirmPassword: '',
     strategy: 'local',
     roles: []
 })
@@ -309,6 +314,16 @@ const validateConfirmPassword = (rule: any, value: string | undefined, callback:
     if (!value || value.trim() === '') {
         callback(new Error('请再次输入密码'));
     } else if (value !== resetPwdForm.newPassword) {
+        callback(new Error('两次输入密码不一致'));
+    } else {
+        callback();
+    }
+};
+
+const validateUserPassword = (rule: any, value: string | undefined, callback: any) => {
+    if (!value || value.trim() === '') {
+        callback(new Error('请再次输入确认密码'));
+    } else if (userForm.password !== userForm.confirmPassword) {
         callback(new Error('两次输入密码不一致'));
     } else {
         callback();
@@ -340,7 +355,11 @@ const rules = reactive<FormRules>({
     ],
     password: [
         { required: true, message: '请输入密码', trigger: 'blur' },
-        { min: 6, max: 20, message: '长度在 6 到 20 个字符', trigger: 'blur' }
+        { min: 6, max: 20, message: '长度在 6 到 20 个字符', trigger: 'blur' },
+    ],
+    confirmPassword: [
+        { required: true, message: '请输入确认密码', trigger: 'blur' },
+        { validator: validateUserPassword, trigger: ['blur', 'change'] }
     ],
     strategy: [
         { required: true, message: '请选择存储策略', trigger: 'change' }
