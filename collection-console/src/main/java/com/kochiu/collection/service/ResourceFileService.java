@@ -569,6 +569,7 @@ public class ResourceFileService {
             if(!ROOT_PATH.equals(catalogPath) && catalogPath.endsWith("/")){
                 catalogPath = catalogPath.substring(0, catalogPath.length() - 1);
             }
+            catalogPath = catalogPath.replaceAll("//", "/");
 
             if(!catalogPath.equals(parentCatalog.getCataPath())){
                 log.debug("catalogPath: {}, parentPath: {}", catalogPath, parentCatalog.getCataPath());

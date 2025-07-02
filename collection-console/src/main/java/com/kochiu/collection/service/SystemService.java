@@ -253,12 +253,12 @@ public class SystemService {
         try {
             SysStrategy sysStrategy = strategyRepository.getOne(new LambdaQueryWrapper<SysStrategy>().eq(SysStrategy::getStrategyCode, StrategyEnum.LOCAL.getCode()));
             if (sysStrategy != null) {
-                Path dir = Paths.get(sysStrategy.getServerUrl());
-                if (!dir.toFile().exists()) {
+                Path rootDir = Paths.get(sysStrategy.getServerUrl());
+                if (!rootDir.toFile().exists()) {
                     return;
                 }
                 //删除源目录
-                Files.walkFileTree(dir, new SimpleFileVisitor<>() {
+                Files.walkFileTree(rootDir, new SimpleFileVisitor<>() {
                     @Override
                     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                         Files.delete(file); // 删除文件
@@ -269,6 +269,10 @@ public class SystemService {
                     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
                         if (exc != null) {
                             throw exc; // 抛出遍历过程中的异常
+                        }
+
+                        if(!rootDir.equals(dir)) {
+                            Files.delete(dir); // 删除目录（此时目录已空）
                         }
                         return FileVisitResult.CONTINUE;
                     }
