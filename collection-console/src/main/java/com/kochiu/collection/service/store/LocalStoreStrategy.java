@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -259,7 +260,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
             if (user == null) {
                 return ResponseEntity.notFound().build();
             } else {
-                url = "/" + user.getUserCode() + url;
+                url = URLDecoder.decode("/" + user.getUserCode() + url, StandardCharsets.UTF_8);
                 if (!url.equals(resource.getResourceUrl()) &&
                         !url.equals(resource.getThumbUrl()) &&
                         !url.equals(resource.getPreviewUrl())) {
