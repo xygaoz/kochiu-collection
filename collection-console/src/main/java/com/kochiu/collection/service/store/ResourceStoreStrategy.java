@@ -115,9 +115,8 @@ public interface ResourceStoreStrategy {
      */
     boolean updateResourcesPath(int userId, Long targetCataId, List<Long> resourceIds) throws CollectionException;
 
-    //  异步创建缩略图
-    void asyncCreateThumbnail(Long resourceId);
-
     // 检查服务url是否正常
     boolean checkServerUrl();
+
+    String getServerUrl();
 }

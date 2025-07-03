@@ -7,6 +7,7 @@ import com.kochiu.collection.data.bo.BatchImportBo;
 import com.kochiu.collection.data.bo.PathBo;
 import com.kochiu.collection.data.bo.UploadBo;
 import com.kochiu.collection.data.dto.ChunkUploadDto;
+import com.kochiu.collection.data.dto.ResourceDto;
 import com.kochiu.collection.data.dto.UserDto;
 import com.kochiu.collection.data.vo.FileVo;
 import com.kochiu.collection.entity.SysUser;
@@ -24,6 +25,7 @@ import com.kochiu.collection.repository.UserResourceRepository;
 import com.kochiu.collection.service.file.FileStrategyFactory;
 import com.kochiu.collection.service.store.ResourceStoreStrategy;
 import com.kochiu.collection.service.store.ResourceStrategyFactory;
+import com.kochiu.collection.service.store.ThumbnailService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -73,7 +75,7 @@ public class ResourceFileService {
     private final ObjectMapper objectMapper;
     private final UserCategoryRepository  userCategoryRepository;
     private final FileStrategyFactory fileStrategyFactory;
-    private final Executor asyncExecutor;
+    private final ThumbnailService thumbnailService;
 
     public ResourceFileService(ResourceStrategyFactory resourceStrategyFactory,
                                SysUserRepository userRepository,
@@ -83,7 +85,7 @@ public class ResourceFileService {
                                SystemService systemService, ObjectMapper objectMapper,
                                UserCategoryRepository userCategoryRepository,
                                FileStrategyFactory fileStrategyFactory,
-                               Executor asyncExecutor) {
+                               ThumbnailService thumbnailService) {
         this.resourceStrategyFactory = resourceStrategyFactory;
         this.userRepository = userRepository;
         this.resourceRepository = resourceRepository;
@@ -93,7 +95,7 @@ public class ResourceFileService {
         this.objectMapper = objectMapper;
         this.userCategoryRepository = userCategoryRepository;
         this.fileStrategyFactory = fileStrategyFactory;
-        this.asyncExecutor = asyncExecutor;
+        this.thumbnailService = thumbnailService;
     }
 
     /**
@@ -161,15 +163,23 @@ public class ResourceFileService {
     private void createThumbnail(FileVo fileVo, String strategy){
         //异步创建缩略图
         ResourceStoreStrategy storeStrategy = resourceStrategyFactory.getStrategy(strategy);
-        CompletableFuture.runAsync(() -> {
-            // 添加超时控制
-            try {
-                log.debug("开始生成缩略图 - 文件ID: {}", fileVo.getResourceId());
-                storeStrategy.asyncCreateThumbnail(fileVo.getResourceId());
-            } catch (Exception e) {
-                log.error("缩略图生成失败", e);
-            }
-        }, asyncExecutor);
+        UserResource resource = resourceRepository.getById(fileVo.getResourceId());
+        if(resource == null){
+            return;
+        }
+        ResourceDto resourceDto = ResourceDto.builder()
+                .resourceId(fileVo.getResourceId())
+                .resourceUrl(resource.getResourceUrl())
+                .fileExt(resource.getFileExt())
+                .filePath(resource.getFilePath())
+                .build();
+
+        FileType fileType = fileStrategyFactory.getFileType(resource.getFileExt());
+
+        String recFilePathDir = storeStrategy.getServerUrl();
+        String filePath = tidyPath(recFilePathDir + resource.getFilePath());
+
+        thumbnailService.asyncCreateThumbnail(resourceDto, fileType, filePath, null, null);
     }
 
     //  检查文件是否存在
@@ -703,12 +713,13 @@ public class ResourceFileService {
         }
     }
 
-    @Async("taskExecutor")
     public void generateThumbnail(UserDto userDto, Long resourceId) throws CollectionException {
 
         SysUser user = userRepository.getUser(userDto);
-        ResourceStoreStrategy storeStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
-        storeStrategy.asyncCreateThumbnail(resourceId);
+        FileVo fileVo = FileVo.builder()
+                .resourceId(resourceId)
+                .build();
+        createThumbnail(fileVo, user.getStrategy());
     }
 
     // 存储分片文件

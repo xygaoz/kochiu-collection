@@ -162,27 +162,6 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
                 .build();
     }
 
-    public void asyncCreateThumbnail(Long resourceId){
-
-        UserResource resource = resourceRepository.getById(resourceId);
-        if(resource == null){
-            return;
-        }
-        ResourceDto resourceDto = ResourceDto.builder()
-                .resourceId(resourceId)
-                .resourceUrl(resource.getResourceUrl())
-                .fileExt(resource.getFileExt())
-                .filePath(resource.getFilePath())
-                .build();
-
-        FileType fileType = fileStrategyFactory.getFileType(resource.getFileExt());
-
-        String recFilePathDir = getServerUrl();
-        String filePath = tidyPath(recFilePathDir + resource.getFilePath());
-
-        thumbnailService.asyncCreateThumbnail(resourceDto, fileType, filePath, null, null);
-    }
-
     @Override
     public boolean checkServerUrl() {
         return sysStrategyService.checkLocalStrategy();
