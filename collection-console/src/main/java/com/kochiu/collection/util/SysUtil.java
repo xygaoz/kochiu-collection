@@ -25,4 +25,11 @@ public class SysUtil {
         return System.getenv().keySet().stream()
                 .anyMatch(key -> key.toLowerCase().contains("docker"));
     }
+
+    public static String tidyPath(String path) {
+        if(path == null){
+            return "";
+        }
+        return path.replaceAll("\\\\", "/").replaceAll("//+", "/");
+    }
 }

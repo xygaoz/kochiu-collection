@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.kochiu.collection.Constant.ROOT_CATALOG_SNO;
+import static com.kochiu.collection.util.SysUtil.tidyPath;
 
 @Service
 public class UserCatalogService {
@@ -210,7 +211,7 @@ public class UserCatalogService {
             cataPath += "/" + catalogName;
             UserCatalog catalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
                     .eq(UserCatalog::getUserId, userDto.getUserId())
-                    .eq(UserCatalog::getCataPath, cataPath)
+                    .eq(UserCatalog::getCataPath, tidyPath(cataPath))
             );
             if(catalog == null){
                 CatalogBo catalogBo = CatalogBo.builder()
@@ -257,7 +258,7 @@ public class UserCatalogService {
                 // 查找是否已存在该路径的目录
                 UserCatalog existingCatalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
                         .eq(UserCatalog::getUserId, userDto.getUserId())
-                        .eq(UserCatalog::getCataPath, currentPath + "/" + catalogName));
+                        .eq(UserCatalog::getCataPath, tidyPath(currentPath + "/" + catalogName)));
 
                 return existingCatalog != null ? existingCatalog.getCataId() : lastValidId;
             }
@@ -268,7 +269,7 @@ public class UserCatalogService {
             // 检查目录是否已存在
             UserCatalog catalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
                     .eq(UserCatalog::getUserId, userDto.getUserId())
-                    .eq(UserCatalog::getCataPath, currentPath));
+                    .eq(UserCatalog::getCataPath, tidyPath(currentPath)));
 
             if (catalog == null) {
                 // 创建新目录
@@ -321,7 +322,7 @@ public class UserCatalogService {
         if(cataPath.endsWith("/")){
             cataPath = cataPath.substring(0, cataPath.length() - 1);
         }
-        return StringUtils.countMatches(cataPath.replaceAll("//", "/"), "/") + 1;
+        return StringUtils.countMatches(tidyPath(cataPath), "/") + 1;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -346,7 +347,7 @@ public class UserCatalogService {
             if (pathParts.length > 0) {
                 pathParts[pathParts.length - 1] = catalogBo.getCataName();
             }
-            String newPath = String.join("/", pathParts).replaceAll("//", "/");
+            String newPath = tidyPath(String.join("/", pathParts));
 
             // 数据库先改名
             userCatalog.setCataName(catalogBo.getCataName());
@@ -362,8 +363,8 @@ public class UserCatalogService {
             //更新数据库
             resourceStoreStrategy.updateResourcePath(user.getUserId(), catalogBo.getCataId(), catalogBo.getCataId());
             if (!resourceStoreStrategy.renameFolder(
-                    ("/" + user.getUserCode() + "/" + oldPath).replaceAll("//", "/"),
-                    ("/" + user.getUserCode() + "/" + newPath).replaceAll("//", "/"),
+                    tidyPath("/" + user.getUserCode() + "/" + oldPath),
+                    tidyPath("/" + user.getUserCode() + "/" + newPath),
                     true
             )) {
                 throw new CollectionException(ErrorCodeEnum.UPDATE_CATALOG_FAIL);
@@ -385,7 +386,7 @@ public class UserCatalogService {
             if(catalogBo.getCataName().equals(parentCatalog.getCataName())){
                 throw new CollectionException(ErrorCodeEnum.CATALOG_NAME_IS_SAME);
             }
-            String newPath = (parentCatalog.getCataPath() + "/" + catalogBo.getCataName()).replaceAll("//", "/");
+            String newPath = tidyPath(parentCatalog.getCataPath() + "/" + catalogBo.getCataName());
             Long targetCataId = catalogBo.getParentId();
             if(catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
                     .eq(UserCatalog::getUserId, user.getUserId())
@@ -411,8 +412,8 @@ public class UserCatalogService {
             resourceStoreStrategy.updateResourcePath(user.getUserId(), targetCataId, catalogBo.getCataId());
             // 更新物理文件夹
             if (!resourceStoreStrategy.renameFolder(
-                    ("/" + user.getUserCode() + "/" + oldPath).replaceAll("//", "/"),
-                    ("/" + user.getUserCode() + "/" + newPath).replaceAll("//", "/"),
+                    tidyPath("/" + user.getUserCode() + "/" + oldPath),
+                    tidyPath("/" + user.getUserCode() + "/" + newPath),
                     false
             )) {
                 throw new CollectionException(ErrorCodeEnum.UPDATE_CATALOG_FAIL);
@@ -447,7 +448,7 @@ public class UserCatalogService {
             }
 
             ResourceStoreStrategy resourceStoreStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
-            if(!resourceStoreStrategy.deleteFolder(("/" + user.getUserCode() + "/" + oldPath).replaceAll("//", "/"))){
+            if(!resourceStoreStrategy.deleteFolder(tidyPath("/" + user.getUserCode() + "/" + oldPath))){
                 throw new CollectionException(ErrorCodeEnum.REMOVE_CATALOG_FAIL);
             }
         }
@@ -474,8 +475,8 @@ public class UserCatalogService {
             resourceStoreStrategy.updateResourcePath(user.getUserId(), catalogBo.getParentId(), catalogBo.getCataId());
             // 更新物理文件夹
             if (!resourceStoreStrategy.renameFolder(
-                    ("/" + user.getUserCode() + "/" + userCatalog.getCataPath()).replaceAll("//", "/"),
-                    ("/" + user.getUserCode() + "/" + parentCatalog.getCataPath()).replaceAll("//", "/"),
+                    tidyPath("/" + user.getUserCode() + "/" + userCatalog.getCataPath()),
+                    tidyPath("/" + user.getUserCode() + "/" + parentCatalog.getCataPath()),
                     false
             )) {
                 throw new CollectionException(ErrorCodeEnum.UPDATE_CATALOG_FAIL);
