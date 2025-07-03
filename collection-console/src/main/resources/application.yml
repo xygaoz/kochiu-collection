@@ -11,12 +11,15 @@ spring:
   profiles:
     active: dev
   datasource:
-    # 连接池配置
     hikari:
-      maximum-pool-size: 1
-      connection-timeout: 30000
-      idle-timeout: 600000
-      max-lifetime: 1800000
+      maximum-pool-size: 1           # SQLite 建议保持 1，避免并发写入冲突
+      minimum-idle: 1                # 最小空闲连接（与 maximum-pool-size 一致）
+      connection-timeout: 5000       # 缩短超时时间（5秒），避免长时间阻塞
+      idle-timeout: 600000           # 10分钟不用的连接会被回收
+      max-lifetime: 1800000          # 30分钟后强制回收连接（避免连接泄漏）
+      # SQLite 专用优化
+      data-source-properties:
+        busy_timeout: 5000           # 设置 SQLite 的 busy_timeout（毫秒）
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.xml
     database-change-log-lock-table: KC_CO_DATABASECHANGELOGLOCK

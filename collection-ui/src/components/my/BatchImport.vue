@@ -249,6 +249,9 @@ const startImport = async () => {
         // 1. 调用后端启动导入
         const taskId = await startBatchImport(form.value);
         if(!taskId){
+            setTimeout(function () {
+                progressDialogVisible.value = false;
+            }, 1000)
             return
         }
         console.log("Task ID:", taskId); // 调试日志
