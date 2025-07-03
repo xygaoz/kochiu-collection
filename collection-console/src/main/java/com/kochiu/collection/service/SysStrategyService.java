@@ -63,16 +63,18 @@ public class SysStrategyService {
             throw new CollectionException(ErrorCodeEnum.STRATEGY_IS_NOT_EXIST);
         }
 
+        String oldPath = sysStrategy.getServerUrl();
         if(sysStrategy.getStrategyCode().equals(StrategyEnum.LOCAL.getCode())
                 && !sysStrategy.getServerUrl().equals(strategyDto.getServerUrl())
+                && !ROOT_PATH.equals(oldPath)
                 && !systemService.testServerPath(PathBo.builder()
-                    .path(sysStrategy.getServerUrl())
-                .importMethod(ImportMethodEnum.MOVE)
-                .build())){
+                    .path(oldPath)
+                    .importMethod(ImportMethodEnum.MOVE)
+                    .build())
+        ){
             throw new CollectionException(ErrorCodeEnum.SERVER_PATH_ERROR);
         }
 
-        String oldPath = sysStrategy.getServerUrl();
         sysStrategy.setServerUrl(strategyDto.getServerUrl());
         sysStrategy.setUsername(strategyDto.getUsername());
         sysStrategy.setPassword(strategyDto.getPassword());
