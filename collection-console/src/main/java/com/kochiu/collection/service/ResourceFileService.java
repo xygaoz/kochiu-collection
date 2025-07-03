@@ -16,6 +16,7 @@ import com.kochiu.collection.entity.UserResource;
 import com.kochiu.collection.enums.ErrorCodeEnum;
 import com.kochiu.collection.enums.ImportMethodEnum;
 import com.kochiu.collection.enums.ResourceTypeEnum;
+import com.kochiu.collection.enums.SaveTypeEnum;
 import com.kochiu.collection.exception.CollectionException;
 import com.kochiu.collection.handler.ImportProgressWebSocketHandler;
 import com.kochiu.collection.repository.SysUserRepository;
@@ -33,7 +34,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpRange;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,8 +48,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -176,8 +174,14 @@ public class ResourceFileService {
 
         FileType fileType = fileStrategyFactory.getFileType(resource.getFileExt());
 
-        String recFilePathDir = storeStrategy.getServerUrl();
-        String filePath = tidyPath(recFilePathDir + resource.getFilePath());
+        String filePath;
+        if(resource.getSaveType() == SaveTypeEnum.LINK.getCode()){
+            filePath = resource.getFilePath();
+        }
+        else {
+            String recFilePathDir = storeStrategy.getServerUrl();
+            filePath = tidyPath(recFilePathDir + resource.getFilePath());
+        }
 
         thumbnailService.asyncCreateThumbnail(resourceDto, fileType, filePath, null, null);
     }

@@ -75,6 +75,13 @@
                     </template>
                 </el-image>
             </div>
+
+            <!-- 重建缩略图按钮 -->
+            <div v-if="!isReadOnly" class="rebuild-thumbnail-btn" @click="handleRebuildThumbnail">
+                <el-tooltip content="重建缩略图" placement="top">
+                    <el-icon :class="{ 'is-loading': rebuilding }"><Refresh /></el-icon>
+                </el-tooltip>
+            </div>
         </div>
 
         <div class="detail-content">
@@ -236,9 +243,15 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick, watch, defineProps, defineEmits } from "vue";
-import { Document, Picture, Loading } from "@element-plus/icons-vue";
+import { Document, Picture, Loading, Refresh } from "@element-plus/icons-vue";
 import { ElMessage, ElInput } from "element-plus";
-import { addResourceTag, removeResourceTag, setResourcePublic, updateResource } from "@/apis/resource-api";
+import {
+    addResourceTag,
+    rebuildThumbnail,
+    removeResourceTag,
+    setResourcePublic,
+    updateResource
+} from "@/apis/resource-api";
 import type { Resource, Tag } from '@/apis/interface';
 import AudioPlayer from "@/components/common/AudioPlayer.vue";
 import VideoPlayer from '@/components/common/VideoPlayer.vue';
@@ -266,6 +279,7 @@ const descInput = ref<InstanceType<typeof ElInput> | null>(null);
 const tagInputVisible = ref(false);
 const tagInputValue = ref('');
 const tagInputRef = ref<InstanceType<typeof ElInput> | null>(null);
+const rebuilding = ref<boolean>(false);
 
 // 计算属性
 const isImageType = computed<boolean>(() => props.file.typeName === 'image');
@@ -607,6 +621,25 @@ const smartTruncateMiddle = (filename: string): string => {
     return `${frontPart}……${ext}`;
 };
 
+// 添加处理重建缩略图的方法
+const handleRebuildThumbnail = async () => {
+    if (rebuilding.value) return;
+
+    rebuilding.value = true;
+    try {
+        const success = await rebuildThumbnail(props.file.resourceId);
+        if (success) {
+            ElMessage.success('缩略图重建中，请稍后刷新查看');
+        } else {
+            ElMessage.error('缩略图重建失败');
+        }
+    } catch (error) {
+        ElMessage.error(`缩略图重建失败: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+        rebuilding.value = false;
+    }
+};
+
 // 生命周期
 onMounted(() => {
     document.addEventListener('click', handleClickOutside);
@@ -632,6 +665,7 @@ watch(() => props.file, (newVal: Resource) => {
 }
 
 .preview-container {
+    position: relative;
     height: 300px;
     padding: 10px;
     display: flex;
@@ -694,7 +728,7 @@ watch(() => props.file, (newVal: Resource) => {
 .audio-preview-container {
     width: 100%;
     height: 100%;
-    padding: 0 20px;
+    padding: 0 10px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -813,5 +847,32 @@ watch(() => props.file, (newVal: Resource) => {
     text-overflow: ellipsis;
     vertical-align: middle;
     font-family: "PingFang SC", "Microsoft YaHei", sans-serif; /* 中文字体优化 */
+}
+
+.rebuild-thumbnail-btn {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    width: 32px;
+    height: 32px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s;
+    z-index: 10;
+}
+
+.rebuild-thumbnail-btn:hover {
+    background-color: rgba(255, 255, 255, 1);
+    transform: scale(1.1);
+}
+
+.rebuild-thumbnail-btn .el-icon {
+    font-size: 18px;
+    color: var(--el-color-primary);
 }
 </style>

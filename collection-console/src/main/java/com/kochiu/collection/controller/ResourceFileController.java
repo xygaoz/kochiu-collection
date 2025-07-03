@@ -218,4 +218,14 @@ public class ResourceFileController {
             return DefaultResult.fail(e.getMessage());
         }
     }
+
+    // 重建缩略图接口
+    @CheckPermit
+    @GetMapping(RESOURCE_PATH + "/rebuild-thumb/{resourceId}")
+    public DefaultResult<Boolean> rebuildThumbnail(@PathVariable Long resourceId) throws CollectionException {
+
+        UserDto userDto = CheckPermitAspect.USER_INFO.get();
+        resourceFileService.generateThumbnail(userDto, resourceId);
+        return DefaultResult.ok(true);
+    }
 }

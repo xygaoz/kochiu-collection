@@ -445,3 +445,9 @@ export const checkFileExist = async (md5: string): Promise<boolean> => {
         return model as boolean;
     });
 }
+
+export const rebuildThumbnail = async (resourceId: number): Promise<boolean> => {
+    return httpInstance.get(resourceApi + "/rebuild-thumb/" + resourceId).then((model: any) => {
+        return model as boolean;
+    });
+}
