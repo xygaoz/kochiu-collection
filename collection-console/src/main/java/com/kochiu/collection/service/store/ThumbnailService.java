@@ -15,6 +15,9 @@ import java.util.concurrent.*;
 
 import static com.kochiu.collection.util.SysUtil.tidyPath;
 
+/**
+ * 缩略图服务
+ */
 @Slf4j
 @Service
 public class ThumbnailService {
@@ -22,6 +25,7 @@ public class ThumbnailService {
     private final FileStrategyFactory fileStrategyFactory;
     private final UserResourceRepository resourceRepository;
     private final Executor asyncExecutor;
+    private static final ConcurrentMap<String, Boolean> processingFiles = new ConcurrentHashMap<>();
 
     public ThumbnailService(FileStrategyFactory fileStrategyFactory,
                             UserResourceRepository resourceRepository,
@@ -36,17 +40,28 @@ public class ThumbnailService {
      */
     public void asyncCreateThumbnail(ResourceDto resourceDto, FileType fileType, String filePath,
                                      String thumbFilePath, String thumbUrl) {
+        // 检查文件是否正在处理中
+        if (processingFiles.putIfAbsent(filePath, true) != null) {
+            log.debug("文件正在处理中，跳过重复处理 - 资源ID: {}, 文件: {}",
+                    resourceDto.getResourceId(), filePath);
+            return;
+        }
+
         CompletableFuture.runAsync(() -> {
-            // 添加超时控制
             try {
                 createThumbnailWithTimeout(resourceDto, fileType, filePath, thumbFilePath, thumbUrl);
             } catch (Exception e) {
                 log.error("缩略图生成失败 - 资源ID: {}, 文件: {}",
                         resourceDto.getResourceId(), filePath, e);
+            } finally {
+                // 处理完成后从map中移除
+                processingFiles.remove(filePath);
             }
         }, asyncExecutor).exceptionally(ex -> {
             log.error("缩略图生成任务异常 - 资源ID: {}, 文件: {}",
                     resourceDto.getResourceId(), filePath, ex);
+            // 异常情况下也要从map中移除
+            processingFiles.remove(filePath);
             return null;
         });
     }
