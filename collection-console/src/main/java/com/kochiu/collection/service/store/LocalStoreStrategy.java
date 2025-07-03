@@ -46,6 +46,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static com.kochiu.collection.enums.ErrorCodeEnum.*;
+import static com.kochiu.collection.util.SysUtil.tidyPath;
 
 @Slf4j
 @Service("local")
@@ -177,7 +178,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
         FileType fileType = fileStrategyFactory.getFileType(resource.getFileExt());
 
         String recFilePathDir = getServerUrl();
-        String filePath = recFilePathDir + resource.getFilePath();
+        String filePath = tidyPath(recFilePathDir + resource.getFilePath());
 
         thumbnailService.asyncCreateThumbnail(resourceDto, fileType, filePath, null, null);
     }
@@ -217,7 +218,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
             throw new CollectionException(ILLEGAL_REQUEST);
         }
 
-        String resourceUrl = "/" + userCode + savePath + "/" + md5 + "." + extension;
+        String resourceUrl = tidyPath("/" + userCode + savePath + "/" + md5 + "." + extension);
         String recFilePathDir = getServerUrl();
         File dir = new File(recFilePathDir + "/" + userCode + savePath);
         if (!dir.exists()) {
@@ -558,28 +559,24 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
             //资源路径
             //截取文件名
             String fileName = userResource.getFilePath().substring(userResource.getResourceUrl().lastIndexOf("/") + 1);
-            userResource.setFilePath(normPath("/" + user.getUserCode() + parentCatalog.getCataPath() + "/" + fileName));
+            userResource.setFilePath(tidyPath("/" + user.getUserCode() + parentCatalog.getCataPath() + "/" + fileName));
             if(userResource.getResourceUrl() != null){
                 fileName = userResource.getResourceUrl().substring(userResource.getResourceUrl().lastIndexOf("/") + 1);
-                userResource.setResourceUrl(normPath("/" + user.getUserCode() + parentCatalog.getCataPath() + "/" + fileName));
+                userResource.setResourceUrl(tidyPath("/" + user.getUserCode() + parentCatalog.getCataPath() + "/" + fileName));
             }
             if(userResource.getThumbUrl() != null) {
                 fileName = userResource.getThumbUrl().substring(userResource.getThumbUrl().lastIndexOf("/") + 1);
-                userResource.setThumbUrl(normPath("/" + user.getUserCode() + parentCatalog.getCataPath() + "/" + fileName));
+                userResource.setThumbUrl(tidyPath("/" + user.getUserCode() + parentCatalog.getCataPath() + "/" + fileName));
             }
             if(userResource.getPreviewUrl() != null) {
                 fileName = userResource.getPreviewUrl().substring(userResource.getPreviewUrl().lastIndexOf("/") + 1);
-                userResource.setPreviewUrl(normPath("/" + user.getUserCode() + parentCatalog.getCataPath() + "/" + fileName));
+                userResource.setPreviewUrl(tidyPath("/" + user.getUserCode() + parentCatalog.getCataPath() + "/" + fileName));
             }
             if(!resourceRepository.updateById(userResource)){
                 throw new CollectionException(ErrorCodeEnum.UPDATE_CATALOG_FAIL);
             }
         }
         return false;
-    }
-
-    private String normPath(String path){
-        return path.replaceAll("\\\\", "/").replaceAll("//", "/");
     }
 
     //获取服务器地址

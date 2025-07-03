@@ -167,7 +167,7 @@ public class UserCatalogService {
                 .parentId(catalogBo.getParentId())
                 .cataName(catalogBo.getCataName())
                 .cataLevel(parentCatalog.getCataLevel() + 1)
-                .cataPath((parentCatalog.getCataPath() + "/" + catalogBo.getCataName()).replaceAll("//", "/"))
+                .cataPath(tidyPath(parentCatalog.getCataPath() + "/" + catalogBo.getCataName()))
                 .cataSno(maxSno + 1)
                 .build();
         Long id = catalogRepository.insert(userCatalog);

@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.kochiu.collection.enums.ErrorCodeEnum.CONTENT_CANNOT_BE_EMPTY;
+import static com.kochiu.collection.util.SysUtil.tidyPath;
 
 @Slf4j
 @Service
@@ -304,7 +305,7 @@ public class UserResourceService {
         //移动物理文件
         for(UserResource resource : resources){
             resourceStoreStrategy.moveFile(user.getUserId(), resource,
-                    ("/" + user.getUserCode() + "/" + catalog.getCataPath()).replaceAll("//", "/"));
+                    tidyPath("/" + user.getUserCode() + "/" + catalog.getCataPath()));
         }
     }
 

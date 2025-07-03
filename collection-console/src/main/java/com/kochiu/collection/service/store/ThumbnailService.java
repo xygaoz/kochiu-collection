@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.util.concurrent.*;
 
+import static com.kochiu.collection.util.SysUtil.tidyPath;
+
 @Slf4j
 @Service
 public class ThumbnailService {
@@ -117,9 +119,9 @@ public class ThumbnailService {
     private void updateResourceInfo(ResourceDto resourceDto) {
         UserResource userResource = resourceRepository.getById(resourceDto.getResourceId());
         if (userResource != null) {
-            userResource.setThumbUrl(resourceDto.getThumbUrl());
+            userResource.setThumbUrl(tidyPath(resourceDto.getThumbUrl()));
             userResource.setThumbRatio(resourceDto.getThumbRatio());
-            userResource.setPreviewUrl(resourceDto.getPreviewUrl());
+            userResource.setPreviewUrl(tidyPath(resourceDto.getPreviewUrl()));
             resourceRepository.updateById(userResource);
         }
     }

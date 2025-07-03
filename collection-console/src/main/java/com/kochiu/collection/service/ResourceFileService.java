@@ -55,6 +55,7 @@ import static com.kochiu.collection.Constant.RANDOM_CHARS2;
 import static com.kochiu.collection.Constant.ROOT_PATH;
 import static com.kochiu.collection.enums.ErrorCodeEnum.FILE_IS_EXIST;
 import static com.kochiu.collection.enums.ErrorCodeEnum.FILE_SAVING_FAILURE;
+import static com.kochiu.collection.util.SysUtil.tidyPath;
 
 @Slf4j
 @Service
@@ -239,7 +240,7 @@ public class ResourceFileService {
                 savePath = "/" + userDto.getUserCode() + "/" + catalog.getCataPath();
             }
         }
-        savePath = savePath.replaceAll("//", "/");
+        savePath = tidyPath(savePath);
         if(savePath.endsWith("/")){
             savePath = savePath.substring(0, savePath.length() - 1);
         }
@@ -287,10 +288,8 @@ public class ResourceFileService {
                 .downloadResource(request, response, ranges, resourceId);
     }
 
-    /**
-     * 批量导入
-     */
-    public void batchImport(String taskId, UserDto userDto, BatchImportBo batchImportBo) throws CollectionException {
+    // 批量导入前检查
+    public void beforeImport(UserDto userDto, BatchImportBo batchImportBo) throws CollectionException {
         SysUser user = userRepository.getUser(userDto);
         if (!systemService.testServerPath(PathBo.builder()
                 .path(batchImportBo.getSourcePath())
@@ -299,8 +298,6 @@ public class ResourceFileService {
             throw new CollectionException(ErrorCodeEnum.SERVER_PATH_ERROR);
         }
 
-        // 取出服务器路径里适合导入的文件
-        List<File> files = listImportableFiles(batchImportBo.getSourcePath(), true);
         // 取用户根目录ID
         Long rootCataId = catalogRepository.getUserRoot(user.getUserId());
         if (rootCataId == null){
@@ -313,13 +310,26 @@ public class ResourceFileService {
             }
         }
 
+        ResourceStoreStrategy storeStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
+        if(!storeStrategy.checkServerUrl()){
+            throw new CollectionException(ErrorCodeEnum.SERVER_PATH_ERROR);
+        }
+    }
+
+
+    /**
+     * 批量导入
+     */
+    public void batchImport(String taskId, UserDto userDto, BatchImportBo batchImportBo) throws CollectionException {
+        SysUser user = userRepository.getUser(userDto);
+        // 取出服务器路径里适合导入的文件
+        List<File> files = listImportableFiles(batchImportBo.getSourcePath(), true);
+        // 取用户根目录ID
+        Long rootCataId = catalogRepository.getUserRoot(user.getUserId());
+
         int successCount = 0, failCount = 0;
         try {
             ResourceStoreStrategy storeStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
-            if(!storeStrategy.checkServerUrl()){
-                throw new CollectionException(ErrorCodeEnum.SERVER_PATH_ERROR);
-            }
-
             for (int i = 0; i < files.size(); i++) {
                 // 检查是否被取消（通过线程中断）
                 if (Thread.currentThread().isInterrupted()) {
@@ -547,6 +557,7 @@ public class ResourceFileService {
                               Long rootCataId, List<UserResource> resources) throws CollectionException{
 
         if(!resources.isEmpty()){
+            log.error("文件保存失败，请勿重复保存");
             return false;
         }
 
@@ -560,7 +571,7 @@ public class ResourceFileService {
 
             //取选择的目录
             UserCatalog parentCatalog = userCatalogService.getParentCatalog(userDto, batchImportBo.getCatalogId());
-            catalogPath = (parentCatalog.getCataPath() + "/" + catalogPath).replaceAll("//", "/");
+            catalogPath = tidyPath(parentCatalog.getCataPath() + "/" + catalogPath);
             if (isMore3Floors(catalogPath)) {
                 //目录层级超过3层，不再创建子目录，放到上一层
                 //取上一层目录
@@ -569,7 +580,7 @@ public class ResourceFileService {
             if(!ROOT_PATH.equals(catalogPath) && catalogPath.endsWith("/")){
                 catalogPath = catalogPath.substring(0, catalogPath.length() - 1);
             }
-            catalogPath = catalogPath.replaceAll("//", "/");
+            catalogPath = tidyPath(catalogPath);
 
             if(!catalogPath.equals(parentCatalog.getCataPath())){
                 log.debug("catalogPath: {}, parentPath: {}", catalogPath, parentCatalog.getCataPath());
@@ -618,18 +629,12 @@ public class ResourceFileService {
         if (isMore3Floors(path)){
             return getParentPath(path);
         }
-        return path.replaceAll("//", "/");
+        return tidyPath(path);
     }
 
     private String getSubPath(String filePath){
         String catalogPath = filePath.substring(0, filePath.lastIndexOf(File.separatorChar));
-        if (File.separatorChar == '/') { // Linux系统
-            catalogPath = catalogPath.replaceAll("//", "/");
-        }
-        else{
-            catalogPath = catalogPath.replaceAll("\\\\", "/");
-        }
-        return catalogPath.replaceAll("//", "/");
+        return tidyPath(catalogPath);
     }
 
     /**
@@ -638,7 +643,7 @@ public class ResourceFileService {
      * @return
      */
     private boolean isMore3Floors(String catalogPath){
-        catalogPath = catalogPath.replaceAll("//", "/");
+        catalogPath = tidyPath(catalogPath);
         if("/".equals(catalogPath)){
             return false;
         }

@@ -107,6 +107,12 @@ public class ResourceFileController {
             return DefaultResult.fail("您已有任务在执行中，请等待完成或取消当前任务");
         }
 
+        try {
+            resourceFileService.beforeImport(userDto, request);
+        } catch (CollectionException e) {
+            return DefaultResult.fail(e.getMessage());
+        }
+
         // 通过 ImportTaskService 提交任务
         taskService.submitTask(userDto.getUserId(), taskId, () -> {
             try {
