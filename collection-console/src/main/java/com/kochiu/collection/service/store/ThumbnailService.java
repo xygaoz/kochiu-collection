@@ -8,6 +8,7 @@ import com.kochiu.collection.service.file.FileStrategy;
 import com.kochiu.collection.service.file.FileStrategyFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -24,12 +25,12 @@ public class ThumbnailService {
 
     private final FileStrategyFactory fileStrategyFactory;
     private final UserResourceRepository resourceRepository;
-    private final Executor asyncExecutor;
+    private final ThreadPoolTaskExecutor asyncExecutor;
     private static final ConcurrentMap<String, Boolean> processingFiles = new ConcurrentHashMap<>();
 
     public ThumbnailService(FileStrategyFactory fileStrategyFactory,
                             UserResourceRepository resourceRepository,
-                            @Qualifier("taskExecutor") Executor asyncExecutor) {
+                            @Qualifier("taskExecutor") ThreadPoolTaskExecutor asyncExecutor) {
         this.fileStrategyFactory = fileStrategyFactory;
         this.resourceRepository = resourceRepository;
         this.asyncExecutor = asyncExecutor;
@@ -47,23 +48,61 @@ public class ThumbnailService {
             return;
         }
 
-        CompletableFuture.runAsync(() -> {
+        int maxRetries = 3; // 最大重试次数
+        int retryCount = 0;
+        long retryDelay = 1000; // 初始重试延迟1秒
+
+        while (retryCount < maxRetries) {
             try {
-                createThumbnailWithTimeout(resourceDto, fileType, filePath, thumbFilePath, thumbUrl);
-            } catch (Exception e) {
-                log.error("缩略图生成失败 - 资源ID: {}, 文件: {}",
-                        resourceDto.getResourceId(), filePath, e);
-            } finally {
-                // 处理完成后从map中移除
-                processingFiles.remove(filePath);
+                // 检查线程池队列状态
+                if (asyncExecutor.getThreadPoolExecutor().getQueue().remainingCapacity() == 0) {
+                    log.warn("线程池队列已满，等待后重试 - 资源ID: {}, 文件: {}, 重试次数: {}",
+                            resourceDto.getResourceId(), filePath, retryCount + 1);
+
+                    // 指数退避等待
+                    Thread.sleep(retryDelay);
+                    retryDelay *= 2; // 每次重试等待时间加倍
+                    retryCount++;
+                    continue;
+                }
+
+                // 提交任务
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        createThumbnailWithTimeout(resourceDto, fileType, filePath, thumbFilePath, thumbUrl);
+                    } catch (Exception e) {
+                        log.error("缩略图生成失败 - 资源ID: {}, 文件: {}",
+                                resourceDto.getResourceId(), filePath, e);
+                    } finally {
+                        // 处理完成后从map中移除
+                        processingFiles.remove(filePath);
+                    }
+                }, asyncExecutor).exceptionally(ex -> {
+                    log.error("缩略图生成任务异常 - 资源ID: {}, 文件: {}",
+                            resourceDto.getResourceId(), filePath, ex);
+                    // 异常情况下也要从map中移除
+                    processingFiles.remove(filePath);
+                    return null;
+                });
+
+                return; // 提交成功，退出循环
+            } catch (RejectedExecutionException e) {
+                log.warn("线程池拒绝任务 - 资源ID: {}, 文件: {}, 重试次数: {}",
+                        resourceDto.getResourceId(), filePath, retryCount + 1);
+                retryCount++;
+            } catch (InterruptedException e) {
+                log.warn("缩略图生成任务被中断 - 资源ID: {}, 文件: {}",
+                        resourceDto.getResourceId(), filePath);
+                Thread.currentThread().interrupt();
+                break;
             }
-        }, asyncExecutor).exceptionally(ex -> {
-            log.error("缩略图生成任务异常 - 资源ID: {}, 文件: {}",
-                    resourceDto.getResourceId(), filePath, ex);
-            // 异常情况下也要从map中移除
-            processingFiles.remove(filePath);
-            return null;
-        });
+        }
+
+        if (retryCount >= maxRetries) {
+            log.error("无法提交缩略图生成任务，已达到最大重试次数 - 资源ID: {}, 文件: {}",
+                    resourceDto.getResourceId(), filePath);
+            processingFiles.remove(filePath); // 确保从map中移除
+        }
     }
 
     /**
