@@ -17,16 +17,17 @@ import java.util.List;
 @Slf4j
 @Service("txt")
 @FileType(thumb = true, mimeType = "text/plain", desc = ResourceTypeEnum.DOCUMENT)
-public class TxtFileStrategy implements FileStrategy{
+public class TxtFileStrategy implements FileStrategy {
 
     /**
      * 生成缩略图
      *
-     * @param file
-     * @param thumbFilePath
-     * @param fileType
-     * @param resourceDto
-     * @return
+     * @param file 文本文件
+     * @param thumbFilePath 缩略图文件路径
+     * @param thumbUrl 缩略图URL
+     * @param fileType 文件类型注解
+     * @param resourceDto 资源DTO
+     * @return 缩略图比例
      * @throws Exception
      */
     @Override
@@ -39,28 +40,49 @@ public class TxtFileStrategy implements FileStrategy{
         // A4 纸尺寸（300 DPI）
         final int A4_WIDTH = 2480;
         final int A4_HEIGHT = 3508;
+        // 边距设置
+        final int MARGIN = 100;
+        // 字体大小
+        final int FONT_SIZE = 80;
+        // 行距
+        final int LINE_SPACING = 50;
 
         try {
             List<String> lines = Files.readAllLines(file.toPath());
 
-            // 计算图像的高度
-            int height = Math.min(lines.size() * 20, A4_HEIGHT); // 每行的高度为20像素
-            int width = A4_WIDTH; // 固定宽度为A4纸宽度
-
-            // 创建图像缓冲区
-            BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            // 创建A4比例的图像
+            BufferedImage image = new BufferedImage(A4_WIDTH, A4_HEIGHT, BufferedImage.TYPE_INT_RGB);
             Graphics2D g2d = image.createGraphics();
+
+            // 设置抗锯齿和高质量渲染
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+            // 填充白色背景
             g2d.setColor(Color.WHITE);
-            g2d.fillRect(0, 0, width, height);
+            g2d.fillRect(0, 0, A4_WIDTH, A4_HEIGHT);
+
+            // 设置字体
+            Font font = new Font("Microsoft YaHei", Font.PLAIN, FONT_SIZE);
+            g2d.setFont(font);
+            g2d.setColor(Color.BLACK);
+
+            // 计算可显示的行数
+            int maxLines = (A4_HEIGHT - 2 * MARGIN) / LINE_SPACING;
+            int linesToShow = Math.min(lines.size(), maxLines);
 
             // 绘制文本内容
-            int y = 20; // 初始y坐标
-            for (String line : lines) {
-                if (y > height) break; // 如果超出高度则停止绘制
-                g2d.setColor(Color.BLACK);
-                g2d.drawString(line, 50, y); // 每行的x坐标为50像素
-                y += 20; // 每行的高度为20像素
+            int y = MARGIN + FONT_SIZE;
+            for (int i = 0; i < linesToShow; i++) {
+                String line = lines.get(i);
+                // 如果行太长，进行截断
+                if (line.length() > 100) {
+                    line = line.substring(0, 100) + "...";
+                }
+                g2d.drawString(line, MARGIN, y);
+                y += LINE_SPACING;
             }
+
             g2d.dispose();
 
             // 保存图像
@@ -69,8 +91,8 @@ public class TxtFileStrategy implements FileStrategy{
 
             return resourceDto.getThumbRatio();
         } catch (IOException e) {
-            log.error("转换失败", e);
+            log.error("TXT文件生成缩略图失败", e);
+            throw new Exception("TXT文件生成缩略图失败", e);
         }
-        return null;
     }
 }
