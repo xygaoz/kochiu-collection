@@ -726,6 +726,42 @@ public class ResourceFileService {
         createThumbnail(fileVo, user.getStrategy());
     }
 
+    // 重建缩略图
+    public void rebuildThumbnail(UserDto userDto, Long resourceId) throws CollectionException {
+
+        SysUser user = userRepository.getUser(userDto);
+        //异步创建缩略图
+        ResourceStoreStrategy storeStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
+        UserResource resource = resourceRepository.getById(resourceId);
+        if(resource == null){
+            return;
+        }
+        ResourceDto resourceDto = ResourceDto.builder()
+                .resourceId(resourceId)
+                .resourceUrl(resource.getResourceUrl())
+                .fileExt(resource.getFileExt())
+                .filePath(resource.getFilePath())
+                .build();
+
+        FileType fileType = fileStrategyFactory.getFileType(resource.getFileExt());
+        if(fileType.thumb()) {
+
+            String filePath;
+            String recFilePathDir = storeStrategy.getServerUrl();
+            if(resource.getSaveType() == SaveTypeEnum.LINK.getCode()){
+                filePath = resource.getFilePath();
+            }
+            else {
+                filePath = tidyPath(recFilePathDir + resource.getFilePath());
+            }
+            String thumbFilePath = recFilePathDir + resource.getResourceUrl();
+            thumbFilePath = thumbFilePath.replace("." + resourceDto.getFileExt(), "_thumb.png");
+            String thumbUrl = resourceDto.getResourceUrl().replace("." + resourceDto.getFileExt(), "_thumb.png");
+
+            thumbnailService.asyncCreateThumbnail(resourceDto, fileType, filePath, thumbFilePath, thumbUrl);
+        }
+    }
+
     // 存储分片文件
     public void storeChunk(ChunkUploadDto chunkDTO) throws IOException {
 
