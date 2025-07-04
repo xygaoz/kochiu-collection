@@ -225,7 +225,7 @@ public class ResourceFileController {
     public DefaultResult<Boolean> rebuildThumbnail(@PathVariable Long resourceId) throws CollectionException {
 
         UserDto userDto = CheckPermitAspect.USER_INFO.get();
-        resourceFileService.generateThumbnail(userDto, resourceId);
+        resourceFileService.rebuildThumbnail(userDto, resourceId);
         return DefaultResult.ok(true);
     }
 }
