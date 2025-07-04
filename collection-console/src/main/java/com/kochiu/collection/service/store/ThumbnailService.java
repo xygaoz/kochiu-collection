@@ -176,6 +176,7 @@ public class ThumbnailService {
             userResource.setThumbUrl(tidyPath(resourceDto.getThumbUrl()));
             userResource.setThumbRatio(resourceDto.getThumbRatio());
             userResource.setPreviewUrl(tidyPath(resourceDto.getPreviewUrl()));
+            userResource.setResolutionRatio(resourceDto.getResolutionRatio());
             resourceRepository.updateById(userResource);
         }
     }
