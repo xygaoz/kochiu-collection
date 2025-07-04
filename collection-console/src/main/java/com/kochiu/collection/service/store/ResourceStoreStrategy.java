@@ -2,6 +2,7 @@ package com.kochiu.collection.service.store;
 
 import com.kochiu.collection.data.dto.UserDto;
 import com.kochiu.collection.data.vo.FileVo;
+import com.kochiu.collection.entity.SysUser;
 import com.kochiu.collection.entity.UserResource;
 import com.kochiu.collection.exception.CollectionException;
 import org.springframework.core.io.Resource;
@@ -26,7 +27,7 @@ public interface ResourceStoreStrategy {
      */
     FileVo saveFile(InputStream fileInputStream,
                     String originalFilename,
-                    UserDto userDto,
+                    SysUser userDto,
                     String md5,
                     String savePath,
                     Long categoryId,
@@ -35,7 +36,7 @@ public interface ResourceStoreStrategy {
     /**
      * 直接保存资源文件
      * @param file
-     * @param userDto
+     * @param user
      * @param md5
      * @param savePath
      * @param categoryId
@@ -43,7 +44,7 @@ public interface ResourceStoreStrategy {
      * @throws CollectionException
      */
     void saveLinkResource(File file,
-                          UserDto userDto,
+                          SysUser user,
                           String md5,
                           String savePath,
                           Long categoryId,

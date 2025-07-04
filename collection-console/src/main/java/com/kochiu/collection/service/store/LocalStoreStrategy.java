@@ -85,7 +85,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
      */
     public FileVo saveFile(InputStream fileInputStream,
                            String originalFilename,
-                           UserDto userDto,
+                           SysUser userDto,
                            String md5,
                            String savePath,
                            Long categoryId,
@@ -171,7 +171,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
     /**
      * 直接保存资源
      * @param file
-     * @param userDto
+     * @param user
      * @param md5
      * @param savePath
      * @param categoryId
@@ -179,7 +179,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
      * @throws CollectionException
      */
     public void saveLinkResource(File file,
-                                 UserDto userDto,
+                                 SysUser user,
                                  String md5,
                                  String savePath,
                                  Long categoryId,
@@ -193,7 +193,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
             throw new CollectionException(UNSUPPORTED_FILE_TYPES);
         }
 
-        String userCode = userDto != null ? userDto.getUserCode() : null;
+        String userCode = user != null ? user.getUserCode() : null;
         if(userCode == null){
             throw new CollectionException(ILLEGAL_REQUEST);
         }
@@ -208,7 +208,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
         long size = FileUtil.size(file);
 
         ResourceDto resourceDto = ResourceDto.builder()
-                .userId(userDto.getUserId())
+                .userId(user.getUserId())
                 .cateId(categoryId)
                 .cataId(cataId)
                 .filePath(file.getAbsolutePath())
@@ -260,7 +260,19 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
             if (user == null) {
                 return ResponseEntity.notFound().build();
             } else {
-                url = URLDecoder.decode("/" + user.getUserCode() + url, StandardCharsets.UTF_8);
+                url = URLDecoder.decode(url, StandardCharsets.UTF_8);
+                String[] parts = url.split("/", 3);
+                if(parts.length >= 3){
+                    if(parts[1].startsWith("c_")){
+                        long cataId = Long.parseLong(parts[1].substring(2));
+                        UserCatalog catalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>().eq(UserCatalog::getCataId, cataId).eq(UserCatalog::getUserId, user.getUserId()));
+                        if(catalog != null){
+                            url = catalog.getCataPath() + "/" + parts[2];
+                        }
+                    }
+                }
+
+                url = "/" + user.getUserCode() + url;
                 if (!url.equals(resource.getResourceUrl()) &&
                         !url.equals(resource.getThumbUrl()) &&
                         !url.equals(resource.getPreviewUrl())) {

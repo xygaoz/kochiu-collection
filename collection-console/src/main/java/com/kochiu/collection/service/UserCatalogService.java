@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.kochiu.collection.Constant.ROOT_CATALOG_SNO;
+import static com.kochiu.collection.Constant.ROOT_PATH;
 import static com.kochiu.collection.util.SysUtil.tidyPath;
 
 @Service
@@ -138,13 +139,19 @@ public class UserCatalogService {
 
     /**
      * 添加目录
-     * @param userDto
-     * @param catalogBo
-     * @throws CollectionException
      */
     @Transactional(rollbackFor = Exception.class)
     public Long addCatalog(UserDto userDto, CatalogBo catalogBo) throws CollectionException {
+
         SysUser user = userRepository.getUser(userDto);
+        return addCatalog(user, catalogBo);
+    }
+
+    /**
+     * 添加目录
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public Long addCatalog(SysUser user, CatalogBo catalogBo) throws CollectionException {
 
         UserCatalog parentCatalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
                 .eq(UserCatalog::getUserId, user.getUserId())
@@ -191,7 +198,7 @@ public class UserCatalogService {
      * @return
      * @throws CollectionException
      */
-    public Long addCatalogPath(UserDto userDto, String path) throws CollectionException {
+    public Long addCatalogPath(SysUser userDto, String path) throws CollectionException {
 
         if(path.startsWith("/")){
             path = path.substring(1);
@@ -229,7 +236,7 @@ public class UserCatalogService {
     }
 
     //添加目录路径
-    public Long addCatalogPath(UserDto userDto, Long parentCataId, String path) throws CollectionException {
+    public Long addCatalogPath(SysUser user, Long parentCataId, String path) throws CollectionException {
         // 去除路径开头的斜杠
         if (path.startsWith("/")) {
             path = path.substring(1);
@@ -237,7 +244,7 @@ public class UserCatalogService {
         String[] catalogNames = path.split("/");
 
         // 获取父目录信息
-        UserCatalog parent = getParentCatalog(userDto, parentCataId);
+        UserCatalog parent = getParentCatalog(user, parentCataId);
         if (parent == null) {
             throw new CollectionException(ErrorCodeEnum.CATALOG_NAME_IS_SAME);
         }
@@ -257,7 +264,7 @@ public class UserCatalogService {
             if (newDepth > 3) {
                 // 查找是否已存在该路径的目录
                 UserCatalog existingCatalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
-                        .eq(UserCatalog::getUserId, userDto.getUserId())
+                        .eq(UserCatalog::getUserId, user.getUserId())
                         .eq(UserCatalog::getCataPath, tidyPath(currentPath + "/" + catalogName)));
 
                 return existingCatalog != null ? existingCatalog.getCataId() : lastValidId;
@@ -268,7 +275,7 @@ public class UserCatalogService {
 
             // 检查目录是否已存在
             UserCatalog catalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
-                    .eq(UserCatalog::getUserId, userDto.getUserId())
+                    .eq(UserCatalog::getUserId, user.getUserId())
                     .eq(UserCatalog::getCataPath, tidyPath(currentPath)));
 
             if (catalog == null) {
@@ -277,7 +284,7 @@ public class UserCatalogService {
                         .parentId(currentParentId)
                         .cataName(catalogName)
                         .build();
-                Long newCatalogId = addCatalog(userDto, catalogBo);
+                Long newCatalogId = addCatalog(user, catalogBo);
                 currentParentId = newCatalogId;
             } else {
                 currentParentId = catalog.getCataId();
@@ -295,10 +302,10 @@ public class UserCatalogService {
     }
 
     // 获取父目录信息
-    public UserCatalog getParentCatalog(UserDto userDto, Long parentCataId) throws CollectionException {
+    public UserCatalog getParentCatalog(SysUser user, Long parentCataId) throws CollectionException {
         if (parentCataId != null) {
             UserCatalog parent = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
-                    .eq(UserCatalog::getUserId, userDto.getUserId())
+                    .eq(UserCatalog::getUserId, user.getUserId())
                     .eq(UserCatalog::getCataId, parentCataId));
             if (parent != null) {
                 return parent;
@@ -307,13 +314,13 @@ public class UserCatalogService {
 
         // 如果未提供父ID或父目录不存在，使用默认根目录
         return catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>()
-                .eq(UserCatalog::getUserId, userDto.getUserId())
+                .eq(UserCatalog::getUserId, user.getUserId())
                 .eq(UserCatalog::getCataSno, ROOT_CATALOG_SNO));
     }
 
     // 计算目录深度（根据路径中的斜杠数量）
     private int calculateCatalogDepth(String cataPath) {
-        if (cataPath == null || cataPath.isEmpty()) {
+        if (cataPath == null || cataPath.isEmpty() || ROOT_PATH.equals(cataPath)) {
             return 0;
         }
         if(cataPath.startsWith("/")){

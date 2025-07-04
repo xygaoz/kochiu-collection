@@ -1,5 +1,6 @@
 package com.kochiu.collection.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.pagehelper.PageInfo;
 import com.kochiu.collection.annotation.FileType;
 import com.kochiu.collection.data.bo.*;
@@ -14,7 +15,6 @@ import com.kochiu.collection.entity.UserTag;
 import com.kochiu.collection.enums.ErrorCodeEnum;
 import com.kochiu.collection.enums.SaveTypeEnum;
 import com.kochiu.collection.exception.CollectionException;
-import com.kochiu.collection.properties.CollectionProperties;
 import com.kochiu.collection.repository.*;
 import com.kochiu.collection.service.file.FileStrategyFactory;
 import com.kochiu.collection.service.store.ResourceStoreStrategy;
@@ -88,12 +88,64 @@ public class UserResourceService {
     /**
      * 构建url
      */
-    private String buildResourceUrl(SysUser user, UserResource resource){
+    public String buildVirtualUrl(SysUser user, UserResource resource, String originalUrl){
 
-        if(SaveTypeEnum.getByCode(resource.getSaveType()) != SaveTypeEnum.NETWORK){
-            return contextPath + "/resource/" + resource.getResourceId() + "/" + resource.getResourceUrl().replace("/" + user.getUserCode() + "/", "");
+        if(StringUtils.isBlank(originalUrl)){
+            return null;
         }
-        return resource.getThumbUrl();
+
+        if(SaveTypeEnum.getByCode(resource.getSaveType()) == SaveTypeEnum.NETWORK){
+            return originalUrl;
+        }
+
+        // 分割URL：/用户编码/剩余部分
+        String[] parts = originalUrl.split("/", 3);
+        if (parts.length < 3) {
+            return "URL格式不正确";
+        }
+
+        // 1. 替换用户编码
+        String remainingPath = parts[2];
+
+        // 2. 处理路径和文件名
+        String[] pathParts = remainingPath.split("/");
+        String filename = pathParts[pathParts.length - 1]; // 最后一部分总是文件名
+
+        // 构建目录路径（可能为0-3层）
+        String dirPath = "";
+        if (pathParts.length > 1) {
+            StringBuilder dirBuilder = new StringBuilder();
+            for (int i = 0; i < pathParts.length - 1; i++) {
+                if (i > 0) dirBuilder.append("/");
+                dirBuilder.append(pathParts[i]);
+            }
+            dirPath = "/" + dirBuilder; // 添加前导/
+        }
+
+        // 3. 替换目录路径
+        String dirId = "";
+        if (!dirPath.isEmpty()) {
+            //查找目录id
+            UserCatalog catalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>().eq(UserCatalog::getCataPath, dirPath).eq(UserCatalog::getUserId, user.getUserId()));
+
+            if (catalog == null) {
+                log.error("警告：未找到目录路径 '" + dirPath + "' 对应的目录ID");
+                dirId = dirPath.substring(1); // 去掉前导/
+            }
+            else{
+                dirId = "c_" + catalog.getCataId().toString();
+            }
+        }
+
+        // 4. 构建新URL
+        StringBuilder newUrl = new StringBuilder();
+        newUrl.append("/");
+        if (!dirId.isEmpty()) {
+            newUrl.append(dirId).append("/");
+        }
+        newUrl.append(filename);
+
+        return contextPath + "/resource/" + resource.getResourceId() + newUrl;
     }
 
     /**
@@ -159,9 +211,9 @@ public class UserResourceService {
 
                             return ResourceVo.builder()
                                     .resourceId(resource.getResourceId())
-                                    .resourceUrl(buildResourceUrl(user, resource))
-                                    .thumbnailUrl(StringUtils.isNotBlank(resource.getThumbUrl()) ? contextPath + "/resource/" + resource.getResourceId() + "/" + resource.getThumbUrl().replace("/" + user.getUserCode() + "/", "") : null)
-                                    .previewUrl(StringUtils.isNotBlank(resource.getPreviewUrl()) ? contextPath + "/resource/" + resource.getResourceId() + "/" + resource.getPreviewUrl().replace("/" + user.getUserCode() + "/", "") : null)
+                                    .resourceUrl(buildVirtualUrl(user, resource, resource.getResourceUrl()))
+                                    .thumbnailUrl(buildVirtualUrl(user, resource, resource.getThumbUrl()))
+                                    .previewUrl(buildVirtualUrl(user, resource, resource.getPreviewUrl()))
                                     .title(resource.getTitle())
                                     .description(resource.getDescription())
                                     .sourceFileName(resource.getSourceFileName())

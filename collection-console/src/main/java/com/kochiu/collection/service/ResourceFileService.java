@@ -74,6 +74,7 @@ public class ResourceFileService {
     private final UserCategoryRepository  userCategoryRepository;
     private final FileStrategyFactory fileStrategyFactory;
     private final ThumbnailService thumbnailService;
+    private final UserResourceService userResourceService;
 
     public ResourceFileService(ResourceStrategyFactory resourceStrategyFactory,
                                SysUserRepository userRepository,
@@ -83,7 +84,8 @@ public class ResourceFileService {
                                SystemService systemService, ObjectMapper objectMapper,
                                UserCategoryRepository userCategoryRepository,
                                FileStrategyFactory fileStrategyFactory,
-                               ThumbnailService thumbnailService) {
+                               ThumbnailService thumbnailService,
+                               UserResourceService userResourceService) {
         this.resourceStrategyFactory = resourceStrategyFactory;
         this.userRepository = userRepository;
         this.resourceRepository = resourceRepository;
@@ -94,6 +96,7 @@ public class ResourceFileService {
         this.userCategoryRepository = userCategoryRepository;
         this.fileStrategyFactory = fileStrategyFactory;
         this.thumbnailService = thumbnailService;
+        this.userResourceService = userResourceService;
     }
 
     /**
@@ -133,12 +136,11 @@ public class ResourceFileService {
                 return saveFile(is,
                         originalFilename,
                         md5,
-                        userDto,
+                        user,
                         categoryId,
                         cataId,
                         overwrite,
-                        autoCreate,
-                        user.getStrategy());
+                        autoCreate);
             } catch (IOException e) {
                 log.error("文件保存失败", e);
                 throw new CollectionException(FILE_SAVING_FAILURE);
@@ -198,19 +200,18 @@ public class ResourceFileService {
     protected FileVo saveFile(InputStream inputStream,
                               String originalFilename,
                               String md5,
-                              UserDto userDto,
+                              SysUser user,
                               Long categoryId,
                               Long cataId,
                               Boolean overwrite,
-                              Boolean autoCreate,
-                              String strategy
+                              Boolean autoCreate
                               ) throws CollectionException {
 
         if(overwrite == null){
             overwrite = true;
         }
 
-        List<UserResource> resources = resourceRepository.countFileMd5(userDto.getUserId(), md5);
+        List<UserResource> resources = resourceRepository.countFileMd5(user.getUserId(), md5);
         if(!resources.isEmpty() && !overwrite){
             throw new CollectionException(FILE_IS_EXIST);
         }
@@ -218,7 +219,7 @@ public class ResourceFileService {
         if(categoryId != null) {
             if (userCategoryRepository.getById(categoryId) == null) {
                 //取默认分类
-                categoryId = userCategoryRepository.getDefaultCategory(userDto.getUserId());
+                categoryId = userCategoryRepository.getDefaultCategory(user.getUserId());
                 if(categoryId == null){
                     throw new CollectionException(ErrorCodeEnum.CATEGORY_NOT_EXIST);
                 }
@@ -231,9 +232,9 @@ public class ResourceFileService {
         String savePath;
         if(autoCreate) {
             String catalogPath = ResourceStoreStrategy.dateFormat.format(System.currentTimeMillis());
-            savePath = "/" + userDto.getUserCode() + "/" + catalogPath;
+            savePath = "/" + user.getUserCode() + "/" + catalogPath;
             //创建目录
-            Long id = userCatalogService.addCatalogPath(userDto, catalogPath);
+            Long id = userCatalogService.addCatalogPath(user, catalogPath);
             if(id == null){
                 throw new CollectionException(ErrorCodeEnum.CATALOG_CREATE_FAILURE);
             }
@@ -251,7 +252,7 @@ public class ResourceFileService {
                 if(catalog == null){
                     throw new CollectionException(ErrorCodeEnum.CATALOG_NOT_EXIST);
                 }
-                savePath = "/" + userDto.getUserCode() + "/" + catalog.getCataPath();
+                savePath = "/" + user.getUserCode() + "/" + catalog.getCataPath();
             }
         }
         savePath = tidyPath(savePath);
@@ -259,10 +260,10 @@ public class ResourceFileService {
             savePath = savePath.substring(0, savePath.length() - 1);
         }
 
-        ResourceStoreStrategy storeStrategy = resourceStrategyFactory.getStrategy(strategy);
+        ResourceStoreStrategy storeStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
         FileVo fileVo = storeStrategy.saveFile(inputStream,
                         originalFilename,
-                        userDto, md5, savePath, categoryId, cataId);
+                        user, md5, savePath, categoryId, cataId);
 
         //保存成功。删除原有记录
         if(!resources.isEmpty() && overwrite){
@@ -271,12 +272,16 @@ public class ResourceFileService {
                 //如果路径和原来一样不删文件
                 if(!resource.getResourceUrl().equals(fileVo.getResourceUrl())){
                     //删除文件
-                    storeStrategy.deleteFile(userDto.getUserId(), resource);
+                    storeStrategy.deleteFile(user.getUserId(), resource);
                 }
             }
         }
         //不返回给客户端
         fileVo.setResourceUrl(null);
+        //转换缩略图路径
+        UserResource resource = resourceRepository.getById(fileVo.getResourceId());
+        fileVo.setUrl(userResourceService.buildVirtualUrl(user, resource, fileVo.getUrl()));
+        fileVo.setThumbnailUrl(userResourceService.buildVirtualUrl(user, resource, fileVo.getThumbnailUrl()));
         return fileVo;
     }
 
@@ -365,7 +370,7 @@ public class ResourceFileService {
                 switch (batchImportBo.getImportMethod()){
                     case COPY:
                     case MOVE: {
-                        if(handleCopyOrMove(batchImportBo, file, md5, userDto, user, rootCataId, resources, storeStrategy)){
+                        if(handleCopyOrMove(batchImportBo, file, md5, user, rootCataId, resources, storeStrategy)){
                             successCount++;
                         }
                         else{
@@ -380,7 +385,7 @@ public class ResourceFileService {
                     case KEEP_ORIGINAL_AND_CREATE_CATA:
                     case KEEP_ORIGINAL: {
                         try {
-                            if(keepOriginal(userDto, batchImportBo, file, relativePath, storeStrategy, md5, rootCataId, resources)) {
+                            if(keepOriginal(user, batchImportBo, file, relativePath, storeStrategy, md5, rootCataId, resources)) {
                                 successCount++;
                             }
                             else{
@@ -430,7 +435,7 @@ public class ResourceFileService {
      * 处理复制或移动
      */
     private boolean handleCopyOrMove(BatchImportBo batchImportBo, File file,
-                                  String md5, UserDto userDto, SysUser user,
+                                  String md5, SysUser user,
                                   Long rootCataId, List<UserResource> resources,
                                   ResourceStoreStrategy storeStrategy) throws CollectionException {
 
@@ -443,12 +448,11 @@ public class ResourceFileService {
                         FileVo fileVo = saveFile(is,
                                 file.getName(),
                                 md5,
-                                userDto,
+                                user,
                                 batchImportBo.getCategoryId(),
                                 rootCataId,
                                 true,
-                                true,
-                                user.getStrategy());
+                                true);
                         createThumbnail(fileVo, user.getStrategy());
 
                         //保存成功。删除原有记录
@@ -456,7 +460,7 @@ public class ResourceFileService {
                             for (UserResource resource : resources) {
                                 resourceRepository.removeById(resource);
                                 //删除文件
-                                storeStrategy.deleteFile(userDto.getUserId(), resource);
+                                storeStrategy.deleteFile(user.getUserId(), resource);
                             }
                         }
                         return true;
@@ -480,7 +484,7 @@ public class ResourceFileService {
                     Long cataId;
                     if (!"/".equals(catalogPath)) {
                         //不是根目录
-                        cataId = userCatalogService.addCatalogPath(userDto, catalogPath);
+                        cataId = userCatalogService.addCatalogPath(user, catalogPath);
                     } else {
                         cataId = rootCataId;
                     }
@@ -488,18 +492,17 @@ public class ResourceFileService {
                         FileVo fileVo = saveFile(is,
                                 file.getName(),
                                 md5,
-                                userDto,
+                                user,
                                 batchImportBo.getCategoryId(),
                                 cataId,
                                 true,
-                                false,
-                                user.getStrategy());
+                                false);
                         createThumbnail(fileVo, user.getStrategy());
 
                         for (UserResource resource : resources) {
                             resourceRepository.removeById(resource);
                             //删除文件
-                            storeStrategy.deleteFile(userDto.getUserId(), resource);
+                            storeStrategy.deleteFile(user.getUserId(), resource);
                         }
                         return true;
 
@@ -514,12 +517,11 @@ public class ResourceFileService {
                         FileVo fileVo = saveFile(is,
                                 file.getName(),
                                 md5,
-                                userDto,
+                                user,
                                 batchImportBo.getCategoryId(),
                                 rootCataId,
                                 true,
-                                false,
-                                user.getStrategy());
+                                false);
                         createThumbnail(fileVo, user.getStrategy());
 
                         //一起存在到根目录只会有一份文件，只删除资源记录即可
@@ -541,12 +543,11 @@ public class ResourceFileService {
                 FileVo fileVo = saveFile(is,
                         file.getName(),
                         md5,
-                        userDto,
+                        user,
                         batchImportBo.getCategoryId(),
                         batchImportBo.getCatalogId(),
                         true,
-                        false,
-                        user.getStrategy());
+                        false);
                 createThumbnail(fileVo, user.getStrategy());
 
                 //保存成功。删除原有记录
@@ -554,7 +555,7 @@ public class ResourceFileService {
                     for (UserResource resource : resources) {
                         resourceRepository.removeById(resource);
                         //删除文件
-                        storeStrategy.deleteFile(userDto.getUserId(), resource);
+                        storeStrategy.deleteFile(user.getUserId(), resource);
                     }
                 }
                 return true;
@@ -565,7 +566,7 @@ public class ResourceFileService {
         }
     }
 
-    private boolean keepOriginal(UserDto userDto, BatchImportBo batchImportBo,
+    private boolean keepOriginal(SysUser user, BatchImportBo batchImportBo,
                               File file, String relativePath,
                               ResourceStoreStrategy storeStrategy, String md5,
                               Long rootCataId, List<UserResource> resources) throws CollectionException{
@@ -584,7 +585,7 @@ public class ResourceFileService {
             cataId = batchImportBo.getCatalogId() == null ? rootCataId : batchImportBo.getCatalogId();
 
             //取选择的目录
-            UserCatalog parentCatalog = userCatalogService.getParentCatalog(userDto, batchImportBo.getCatalogId());
+            UserCatalog parentCatalog = userCatalogService.getParentCatalog(user, batchImportBo.getCatalogId());
             catalogPath = tidyPath(parentCatalog.getCataPath() + "/" + catalogPath);
             if (isMore3Floors(catalogPath)) {
                 //目录层级超过3层，不再创建子目录，放到上一层
@@ -599,14 +600,14 @@ public class ResourceFileService {
             if(!catalogPath.equals(parentCatalog.getCataPath())){
                 log.debug("catalogPath: {}, parentPath: {}", catalogPath, parentCatalog.getCataPath());
                 String path = catalogPath.substring(parentCatalog.getCataPath().length());
-                cataId = userCatalogService.addCatalogPath(userDto,
+                cataId = userCatalogService.addCatalogPath(user,
                         batchImportBo.getCatalogId() == null ? rootCataId : batchImportBo.getCatalogId(),
                         path);
             }
         }
         // 调用 saveLinkResource 方法保存链接资源
         storeStrategy.saveLinkResource(file,
-                userDto,
+                user,
                 md5,
                 catalogPath, // 根据原目录结构保存缩略图
                 batchImportBo.getCategoryId(),
