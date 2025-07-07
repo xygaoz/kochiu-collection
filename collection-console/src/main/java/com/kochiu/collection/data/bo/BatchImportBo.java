@@ -18,4 +18,8 @@ public class BatchImportBo {
     private AutoCreateRuleEnum autoCreateRule;
     @NotNull(message = "导入方式不能为空！！！")
     private ImportMethodEnum importMethod;
+    private boolean includeSubDir = true;
+    private String excludePattern;
+    private String excludeFileExt;
+    private int excludeFileSize;
 }

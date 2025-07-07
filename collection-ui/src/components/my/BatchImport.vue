@@ -69,6 +69,49 @@
                     </el-radio-group>
                     <div class="form-tip">选择保持原路径，创建目录规则强制为"不自动创建 (仅导入到根目录)"</div>
                 </el-form-item>
+                <!-- 6. 是否包含子目录 -->
+                <el-form-item label="包含子目录" prop="includeSubDir">
+                    <el-switch v-model="form.includeSubDir" active-text="包含" inactive-text="不包含" />
+                    <div class="form-tip2">是否包含子目录中的文件</div>
+                </el-form-item>
+
+                <!-- 7. 排除文件模式（正则表达式） -->
+                <el-form-item label="排除文件模式" prop="excludePattern">
+                    <el-input v-model="form.excludePattern" placeholder="例如: ^temp_|backup" clearable>
+                        <template #append>
+                            <el-tooltip content="支持正则表达式，如 ^temp_ 排除以 temp_ 开头的文件">
+                                <el-icon><QuestionFilled /></el-icon>
+                            </el-tooltip>
+                        </template>
+                    </el-input>
+                    <div class="form-tip">使用正则表达式匹配要排除的文件名（如 ^temp_|backup）</div>
+                </el-form-item>
+
+                <!-- 8. 排除文件扩展名 -->
+                <el-form-item label="排除文件扩展名" prop="excludeFileExt">
+                    <el-input v-model="form.excludeFileExt" placeholder="例如: tmp,log,bak" clearable>
+                        <template #append>
+                            <el-tooltip content="多个扩展名用逗号分隔，如 tmp,log,bak">
+                                <el-icon><QuestionFilled /></el-icon>
+                            </el-tooltip>
+                        </template>
+                    </el-input>
+                    <div class="form-tip">多个扩展名用逗号分隔（如 tmp,log,bak）</div>
+                </el-form-item>
+
+                <!-- 9. 排除文件大小（大于指定值） -->
+                <el-form-item label="排除文件大小" prop="excludeFileSize">
+                    <el-input-number
+                        v-model="form.excludeFileSize"
+                        :min="0"
+                        :step="100"
+                        :max="1048576000"
+                        placeholder="单位: KB"
+                        controls-position="right"
+                    />
+                    <span style="margin-left: 10px">KB</span>
+                    <div class="form-tip2">0 表示不限制，大于此值的文件将被排除</div>
+                </el-form-item>
 
                 <!-- 操作按钮 -->
                 <el-form-item>
@@ -105,6 +148,7 @@ import { Catalog, Category } from "@/apis/interface";
 import { testServerPath } from "@/apis/system-api";
 import { cancelBatchImport, startBatchImport } from "@/apis/resource-api";
 import emitter from "@/utils/event-bus";
+import { QuestionFilled } from "@element-plus/icons-vue";
 
 // 表单数据
 const form = ref({
@@ -113,7 +157,11 @@ const form = ref({
     categoryId: null as number | null,
     catalogId: null as number | null,
     autoCreateRule: 1,
-    importMethod: 1
+    importMethod: 1,
+    includeSubDir: true,      // 默认包含子目录
+    excludePattern: '',       // 默认不排除任何文件
+    excludeFileExt: '',       // 默认不排除任何扩展名
+    excludeFileSize: 0,       // 默认不限制文件大小
 })
 
 // 表单验证规则
@@ -123,6 +171,15 @@ const rules = ref<FormRules>({
     ],
     categoryId: [
         { required: true, message: '请选择分类', trigger: 'change' }
+    ],
+    excludePattern: [
+        { pattern: /^[\w\-|.*^$]*$/, message: '请输入有效的正则表达式', trigger: 'blur' }
+    ],
+    excludeFileExt: [
+        { pattern: /^[\w,]*$/, message: '只能包含字母、数字和逗号', trigger: 'blur' }
+    ],
+    excludeFileSize: [
+        { type: 'number', min: 0, message: '必须大于等于 0', trigger: 'blur' }
     ]
 })
 
@@ -313,7 +370,11 @@ const startImport = async () => {
                     categoryId: null,
                     catalogId: null,
                     autoCreateRule: 1,
-                    importMethod: 1
+                    importMethod: 1,
+                    includeSubDir: true,
+                    excludePattern: '',
+                    excludeFileExt: '',
+                    excludeFileSize: 0
                 };
             } else if (progress.status === 'error') {
                 importComplete.value = true;
@@ -378,6 +439,13 @@ const resetForm = () => {
     display: block; /* 确保以块级元素显示 */
 }
 
+.form-tip2 {
+    font-size: 12px;
+    color: #999;
+    margin: 2px 0 3px 15px;
+    display: block; /* 确保以块级元素显示 */
+}
+
 .progress-info {
     margin-top: 20px;
 }
@@ -385,5 +453,9 @@ const resetForm = () => {
 .error-message {
     color: #f56c6c;
     margin-top: 10px;
+}
+
+:deep(.el-switch){
+    margin: 0 0 5px 0;
 }
 </style>

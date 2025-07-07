@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -342,7 +344,9 @@ public class ResourceFileService {
     public void batchImport(String taskId, UserDto userDto, BatchImportBo batchImportBo) throws CollectionException {
         SysUser user = userRepository.getUser(userDto);
         // 取出服务器路径里适合导入的文件
-        List<File> files = listImportableFiles(batchImportBo.getSourcePath(), true);
+        List<File> files = listImportableFiles(batchImportBo.getSourcePath(),
+                batchImportBo.isIncludeSubDir(), batchImportBo.getExcludePattern(),
+                batchImportBo.getExcludeFileExt(), batchImportBo.getExcludeFileSize());
         // 取用户根目录ID
         Long rootCataId = catalogRepository.getUserRoot(user.getUserId());
 
@@ -672,12 +676,11 @@ public class ResourceFileService {
     }
 
     /**
-     * 获取可导入的文件列表
-     * @param path
-     * @param includeSubdirectories
-     * @return
+     * 获取可导入的文件列表（带过滤条件）
      */
-    public List<File> listImportableFiles(String path, boolean includeSubdirectories) {
+    public List<File> listImportableFiles(String path, boolean includeSubdirectories,
+                                          String excludePattern, String excludeFileExt,
+                                          int excludeFileSize) {
         List<File> result = new ArrayList<>();
         try {
             Path startPath = Paths.get(path);
@@ -690,7 +693,7 @@ public class ResourceFileService {
                 result = pathStream
                         .filter(Files::isRegularFile)  // 只处理常规文件
                         .map(Path::toFile)
-                        .filter(this::isImportableFile)  // 过滤可导入的文件
+                        .filter(file -> isImportableFile(file, excludePattern, excludeFileExt, excludeFileSize))  // 应用所有过滤条件
                         .collect(Collectors.toList());
             }
         } catch (Exception e) {
@@ -700,16 +703,45 @@ public class ResourceFileService {
     }
 
     /**
-     * 判断文件是否可导入
+     * 判断文件是否可导入（带过滤条件）
      */
-    private boolean isImportableFile(File file) {
+    private boolean isImportableFile(File file, String excludePattern, String excludeFileExt, int excludeFileSize) {
+        // 1. 检查文件大小
+        if (excludeFileSize > 0 && file.length() > excludeFileSize * 1024L) {
+            return false;
+        }
+
         String fileName = file.getName();
+
+        // 2. 检查排除模式（正则表达式）
+        if (StringUtils.isNotBlank(excludePattern)) {
+            try {
+                Pattern pattern = Pattern.compile(excludePattern);
+                if (pattern.matcher(fileName).matches()) {
+                    return false;
+                }
+            } catch (PatternSyntaxException e) {
+                log.warn("无效的正则表达式模式: {}", excludePattern);
+            }
+        }
+
+        // 3. 检查文件扩展名
         int dotIndex = fileName.lastIndexOf('.');
         if (dotIndex <= 0) {
             return false; // 没有扩展名
         }
 
         String extension = fileName.substring(dotIndex + 1).toLowerCase();
+
+        // 检查排除的扩展名
+        if (StringUtils.isNotBlank(excludeFileExt)) {
+            List<String> excludedExts = Arrays.asList(excludeFileExt.toLowerCase().split(","));
+            if (excludedExts.contains(extension)) {
+                return false;
+            }
+        }
+
+        // 4. 检查文件类型是否支持
         try {
             FileType fileType = fileStrategyFactory.getFileType(extension);
             return !fileType.desc().equals(ResourceTypeEnum.UNKNOWN); // 排除未知类型
