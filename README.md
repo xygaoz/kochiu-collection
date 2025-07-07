@@ -189,7 +189,7 @@
    - JSON路径：model.thumbnailUrl（上传成功返回的缩略图地址，不能改）
    - 自定义请求头：用json格式填入token，例如：{"Authorization":"xxxx"}，必填项，token通过后端获取
   ![img.png](docs/imgs/img_3.png)<br><br>
-   - 自定义Body可以用json格式，例如：{"categoryId":1}，上传是默认传到某个分类下，分类ID可以通过后台选择某个分类时获取<br>
+   - 自定义Body可以用json格式，例如：{"categoryId":1,"cataId":1}，"categoryId"表示上传是默认传到某个分类下，分类ID可以通过后台选择某个分类时获取，"cataId"表示上传时默认传到目录下，同样通过后台选择某个目录时获取<br>
     ![img.png](docs/imgs/img_2.png)<br><br>
   4. 上传区，选择设置好的图床<br>
   ![img_1.png](docs/imgs/img_1.png)<br><br>
