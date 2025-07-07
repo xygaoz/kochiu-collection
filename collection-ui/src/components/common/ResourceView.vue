@@ -328,6 +328,7 @@ const handleLoadMore = async () => {
     try {
         // 调用父组件的方法加载更多数据
         emit('load-more', searchData);
+        selectAll.value = false;
     } catch (error) {
         console.error('加载更多失败:', error);
     }

@@ -120,4 +120,12 @@ public interface ResourceStoreStrategy {
     boolean checkServerUrl();
 
     String getServerUrl();
+
+    /**
+     * 获取文件最后修改时间
+     * @param resource
+     * @param url
+     * @return
+     */
+    long getResourceModified(UserResource resource, String url);
 }

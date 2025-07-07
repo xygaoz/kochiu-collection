@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.kochiu.collection.Constant.CATALOG_FLAG;
 import static com.kochiu.collection.enums.ErrorCodeEnum.CONTENT_CANNOT_BE_EMPTY;
 import static com.kochiu.collection.util.SysUtil.tidyPath;
 
@@ -133,7 +134,7 @@ public class UserResourceService {
                 dirId = dirPath.substring(1); // 去掉前导/
             }
             else{
-                dirId = "c_" + catalog.getCataId().toString();
+                dirId = CATALOG_FLAG + catalog.getCataId().toString();
             }
         }
 
@@ -145,7 +146,8 @@ public class UserResourceService {
         }
         newUrl.append(filename);
 
-        return contextPath + "/resource/" + resource.getResourceId() + newUrl;
+        ResourceStoreStrategy resourceStoreStrategy = resourceStrategyFactory.getStrategy(user.getStrategy());
+        return contextPath + "/resource/" + resource.getResourceId() + newUrl + "?r=" + resourceStoreStrategy.getResourceModified(resource, originalUrl);
     }
 
     /**

@@ -44,8 +44,10 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
 import java.util.List;
 
+import static com.kochiu.collection.Constant.CATALOG_FLAG;
 import static com.kochiu.collection.enums.ErrorCodeEnum.*;
 import static com.kochiu.collection.util.SysUtil.tidyPath;
 
@@ -247,6 +249,10 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
         try {
             // 1. 获取请求路径和资源信息
             String url = request.getRequestURI().substring(request.getContextPath().length());
+            //截取?前面部分
+            if(url.contains("?")) {
+                url = url.substring(0, url.indexOf("?"));
+            }
 
             UserResource resource = resourceRepository.getById(resourceId);
             if (resource == null) {
@@ -263,7 +269,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
                 url = URLDecoder.decode(url, StandardCharsets.UTF_8);
                 String[] parts = url.split("/", 3);
                 if(parts.length >= 3){
-                    if(parts[1].startsWith("c_")){
+                    if(parts[1].startsWith(CATALOG_FLAG)){
                         long cataId = Long.parseLong(parts[1].substring(2));
                         UserCatalog catalog = catalogRepository.getOne(new LambdaQueryWrapper<UserCatalog>().eq(UserCatalog::getCataId, cataId).eq(UserCatalog::getUserId, user.getUserId()));
                         if(catalog != null){
@@ -320,7 +326,25 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
             String filenameHeader = disposition + ";filename=" +
                     URLEncoder.encode(resource.getSourceFileName(), StandardCharsets.UTF_8);
 
-            // 6. 处理Range请求
+            // 6. 如果是GET请求，设置缓存头
+            if (HttpMethod.GET.name().equalsIgnoreCase(request.getMethod())) {
+                String eTag = "\"" + file.lastModified() + "-" + file.length() + "\"";
+                String ifNoneMatch = request.getHeader(HttpHeaders.IF_NONE_MATCH);
+
+                if (eTag.equals(ifNoneMatch)) {
+                    return ResponseEntity.status(HttpStatus.NOT_MODIFIED)
+                            .eTag(eTag)
+                            .build();
+                }
+
+                // 设置缓存控制头
+                response.setHeader(HttpHeaders.CACHE_CONTROL, "public, max-age=31536000"); // 1 year
+                response.setHeader(HttpHeaders.EXPIRES, "max-age=31536000");
+                response.setHeader(HttpHeaders.ETAG, eTag);
+                response.setHeader(HttpHeaders.LAST_MODIFIED, new Date(file.lastModified()).toString());
+            }
+
+            // 7. 处理Range请求
             if (ranges != null && !ranges.isEmpty()) {
                 HttpRange range = ranges.get(0);
                 long fileLength = file.length();
@@ -348,7 +372,7 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
                         .body(resourceStream);
             }
 
-            // 7. 完整文件下载
+            // 8. 完整文件下载
             return ResponseEntity.ok()
                     .contentType(mediaType)
                     .header(HttpHeaders.CONTENT_DISPOSITION, filenameHeader)
@@ -586,5 +610,23 @@ public class LocalStoreStrategy implements ResourceStoreStrategy {
             throw new RuntimeException(LOCAL_STRATEGY_IS_INVALID.getMessage());
         }
         return strategy.getServerUrl();
+    }
+
+    public long getResourceModified(UserResource resource, String url){
+        String filePath;
+        if(resource.getSaveType() == SaveTypeEnum.LOCAL.getCode()) {
+            filePath = getServerUrl() + url;
+        }
+        else if(resource.getSaveType() == SaveTypeEnum.LINK.getCode()){
+            filePath = resource.getFilePath();
+        }
+        else{
+            return 0;
+        }
+        File file = new File(filePath);
+        if (!file.exists()) {
+            return 0;
+        }
+        return file.lastModified();
     }
 }
