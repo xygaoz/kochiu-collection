@@ -14,7 +14,6 @@ import com.kochiu.collection.entity.UserResource;
 import com.kochiu.collection.enums.ResourceTypeEnum;
 import com.kochiu.collection.mapper.UserResourceMapper;
 import com.kochiu.collection.properties.UserConfigProperties;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 

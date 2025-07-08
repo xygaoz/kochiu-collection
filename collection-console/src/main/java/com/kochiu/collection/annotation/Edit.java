@@ -1,7 +1,7 @@
 package com.kochiu.collection.annotation;
 
 /**
- * 编辑接口
+ * 编辑注解
  * @author KoChiu
  * @date 2020/7/27
  */

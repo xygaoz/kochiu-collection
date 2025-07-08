@@ -1,6 +1,5 @@
 package com.kochiu.collection.service.store;
 
-import com.kochiu.collection.data.dto.UserDto;
 import com.kochiu.collection.data.vo.FileVo;
 import com.kochiu.collection.entity.SysUser;
 import com.kochiu.collection.entity.UserResource;

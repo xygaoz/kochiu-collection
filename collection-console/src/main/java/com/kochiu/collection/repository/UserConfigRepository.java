@@ -2,9 +2,7 @@ package com.kochiu.collection.repository;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.kochiu.collection.entity.SysConfig;
 import com.kochiu.collection.entity.UserConfig;
-import com.kochiu.collection.mapper.SysConfigMapper;
 import com.kochiu.collection.mapper.UserConfigMapper;
 import org.springframework.stereotype.Service;
 

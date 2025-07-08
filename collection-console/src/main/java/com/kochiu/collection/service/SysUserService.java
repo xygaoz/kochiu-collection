@@ -1,5 +1,6 @@
 package com.kochiu.collection.service;
 
+import cn.hutool.crypto.SecureUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.pagehelper.PageInfo;
 import com.kochiu.collection.data.bo.*;
@@ -21,7 +22,6 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import cn.hutool.crypto.SecureUtil;
 
 import java.io.IOException;
 import java.nio.file.*;

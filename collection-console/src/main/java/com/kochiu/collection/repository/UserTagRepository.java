@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.kochiu.collection.entity.UserTag;
 import com.kochiu.collection.enums.TagByEnum;
 import com.kochiu.collection.mapper.UserTagMapper;
-import com.kochiu.collection.properties.SysConfigProperties;
 import com.kochiu.collection.properties.UserConfigProperties;
 import org.springframework.stereotype.Service;
 

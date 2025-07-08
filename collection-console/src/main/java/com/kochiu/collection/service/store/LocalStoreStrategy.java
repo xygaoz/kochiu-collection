@@ -5,7 +5,6 @@ import cn.hutool.core.io.unit.DataSizeUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.kochiu.collection.annotation.FileType;
 import com.kochiu.collection.data.dto.ResourceDto;
-import com.kochiu.collection.data.dto.UserDto;
 import com.kochiu.collection.data.vo.FileVo;
 import com.kochiu.collection.entity.SysStrategy;
 import com.kochiu.collection.entity.SysUser;

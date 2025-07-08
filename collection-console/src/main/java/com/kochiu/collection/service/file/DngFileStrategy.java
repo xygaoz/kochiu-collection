@@ -10,17 +10,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.im4java.core.ConvertCmd;
 import org.im4java.core.IMOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.util.Collections;
 
 @Slf4j
 @Service("dng")

@@ -2,7 +2,6 @@ package com.kochiu.collection.service.db;
 
 import com.kochiu.collection.Constant;
 import com.kochiu.collection.util.SysUtil;
-import liquibase.change.AbstractChange;
 import liquibase.change.ChangeMetaData;
 import liquibase.change.DatabaseChange;
 import liquibase.change.custom.CustomSqlChange;
@@ -15,12 +14,9 @@ import liquibase.statement.core.InsertStatement;
 import liquibase.statement.core.RawParameterizedSqlStatement;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomStringUtils;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
-import static com.kochiu.collection.Constant.RANDOM_CHARS;
 
 @DatabaseChange(
         name = "sysStrategyValueChange",

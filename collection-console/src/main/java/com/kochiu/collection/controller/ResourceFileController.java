@@ -15,13 +15,11 @@ import com.kochiu.collection.service.ImportTaskService;
 import com.kochiu.collection.service.ResourceFileService;
 import com.kochiu.collection.service.file.FileStrategyFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.fileupload.disk.DiskFileItem;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
