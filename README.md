@@ -1,1 +1,1 @@
-A multi-resource management system like Lsky Pro, supporting images, videos, documents, audio, and more.
+一个类似兰空图床的资源管理系统，但是不仅仅是管理图片，还有视频，文档，音频等资源。
