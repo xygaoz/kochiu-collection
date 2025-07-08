@@ -184,7 +184,7 @@
   3. 图床设置->自定义Web图床，填入相关信息，点击保存。<br>
   ![img.png](docs/imgs/img.png)
    - API地址：http(https)://ip(域名):port/collection/api/v1/resource/upload
-   - 图床域名：http(https)://ip(域名):port/collection/resource
+   - 图床域名：http(https)://ip(域名):port
    - POST参数名：file（不能改）
    - JSON路径：model.thumbnailUrl（上传成功返回的缩略图地址，不能改）
    - 自定义请求头：用json格式填入token，例如：{"Authorization":"xxxx"}，必填项，token通过后端获取
